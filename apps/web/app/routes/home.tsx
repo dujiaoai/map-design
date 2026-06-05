@@ -1,43 +1,85 @@
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@repo/ui'
+import { SidebarInset, SidebarProvider } from '@repo/ui'
+import { type CSSProperties } from 'react'
 
 import { MapToolLifecycleSync, MapWorkspaceUrlSync } from '~/features/map-workspace'
 import { AppSidebar } from '~/widgets/app-sidebar'
-import { MapToolDrawerPanel } from '~/widgets/map-import-drawer'
-import { MapBusinessDock, MapBusinessDockEdge } from '~/widgets/map-business-dock'
-import { MapDockPanel, MapDockPanelEdge } from '~/widgets/map-dock-panel'
+import { AccountSheet } from '~/widgets/account-sheet'
+import { MapContextPanel } from '~/widgets/map-context-panel'
 import { MapPlaceholder } from '~/widgets/map-canvas'
-import { MapToolActionBar } from '~/widgets/map-tool-action-bar'
+import { MapToolDrawerPanel } from '~/widgets/map-import-drawer'
+import { MapBusinessDockEdge } from '~/widgets/map-business-dock'
+import { MapDockPanelEdge } from '~/widgets/map-dock-panel'
+import { MapQuickToolbar } from '~/widgets/map-quick-toolbar'
+import { MapStatusBar } from '~/widgets/map-status-bar'
 import { MockMapToolHost } from '~/widgets/map-tool-host'
+import { MapWorkspaceHeader } from '~/widgets/map-workspace-header'
+import { NotificationSheet } from '~/widgets/notification-sheet'
+import { useWorkspaceChrome } from '~/widgets/workspace-chrome'
+import { useWorkspacePointer, WorkspaceMapAtmosphere } from '~/widgets/workspace-shell'
 
 import type { Route } from './+types/home'
 
+import './home.css'
+
 export function meta(_args: Route.MetaArgs) {
-  return [{ title: '云瞰 · saas-web' }, { name: 'description', content: '地图工作台' }]
+  return [
+    { title: '云眼地图工作台' },
+    { name: 'description', content: '下一代 GIS 协同平台' },
+  ]
+}
+
+export function links(_args: Route.LinksArgs) {
+  return [
+    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' as const },
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&family=ZCOOL+QingKe+HuangYou&display=swap',
+    },
+  ]
 }
 
 export default function Home() {
+  const pointer = useWorkspacePointer()
+  const chrome = useWorkspaceChrome()
+
+  const pointerStyle = {
+    '--ws-px': pointer.x,
+    '--ws-py': pointer.y,
+  } as CSSProperties
+
   return (
-    <SidebarProvider>
-      <MapWorkspaceUrlSync />
-      <MapToolLifecycleSync />
-      <AppSidebar />
-      <SidebarInset className="flex min-h-svh flex-row overflow-hidden">
-        <div className="relative flex min-w-0 flex-1">
-          <MapDockPanel />
-          <MapBusinessDock />
-          <div className="relative min-w-0 flex-1">
-          <MapPlaceholder />
-          <MockMapToolHost />
-          <MapToolActionBar />
-          <MapToolDrawerPanel />
-          <MapDockPanelEdge />
-          <MapBusinessDockEdge />
-          <div className="absolute left-3 top-3 z-10">
-            <SidebarTrigger className="bg-background/90 shadow-sm backdrop-blur-sm" />
+    <div className="workspace-page" style={pointerStyle}>
+      <SidebarProvider>
+        <MapWorkspaceUrlSync />
+        <MapToolLifecycleSync />
+        <AppSidebar user={chrome.user} />
+        <SidebarInset className="workspace-inset flex min-h-0 flex-1 flex-col overflow-hidden">
+          <MapWorkspaceHeader
+            user={chrome.user}
+            notificationUnreadCount={chrome.notificationUnreadCount}
+            onNotificationsClick={chrome.openNotifications}
+            onAccountClick={chrome.openAccount}
+            onLogout={() => void chrome.handleLogout()}
+          />
+          <div className="workspace-main flex min-h-0 flex-1 overflow-hidden">
+            <MapContextPanel />
+            <div className="workspace-canvas relative min-h-0 min-w-0 flex-1">
+              <WorkspaceMapAtmosphere />
+              <MapPlaceholder />
+              <MapQuickToolbar />
+              <MockMapToolHost />
+              <MapToolDrawerPanel />
+              <MapDockPanelEdge />
+              <MapBusinessDockEdge />
+            </div>
           </div>
-          </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+          <MapStatusBar />
+        </SidebarInset>
+      </SidebarProvider>
+
+      <AccountSheet open={chrome.accountOpen} onOpenChange={chrome.setAccountOpen} />
+      <NotificationSheet open={chrome.notificationOpen} onOpenChange={chrome.setNotificationOpen} />
+    </div>
   )
 }

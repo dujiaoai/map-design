@@ -3,6 +3,7 @@ import { RuoYiApiError } from '@repo/ruoyi-api'
 
 import { useRuoYiProfileStore } from '~/entities/ruoyi-user'
 import { auth } from '~/shared/auth/instance'
+import { createMockUserInfo, isMockAccessToken } from '~/shared/mock/dev-auth'
 import { queryClient } from '~/shared/lib/query-client'
 import { menuRoutersQueryOptions, userInfoQueryOptions } from '~/shared/queries'
 
@@ -29,6 +30,14 @@ function syncAuthSessionFromUserInfo(info: UserInfo) {
 
 /** 受保护应用壳层启动：拉取 RuoYi 用户/菜单并写入 profile store */
 export async function bootstrapAuthenticatedApp() {
+  if (isMockAccessToken(auth.getAccessToken())) {
+    const session = auth.getSession()
+    const userInfo = createMockUserInfo(session?.user.name ?? 'dev')
+    useRuoYiProfileStore.getState().setProfile(userInfo)
+    syncAuthSessionFromUserInfo(userInfo)
+    return userInfo
+  }
+
   try {
     const [userInfo] = await Promise.all([
       queryClient.ensureQueryData(userInfoQueryOptions()),

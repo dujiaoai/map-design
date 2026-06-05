@@ -1,20 +1,34 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import { useCallback, useEffect, useState } from 'react'
+import { Button, cn, Input } from '@repo/ui'
+import {
+  LayersIcon,
+  MapIcon,
+  RadarIcon,
+  RefreshCwIcon,
+  ShieldCheckIcon,
+  UserIcon,
+} from 'lucide-react'
+import { useCallback, useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { z } from 'zod'
 
-import { getCodeImg, login as loginApi } from '~/shared/api/login'
 import { auth, SaaSRole } from '~/shared/auth/client'
 import {
   clearRememberLogin,
   loadRememberLogin,
   saveRememberLogin,
 } from '~/shared/lib/remember-login'
+import { getMockCaptcha, MOCK_ACCESS_TOKEN } from '~/shared/mock/dev-auth'
+import { PasswordInput } from '~/shared/ui/password-input'
+import { CommandRadar, useWorkspacePointer } from '~/widgets/workspace-shell'
 
 import type { Route } from './+types/login'
 
 import './login.css'
+
+const LOGIN_BACKGROUND_URL =
+  'https://airace.naqufei.com/yunyan/assets/login-background-ByixqUQK.webp'
 
 const loginFormSchema = z.object({
   username: z.string().min(1, '请输入您的账号'),
@@ -24,58 +38,188 @@ const loginFormSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginFormSchema>
 
-const loginInputClassName =
-  'login-autofill-input h-12 w-full rounded-[6.06px] border-[0.89px] border-white/64 bg-black/23 px-3 text-sm text-white shadow-none outline-none placeholder:text-white/55 focus-visible:border-[#3094ff]'
+const fieldInputClassName =
+  'login-field-input h-11 rounded-[10px] border-white/10 bg-[var(--surface-elevated)] text-[var(--text-on-dark)] text-base shadow-[0_0_0_1px_rgba(48,148,255,0.06)_inset] transition-[color,box-shadow] placeholder:text-white/35 focus-visible:border-primary focus-visible:ring-primary/30 md:text-sm'
 
-function PasswordToggleIcon({ visible }: { visible: boolean }) {
-  if (visible) {
-    return (
-      <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M3 3l18 18M10.58 10.58A2 2 0 0 0 12 15a2 2 0 0 0 1.42-.58M9.88 5.09A10.94 10.94 0 0 1 12 5c5 0 9.27 3.11 11 7a11.35 11.35 0 0 1-2.12 3.17M6.61 6.61A11.33 11.33 0 0 0 1 12c1.73 3.89 6 7 11 7 1.52 0 2.95-.3 4.24-.84"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.75"
-        />
-      </svg>
-    )
-  }
-
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.75"
-      />
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.75" />
-    </svg>
-  )
-}
+const brandFeatures = [
+  { icon: RadarIcon, label: '实时空间态势感知' },
+  { icon: LayersIcon, label: 'Dock · 浮层 · 插件编排' },
+  { icon: ShieldCheckIcon, label: '企业级多租户隔离' },
+] as const
 
 function resolveUserEmail(username: string): string {
   return username.includes('@') ? username : `${username}@yunyan.local`
 }
 
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null
+  return <p className="text-xs text-red-300/90">{message}</p>
+}
+
 export function meta(_args: Route.MetaArgs) {
-  return [{ title: '登录 · saas-web' }]
+  return [{ title: '登录 · 云眼地图工作台' }]
+}
+
+export function links(_args: Route.LinksArgs) {
+  return [
+    { rel: 'preconnect', href: 'https://airace.naqufei.com' },
+    { rel: 'preload', as: 'image', href: LOGIN_BACKGROUND_URL, type: 'image/webp' },
+    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' as const },
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&family=ZCOOL+QingKe+HuangYou&display=swap',
+    },
+  ]
 }
 
 export async function clientLoader() {
   return null
 }
 
+function LoginAtmosphere() {
+  return (
+    <div className="login-atmosphere" aria-hidden="true">
+      <div
+        className="login-hero-bg"
+        style={{ backgroundImage: `url(${LOGIN_BACKGROUND_URL})` }}
+      />
+      <div className="login-hero-vignette" />
+      <div className="cc-grid" />
+      <div className="cc-grid-floor" />
+      <div className="cc-aurora" />
+      <div className="cc-scanline" />
+    </div>
+  )
+}
+
+function CoordReadout() {
+  const [coords, setCoords] = useState({ lat: '31.2304', lng: '121.4737', alt: '004.2' })
+
+  useEffect(() => {
+    const tick = window.setInterval(() => {
+      setCoords({
+        lat: (31.22 + Math.random() * 0.02).toFixed(4),
+        lng: (121.46 + Math.random() * 0.03).toFixed(4),
+        alt: (3.8 + Math.random() * 0.8).toFixed(1).padStart(5, '0'),
+      })
+    }, 2400)
+
+    return () => window.clearInterval(tick)
+  }, [])
+
+  return (
+    <div className="cc-coord-readout cc-mono rounded-lg px-4 py-3 text-[11px] leading-relaxed text-white/60">
+      <p className="mb-1 text-[10px] tracking-[0.14em] text-brand-light/80 uppercase">Live Fix</p>
+      <p>
+        LAT <span className="text-white/85">{coords.lat}</span> · LNG{' '}
+        <span className="text-white/85">{coords.lng}</span>
+      </p>
+      <p>
+        ALT <span className="text-white/85">{coords.alt}</span> m · SRID{' '}
+        <span className="text-white/85">EPSG:4326</span>
+      </p>
+    </div>
+  )
+}
+
+function BrandLogo({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className={cn('flex items-center gap-3', compact && 'justify-center')}>
+      <div
+        className={cn(
+          'cc-logo-mark relative flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-brand-deep text-primary-foreground shadow-[0_8px_28px_rgba(48,148,255,0.4)]',
+          compact ? 'size-10' : 'size-11',
+        )}
+      >
+        <MapIcon className="relative z-10 size-5" />
+      </div>
+      <div className={cn(compact && 'text-left')}>
+        <p
+          className={cn(
+            'cc-display font-semibold tracking-tight',
+            compact ? 'text-base' : 'text-lg',
+          )}
+        >
+          云眼地图工作台
+        </p>
+        {!compact ? (
+          <p className="text-sm text-white/50">下一代 GIS 协同平台</p>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+function LoginBrandPanel() {
+  return (
+    <aside className="login-brand-panel hidden min-h-0 lg:flex lg:flex-col">
+      <div className="login-brand-inner login-stagger relative flex min-h-0 flex-1 flex-col">
+        <header className="shrink-0" style={{ '--stagger': 0 } as CSSProperties}>
+          <BrandLogo />
+        </header>
+
+        <div className="login-brand-main">
+          <div className="login-brand-hero" style={{ '--stagger': 1 } as CSSProperties}>
+            <div className="min-w-0 space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] text-brand-soft">
+                <span className="cc-live-dot" aria-hidden="true" />
+                云眼 · 指挥舱
+              </div>
+              <h1 className="cc-display text-[clamp(1.625rem,2.2vw,2.25rem)] leading-[1.12] font-bold tracking-tight text-white/95">
+                探索空间维度
+                <span className="cc-headline-gradient mt-2 block">掌控每一像素</span>
+              </h1>
+              <p className="login-brand-desc max-w-[28rem] text-sm leading-relaxed text-white/55">
+                测绘、巡检、分析与协同 —— 在统一工作台中完成。侧栏导航、地图工具链与业务 Dock
+                深度耦合，为 GIS 专业团队而生。
+              </p>
+            </div>
+
+            <div className="login-brand-visual pointer-events-none" aria-hidden="true">
+              <CommandRadar size="lg" />
+            </div>
+          </div>
+
+          <ul className="login-brand-features" style={{ '--stagger': 2 } as CSSProperties}>
+            {brandFeatures.map(({ icon: Icon, label }) => (
+              <li
+                key={label}
+                className="login-feature-item cc-glass-panel flex cursor-default items-center gap-3 rounded-xl px-4 py-3"
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-brand-light">
+                  <Icon className="size-4" />
+                </span>
+                <span className="text-sm text-white/75">{label}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="login-brand-coord" style={{ '--stagger': 3 } as CSSProperties}>
+            <CoordReadout />
+          </div>
+        </div>
+      </div>
+
+      <footer className="login-brand-footer cc-mono shrink-0" style={{ '--stagger': 4 } as CSSProperties}>
+        © YUNYAN · GIS WORKSPACE v0.1
+      </footer>
+    </aside>
+  )
+}
+
 export default function Login() {
   const navigate = useNavigate()
+  const pointer = useWorkspacePointer()
   const [captchaEnabled, setCaptchaEnabled] = useState(true)
   const [codeUrl, setCodeUrl] = useState('')
-  const [uuid, setUuid] = useState('')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+  const [captchaSpinning, setCaptchaSpinning] = useState(false)
+
+  const pointerStyle = {
+    '--cc-px': pointer.x,
+    '--cc-py': pointer.y,
+  } as CSSProperties
 
   const {
     register,
@@ -87,21 +231,18 @@ export default function Login() {
     defaultValues: { username: '', password: '', code: '' },
   })
 
-  const loadCaptcha = useCallback(async () => {
-    try {
-      const res = await getCodeImg()
-      setCaptchaEnabled(res.captchaEnabled)
-      if (res.captchaEnabled) {
-        setCodeUrl(`data:image/gif;base64,${res.img}`)
-        setUuid(res.uuid)
-      }
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : '验证码加载失败')
+  const loadCaptcha = useCallback(() => {
+    setCaptchaSpinning(true)
+    const res = getMockCaptcha()
+    setCaptchaEnabled(res.captchaEnabled)
+    if (res.captchaEnabled) {
+      setCodeUrl(`data:image/gif;base64,${res.img}`)
     }
+    window.setTimeout(() => setCaptchaSpinning(false), 560)
   }, [])
 
   useEffect(() => {
-    void loadCaptcha()
+    loadCaptcha()
   }, [loadCaptcha])
 
   useEffect(() => {
@@ -116,143 +257,172 @@ export default function Login() {
     setRememberMe(saved.rememberMe)
   }, [reset])
 
-  async function onSubmit(values: LoginFormValues) {
-    setErrorMessage(null)
-
+  function onSubmit(values: LoginFormValues) {
     if (rememberMe) {
       saveRememberLogin(values.username, values.password)
     } else {
       clearRememberLogin()
     }
 
-    try {
-      const token = await loginApi({
-        username: values.username,
-        password: values.password,
-        code: values.code,
-        uuid,
-      })
+    const username = values.username.trim()
 
-      auth.setSession(
-        {
-          user: {
-            id: values.username.trim(),
-            email: resolveUserEmail(values.username.trim()),
-            name: values.username.trim(),
-            roles: [SaaSRole.MEMBER],
-          },
-          tenant: null,
+    auth.devLogin(
+      {
+        user: {
+          id: username,
+          email: resolveUserEmail(username),
+          name: username,
+          roles: [SaaSRole.MEMBER],
         },
-        { accessToken: token },
-      )
+        tenant: null,
+      },
+      { accessToken: MOCK_ACCESS_TOKEN },
+    )
 
-      void navigate('/', { replace: true })
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : '登录失败')
-      await loadCaptcha()
-    }
+    void navigate('/', { replace: true })
   }
 
   return (
-    <div className="box-border w-[570px] max-w-full rounded-[26.82px] border-[2.72px] border-[#3094ff] bg-[linear-gradient(180deg,rgba(48,97,219,0.12)_0%,rgba(23,62,160,0.5)_100%)] px-[89px] py-[51px]">
-      <div
-        className="mx-auto mb-[51px] h-[71px] w-[352px] bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/images/login-title.webp')" }}
-        role="img"
-        aria-label="登录"
-      />
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex flex-col gap-1.5">
-          <label className="sr-only" htmlFor="login-username">
-            账号
-          </label>
-          <input
-            id="login-username"
-            autoComplete="username"
-            className={loginInputClassName}
-            placeholder="账号"
-            {...register('username')}
-          />
-          {errors.username ? (
-            <p className="text-xs text-[#ffb4b4]">{errors.username.message}</p>
-          ) : null}
-        </div>
+    <div
+      className="login-page login-layout relative"
+      style={pointerStyle}
+    >
+      <LoginAtmosphere />
+      <LoginBrandPanel />
 
-        <div className="flex flex-col gap-1.5">
-          <label className="sr-only" htmlFor="login-password">
-            密码
-          </label>
-          <div className="relative">
-            <input
-              id="login-password"
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="current-password"
-              className={`${loginInputClassName} pr-11`}
-              placeholder="密码"
-              {...register('password')}
-            />
-            <button
-              type="button"
-              className="absolute top-1/2 right-3 flex -translate-y-1/2 cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-white [&_svg]:size-[19px]"
-              aria-label={showPassword ? '隐藏密码' : '显示密码'}
-              onClick={() => setShowPassword((visible) => !visible)}
-            >
-              <PasswordToggleIcon visible={showPassword} />
-            </button>
+      <main className="login-form-panel flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="login-form-panel-inner">
+          <div className="login-mobile-brand login-stagger lg:hidden" style={{ '--stagger': 0 } as CSSProperties}>
+            <BrandLogo compact />
           </div>
-          {errors.password ? (
-            <p className="text-xs text-[#ffb4b4]">{errors.password.message}</p>
-          ) : null}
-        </div>
 
-        {captchaEnabled ? (
-          <div className="flex flex-col gap-1.5">
-            <label className="sr-only" htmlFor="login-code">
-              验证码
-            </label>
-            <div className="flex items-center">
-              <input
-                id="login-code"
-                autoComplete="off"
-                className={`${loginInputClassName} w-[63%] shrink-0 flex-1`}
-                placeholder="验证码"
-                {...register('code')}
-              />
-              {codeUrl ? (
-                <button
-                  type="button"
-                  className="flex h-12 shrink-0 cursor-pointer items-center border-0 bg-transparent p-0"
-                  onClick={() => void loadCaptcha()}
-                  aria-label="刷新验证码"
+          <div className="login-form-card cc-glass-panel">
+            <header className="login-form-header">
+              <div className="flex items-start gap-3">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-primary to-brand-deep text-primary-foreground shadow-[0_6px_20px_rgba(48,148,255,0.35)]">
+                  <MapIcon className="size-5" />
+                </div>
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="cc-display text-xl font-semibold tracking-tight text-white/95 sm:text-2xl">
+                      欢迎登录
+                    </h2>
+                    <span className="login-dev-badge rounded-full px-2.5 py-0.5">开发模式</span>
+                  </div>
+                  <p className="text-sm text-white/50">验证身份后进入地图工作台</p>
+                </div>
+              </div>
+            </header>
+
+            <form className="login-form-fields" onSubmit={handleSubmit(onSubmit)}>
+              <div
+                className="login-field-group space-y-1.5"
+                style={{ '--field-i': 0 } as CSSProperties}
+              >
+                <label className="text-sm font-medium text-white/70" htmlFor="login-username">
+                  账号
+                </label>
+                <div className="relative">
+                  <UserIcon className="login-field-icon pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-primary/50" />
+                  <Input
+                    id="login-username"
+                    autoComplete="username"
+                    className={cn(fieldInputClassName, 'pl-9')}
+                    placeholder="请输入账号"
+                    {...register('username')}
+                  />
+                </div>
+                <FieldError message={errors.username?.message} />
+              </div>
+
+              <div
+                className="login-field-group space-y-1.5"
+                style={{ '--field-i': 1 } as CSSProperties}
+              >
+                <label className="text-sm font-medium text-white/70" htmlFor="login-password">
+                  密码
+                </label>
+                <PasswordInput
+                  id="login-password"
+                  autoComplete="current-password"
+                  className={fieldInputClassName}
+                  placeholder="请输入密码"
+                  {...register('password')}
+                />
+                <FieldError message={errors.password?.message} />
+              </div>
+
+              {captchaEnabled ? (
+                <div
+                  className="login-field-group space-y-1.5"
+                  style={{ '--field-i': 2 } as CSSProperties}
                 >
-                  <img alt="验证码" className="h-12 w-auto object-contain pl-3" src={codeUrl} />
-                </button>
+                  <label className="text-sm font-medium text-white/70" htmlFor="login-code">
+                    验证码
+                  </label>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Input
+                      id="login-code"
+                      autoComplete="off"
+                      className={cn(fieldInputClassName, 'min-w-0 flex-1')}
+                      placeholder="输入验证码"
+                      {...register('code')}
+                    />
+                    <button
+                      type="button"
+                      className={cn(
+                        'login-captcha-img flex h-11 w-full shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-white/10 bg-white/[0.04] sm:w-[120px]',
+                        captchaSpinning && 'is-spinning',
+                      )}
+                      onClick={loadCaptcha}
+                      aria-label="刷新验证码"
+                    >
+                      {codeUrl ? (
+                        <img alt="验证码" className="h-full w-full object-cover" src={codeUrl} />
+                      ) : (
+                        <RefreshCwIcon className="size-4 text-white/40" />
+                      )}
+                    </button>
+                  </div>
+                  <FieldError message={errors.code?.message} />
+                </div>
               ) : null}
-            </div>
-            {errors.code ? <p className="text-xs text-[#ffb4b4]">{errors.code.message}</p> : null}
+
+              <div
+                className="login-field-group flex items-center justify-between gap-3 pt-0.5"
+                style={{ '--field-i': captchaEnabled ? 3 : 2 } as CSSProperties}
+              >
+                <label className="flex cursor-pointer select-none items-center gap-2">
+                  <input
+                    checked={rememberMe}
+                    type="checkbox"
+                    className="size-4 cursor-pointer rounded border-white/20 accent-primary focus-visible:ring-2 focus-visible:ring-primary/30"
+                    onChange={(event) => setRememberMe(event.target.checked)}
+                  />
+                  <span className="text-sm text-white/55">记住密码</span>
+                </label>
+              </div>
+
+              <div
+                className="login-field-group"
+                style={{ '--field-i': captchaEnabled ? 4 : 3 } as CSSProperties}
+              >
+                <Button
+                  className="mt-1 h-11 w-full rounded-[10px] text-base font-medium"
+                  disabled={isSubmitting}
+                  type="submit"
+                >
+                  {isSubmitting ? '登录中…' : '登录'}
+                </Button>
+              </div>
+
+              <p className="cc-mono text-center text-[11px] leading-relaxed text-white/38">
+                MOCK · 任意账号 / 密码 / 验证码均可登录
+              </p>
+            </form>
           </div>
-        ) : null}
-
-        <label className="mb-[25px] flex cursor-pointer select-none items-center gap-2 has-[:checked]:[&>span]:text-[#3094ff]">
-          <input
-            checked={rememberMe}
-            type="checkbox"
-            className="size-4 cursor-pointer accent-[#3094ff]"
-            onChange={(event) => setRememberMe(event.target.checked)}
-          />
-          <span className="cursor-pointer text-base text-white">记住密码</span>
-        </label>
-
-        {errorMessage ? <p className="text-sm text-[#ffb4b4]">{errorMessage}</p> : null}
-
-        <button
-          className="h-12 w-full cursor-pointer rounded-[5.35px] border-0 bg-[linear-gradient(144.03deg,rgba(89,170,249,1)_0%,rgba(45,125,245,1)_100%)] text-xl text-white hover:enabled:bg-[#79bbff] disabled:cursor-not-allowed disabled:opacity-70"
-          disabled={isSubmitting}
-          type="submit"
-        >
-          {isSubmitting ? '登 录 中...' : '登录系统'}
-        </button>
-      </form>
+        </div>
+      </main>
     </div>
   )
 }

@@ -32,6 +32,16 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-light: var(--brand-light);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-glow: var(--brand-glow);
+  --color-surface-deep: var(--surface-deep);
+  --color-surface-panel: var(--surface-panel);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-text-on-dark: var(--text-on-dark);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -49,72 +59,86 @@
 
 :root {
   --radius: 0.625rem;
-  --brand: #128594;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+
+  /* 云眼品牌色 — 与登录页一致 */
+  --brand: #3094ff;
+  --brand-deep: #1d6fd8;
+  --brand-light: #7ec4ff;
+  --brand-soft: #9ecbff;
+  --brand-muted: rgba(48, 148, 255, 0.16);
+  --brand-glow: rgba(48, 148, 255, 0.35);
+
+  --surface-deep: #07111f;
+  --surface-panel: #0b1528;
+  --surface-elevated: rgba(15, 28, 52, 0.85);
+  --text-on-dark: #e8f1ff;
+
+  --background: oklch(0.99 0.004 248);
+  --foreground: oklch(0.18 0.02 248);
+  --card: oklch(1 0.002 248);
+  --card-foreground: oklch(0.18 0.02 248);
+  --popover: oklch(1 0.002 248);
+  --popover-foreground: oklch(0.18 0.02 248);
   --primary: var(--brand);
   --primary-foreground: #ffffff;
-  --secondary: color-mix(in oklch, var(--brand) 12%, white);
-  --secondary-foreground: color-mix(in oklch, var(--brand) 75%, black);
-  --muted: color-mix(in oklch, var(--brand) 8%, white);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: color-mix(in oklch, var(--brand) 10%, white);
-  --accent-foreground: color-mix(in oklch, var(--brand) 75%, black);
+  --secondary: color-mix(in oklch, var(--brand) 10%, white);
+  --secondary-foreground: color-mix(in oklch, var(--brand) 70%, black);
+  --muted: color-mix(in oklch, var(--brand) 6%, white);
+  --muted-foreground: oklch(0.48 0.03 248);
+  --accent: color-mix(in oklch, var(--brand) 12%, white);
+  --accent-foreground: color-mix(in oklch, var(--brand) 72%, black);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: color-mix(in oklch, var(--brand) 55%, white);
+  --border: color-mix(in oklch, var(--brand) 10%, oklch(0.922 0 0));
+  --input: color-mix(in oklch, var(--brand) 8%, oklch(0.922 0 0));
+  --ring: color-mix(in oklch, var(--brand) 45%, white);
   --chart-1: var(--brand);
-  --chart-2: color-mix(in oklch, var(--brand) 70%, white);
-  --chart-3: color-mix(in oklch, var(--brand) 50%, black);
-  --chart-4: color-mix(in oklch, var(--brand) 35%, black);
-  --chart-5: color-mix(in oklch, var(--brand) 20%, black);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --chart-2: var(--brand-light);
+  --chart-3: var(--brand-deep);
+  --chart-4: color-mix(in oklch, var(--brand) 55%, black);
+  --chart-5: color-mix(in oklch, var(--brand) 35%, black);
+  --sidebar: color-mix(in oklch, var(--brand) 4%, white);
+  --sidebar-foreground: oklch(0.18 0.02 248);
   --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: color-mix(in oklch, var(--brand) 10%, white);
-  --sidebar-accent-foreground: color-mix(in oklch, var(--brand) 75%, black);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: color-mix(in oklch, var(--brand) 55%, white);
+  --sidebar-accent: color-mix(in oklch, var(--brand) 12%, white);
+  --sidebar-accent-foreground: color-mix(in oklch, var(--brand) 72%, black);
+  --sidebar-border: color-mix(in oklch, var(--brand) 12%, oklch(0.922 0 0));
+  --sidebar-ring: color-mix(in oklch, var(--brand) 45%, white);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: color-mix(in oklch, var(--brand) 72%, white);
+  /* 云眼指挥舱暗色语义 — 与 home.css / command-center.css 对齐 */
+  --background: var(--surface-panel);
+  --foreground: var(--text-on-dark);
+  --card: color-mix(in srgb, var(--surface-panel) 88%, transparent);
+  --card-foreground: var(--text-on-dark);
+  --popover: color-mix(in srgb, var(--surface-panel) 92%, transparent);
+  --popover-foreground: var(--text-on-dark);
+  --primary: var(--brand);
   --primary-foreground: #ffffff;
-  --secondary: color-mix(in oklch, var(--brand) 22%, oklch(0.269 0 0));
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: color-mix(in oklch, var(--brand) 18%, oklch(0.269 0 0));
-  --accent-foreground: oklch(0.985 0 0);
+  --secondary: color-mix(in srgb, var(--brand) 12%, var(--surface-panel));
+  --secondary-foreground: var(--text-on-dark);
+  --muted: color-mix(in srgb, var(--brand) 10%, var(--surface-panel));
+  --muted-foreground: color-mix(in srgb, var(--text-on-dark) 55%, transparent);
+  --accent: color-mix(in srgb, var(--brand) 14%, transparent);
+  --accent-foreground: var(--brand-light);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: color-mix(in oklch, var(--brand) 65%, white);
-  --chart-1: color-mix(in oklch, var(--brand) 72%, white);
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: color-mix(in srgb, var(--brand) 55%, transparent);
+  --chart-1: var(--brand-light);
   --chart-2: var(--brand);
-  --chart-3: color-mix(in oklch, var(--brand) 55%, black);
-  --chart-4: color-mix(in oklch, var(--brand) 40%, black);
-  --chart-5: color-mix(in oklch, var(--brand) 25%, black);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: color-mix(in oklch, var(--brand) 72%, white);
+  --chart-3: var(--brand-deep);
+  --chart-4: color-mix(in oklch, var(--brand) 45%, black);
+  --chart-5: color-mix(in oklch, var(--brand) 28%, black);
+  --sidebar: color-mix(in srgb, var(--surface-deep) 92%, transparent);
+  --sidebar-foreground: var(--text-on-dark);
+  --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: color-mix(in oklch, var(--brand) 18%, oklch(0.269 0 0));
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: color-mix(in oklch, var(--brand) 65%, white);
+  --sidebar-accent: color-mix(in srgb, var(--brand) 14%, transparent);
+  --sidebar-accent-foreground: var(--brand-light);
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: color-mix(in srgb, var(--brand) 55%, transparent);
 }
 
 @layer base {
@@ -123,5 +147,46 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* 暗色侧栏 — 毛玻璃与激活态（工作台 home.css 同款） */
+  .dark [data-sidebar='sidebar'] {
+    border-color: rgba(255, 255, 255, 0.06);
+    background: color-mix(in srgb, var(--surface-deep) 92%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .dark [data-slot='sidebar-inner'] {
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.35);
+  }
+
+  .dark [data-slot='sidebar-trigger'] {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .dark [data-sidebar='menu-button'][data-active='true'] {
+    border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+    background: color-mix(in srgb, var(--brand) 14%, transparent);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--brand) 12%, transparent);
+    color: var(--brand-light);
+  }
+
+  /* 暗色浮层 — cc-glass-panel 风格 */
+  .dark [data-slot='drawer-content'],
+  .dark [data-slot='sheet-content'],
+  .dark [data-slot='dropdown-menu-content'] {
+    border-color: color-mix(in srgb, var(--brand) 22%, transparent);
+    backdrop-filter: blur(16px);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      0 8px 28px rgba(0, 0, 0, 0.35),
+      0 0 24px color-mix(in srgb, var(--brand) 10%, transparent);
+  }
+
+  .dark [data-slot='card'] {
+    border-color: color-mix(in srgb, var(--brand) 18%, transparent);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      0 4px 20px rgba(0, 0, 0, 0.25);
   }
 }

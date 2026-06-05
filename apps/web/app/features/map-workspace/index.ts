@@ -1,5 +1,9 @@
 export { createNavSelectHandler } from './lib/handle-nav-select'
 export {
+  resolveWorkspaceContext,
+  type WorkspaceContextSnapshot,
+} from './lib/resolve-workspace-context'
+export {
   createDevMapPluginBridge,
   getMapPluginBridge,
   resetMapPluginBridge,

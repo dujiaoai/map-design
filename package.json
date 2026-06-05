@@ -9,6 +9,7 @@
   "description": "SaaS 产品线 workspace（Biome lint/format）",
   "packageManager": "pnpm@9.15.0",
   "scripts": {
+    "dev": "pnpm --filter @repo/saas-web dev",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "format": "biome format --write ."

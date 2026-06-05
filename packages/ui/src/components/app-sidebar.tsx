@@ -55,6 +55,7 @@ export function AppSidebar({
   onNotificationsClick,
   notificationUnreadCount,
   onLogout,
+  hideFooter = false,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   user?: NavUserData | null
@@ -74,6 +75,8 @@ export function AppSidebar({
   onNotificationsClick?: () => void
   notificationUnreadCount?: number
   onLogout?: () => void
+  /** 工作台顶栏已承载通知/账号时隐藏侧栏页脚 */
+  hideFooter?: boolean
 }) {
   const user = userProp ?? defaultData.user
 
@@ -129,10 +132,12 @@ export function AppSidebar({
           ) : null
         ) : null}
       </SidebarContent>
-      <SidebarFooter>
-        <NavNotifications unreadCount={notificationUnreadCount} onClick={onNotificationsClick} />
-        <NavUser user={user} onAccountClick={onAccountClick} onLogout={onLogout} />
-      </SidebarFooter>
+      {!hideFooter ? (
+        <SidebarFooter>
+          <NavNotifications unreadCount={notificationUnreadCount} onClick={onNotificationsClick} />
+          <NavUser user={user} onAccountClick={onAccountClick} onLogout={onLogout} />
+        </SidebarFooter>
+      ) : null}
       <SidebarRail />
     </Sidebar>
   )

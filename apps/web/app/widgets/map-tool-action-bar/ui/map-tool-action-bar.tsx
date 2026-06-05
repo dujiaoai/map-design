@@ -18,20 +18,20 @@ export function MapToolActionBar() {
   return (
     <div
       className={cn(
-        'bg-background/95 pointer-events-auto absolute right-3 bottom-3 z-30',
-        'flex items-center gap-2 rounded-lg border px-2 py-1.5 shadow-lg backdrop-blur-sm',
+        'cc-glass-panel pointer-events-auto absolute right-3 bottom-3 z-30',
+        'flex items-center gap-2 rounded-lg px-2 py-1.5',
       )}
       role="toolbar"
       aria-label="地图工具操作条"
     >
-      <span className="text-muted-foreground max-w-[140px] truncate px-1 text-xs">
-        使用中：{title}
+      <span className="cc-mono max-w-[140px] truncate px-1 text-[11px] text-brand-soft">
+        ACTIVE · {title}
       </span>
       <Button
         type="button"
         variant="secondary"
         size="sm"
-        className="h-8 gap-1"
+        className="h-8 gap-1 border-white/10 bg-white/5 text-white/85 hover:bg-white/10"
         aria-label={`退出${title}`}
         onClick={() => clearMapTool()}
       >

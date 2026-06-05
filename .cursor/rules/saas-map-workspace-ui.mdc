@@ -1,24 +1,24 @@
 ---
 description: saas-web 侧栏菜单与地图工作台 UI 载体（Dock / 浮层 / L4 条带 / Vaul Drawer）选型与文件映射
 globs:
-  - saas/apps/web/app/widgets/app-sidebar/**
-  - saas/apps/web/app/widgets/map-*/**
-  - saas/apps/web/app/widgets/dock-panel/**
-  - saas/apps/web/app/features/map-workspace/**
-  - saas/apps/web/app/entities/navigation/**
-  - saas/apps/web/app/routes/home.tsx
+  - apps/web/app/widgets/app-sidebar/**
+  - apps/web/app/widgets/map-*/**
+  - apps/web/app/widgets/dock-panel/**
+  - apps/web/app/features/map-workspace/**
+  - apps/web/app/entities/navigation/**
+  - apps/web/app/routes/home.tsx
 alwaysApply: false
 ---
 
 # 地图工作台 UI 载体（saas-web）
 
-完整说明见 [map-workspace-ui.md](../../docs/architecture/map-workspace-ui.md)。
+完整说明见 [map-workspace-ui.md](../../docs/architecture/map-workspace-ui.md)。项目 Skill：`.cursor/skills/map-workspace-ui/`。
 
 ## 快速规则
 
 **侧栏分组子菜单** = Collapsible 手风琴（非弹框）。
 
-**侧栏段级折叠**（如「工具」）：段标题 + Chevron 收起/展开长列表；状态持久化 `nav-section-{id}`；段内有激活菜单时自动展开。UI：`packages/ui/src/components/nav-main.tsx`。
+**侧栏段级折叠**（如「数据」等长列表段）：段标题 + Chevron；持久化 `nav-section-{id}`。`map-tool` **不在侧栏**（方案 C：快捷工具条 + 顶栏搜索）。UI：`packages/ui/src/components/nav-main.tsx`。
 
 **菜单 `kind` → UI：**
 

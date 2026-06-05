@@ -23,7 +23,7 @@ export function NavNotifications({ unreadCount = 0, onClick }: { unreadCount?: n
         {unreadCount > 0 ? (
           <SidebarMenuBadge
             className={cn(
-              "bg-destructive rounded-full px-1.5 text-[10px] font-semibold text-[#fff] hover:text-[var(--brand)]",
+              "bg-destructive rounded-full px-1.5 text-[10px] font-semibold text-primary-foreground hover:text-brand",
             )}
           >
             {badgeLabel}

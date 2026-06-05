@@ -113,6 +113,7 @@ pnpm --filter @repo/saas format
 | [docs/runbooks/local-dev.md](docs/runbooks/local-dev.md) | 本地开发 |
 | [docs/runbooks/deployment.md](docs/runbooks/deployment.md) | 部署 |
 | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | 贡献规范 |
+| [.cursor/skills/README.md](.cursor/skills/README.md) | Cursor Agent Skills |
 
 ---
 

@@ -1,0 +1,427 @@
+@import '../shared/styles/command-center.css';
+
+html:has(.workspace-page),
+body:has(.workspace-page) {
+  height: 100%;
+  overflow: hidden;
+}
+
+.workspace-page {
+  --cc-px: var(--ws-px, 0.5);
+  --cc-py: var(--ws-py, 0.5);
+  --ws-px: 0.5;
+  --ws-py: 0.5;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  background: var(--surface-deep);
+  color: var(--text-on-dark);
+  font-family: 'Noto Sans SC', ui-sans-serif, system-ui, sans-serif;
+}
+
+.workspace-inset {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+}
+
+.workspace-inset::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(7, 17, 31, 0.35) 0%,
+      transparent 18%,
+      transparent 82%,
+      rgba(7, 17, 31, 0.45) 100%
+    );
+}
+
+.workspace-main {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+}
+
+.workspace-context-panel {
+  background: color-mix(in srgb, var(--surface-panel) 90%, transparent);
+}
+
+.workspace-context-panel > div:last-child aside {
+  width: 100% !important;
+  max-width: 100%;
+  min-height: 0;
+  flex: 1;
+  border-right: none !important;
+}
+
+.workspace-map-toolbar {
+  max-height: calc(100% - 1.5rem);
+  overflow-y: auto;
+}
+
+.workspace-header-search:focus-visible {
+  border-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.workspace-page [data-slot='sidebar-header'] {
+  display: none;
+}
+
+.workspace-page [data-slot='sidebar-content'] {
+  padding-top: 0.5rem;
+}
+
+.workspace-canvas {
+  isolation: isolate;
+  overflow: hidden;
+  border-left: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.workspace-map-atmosphere {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--surface-deep) 88%, var(--brand) 12%) 0%,
+    var(--surface-panel) 55%,
+    var(--surface-deep) 100%
+  );
+}
+
+.workspace-map-atmosphere .cc-grid,
+.workspace-map-atmosphere .cc-grid-floor {
+  position: absolute;
+  inset: 0;
+}
+
+.workspace-map-stage {
+  z-index: 1;
+}
+
+.workspace-map-hud {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.workspace-map-title {
+  font-size: clamp(1.125rem, 2.2vw, 1.5rem);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.workspace-map-subtitle {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.workspace-header {
+  position: relative;
+  z-index: 2;
+}
+
+.workspace-header-brand {
+  height: 2rem;
+}
+
+.workspace-header-logo {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.workspace-header-logo::before {
+  inset: -4px;
+}
+
+.workspace-header-logo::after {
+  inset: -7px;
+}
+
+.workspace-header-brand [data-slot='breadcrumb-list'] {
+  min-height: 1rem;
+}
+
+.workspace-header-brand [data-slot='breadcrumb-item'],
+.workspace-header-brand [data-slot='breadcrumb-separator'] {
+  display: inline-flex;
+  align-items: center;
+}
+
+.workspace-header-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.workspace-header-tagline {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.workspace-breadcrumb-active {
+  color: var(--brand-light) !important;
+}
+
+.workspace-status-bar {
+  position: relative;
+  z-index: 2;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--surface-deep) 78%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.workspace-status-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--brand-light) 80%, transparent);
+}
+
+.workspace-tool-chip {
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+  color: var(--brand-soft);
+}
+
+.workspace-page [data-slot='sidebar-wrapper'] {
+  min-height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.workspace-page aside.border-r,
+.workspace-page aside.border-l {
+  background: color-mix(in srgb, var(--surface-panel) 88%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.workspace-page [data-presentation='movable-panel'],
+.workspace-page [data-presentation='anchor'] {
+  border-color: color-mix(in srgb, var(--brand) 28%, transparent) !important;
+  background: color-mix(in srgb, var(--surface-panel) 92%, transparent) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 12px 36px rgba(0, 0, 0, 0.4),
+    0 0 28px color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+.workspace-page [data-slot='sidebar-trigger']:hover {
+  color: var(--text-on-dark);
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+.workspace-context-sheet {
+  background: color-mix(in srgb, var(--surface-panel) 96%, transparent);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.workspace-context-sheet [data-slot='sheet-close'] {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.workspace-dock-collapse-handle {
+  z-index: 20;
+  display: flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: color-mix(in srgb, var(--surface-panel) 94%, transparent);
+  color: var(--brand-light);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 4px 16px rgba(0, 0, 0, 0.35),
+    0 0 14px color-mix(in srgb, var(--brand) 16%, transparent);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.workspace-dock-collapse-handle:hover {
+  border-color: color-mix(in srgb, var(--primary) 50%, transparent);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 0 20px color-mix(in srgb, var(--brand) 28%, transparent);
+}
+
+.workspace-dock-collapse-handle:active {
+  transform: scale(0.94);
+}
+
+.workspace-dock-edge-rail {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  z-index: 10;
+  height: 100%;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 255, 255, 0.12) 18%,
+    rgba(255, 255, 255, 0.12) 82%,
+    transparent
+  );
+  transition: opacity 0.2s ease;
+}
+
+.workspace-dock-edge-tab {
+  z-index: 20;
+  display: flex;
+  min-width: 2rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-left-width: 0;
+  padding: 0.5rem 0.25rem;
+  background: color-mix(in srgb, var(--surface-panel) 92%, transparent);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    4px 0 20px rgba(0, 0, 0, 0.35),
+    0 0 18px color-mix(in srgb, var(--brand) 12%, transparent);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.workspace-dock-edge-tab:hover {
+  border-color: color-mix(in srgb, var(--primary) 42%, transparent);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    6px 0 24px rgba(0, 0, 0, 0.4),
+    0 0 22px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.workspace-dock-edge-tab:active {
+  opacity: 0.92;
+}
+
+.workspace-page [data-slot='sidebar'][data-collapsible='icon'] [data-sidebar='menu-button'] {
+  justify-content: center;
+}
+
+.workspace-page [data-slot='sidebar'][data-collapsible='icon'] [data-sidebar='menu-button'] > span {
+  display: none;
+}
+
+/* ── 浅色模式（html 无 .dark） ── */
+html:not(.dark) .workspace-page {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+html:not(.dark) .workspace-page .workspace-inset::before {
+  background: linear-gradient(
+    180deg,
+    rgba(48, 148, 255, 0.06) 0%,
+    transparent 18%,
+    transparent 82%,
+    rgba(48, 148, 255, 0.08) 100%
+  );
+}
+
+html:not(.dark) .workspace-page .workspace-context-panel {
+  background: color-mix(in srgb, var(--background) 92%, var(--brand) 8%);
+}
+
+html:not(.dark) .workspace-page .workspace-canvas {
+  border-left-color: var(--border);
+}
+
+html:not(.dark) .workspace-page .workspace-map-atmosphere {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--background) 90%, var(--brand) 10%) 0%,
+    color-mix(in srgb, var(--background) 96%, var(--brand) 4%) 55%,
+    color-mix(in srgb, var(--background) 88%, var(--brand) 12%) 100%
+  );
+}
+
+html:not(.dark) .workspace-page .workspace-map-title {
+  color: color-mix(in srgb, var(--foreground) 92%, transparent);
+}
+
+html:not(.dark) .workspace-page .workspace-map-subtitle {
+  color: var(--muted-foreground);
+}
+
+html:not(.dark) .workspace-page .workspace-breadcrumb-active {
+  color: var(--brand-deep) !important;
+}
+
+html:not(.dark) .workspace-page .workspace-status-bar {
+  border-top-color: var(--border);
+  background: color-mix(in srgb, var(--background) 85%, transparent);
+}
+
+html:not(.dark) .workspace-page .workspace-status-label {
+  color: color-mix(in srgb, var(--brand-deep) 75%, transparent);
+}
+
+html:not(.dark) .workspace-page .workspace-tool-chip {
+  border-color: color-mix(in srgb, var(--brand) 28%, transparent);
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+  color: var(--brand-deep);
+}
+
+html:not(.dark) .workspace-page .cc-glass-bar {
+  border-bottom-color: var(--border);
+  background: color-mix(in srgb, var(--background) 88%, transparent);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.72) inset,
+    0 4px 20px rgba(48, 148, 255, 0.08);
+}
+
+html:not(.dark) .workspace-page .cc-glass-panel {
+  border-color: color-mix(in srgb, var(--brand) 18%, transparent);
+  background: color-mix(in srgb, var(--background) 94%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.65) inset,
+    0 4px 20px rgba(48, 148, 255, 0.1),
+    0 0 16px color-mix(in srgb, var(--brand) 8%, transparent);
+}
+
+html:not(.dark) .workspace-page aside.border-r,
+html:not(.dark) .workspace-page aside.border-l {
+  background: color-mix(in srgb, var(--background) 94%, transparent);
+}
+
+html:not(.dark) .workspace-page .cc-grid {
+  opacity: 0.12;
+}
+
+html:not(.dark) .workspace-page .cc-grid-floor {
+  opacity: 0.1;
+}

@@ -1,6 +1,7 @@
 import {
   BarChart3Icon,
   BookmarkIcon,
+  BookmarkPlusIcon,
   BookOpenIcon,
   BriefcaseIcon,
   Building2Icon,
@@ -13,7 +14,6 @@ import {
   FolderKanbanIcon,
   Globe2Icon,
   HeadphonesIcon,
-  HeartIcon,
   LandPlotIcon,
   LayoutGridIcon,
   LocateFixedIcon,
@@ -39,7 +39,7 @@ import type {
   NavMapSectionDef,
 } from './types'
 
-/** 侧栏「工具」（仅一级菜单，原分组子项已平铺） */
+/** 地图工具全集（方案 C：不在侧栏展示，入口为快捷工具条 + 顶栏搜索） */
 export const mockNavToolItems: NavMainItem[] = [
   {
     id: 'tool-measure-distance',
@@ -126,6 +126,17 @@ export const mockNavToolItems: NavMainItem[] = [
     toolId: 'global-search',
   },
   {
+    id: 'tool-panorama-point',
+    title: '全景点位',
+    icon: <Rotate3dIcon />,
+    kind: 'map-tool',
+    toolId: 'panorama-point',
+  },
+]
+
+/** 侧栏「数据 / 图层 / 分析」业务模块 */
+export const mockNavDataItems: NavMainItem[] = [
+  {
     id: 'module-thematic',
     title: '专题',
     icon: <LayoutGridIcon />,
@@ -160,7 +171,7 @@ export const mockNavUavItems: NavMainItem[] = [
   {
     id: 'dock-uav-collect',
     title: '机库收藏',
-    icon: <BookmarkIcon />,
+    icon: <BookmarkPlusIcon />,
     kind: 'map-dock-module',
     moduleId: 'uav-collect',
   },
@@ -178,7 +189,7 @@ export const mockNavOpsItems: NavMainItem[] = [
   {
     id: 'module-my-favorites',
     title: '我的收藏',
-    icon: <HeartIcon />,
+    icon: <BookmarkIcon />,
     kind: 'map-module',
     moduleId: 'my-favorites',
   },
@@ -212,15 +223,8 @@ export const mockNavOpsItems: NavMainItem[] = [
   },
 ]
 
-/** 侧栏「全景」：地图工具 + 业务模块 */
-export const mockNavPanoramaItems: NavMainItem[] = [
-  {
-    id: 'tool-panorama-point',
-    title: '全景点位',
-    icon: <Rotate3dIcon />,
-    kind: 'map-tool',
-    toolId: 'panorama-point',
-  },
+/** 侧栏「全景」业务模块（全景点位等 map-tool 见快捷工具条） */
+export const mockNavPanoramaModuleItems: NavMainItem[] = [
   {
     id: 'module-panorama-produce',
     title: '全景制作',
@@ -236,6 +240,9 @@ export const mockNavPanoramaItems: NavMainItem[] = [
     moduleId: 'panorama-viewer',
   },
 ]
+
+/** @deprecated 请用 mockNavPanoramaModuleItems；保留兼容旧引用 */
+export const mockNavPanoramaItems: NavMainItem[] = mockNavPanoramaModuleItems
 
 /** 侧栏「应用」 */
 export const mockNavAppItems: NavMainItem[] = [
@@ -277,21 +284,22 @@ export const mockNavWorkspaceItems: NavMainItem[] = [
   ...mockNavAppItems,
 ]
 
-/** 侧栏五段定义（标签 + 原始菜单） */
+/** 侧栏可见分段（方案 C：不含 map-tool 段） */
 export const mockNavMapSectionDefs: NavMapSectionDef[] = [
-  { id: 'tools', label: '工具', items: mockNavToolItems, collapsible: true, defaultOpen: true },
+  { id: 'data', label: '数据', items: mockNavDataItems },
   { id: 'uav', label: '机库', items: mockNavUavItems },
   { id: 'ops', label: '运营', items: mockNavOpsItems },
-  { id: 'panorama', label: '全景', items: mockNavPanoramaItems },
+  { id: 'panorama', label: '全景', items: mockNavPanoramaModuleItems },
   { id: 'app', label: '应用', items: mockNavAppItems },
 ]
 
-/** 全量菜单（查找子项、URL 解析等） */
+/** 全量菜单（URL 解析、快捷条、handleNavSelect 等；含侧栏不可见的 map-tool） */
 export const mockNavMainItems: NavMainItem[] = [
   ...mockNavToolItems,
+  ...mockNavDataItems,
   ...mockNavUavItems,
   ...mockNavOpsItems,
-  ...mockNavPanoramaItems,
+  ...mockNavPanoramaModuleItems,
   ...mockNavAppItems,
 ]
 

@@ -28,8 +28,8 @@ export function MapToolDrawerPanel() {
     <aside
       data-state={exiting ? 'closed' : 'open'}
       className={cn(
-        'border-border bg-background/95 absolute top-0 right-0 bottom-0 z-30',
-        'flex w-[360px] max-w-[40%] flex-col border-l shadow-lg backdrop-blur-sm',
+        'cc-glass-panel border-border absolute top-0 right-0 bottom-0 z-30',
+        'flex w-[360px] max-w-[40%] flex-col border-l',
         'ease-out motion-reduce:transition-none',
         exiting ? 'pointer-events-none' : 'pointer-events-auto',
         exiting

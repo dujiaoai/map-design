@@ -1,43 +1,15 @@
-import { cn } from '@repo/ui'
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
-
 import { mockDockModuleMeta } from '~/entities/navigation'
 import { useMapWorkspaceStore } from '~/features/map-workspace'
-import { DockPanelFrame } from '~/widgets/dock-panel'
-
-function DockSplitControl({
-  direction,
-  label,
-  onClick,
-  className,
-}: {
-  direction: 'collapse' | 'expand'
-  label: string
-  onClick: () => void
-  className?: string
-}) {
-  const Icon = direction === 'collapse' ? ChevronLeftIcon : ChevronRightIcon
-
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      className={cn(
-        'border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground',
-        'absolute top-1/2 z-20 flex size-6 -translate-y-1/2 items-center justify-center',
-        'rounded-full border shadow-sm transition-colors',
-        className,
-      )}
-    >
-      <Icon className="size-3.5" />
-    </button>
-  )
-}
+import {
+  DockPanelCollapseHandle,
+  DockPanelExpandEdge,
+  DockPanelFrame,
+  resolveDockModuleEdgeIcon,
+  resolveModuleEdgeShortLabel,
+} from '~/widgets/dock-panel'
 
 /** 机库模块左侧固定 Dock（与地图业务 Dock 并列，互不挤占状态） */
-export function MapDockPanel() {
+export function MapDockPanel({ hidden = false }: { hidden?: boolean }) {
   const activeDockModuleId = useMapWorkspaceStore((state) => state.activeDockModuleId)
   const collapsed = useMapWorkspaceStore((state) => state.dockPanelCollapsed)
   const setDockPanelCollapsed = useMapWorkspaceStore((state) => state.setDockPanelCollapsed)
@@ -45,7 +17,7 @@ export function MapDockPanel() {
   const fullscreen = useMapWorkspaceStore((state) => state.dockPanelFullscreen)
   const toggleDockPanelFullscreen = useMapWorkspaceStore((state) => state.toggleDockPanelFullscreen)
 
-  if (!activeDockModuleId || collapsed) {
+  if (hidden || !activeDockModuleId || collapsed) {
     return null
   }
 
@@ -65,10 +37,9 @@ export function MapDockPanel() {
       }}
       footer={
         !fullscreen ? (
-          <DockSplitControl
-            direction="collapse"
+          <DockPanelCollapseHandle
             label={`收起${meta.title}`}
-            className="-right-3"
+            className="-right-3.5"
             onClick={() => setDockPanelCollapsed(true)}
           />
         ) : null
@@ -97,17 +68,13 @@ export function MapDockPanelEdge() {
   }
 
   return (
-    <>
-      <div
-        aria-hidden
-        className="bg-border/40 hover:bg-border/70 absolute top-0 left-0 z-10 h-full w-1 transition-colors"
-      />
-      <DockSplitControl
-        direction="expand"
-        label={`展开${meta.title}`}
-        className="left-0 -translate-x-1/2"
-        onClick={() => setDockPanelCollapsed(false)}
-      />
-    </>
+    <DockPanelExpandEdge
+      label={`展开${meta.title}`}
+      shortLabel={resolveModuleEdgeShortLabel(activeDockModuleId, meta.title)}
+      icon={resolveDockModuleEdgeIcon(activeDockModuleId)}
+      className="left-0 -translate-x-1/2"
+      railClassName="left-0"
+      onClick={() => setDockPanelCollapsed(false)}
+    />
   )
 }

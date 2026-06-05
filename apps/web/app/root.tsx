@@ -1,6 +1,7 @@
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router'
 
 import { AppProviders } from '~/providers/app-providers'
+import { themeInitScript } from '~/shared/lib/theme'
 import type { Route } from './+types/root'
 import './app.css'
 
@@ -8,10 +9,11 @@ export const links: Route.LinksFunction = () => [{ rel: 'icon', href: '/favicon.
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <Meta />
         <Links />
       </head>

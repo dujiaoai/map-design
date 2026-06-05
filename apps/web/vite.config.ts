@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, loadEnv } from 'vite'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const monorepoRoot = path.resolve(__dirname, '../../..')
+const monorepoRoot = path.resolve(__dirname, '../..')
 const uiDir = path.resolve(__dirname, '../../packages/ui')
 const ruoyiApiDir = path.resolve(__dirname, '../../packages/ruoyi-api')
 

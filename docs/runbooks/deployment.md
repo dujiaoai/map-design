@@ -11,8 +11,8 @@ pnpm --filter @repo/cloud-uav build
 
 | App | 目录 |
 | --- | --- |
-| Web | `saas/apps/web/build/client/` |
-| Cloud UAV | `saas/cloud/uav/dist/` |
+| Web | `apps/web/build/client/` |
+| Cloud UAV | `cloud/uav/dist/` |
 
 ## SPA Fallback
 
@@ -27,13 +27,15 @@ location / {
 ## Cloud UAV 与宿主
 
 - 插件 base：`/yunyan-cloud-uav/`
-- 宿主 dev proxy：`5103` → `5174`（`apps/yunyan-web/vite.config.js`）
+- 宿主 dev proxy：`5103` → `5174`（父 monorepo `apps/yunyan-web/vite.config.js`）
 - 同时启动：
 
 ```bash
 pnpm --filter @repo/cloud-uav dev
 pnpm --filter @taiyi/yunyan-web dev:airace
 ```
+
+详见 [local-dev.md](./local-dev.md) 与 [ADR-0006](../adr/0006-esm-remote-plugin-over-mf.md)。
 
 ## Cookie 域
 
@@ -43,14 +45,17 @@ pnpm --filter @taiyi/yunyan-web dev:airace
 
 ## 环境变量
 
-| App | 说明 |
-| --- | --- |
-| Web | `VITE_API_URL`、`VITE_APP_URL` |
-| Marketing | 可无 API secret |
-| Admin | 更严格 CSP |
+| App | 变量 | 说明 |
+| --- | --- | --- |
+| Web | `VITE_APP_BASE_HOST` | RuoYi API 代理目标 |
+| Web | `VITE_API_URL` | SaaS REST API（规划） |
+| Web | `VITE_APP_URL` | 前端自身 URL（规划） |
+| Marketing | — | 可无 API secret |
+| Admin | — | 更严格 CSP |
 
 ## Smoke Test
 
 - [ ] Web 首页 200
-- [ ] 登录跳转（占位路由就绪后）
+- [ ] 登录跳转正常
+- [ ] RuoYi API 代理可达
 - [ ] Cloud UAV registry.js 可加载

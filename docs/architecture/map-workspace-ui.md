@@ -2,7 +2,9 @@
 
 > 侧栏菜单点击后打开的 UI 形态、状态归属与组件映射。修改 `app-sidebar`、导航 mock、`map-workspace` store 或地图浮层/Dock 时请先读本文。
 >
-> Cursor 自动规则：[`saas/.cursor/rules/saas-map-workspace-ui.mdc`](../../.cursor/rules/saas-map-workspace-ui.mdc)
+> Cursor 自动规则：[`.cursor/rules/saas-map-workspace-ui.mdc`](../../.cursor/rules/saas-map-workspace-ui.mdc)
+>
+> 地图插件桥接：[map-plugin-integration.md](./map-plugin-integration.md)
 
 ## 链路概览
 
@@ -20,12 +22,12 @@ AppSidebar (widgets/app-sidebar)
 
 有子项的分组（测量、标绘、应用等）使用 **Collapsible 手风琴**，在侧栏内展开，不是 Popover / Dialog。
 
-- UI：`saas/packages/ui/src/components/nav-main.tsx`
+- UI：`packages/ui/src/components/nav-main.tsx`
 - 叶子项 / 子项点击 → `onNavSelect(id)`
 
 ## 菜单行为类型 `NavMainItemKind`
 
-定义：`saas/apps/web/app/entities/navigation/model/types.ts`
+定义：`apps/web/app/entities/navigation/model/types.ts`
 
 | kind | 含义 | 处理函数 | UI 载体 |
 | --- | --- | --- | --- |
@@ -35,9 +37,9 @@ AppSidebar (widgets/app-sidebar)
 | `route` | 应用内路由 | `navigate(url)` | 无弹层 |
 | `external` | 外部链接 | `window.open` | 无弹层 |
 
-分发：`saas/apps/web/app/features/map-workspace/lib/handle-nav-select.ts`
+分发：`apps/web/app/features/map-workspace/lib/handle-nav-select.ts`
 
-Mock 菜单：`saas/apps/web/app/entities/navigation/model/mock-nav-items.tsx`
+Mock 菜单：`apps/web/app/entities/navigation/model/mock-nav-items.tsx`
 
 ## 侧栏信息架构（mock）
 
@@ -77,7 +79,7 @@ Mock 菜单：`saas/apps/web/app/entities/navigation/model/mock-nav-items.tsx`
 
 当前 mock 并行 `panel`：**卷帘对比**、**高清影像对比**（与 packages-map Coordinator 空 deactivate 对齐）。
 
-Store：`saas/apps/web/app/features/map-workspace/model/workspace-store.ts`
+Store：`apps/web/app/features/map-workspace/model/workspace-store.ts`
 
 ### 重要：两种「Drawer」
 
@@ -111,7 +113,7 @@ Store：`saas/apps/web/app/features/map-workspace/model/workspace-store.ts`
 
 ## 页面挂载顺序
 
-`saas/apps/web/app/routes/home.tsx`：
+`apps/web/app/routes/home.tsx`：
 
 ```
 MapDockPanel          ← map-dock-module

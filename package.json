@@ -2,7 +2,12 @@
   "name": "@repo/saas",
   "version": "0.0.1",
   "private": true,
+  "engines": {
+    "node": ">=20.19.0",
+    "pnpm": ">=9.14.0"
+  },
   "description": "SaaS 产品线 workspace（Biome lint/format）",
+  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "check": "biome check .",
     "check:fix": "biome check --write .",

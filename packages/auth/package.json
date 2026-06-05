@@ -1,0 +1,27 @@
+{
+  "name": "@haoxuan/auth",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "SaaS 认证与会话（token、RBAC、React Provider）",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "catalog:",
+    "zustand": "^5.0.3"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.6",
+    "react": "19.2.6",
+    "typescript": "catalog:",
+    "vitest": "^3.0.5"
+  }
+}

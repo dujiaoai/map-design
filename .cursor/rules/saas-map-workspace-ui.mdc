@@ -1,0 +1,46 @@
+---
+description: saas-web 侧栏菜单与地图工作台 UI 载体（Dock / 浮层 / L4 条带 / Vaul Drawer）选型与文件映射
+globs:
+  - saas/apps/web/app/widgets/app-sidebar/**
+  - saas/apps/web/app/widgets/map-*/**
+  - saas/apps/web/app/widgets/dock-panel/**
+  - saas/apps/web/app/features/map-workspace/**
+  - saas/apps/web/app/entities/navigation/**
+  - saas/apps/web/app/routes/home.tsx
+alwaysApply: false
+---
+
+# 地图工作台 UI 载体（saas-web）
+
+完整说明见 [map-workspace-ui.md](../../docs/architecture/map-workspace-ui.md)。
+
+## 快速规则
+
+**侧栏分组子菜单** = Collapsible 手风琴（非弹框）。
+
+**侧栏段级折叠**（如「工具」）：段标题 + Chevron 收起/展开长列表；状态持久化 `nav-section-{id}`；段内有激活菜单时自动展开。UI：`packages/ui/src/components/nav-main.tsx`。
+
+**菜单 `kind` → UI：**
+
+| kind | UI |
+| --- | --- |
+| `map-tool` + `presentation: movable-panel \| anchor` + `category: mode` | `MockMapToolHost` + `activeMapTool`，互斥 |
+| `map-tool` + `category: panel` | `MockMapToolHost` + `activePanelTools`，并行、仅手动关闭 |
+| `map-tool` + `presentation: drawer` | `MapToolDrawerPanel` 右侧条带（**不是** Vaul） |
+| `map-dock-module` | `MapDockPanel` 固定 Dock 列 |
+| `map-module` | `MapBusinessDock` 固定 Dock 列 |
+| `route` / `external` | 路由跳转 / 新窗口，无弹层 |
+
+**页脚**：通知、账号 → Vaul `Drawer`（有遮罩）；账号入口先经 `DropdownMenu`。
+
+## 禁止
+
+- 地图工具 L4 条带改用 Vaul Drawer
+- 机库/业务模块做成模态 Dialog 挡地图
+- 在 `packages/ui` 的 `AppSidebar` 里写业务 store 逻辑（保持在 `widgets/app-sidebar` + `features/map-workspace`）
+
+## 新增菜单
+
+1. `mock-nav-items.tsx` 设 `kind` + id
+2. `map-tool` 配 `mockToolMeta.presentation` 与 `coordinatorGroup`
+3. 需要深链则改 `workspace-url.ts`

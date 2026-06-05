@@ -1,0 +1,21 @@
+{
+  "name": "@haoxuan/ruoyi-api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "RuoYi 后端 API（用户、菜单、登录验证码）",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "^3.0.5"
+  }
+}

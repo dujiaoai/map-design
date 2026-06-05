@@ -1,0 +1,10 @@
+@import "../../../packages/ui/src/styles/globals.css";
+
+@source "./**/*.{ts,tsx}";
+@source "../../../packages/ui/src/**/*.{ts,tsx}";
+
+@layer base {
+  body {
+    @apply antialiased;
+  }
+}

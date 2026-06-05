@@ -7,9 +7,9 @@
 ## 命令
 
 ```bash
-pnpm --filter @haoxuan/saas-web dev
-pnpm --filter @haoxuan/ui ui:add dialog
-pnpm --filter @haoxuan/cloud-uav dev
+pnpm --filter @repo/saas-web dev
+pnpm --filter @repo/ui ui:add dialog
+pnpm --filter @repo/cloud-uav dev
 ```
 
 ## 依赖边界

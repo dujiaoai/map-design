@@ -15,5 +15,5 @@ SaaS 三 App 若放在 monorepo 根 `apps/web`、`apps/admin`，与 `yunyan-web`
 ## Consequences
 
 - 与遗留栈物理隔离，App 内可用短目录名 `web`、`admin`
-- UI 置于 `saas/packages/ui`（`@haoxuan/ui`），不复用 Vue `@taiyi/ui`
+- UI 置于 `saas/packages/ui`（`@repo/ui`），不复用 Vue `@taiyi/ui`
 - 路径略长，Vite alias 需相对 `saas/` 计算

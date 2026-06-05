@@ -1,4 +1,4 @@
-import { createApiClient } from '@haoxuan/api-client'
+import { createApiClient } from '@repo/api-client'
 
 import { auth } from '~/shared/auth/client'
 import { env } from '~/shared/config/env'

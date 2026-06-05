@@ -1,5 +1,5 @@
-import type { UserInfo } from '@haoxuan/ruoyi-api'
-import { RuoYiApiError } from '@haoxuan/ruoyi-api'
+import type { UserInfo } from '@repo/ruoyi-api'
+import { RuoYiApiError } from '@repo/ruoyi-api'
 
 import { useRuoYiProfileStore } from '~/entities/ruoyi-user'
 import { auth } from '~/shared/auth/instance'

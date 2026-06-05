@@ -1,5 +1,5 @@
 {
-  "name": "@haoxuan/saas",
+  "name": "@repo/saas",
   "version": "0.0.1",
   "private": true,
   "description": "SaaS 产品线 workspace（Biome lint/format）",

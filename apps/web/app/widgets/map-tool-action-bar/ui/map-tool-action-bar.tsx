@@ -1,4 +1,4 @@
-import { Button, cn } from '@haoxuan/ui'
+import { Button, cn } from '@repo/ui'
 import { LogOutIcon } from 'lucide-react'
 
 import { mockNavMainItems, resolveNavToolMeta } from '~/entities/navigation'

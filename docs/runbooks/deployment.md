@@ -3,8 +3,8 @@
 ## 构建
 
 ```bash
-pnpm --filter @haoxuan/saas-web build:airace
-pnpm --filter @haoxuan/cloud-uav build
+pnpm --filter @repo/saas-web build:airace
+pnpm --filter @repo/cloud-uav build
 ```
 
 产物：
@@ -31,7 +31,7 @@ location / {
 - 同时启动：
 
 ```bash
-pnpm --filter @haoxuan/cloud-uav dev
+pnpm --filter @repo/cloud-uav dev
 pnpm --filter @taiyi/yunyan-web dev:airace
 ```
 

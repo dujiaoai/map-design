@@ -2,7 +2,7 @@ import { queryClient } from '~/shared/lib/query-client'
 import { userInfoQueryOptions, userQueryKeys } from '~/shared/queries'
 import { useRuoYiProfileStore } from '~/entities/ruoyi-user'
 import { auth } from '~/shared/auth/instance'
-import type { UserInfo } from '@haoxuan/ruoyi-api'
+import type { UserInfo } from '@repo/ruoyi-api'
 
 function syncAuthSessionFromUserInfo(info: UserInfo) {
   const session = auth.getSession()

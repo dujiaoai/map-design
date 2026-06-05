@@ -1,4 +1,4 @@
-import { cn } from '@haoxuan/ui'
+import { cn } from '@repo/ui'
 import { type ComponentPropsWithoutRef, useMemo, useRef } from 'react'
 
 import { useMapWorkspaceStore } from '~/features/map-workspace'

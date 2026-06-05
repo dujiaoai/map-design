@@ -1,15 +1,15 @@
-# @haoxuan/saas-web
+# @repo/saas-web
 
-SaaS **租户工作台**（React Router 7.16 SPA），包名 `@haoxuan/saas-web`。
+SaaS **租户工作台**（React Router 7.16 SPA），包名 `@repo/saas-web`。
 
 ## 技术栈
 
 | 类别 | 选型 |
 |------|------|
 | 框架 | React 19 + React Router 7.16（`ssr: false`） |
-| UI | `@haoxuan/ui`（Tailwind 4 + shadcn） |
-| 数据 | TanStack Query + `@haoxuan/api-client` |
-| 鉴权 | `@haoxuan/auth`（Session / Tenant Provider、RBAC） |
+| UI | `@repo/ui`（Tailwind 4 + shadcn） |
+| 数据 | TanStack Query + `@repo/api-client` |
+| 鉴权 | `@repo/auth`（Session / Tenant Provider、RBAC） |
 | 表单 | React Hook Form + Zod（`features/profile`） |
 | Lint / Format | Biome（`saas/biome.json`） |
 | 测试 | Vitest + Testing Library |
@@ -43,22 +43,22 @@ app/
 在 monorepo 根目录：
 
 ```bash
-pnpm --filter @haoxuan/saas-web dev          # 开发（默认 5175）
-pnpm --filter @haoxuan/saas-web dev:airace   # airace 模式
-pnpm --filter @haoxuan/saas-web build
-pnpm --filter @haoxuan/saas-web typecheck
-pnpm --filter @haoxuan/saas-web lint          # Biome check（saas 全目录）
-pnpm --filter @haoxuan/saas-web lint:fix
-pnpm --filter @haoxuan/saas-web format
-pnpm --filter @haoxuan/saas-web validate      # typecheck + lint + test
+pnpm --filter @repo/saas-web dev          # 开发（默认 5175）
+pnpm --filter @repo/saas-web dev:airace   # airace 模式
+pnpm --filter @repo/saas-web build
+pnpm --filter @repo/saas-web typecheck
+pnpm --filter @repo/saas-web lint          # Biome check（saas 全目录）
+pnpm --filter @repo/saas-web lint:fix
+pnpm --filter @repo/saas-web format
+pnpm --filter @repo/saas-web validate      # typecheck + lint + test
 ```
 
 或根目录快捷脚本：`pnpm dev:saas-web`
 
 ## 鉴权与 API
 
-- **`@haoxuan/auth`**：`app/shared/auth/client.ts` 创建 `auth` 实例（`storageKeyPrefix: saas-web`）
-- **`@haoxuan/api-client`**：`app/shared/api/client.ts` 注入 token 与 401 刷新
+- **`@repo/auth`**：`app/shared/auth/client.ts` 创建 `auth` 实例（`storageKeyPrefix: saas-web`）
+- **`@repo/api-client`**：`app/shared/api/client.ts` 注入 token 与 401 刷新
 - 受保护路由：`layouts/app-layout.tsx` 调用 `auth.requireAuthenticated(redirect)`
 - `/login` 开发登录：`auth.devLogin()` 写入占位会话
 - 组件内：`useSession()`、`useTenant()`（须在 Provider 内）

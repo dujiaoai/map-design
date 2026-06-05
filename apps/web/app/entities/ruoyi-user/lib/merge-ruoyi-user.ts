@@ -1,4 +1,4 @@
-import type { RuoYiUser } from '@haoxuan/ruoyi-api'
+import type { RuoYiUser } from '@repo/ruoyi-api'
 
 import { isBlankAvatarValue } from './resolve-avatar-src'
 

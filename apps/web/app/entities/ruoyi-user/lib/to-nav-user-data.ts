@@ -1,5 +1,5 @@
-import type { NavUserData } from '@haoxuan/ui'
-import type { RuoYiUser } from '@haoxuan/ruoyi-api'
+import type { NavUserData } from '@repo/ui'
+import type { RuoYiUser } from '@repo/ruoyi-api'
 
 import { resolveAvatarSrc } from './resolve-avatar-src'
 

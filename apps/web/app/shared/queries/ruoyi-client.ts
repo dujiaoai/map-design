@@ -1,4 +1,4 @@
-import { createRuoYiClient } from '@haoxuan/ruoyi-api'
+import { createRuoYiClient } from '@repo/ruoyi-api'
 
 import { auth } from '~/shared/auth/client'
 import { env } from '~/shared/config/env'

@@ -35,7 +35,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: [
-      { find: '@haoxuan/ui', replacement: uiReactDir },
+      { find: '@repo/ui', replacement: uiReactDir },
       // shadcn 组件内 @/ 路径（避免被下方 cloud-plugin @/ 误解析）
       { find: /^@\/lib\/(.*)$/, replacement: `${uiReactDir}/src/lib/$1` },
       { find: /^@\//, replacement: `${path.resolve(rootDir, 'src')}/` },

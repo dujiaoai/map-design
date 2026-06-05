@@ -1,5 +1,5 @@
 {
-  "name": "@haoxuan/cloud-uav",
+  "name": "@repo/cloud-uav",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "preview": "vite preview --port 5174 --strictPort"
   },
   "dependencies": {
-    "@haoxuan/ui": "workspace:*",
+    "@repo/ui": "workspace:*",
     "react": "19.2.6",
     "react-dom": "19.2.6"
   },

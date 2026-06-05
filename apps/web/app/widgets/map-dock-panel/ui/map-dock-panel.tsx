@@ -1,4 +1,4 @@
-import { cn } from '@haoxuan/ui'
+import { cn } from '@repo/ui'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 
 import { mockDockModuleMeta } from '~/entities/navigation'

@@ -1,6 +1,6 @@
 # saas-marketing
 
-官网应用（`@haoxuan/saas-marketing`），**尚未 scaffold**。
+官网应用（`@repo/saas-marketing`），**尚未 scaffold**。
 
 ## 规划
 

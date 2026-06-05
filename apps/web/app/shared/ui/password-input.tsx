@@ -1,4 +1,4 @@
-import { cn } from '@haoxuan/ui'
+import { cn } from '@repo/ui'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { forwardRef, useState } from 'react'
 

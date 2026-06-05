@@ -8,7 +8,7 @@
 
 ```
 AppSidebar (widgets/app-sidebar)
-  → UiAppSidebar (@haoxuan/ui) + NavMain
+  → UiAppSidebar (@repo/ui) + NavMain
   → onNavSelect → createNavSelectHandler (features/map-workspace)
   → useMapWorkspaceStore (Zustand)
   → home.tsx 挂载的各 UI 载体组件
@@ -84,7 +84,7 @@ Store：`saas/apps/web/app/features/map-workspace/model/workspace-store.ts`
 | 名称 | 实现 | 遮罩 | 用途 |
 | --- | --- | --- | --- |
 | **地图工具条带** | 自定义 `<aside>` + CSS 动画 | 无 | `MapToolDrawerPanel`（导入、搜索） |
-| **Vaul Drawer** | `@haoxuan/ui` → vaul | 有 | 账号 `AccountSheet`、通知 `NotificationSheet` |
+| **Vaul Drawer** | `@repo/ui` → vaul | 有 | 账号 `AccountSheet`、通知 `NotificationSheet` |
 
 不要混用：地图 L4 条带**不要**改用 Vaul `Drawer`。
 

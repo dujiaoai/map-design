@@ -3,7 +3,7 @@ import {
   login as ruoyiLogin,
   type CaptchaResult,
   type LoginParams,
-} from '@haoxuan/ruoyi-api'
+} from '@repo/ruoyi-api'
 
 import { ruoyi } from '~/shared/queries/ruoyi-client'
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-import { useTenant } from '@haoxuan/auth'
+import { useTenant } from '@repo/auth'
 
 import { bootstrapAuthenticatedApp } from '~/shared/session/bootstrap-authenticated-app'
 import { invalidateSessionQueries } from '~/shared/queries/invalidate-session-queries'

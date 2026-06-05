@@ -1,4 +1,4 @@
-import { cn } from '@haoxuan/ui'
+import { cn } from '@repo/ui'
 
 import { mockNavMainItems, resolveNavToolMeta } from '~/entities/navigation'
 import { useMapWorkspaceStore } from '~/features/map-workspace'

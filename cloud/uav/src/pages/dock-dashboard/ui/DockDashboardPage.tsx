@@ -19,13 +19,13 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@haoxuan/ui'
+} from '@repo/ui'
 
 export function DockDashboardPage() {
   return (
     <main className="flex h-full min-h-48 flex-col items-center justify-center gap-4 p-6">
       <h1 className="text-lg font-semibold">机库云插件123234234234234</h1>
-      <p className="text-muted-foreground text-sm">shadcn Base UI · @haoxuan/ui</p>
+      <p className="text-muted-foreground text-sm">shadcn Base UI · @repo/ui</p>
       <Button>机库管理123</Button>
 
       <Tabs defaultValue="overview" className="w-[400px]">

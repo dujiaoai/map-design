@@ -1,4 +1,4 @@
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@haoxuan/ui'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@repo/ui'
 
 import { MapToolLifecycleSync, MapWorkspaceUrlSync } from '~/features/map-workspace'
 import { AppSidebar } from '~/widgets/app-sidebar'

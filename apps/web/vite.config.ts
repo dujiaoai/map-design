@@ -22,8 +22,8 @@ export default defineConfig(({ mode }) => {
     resolve: {
       tsconfigPaths: true,
       alias: [
-        { find: '@haoxuan/ui', replacement: uiDir },
-        { find: '@haoxuan/ruoyi-api', replacement: ruoyiApiDir },
+        { find: '@repo/ui', replacement: uiDir },
+        { find: '@repo/ruoyi-api', replacement: ruoyiApiDir },
         { find: /^@\/(.*)$/, replacement: `${uiDir}/src/$1` },
       ],
     },

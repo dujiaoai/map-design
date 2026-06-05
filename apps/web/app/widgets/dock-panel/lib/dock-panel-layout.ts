@@ -1,4 +1,4 @@
-import { cn } from '@haoxuan/ui'
+import { cn } from '@repo/ui'
 
 /** 标题栏基准 h-8(2rem)，加高 20% → 2.4rem */
 export const DOCK_PANEL_HEADER_HEIGHT_CLASS = 'h-[2.4rem]'

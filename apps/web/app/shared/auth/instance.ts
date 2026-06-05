@@ -1,4 +1,4 @@
-import { createAuth } from '@haoxuan/auth'
+import { createAuth } from '@repo/auth'
 
 import { useRuoYiProfileStore } from '~/entities/ruoyi-user'
 import { env } from '~/shared/config/env'

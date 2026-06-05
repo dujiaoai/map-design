@@ -12,9 +12,9 @@ SaaS 需区分公开官网、租户工作台、平台运营后台，安全域与
 
 三个独立 React Router 应用：
 
-- `saas/apps/marketing` — `@haoxuan/saas-marketing`
-- `saas/apps/web` — `@haoxuan/saas-web`
-- `saas/apps/admin` — `@haoxuan/saas-admin`
+- `saas/apps/marketing` — `@repo/saas-marketing`
+- `saas/apps/web` — `@repo/saas-web`
+- `saas/apps/admin` — `@repo/saas-admin`
 
 ## Consequences
 

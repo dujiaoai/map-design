@@ -1,4 +1,4 @@
-import { getMenuRouters } from '@haoxuan/ruoyi-api'
+import { getMenuRouters } from '@repo/ruoyi-api'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
 import { ruoyi } from '~/shared/queries/ruoyi-client'

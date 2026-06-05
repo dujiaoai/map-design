@@ -11,7 +11,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@haoxuan/ui'
+} from '@repo/ui'
 
 import { ProfileForm, ResetPasswordForm } from '~/features/account'
 import {

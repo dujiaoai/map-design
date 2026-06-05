@@ -4,7 +4,7 @@ import {
   DrawerDescription,
   DrawerHeader,
   DrawerTitle,
-} from '@haoxuan/ui'
+} from '@repo/ui'
 
 import { NotificationPanel } from '~/features/notifications'
 

@@ -1,6 +1,6 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import type { RuoYiUser } from '@haoxuan/ruoyi-api'
-import { Button, Input } from '@haoxuan/ui'
+import type { RuoYiUser } from '@repo/ruoyi-api'
+import { Button, Input } from '@repo/ui'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 

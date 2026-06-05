@@ -8,7 +8,7 @@
 | 路由 | React Router 7.16 Framework |
 | 构建 | Vite 8 |
 | 样式 | Tailwind CSS v4 |
-| 组件 | `@haoxuan/ui`（`saas/packages/ui`） |
+| 组件 | `@repo/ui`（`saas/packages/ui`） |
 
 不含 i18n，UI 固定中文。
 

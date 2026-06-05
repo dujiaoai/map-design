@@ -1,4 +1,4 @@
-import type { NavMainUiItem } from '@haoxuan/ui'
+import type { NavMainUiItem } from '@repo/ui'
 
 import type { NavMainItem } from '../model/types'
 import { getNavGroupLeaves } from './nav-leaves'

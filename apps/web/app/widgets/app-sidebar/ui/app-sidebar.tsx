@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react'
 import { useMemo, useState } from 'react'
 
-import { AppSidebar as UiAppSidebar } from '@haoxuan/ui'
+import { AppSidebar as UiAppSidebar } from '@repo/ui'
 import { useNavigate } from 'react-router'
 
 import {

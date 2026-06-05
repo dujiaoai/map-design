@@ -1,6 +1,6 @@
 # saas-admin
 
-平台运营后台（`@haoxuan/saas-admin`），**尚未 scaffold**。
+平台运营后台（`@repo/saas-admin`），**尚未 scaffold**。
 
 ## 规划
 

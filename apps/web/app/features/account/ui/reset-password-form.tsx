@@ -1,5 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import { Button } from '@haoxuan/ui'
+import { Button } from '@repo/ui'
 import { useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 

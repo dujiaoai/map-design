@@ -22,15 +22,15 @@
 ```
 saas/
 ├── apps/
-│   ├── web/                 @haoxuan/saas-web
+│   ├── web/                 @repo/saas-web
 │   ├── marketing/           待 scaffold
 │   └── admin/               待 scaffold
 ├── packages/
-│   ├── ui/                  @haoxuan/ui
-│   ├── auth/                @haoxuan/auth
-│   └── api-client/          @haoxuan/api-client
+│   ├── ui/                  @repo/ui
+│   ├── auth/                @repo/auth
+│   └── api-client/          @repo/api-client
 ├── cloud/
-│   └── uav/                 @haoxuan/cloud-uav
+│   └── uav/                 @repo/cloud-uav
 └── docs/
     ├── architecture/
     ├── adr/
@@ -58,14 +58,14 @@ saas/
 pnpm install
 
 # 租户 Web 工作台
-pnpm --filter @haoxuan/saas-web dev
+pnpm --filter @repo/saas-web dev
 
 # 机库云插件（需与 yunyan-web 宿主联调）
-pnpm --filter @haoxuan/cloud-uav dev
+pnpm --filter @repo/cloud-uav dev
 
 # SaaS 全目录 Biome
-pnpm --filter @haoxuan/saas check
-pnpm --filter @haoxuan/saas format
+pnpm --filter @repo/saas check
+pnpm --filter @repo/saas format
 
 # 宿主 + 插件并行
 pnpm run dev:yunyan-cloud-uav
@@ -73,8 +73,8 @@ pnpm run dev:yunyan-cloud-uav
 
 | 服务 | 端口 |
 | --- | --- |
-| `@haoxuan/saas-web` | 5175 |
-| `@haoxuan/cloud-uav` | 5174 |
+| `@repo/saas-web` | 5175 |
+| `@repo/cloud-uav` | 5174 |
 | `yunyan-web` 宿主 | 5103 |
 
 ---
@@ -83,13 +83,13 @@ pnpm run dev:yunyan-cloud-uav
 
 | 包名 | 路径 |
 | --- | --- |
-| `@haoxuan/ui` | `saas/packages/ui` |
-| `@haoxuan/auth` | `saas/packages/auth` |
-| `@haoxuan/api-client` | `saas/packages/api-client` |
-| `@haoxuan/saas-web` | `saas/apps/web` |
-| `@haoxuan/saas-marketing` | `saas/apps/marketing`（待建） |
-| `@haoxuan/saas-admin` | `saas/apps/admin`（待建） |
-| `@haoxuan/cloud-uav` | `saas/cloud/uav` |
+| `@repo/ui` | `saas/packages/ui` |
+| `@repo/auth` | `saas/packages/auth` |
+| `@repo/api-client` | `saas/packages/api-client` |
+| `@repo/saas-web` | `saas/apps/web` |
+| `@repo/saas-marketing` | `saas/apps/marketing`（待建） |
+| `@repo/saas-admin` | `saas/apps/admin`（待建） |
+| `@repo/cloud-uav` | `saas/cloud/uav` |
 
 Workspace：`pnpm-workspace.yaml` 含 `"saas/**"`。
 

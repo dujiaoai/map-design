@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { updateUserPassword, updateUserProfile, type RuoYiUser } from '@haoxuan/ruoyi-api'
+import { updateUserPassword, updateUserProfile, type RuoYiUser } from '@repo/ruoyi-api'
 
 import type { ProfileFormValues } from '~/features/account/model/account-schemas'
 import { refreshAuthenticatedUser } from '~/shared/session/refresh-authenticated-user'

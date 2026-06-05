@@ -1,4 +1,4 @@
-import type { RuoYiUser, UserInfo } from '@haoxuan/ruoyi-api'
+import type { RuoYiUser, UserInfo } from '@repo/ruoyi-api'
 import { create } from 'zustand'
 
 interface RuoYiProfileState {
@@ -17,7 +17,7 @@ const initialState = {
   hydrated: false,
 }
 
-/** RuoYi getInfo 结果：权限/RBAC 专用 store（与 @haoxuan/auth token session 分离） */
+/** RuoYi getInfo 结果：权限/RBAC 专用 store（与 @repo/auth token session 分离） */
 export const useRuoYiProfileStore = create<RuoYiProfileState>((set) => ({
   ...initialState,
 

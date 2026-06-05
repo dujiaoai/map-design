@@ -1,5 +1,5 @@
-import { SessionProvider, TenantProvider } from '@haoxuan/auth'
-import { TooltipProvider } from '@haoxuan/ui'
+import { SessionProvider, TenantProvider } from '@repo/auth'
+import { TooltipProvider } from '@repo/ui'
 import { QueryClientProvider } from '@tanstack/react-query'
 
 import { auth } from '~/shared/auth/client'

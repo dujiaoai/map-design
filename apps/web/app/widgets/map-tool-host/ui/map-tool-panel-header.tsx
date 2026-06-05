@@ -1,4 +1,4 @@
-import { cn } from '@haoxuan/ui'
+import { cn } from '@repo/ui'
 import { GripVerticalIcon, XIcon } from 'lucide-react'
 import type { ComponentPropsWithoutRef } from 'react'
 

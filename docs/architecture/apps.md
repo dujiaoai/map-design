@@ -5,7 +5,7 @@
 | 字段 | marketing | web | admin |
 | --- | --- | --- | --- |
 | 目录 | `saas/apps/marketing` | `saas/apps/web` | `saas/apps/admin` |
-| 包名 | `@haoxuan/saas-marketing` | `@haoxuan/saas-web` | `@haoxuan/saas-admin` |
+| 包名 | `@repo/saas-marketing` | `@repo/saas-web` | `@repo/saas-admin` |
 | 端口 dev | 5180 | 5175 | 5181 |
 | 渲染 | SSG / SSR 可选 | SPA（`ssr: false`） | SPA |
 | 路由 | React Router 7 | React Router 7 | React Router 7 |
@@ -24,7 +24,7 @@
 开发：
 
 ```bash
-pnpm --filter @haoxuan/saas-web dev
+pnpm --filter @repo/saas-web dev
 ```
 
 ## Admin（`admin.example.com`）
@@ -50,14 +50,14 @@ pnpm --filter @haoxuan/saas-web dev
 
 | 包名 | 路径 | 说明 |
 | --- | --- | --- |
-| `@haoxuan/cloud-uav` | `saas/cloud/uav` | 机库远程 ESM，供宿主动态加载 |
+| `@repo/cloud-uav` | `saas/cloud/uav` | 机库远程 ESM，供宿主动态加载 |
 
 宿主通过 `/yunyan-cloud-uav/` 代理加载（见 `apps/yunyan-web` vite proxy + `loadCloudPluginUav.ts`）。
 
 开发插件：
 
 ```bash
-pnpm --filter @haoxuan/cloud-uav dev
+pnpm --filter @repo/cloud-uav dev
 ```
 
 需与宿主（5103）同时运行，插件 dev 端口 **5174**。

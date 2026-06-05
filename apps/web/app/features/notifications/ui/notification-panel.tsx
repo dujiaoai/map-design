@@ -1,4 +1,4 @@
-import { Button, cn } from '@haoxuan/ui'
+import { Button, cn } from '@repo/ui'
 import { useState } from 'react'
 
 import {

@@ -1,4 +1,4 @@
-import { cn } from '@haoxuan/ui'
+import { cn } from '@repo/ui'
 import { Maximize2Icon, Minimize2Icon, XIcon } from 'lucide-react'
 
 import {

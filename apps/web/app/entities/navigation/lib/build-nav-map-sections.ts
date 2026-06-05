@@ -1,4 +1,4 @@
-import type { NavMapSectionUi } from '@haoxuan/ui'
+import type { NavMapSectionUi } from '@repo/ui'
 
 import {
   DEFAULT_TENANT_FEATURES,

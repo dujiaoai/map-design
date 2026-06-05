@@ -1,4 +1,4 @@
-import type { MenuRoute } from '@haoxuan/ruoyi-api'
+import type { MenuRoute } from '@repo/ruoyi-api'
 
 export interface NavItem {
   id: string

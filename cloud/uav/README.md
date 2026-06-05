@@ -33,22 +33,22 @@ sequenceDiagram
 | UI 框架 | React 19.2.6、TypeScript                                                                 |
 | 构建    | Vite **8.0.13**（Rolldown），ESM 多入口（`assets/registry.js` + `assets/{moduleId}.js`） |
 | 样式    | Tailwind CSS v4（`@tailwindcss/vite`）                                                   |
-| 组件    | shadcn/ui + Base UI（`@haoxuan/ui`，style: `base-vega`，源码位于 `packages/ui-react`）   |
+| 组件    | shadcn/ui + Base UI（`@repo/ui`，style: `base-vega`，源码位于 `packages/ui-react`）   |
 
 ### 构建与 UI 配置
 
 `vite.config.ts` 已落地，关键配置如下：
 
-- **`@haoxuan/ui`**：dev 通过 alias 指向 `packages/ui-react` 源码；`@/lib/*` 解析到 ui-react 内部路径，避免与插件 `@/` 冲突
+- **`@repo/ui`**：dev 通过 alias 指向 `packages/ui-react` 源码；`@/lib/*` 解析到 ui-react 内部路径，避免与插件 `@/` 冲突
 - **`esbuild.jsx: 'automatic'`**：不用 `@vitejs/plugin-react`（外部宿主无法注入 Refresh preamble）
 - **`Drawer` 默认 `autoFocus`**：打开抽屉时焦点移入内容区，避免微前端场景下 `aria-hidden` 与焦点冲突
 
-### UI 组件（`@haoxuan/ui`）
+### UI 组件（`@repo/ui`）
 
 在 **`packages/ui-react`** 维护 shadcn Base UI 组件，插件侧直接 import：
 
 ```tsx
-import { Button, Drawer, DrawerCloseButton } from "@haoxuan/ui"
+import { Button, Drawer, DrawerCloseButton } from "@repo/ui"
 ```
 
 | 场景                              | 推荐写法                                                          | 说明                                                           |
@@ -60,7 +60,7 @@ import { Button, Drawer, DrawerCloseButton } from "@haoxuan/ui"
 添加新组件：
 
 ```bash
-pnpm --filter @haoxuan/ui ui:add button drawer
+pnpm --filter @repo/ui ui:add button drawer
 ```
 
 ## 部署

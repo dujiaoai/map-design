@@ -1,3 +1,4 @@
+import { MockModuleContent } from '~/entities/mock-workspace-content'
 import { mockDockModuleMeta } from '~/entities/navigation'
 import { useMapWorkspaceStore } from '~/features/map-workspace'
 import {
@@ -8,7 +9,7 @@ import {
   resolveModuleEdgeShortLabel,
 } from '~/widgets/dock-panel'
 
-/** 机库模块左侧固定 Dock（与地图业务 Dock 并列，互不挤占状态） */
+/** 机库模块左侧固定 Dock（与非数据业务模块全局互斥） */
 export function MapDockPanel({ hidden = false }: { hidden?: boolean }) {
   const activeDockModuleId = useMapWorkspaceStore((state) => state.activeDockModuleId)
   const collapsed = useMapWorkspaceStore((state) => state.dockPanelCollapsed)
@@ -45,9 +46,7 @@ export function MapDockPanel({ hidden = false }: { hidden?: boolean }) {
         ) : null
       }
     >
-      <div className="text-muted-foreground flex-1 overflow-y-auto p-4 text-sm">
-        机库模块占位：{meta.title}（moduleId: {activeDockModuleId}）
-      </div>
+      <MockModuleContent moduleId={activeDockModuleId} title={meta.title} />
     </DockPanelFrame>
   )
 }
@@ -57,8 +56,13 @@ export function MapDockPanelEdge() {
   const activeDockModuleId = useMapWorkspaceStore((state) => state.activeDockModuleId)
   const collapsed = useMapWorkspaceStore((state) => state.dockPanelCollapsed)
   const setDockPanelCollapsed = useMapWorkspaceStore((state) => state.setDockPanelCollapsed)
+  const activeModuleId = useMapWorkspaceStore((state) => state.activeModuleId)
+  const modulePanelCollapsed = useMapWorkspaceStore((state) => state.modulePanelCollapsed)
+  const activeDataModuleId = useMapWorkspaceStore((state) => state.activeDataModuleId)
+  const dataModulePanelCollapsed = useMapWorkspaceStore((state) => state.dataModulePanelCollapsed)
+  const contextPanelPresent = useMapWorkspaceStore((state) => state.contextPanelPresent)
 
-  if (!activeDockModuleId || !collapsed) {
+  if (!activeDockModuleId || !collapsed || contextPanelPresent) {
     return null
   }
 
@@ -67,12 +71,17 @@ export function MapDockPanelEdge() {
     return null
   }
 
+  const workspaceEdgeVisible = Boolean(activeModuleId && modulePanelCollapsed)
+  const dataEdgeVisible = Boolean(activeDataModuleId && dataModulePanelCollapsed)
+  const stackCount = 1 + Number(workspaceEdgeVisible) + Number(dataEdgeVisible)
+
   return (
     <DockPanelExpandEdge
       label={`展开${meta.title}`}
       shortLabel={resolveModuleEdgeShortLabel(activeDockModuleId, meta.title)}
       icon={resolveDockModuleEdgeIcon(activeDockModuleId)}
       stackIndex={0}
+      stackCount={stackCount}
       onClick={() => setDockPanelCollapsed(false)}
     />
   )

@@ -58,6 +58,18 @@
 
 改 snap 行为只改 `surface-drag-math.ts`，并跑 `surface-drag-math.test.ts`。
 
+## 地图工具浮层滚动（防反复出现滚动条）
+
+| 层级 | 组件 / 类 | 职责 |
+| --- | --- | --- |
+| 外壳 | `mapToolPanelShellClass` | `max-h` + `flex flex-col overflow-hidden` + `min-h-0` |
+| 唯一滚动层 | `MapToolPanelBody`（`map-tool-panel-header.tsx`） | `min-h-0 flex-1 overflow-y-auto` + `.map-tool-panel-body` 隐藏滚动条 |
+| 工具内容根 | `MockToolPanelRoot` | 仅 `space-y-3 text-sm`，**禁止** `overflow-y-auto` |
+
+`movable-tool-panel` 与 `map-tool-anchor-column` 已在 header 下包裹 `MapToolPanelBody`；新增 mock 工具内容请用 `MockToolPanelRoot`，勿在根节点加滚动。
+
+回归：`pnpm --filter @repo/saas-web test tool-content-scroll-policy`
+
 ## CSS 类名
 
 拖拽中元素可加：

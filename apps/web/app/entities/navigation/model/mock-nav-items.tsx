@@ -144,6 +144,13 @@ export const mockNavDataItems: NavMainItem[] = [
     moduleId: 'thematic',
   },
   {
+    id: 'module-my-favorites',
+    title: '我的收藏',
+    icon: <BookmarkIcon />,
+    kind: 'map-module',
+    moduleId: 'my-favorites',
+  },
+  {
     id: 'module-spatial-analysis',
     title: '做分析',
     icon: <BarChart3Icon />,
@@ -185,13 +192,6 @@ export const mockNavOpsItems: NavMainItem[] = [
     icon: <FolderKanbanIcon />,
     kind: 'map-module',
     moduleId: 'view-project',
-  },
-  {
-    id: 'module-my-favorites',
-    title: '我的收藏',
-    icon: <BookmarkIcon />,
-    kind: 'map-module',
-    moduleId: 'my-favorites',
   },
   {
     id: 'module-flight-ledger',
@@ -448,7 +448,7 @@ export const mockDockModuleMeta: Record<string, MockDockModuleMeta> = {
 
 export const mockModuleMeta: Record<string, MockModuleMeta> = {
   'view-project': { title: '看项目', segment: 'ops' },
-  'my-favorites': { title: '我的收藏', segment: 'ops' },
+  'my-favorites': { title: '我的收藏', segment: 'layer' },
   thematic: { title: '专题', segment: 'layer' },
   'flight-ledger': { title: '飞行台账', segment: 'ops' },
   'flight-ai-alerts': { title: 'AI事件警告', segment: 'ops' },

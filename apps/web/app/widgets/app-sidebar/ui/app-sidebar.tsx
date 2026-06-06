@@ -68,7 +68,7 @@ export function AppSidebar(props: ComponentProps<typeof UiAppSidebar>) {
       hideFooter
       brand={{
         logo: <WorkspaceBrandLogo />,
-        title: '云眼平台',
+        title: '云眼综合服务平台',
       }}
       navMapSections={navMapSections}
       onNavSelect={handleNavSelect}

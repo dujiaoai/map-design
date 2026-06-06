@@ -52,6 +52,8 @@ Mock 菜单：`apps/web/app/entities/navigation/model/mock-nav-items.tsx`
 
 **pluginToolId** 与 `packages-map/map-core` 常量对齐（如 `comparison-plugin`、`ortho-imagery-comparison-plugin`），见 `map-plugin-registry.ts`。
 
+完整 **52 个**插件能力说明、类型（tool / display / map-chrome 等）与 saas-web 接入状态见 [map-plugins-catalog.md](./map-plugins-catalog.md)。
+
 ## 地图工具 UI 载体 `MapToolPresentation`
 
 同一 `NavMainItemKind = map-tool` 下，按 `mockToolMeta.presentation` 与 `coordinatorGroup` 分流。

@@ -103,6 +103,23 @@ interface MapPluginBridge {
 - `isKnownPluginToolId(id)` — DEV 警告未知 ID
 - 未来扩展：lazy entry 映射、版本兼容性检查
 
+**完整能力目录**（52 个插件 Skill、类型、接入状态）：[map-plugins-catalog.md](./map-plugins-catalog.md)。
+
+当前 registry 仅登记侧栏 mock 中出现的 11 个 `pluginToolId`；其余插件在 Skill 包中有产品契约，接入 MapProvider 时再扩展登记。
+
+## 宿主契约与插件 Skill
+
+Map Tool 的真实运行依赖 **宿主能力**（Coordinator、Modify 槽位、lazyEntry），由 Skill `map-workspace-host-react` 定义：
+
+| 主题 | 文档 / Skill |
+| --- | --- |
+| 宿主接口、生命周期、Modify 互斥 | `.cursor/skills/map-plugins-pack/map-workspace-host-react/` |
+| 全部插件分类与 toolId | [map-plugins-catalog.md](./map-plugins-catalog.md) |
+| 单插件产品契约 | `.cursor/skills/map-plugin-{name}/` |
+| 索引 | `.cursor/skills/map-plugins-index/` |
+
+Phase C 接入时：MapProvider 实现 HostCapabilities 语义 → `setMapPluginBridge(realBridge)` → 按 registry / Skill 中的 toolId lazy import。
+
 ## URL 同步
 
 `features/map-workspace/lib/workspace-url.ts` + `MapWorkspaceUrlSync` 组件：
@@ -133,7 +150,10 @@ interface MapPluginBridge {
 ## 相关文档
 
 - [map-workspace-ui.md](./map-workspace-ui.md) — UI 载体详细规范
+- [map-plugins-catalog.md](./map-plugins-catalog.md) — **52 个 map-plugin Skill 能力目录与接入状态**
 - [frontend.md](./frontend.md) — FSD 分层
 - `.cursor/rules/saas-map-workspace-ui.mdc` — 地图 UI 载体
 - `.cursor/rules/saas-map-plugin-integration.mdc` — bridge / registry
-- Skill `.cursor/skills/map-plugin-integration/` — Cursor 编辑规则
+- Skill `.cursor/skills/map-plugin-integration/` — Cursor 桥接编辑规则
+- Skill `.cursor/skills/map-plugins-index/` — 插件 Skill 索引
+- Skill `.cursor/skills/map-plugins-pack/map-workspace-host-react/` — 宿主契约

@@ -1,5 +1,6 @@
 export { createNavSelectHandler } from './lib/handle-nav-select'
 export {
+  buildWorkspaceBreadcrumbTrail,
   resolveWorkspaceContext,
   type WorkspaceContextSnapshot,
 } from './lib/resolve-workspace-context'
@@ -17,10 +18,18 @@ export { MAP_PLUGIN_TOOL_REGISTRY, isKnownPluginToolId } from './lib/map-plugin-
 export {
   buildWorkspaceSearchParams,
   parseWorkspaceUrl,
+  selectWorkspaceLocation,
   type ActiveDrawerTool,
   type ActiveMapTool,
   type MapWorkspaceUrlState,
+  type WorkspaceLocationState,
 } from './lib/workspace-url'
+export {
+  buildWorkspaceModulePath,
+  parseWorkspaceModulePath,
+  type WorkspaceModuleRoute,
+  type WorkspaceModuleSection,
+} from './lib/workspace-module-route'
 export {
   selectActiveNavItemIds,
   useActiveNavItemIds,

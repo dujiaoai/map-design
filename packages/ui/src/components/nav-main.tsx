@@ -72,6 +72,49 @@ function sectionHasActiveItem(items: NavMainUiItem[]): boolean {
   )
 }
 
+/** 工作台侧栏：点击涟漪坐标 + 激活脉冲（样式见 saas-web home.css） */
+function useNavMenuInteraction(isActive?: boolean) {
+  const [flash, setFlash] = React.useState(false)
+  const [rip, setRip] = React.useState({ x: 50, y: 50 })
+  const [activePulse, setActivePulse] = React.useState(false)
+
+  React.useEffect(() => {
+    if (!isActive) {
+      return
+    }
+    setActivePulse(true)
+    const timer = window.setTimeout(() => setActivePulse(false), 640)
+    return () => window.clearTimeout(timer)
+  }, [isActive])
+
+  const handleSelect = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>, onSelect: () => void) => {
+      const rect = event.currentTarget.getBoundingClientRect()
+      setRip({
+        x: ((event.clientX - rect.left) / rect.width) * 100,
+        y: ((event.clientY - rect.top) / rect.height) * 100,
+      })
+      setFlash(true)
+      onSelect()
+      window.setTimeout(() => setFlash(false), 420)
+    },
+    [],
+  )
+
+  return {
+    fxClassName: cn(
+      "ws-nav-interactive",
+      flash && "ws-nav-flash",
+      activePulse && "ws-nav-active-pulse",
+    ),
+    fxStyle: {
+      "--ws-nav-rip-x": `${rip.x}%`,
+      "--ws-nav-rip-y": `${rip.y}%`,
+    } as React.CSSProperties,
+    handleSelect,
+  }
+}
+
 function NavMainLeafItem({
   item,
   onSelectItem,
@@ -79,18 +122,46 @@ function NavMainLeafItem({
   item: NavMainUiItem
   onSelectItem: (id: string) => void
 }) {
+  const { fxClassName, fxStyle, handleSelect } = useNavMenuInteraction(item.isActive)
+
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
         tooltip={item.title}
         isActive={item.isActive}
+        className={fxClassName}
+        style={fxStyle}
         render={<button type="button" />}
-        onClick={() => onSelectItem(item.id)}
+        onClick={(event) => handleSelect(event, () => onSelectItem(item.id))}
       >
         {item.icon}
         <span>{item.title}</span>
       </SidebarMenuButton>
     </SidebarMenuItem>
+  )
+}
+
+function NavMainSubLeafItem({
+  subItem,
+  onSelectItem,
+}: {
+  subItem: { id: string; title: string; isActive?: boolean }
+  onSelectItem: (id: string) => void
+}) {
+  const { fxClassName, fxStyle, handleSelect } = useNavMenuInteraction(subItem.isActive)
+
+  return (
+    <SidebarMenuSubItem>
+      <SidebarMenuSubButton
+        isActive={subItem.isActive}
+        className={fxClassName}
+        style={fxStyle}
+        render={<button type="button" />}
+        onClick={(event) => handleSelect(event, () => onSelectItem(subItem.id))}
+      >
+        <span>{subItem.title}</span>
+      </SidebarMenuSubButton>
+    </SidebarMenuSubItem>
   )
 }
 
@@ -126,15 +197,11 @@ function NavMainCollapsibleItem({
       <CollapsibleContent>
         <SidebarMenuSub>
           {item.items?.map((subItem) => (
-            <SidebarMenuSubItem key={subItem.id}>
-              <SidebarMenuSubButton
-                isActive={subItem.isActive}
-                render={<button type="button" />}
-                onClick={() => onSelectItem(subItem.id)}
-              >
-                <span>{subItem.title}</span>
-              </SidebarMenuSubButton>
-            </SidebarMenuSubItem>
+            <NavMainSubLeafItem
+              key={subItem.id}
+              subItem={subItem}
+              onSelectItem={onSelectItem}
+            />
           ))}
         </SidebarMenuSub>
       </CollapsibleContent>
@@ -198,7 +265,7 @@ function NavMainCollapsibleSection({
           <SidebarGroupLabel
             render={<button type="button" />}
             className={cn(
-              "h-8 min-h-8 w-full shrink-0 cursor-pointer border-0 bg-transparent py-0 leading-none",
+              "ws-nav-section-label h-8 min-h-8 w-full shrink-0 cursor-pointer border-0 bg-transparent py-0 leading-none",
               "group-data-[collapsible=icon]:pointer-events-none group-data-[collapsible=icon]:opacity-0",
             )}
             aria-label={open ? `${groupLabel}收起` : `${groupLabel}展开`}

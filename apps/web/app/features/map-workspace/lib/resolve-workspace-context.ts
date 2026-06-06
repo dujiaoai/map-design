@@ -1,4 +1,5 @@
 import {
+  findNavSectionLabelByNavItemId,
   findNavSubItem,
   mockDockModuleMeta,
   mockModuleMeta,
@@ -9,7 +10,11 @@ import {
 import type { MapWorkspaceStore } from '../model/workspace-store'
 
 export interface WorkspaceContextSnapshot {
-  /** 面包屑末级标签（无激活上下文时为 null） */
+  /** 面包屑二级：侧栏段名（如「数据」「机库」） */
+  sectionLabel: string | null
+  /** 面包屑三级：当前模块/菜单项名（无选中时为默认工作台名） */
+  moduleLabel: string
+  /** 面包屑末级：工具/面板等上下文（无则为 null） */
   contextLabel: string | null
   /** 状态栏摘要：当前工具 / 模块 / 面板 */
   statusSummary: string | null
@@ -20,6 +25,9 @@ type WorkspaceContextState = Pick<
   | 'activeMapTool'
   | 'activeDrawerTool'
   | 'activePanelTools'
+  | 'activeDataModuleNavId'
+  | 'activeDataModuleId'
+  | 'dataModulePanelCollapsed'
   | 'activeDockModuleNavId'
   | 'activeDockModuleId'
   | 'dockPanelCollapsed'
@@ -64,6 +72,11 @@ function collectStatusLabels(state: WorkspaceContextState): string[] {
   for (const panel of state.activePanelTools) {
     labels.push(resolveToolTitle(panel.navItemId, panel.toolId))
   }
+  if (state.activeDataModuleId && state.activeDataModuleNavId && !state.dataModulePanelCollapsed) {
+    labels.push(
+      resolveBusinessModuleTitle(state.activeDataModuleNavId, state.activeDataModuleId),
+    )
+  }
   if (state.activeDockModuleId && state.activeDockModuleNavId && !state.dockPanelCollapsed) {
     labels.push(
       resolveDockModuleTitle(state.activeDockModuleNavId, state.activeDockModuleId),
@@ -76,6 +89,34 @@ function collectStatusLabels(state: WorkspaceContextState): string[] {
   }
 
   return labels
+}
+
+const DEFAULT_MODULE_LABEL = '地图工作台'
+
+function resolveSectionLabel(state: WorkspaceContextState): string | null {
+  if (state.activeModuleNavId) {
+    return findNavSectionLabelByNavItemId(state.activeModuleNavId)
+  }
+  if (state.activeDockModuleNavId) {
+    return findNavSectionLabelByNavItemId(state.activeDockModuleNavId)
+  }
+  if (state.activeDataModuleNavId) {
+    return findNavSectionLabelByNavItemId(state.activeDataModuleNavId)
+  }
+  return null
+}
+
+function resolveModuleLabel(state: WorkspaceContextState): string {
+  if (state.activeModuleId && state.activeModuleNavId) {
+    return resolveBusinessModuleTitle(state.activeModuleNavId, state.activeModuleId)
+  }
+  if (state.activeDockModuleId && state.activeDockModuleNavId) {
+    return resolveDockModuleTitle(state.activeDockModuleNavId, state.activeDockModuleId)
+  }
+  if (state.activeDataModuleId && state.activeDataModuleNavId) {
+    return resolveBusinessModuleTitle(state.activeDataModuleNavId, state.activeDataModuleId)
+  }
+  return DEFAULT_MODULE_LABEL
 }
 
 function resolvePrimaryContextLabel(state: WorkspaceContextState): string | null {
@@ -100,6 +141,9 @@ function resolvePrimaryContextLabel(state: WorkspaceContextState): string | null
   if (state.activeModuleId && state.activeModuleNavId && !state.modulePanelCollapsed) {
     return resolveBusinessModuleTitle(state.activeModuleNavId, state.activeModuleId)
   }
+  if (state.activeDataModuleId && state.activeDataModuleNavId && !state.dataModulePanelCollapsed) {
+    return resolveBusinessModuleTitle(state.activeDataModuleNavId, state.activeDataModuleId)
+  }
   return null
 }
 
@@ -107,7 +151,29 @@ export function resolveWorkspaceContext(state: WorkspaceContextState): Workspace
   const statusLabels = collectStatusLabels(state)
 
   return {
+    sectionLabel: resolveSectionLabel(state),
+    moduleLabel: resolveModuleLabel(state),
     contextLabel: resolvePrimaryContextLabel(state),
     statusSummary: statusLabels.length > 0 ? statusLabels.join(' · ') : null,
   }
+}
+
+/** 顶栏面包屑：云眼综合服务平台之后的层级（如 数据 → 专题 → 测距） */
+export function buildWorkspaceBreadcrumbTrail(
+  snapshot: Pick<WorkspaceContextSnapshot, 'sectionLabel' | 'moduleLabel' | 'contextLabel'>,
+): string[] {
+  const trail: string[] = []
+
+  if (snapshot.sectionLabel && snapshot.moduleLabel !== DEFAULT_MODULE_LABEL) {
+    trail.push(snapshot.sectionLabel)
+    trail.push(snapshot.moduleLabel)
+  } else {
+    trail.push(snapshot.moduleLabel)
+  }
+
+  if (snapshot.contextLabel && snapshot.contextLabel !== snapshot.moduleLabel) {
+    trail.push(snapshot.contextLabel)
+  }
+
+  return trail
 }

@@ -1,6 +1,6 @@
 import { cn } from '@repo/ui'
 import { GripVerticalIcon, XIcon } from 'lucide-react'
-import type { ComponentPropsWithoutRef } from 'react'
+import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 
 import {
   DOCK_PANEL_HEADER_HEIGHT_CLASS,
@@ -76,12 +76,25 @@ export function MapToolPanelHeader({
   )
 }
 
+/**
+ * 地图工具浮层唯一滚动层。
+ * 外壳 `mapToolPanelShellClass` 限高 + overflow-hidden；内容区 `min-h-0 flex-1` 承接滚动。
+ * 各 Mock 工具内容禁止根级 `overflow-y-auto`（见 tool-content-scroll-policy.test.ts）。
+ */
+export function MapToolPanelBody({ children }: { children: ReactNode }) {
+  return (
+    <div className="map-tool-panel-body min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2">
+      {children}
+    </div>
+  )
+}
+
 /** 地图工具浮层外壳：复用 cc-glass-panel 浅/深主题（见 home.css） */
 export function mapToolPanelShellClass(options: {
   presentation: 'movable-panel' | 'anchor'
 }): string {
   return cn(
-    'cc-glass-panel text-foreground flex max-h-[min(420px,50vh)] shrink-0 flex-col overflow-hidden rounded-lg backdrop-blur-sm',
+    'cc-glass-panel text-foreground flex min-h-0 max-h-[min(420px,50vh)] shrink-0 flex-col overflow-hidden rounded-lg backdrop-blur-sm',
     options.presentation === 'movable-panel' && 'border-primary/30',
   )
 }

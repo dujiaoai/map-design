@@ -1,11 +1,17 @@
 import { cn } from '@repo/ui'
 
+import { MockToolContent } from '~/entities/mock-workspace-content'
+
 import {
   formatVariantLabel,
   mapToolColumnWidth,
   type MapToolEntry,
 } from '../lib/build-map-tool-entries'
-import { MapToolPanelHeader, mapToolPanelShellClass } from './map-tool-panel-header'
+import {
+  MapToolPanelBody,
+  MapToolPanelHeader,
+  mapToolPanelShellClass,
+} from './map-tool-panel-header'
 
 function ToolPanelCardBody({
   entry,
@@ -27,12 +33,15 @@ function ToolPanelCardBody({
         onClose={onClose}
         reserveDragSlot
       />
-      <div className="text-muted-foreground space-y-1 overflow-y-auto px-3 py-2 text-sm">
-        <p>
-          地图互斥工具占位：{entry.title}（plugin: {entry.pluginToolId}）
-        </p>
-        <p className="text-xs">锚点面板同侧垂直堆叠；退出请用底栏或侧栏再次点击。</p>
-      </div>
+      <MapToolPanelBody>
+        <MockToolContent
+          toolId={entry.toolId}
+          navItemId={entry.navItemId}
+          title={entry.title}
+          pluginToolId={entry.pluginToolId}
+          variantKey={entry.variantKey}
+        />
+      </MapToolPanelBody>
     </aside>
   )
 }

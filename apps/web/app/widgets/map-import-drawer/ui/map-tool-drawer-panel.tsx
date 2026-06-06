@@ -1,5 +1,6 @@
 import { cn } from '@repo/ui'
 
+import { MockDrawerToolContent } from '~/entities/mock-workspace-content'
 import { mockNavMainItems, resolveNavToolMeta } from '~/entities/navigation'
 import { useMapWorkspaceStore } from '~/features/map-workspace'
 import { DockPanelHeader } from '~/widgets/dock-panel'
@@ -14,9 +15,8 @@ import {
  */
 export function MapToolDrawerPanel() {
   const activeDrawerTool = useMapWorkspaceStore((state) => state.activeDrawerTool)
-  const globalSearchQuery = useMapWorkspaceStore((state) => state.globalSearchQuery)
   const toggleMapTool = useMapWorkspaceStore((state) => state.toggleMapTool)
-  const { panel, open, exiting, mounted } = useMapToolDrawerTransition(activeDrawerTool)
+  const { panel, exiting, mounted } = useMapToolDrawerTransition(activeDrawerTool)
 
   if (!mounted || !panel) {
     return null
@@ -24,12 +24,13 @@ export function MapToolDrawerPanel() {
 
   const meta = resolveNavToolMeta(mockNavMainItems, panel.navItemId)
   const title = meta?.title ?? panel.toolId
+  const navItemId = panel.navItemId
 
   function handleClose() {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur()
     }
-    toggleMapTool(panel.navItemId)
+    toggleMapTool(navItemId)
   }
 
   return (
@@ -50,26 +51,12 @@ export function MapToolDrawerPanel() {
       inert={exiting ? true : undefined}
     >
       <DockPanelHeader title={title} onClose={handleClose} />
-      <div className="text-muted-foreground flex-1 space-y-2 overflow-y-auto p-4 text-sm">
-        <p className="text-foreground/80 text-xs">
-          地图交互区保持可用；本面板仅占用右侧条带（toolId: {panel.toolId}）。
-        </p>
-        <p>pluginToolId: {panel.pluginToolId}</p>
-        {panel.toolId === 'import-file' ? (
-          <p>支持上传文件、目录选择与标绘入库；拾取/预览在地图画布完成。</p>
-        ) : panel.toolId === 'global-search' ? (
-          <>
-            <p>多源检索、历史记录与高级筛选在此展示；快捷候选已在顶栏下拉中呈现。</p>
-            {globalSearchQuery.trim() ? (
-              <p className="text-foreground/70 rounded-md border border-border px-2 py-1.5 text-xs dark:border-white/10">
-                当前检索：<span className="text-foreground">{globalSearchQuery.trim()}</span>
-              </p>
-            ) : (
-              <p className="text-xs">在顶栏输入关键词，Enter 或「查看全部结果」打开本面板。</p>
-            )}
-          </>
-        ) : null}
-      </div>
+      <MockDrawerToolContent
+        toolId={panel.toolId}
+        navItemId={panel.navItemId}
+        title={title}
+        pluginToolId={panel.pluginToolId}
+      />
     </aside>
   )
 }

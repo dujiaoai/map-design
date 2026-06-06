@@ -1,56 +1,59 @@
 import { useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 
 import {
-  mergeWorkspaceSearchParams,
   parseWorkspaceUrl,
-  searchParamsEqual,
-  selectWorkspaceUrlState,
-  workspaceUrlStatesEqual,
+  selectWorkspaceLocation,
+  workspaceLocationsEqual,
 } from './workspace-url'
 import { useMapWorkspaceStore } from '../model/workspace-store'
 
 /**
- * 地图工作台 ↔ URL query 双向同步
+ * 地图工作台 ↔ URL（子路由 + query）双向同步
+ *
+ * Path 约定（模块子路由，非数据段全局互斥）：
+ * - /data/:moduleId — 数据段业务模块
+ * - /uav/:moduleId — 机库模块
+ * - /ops/:moduleId — 运营模块
+ * - /panorama/:moduleId — 全景模块
  *
  * Query 约定：
- * - tool: 当前地图工具 toolId（互斥；导入同为 tool=import-file）
- * - variant: drawLine | drawSurface（区分测距/绘线、测面/绘面）
- * - panels: 逗号分隔的 panel 工具 toolId（可多开）
- * - uav: 当前机库子模块 moduleId（组内互斥，与 tool/module 不互斥）
- * - uavDock=collapsed: 机库 Dock 收起（需配合 uav）
- * - module: 当前地图业务 moduleId
- * - dock=collapsed: 业务 Dock 收起（需配合 module）
+ * - tool / variant / panels — 地图工具（同前）
+ * - data — 与非数据子路由并存时的数据段 moduleId
+ * - dataDock=collapsed — 数据段 Dock 收起
+ * - dock=collapsed — 非数据段 Dock 收起
  */
 export function useMapWorkspaceUrlSync() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
+  const navigate = useNavigate()
   const applyingFromUrl = useRef(false)
 
   useEffect(() => {
     applyingFromUrl.current = true
-    const parsed = parseWorkspaceUrl(searchParams)
-    const current = selectWorkspaceUrlState(useMapWorkspaceStore.getState())
-
-    if (!workspaceUrlStatesEqual(parsed, current)) {
-      useMapWorkspaceStore.getState().applyFromUrl(parsed)
-    }
-
+    const parsed = parseWorkspaceUrl(
+      new URLSearchParams(location.search),
+      location.pathname,
+    )
+    useMapWorkspaceStore.getState().applyFromUrl(parsed)
     applyingFromUrl.current = false
-  }, [searchParams])
+  }, [location.pathname, location.search])
 
   useEffect(() => {
-    return useMapWorkspaceStore.subscribe((state, prevState) => {
+    return useMapWorkspaceStore.subscribe((state) => {
       if (applyingFromUrl.current) return
 
-      const next = selectWorkspaceUrlState(state)
-      const prev = selectWorkspaceUrlState(prevState)
-      if (workspaceUrlStatesEqual(next, prev)) return
+      const next = selectWorkspaceLocation(state)
+      const current = {
+        pathname: window.location.pathname,
+        searchParams: new URLSearchParams(window.location.search),
+      }
+      if (workspaceLocationsEqual(next, current)) return
 
-      const currentParams = new URLSearchParams(window.location.search)
-      const nextParams = mergeWorkspaceSearchParams(currentParams, next)
-      if (searchParamsEqual(nextParams, currentParams)) return
-
-      setSearchParams(nextParams, { replace: true })
+      const search = next.searchParams.toString()
+      void navigate(
+        { pathname: next.pathname, search: search ? `?${search}` : '' },
+        { replace: true },
+      )
     })
-  }, [setSearchParams])
+  }, [navigate])
 }

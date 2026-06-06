@@ -12,7 +12,7 @@ alwaysApply: false
 
 # Map Plugin Integration（saas-web）
 
-完整说明见 [map-plugin-integration.md](../../docs/architecture/map-plugin-integration.md)。Skill：`.cursor/skills/map-plugin-integration/`。
+完整说明见 [map-plugin-integration.md](../../docs/architecture/map-plugin-integration.md)。插件能力目录：[map-plugins-catalog.md](../../docs/architecture/map-plugins-catalog.md)。Skill：`.cursor/skills/map-plugin-integration/`。
 
 ## 边界
 

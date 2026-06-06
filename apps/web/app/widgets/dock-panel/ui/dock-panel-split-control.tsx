@@ -1,6 +1,8 @@
 import { cn } from '@repo/ui'
 import { ChevronRightIcon, PanelLeftCloseIcon, type LucideIcon } from 'lucide-react'
 
+import { resolveDockEdgeStackStyle } from '../lib/dock-edge-stack-style'
+
 /** Dock 面板右缘「收起」手柄 */
 export function DockPanelCollapseHandle({
   label,
@@ -33,6 +35,7 @@ export function DockPanelExpandEdge({
   className,
   railClassName,
   stackIndex = 0,
+  stackCount = 1,
 }: {
   label: string
   shortLabel?: string
@@ -40,22 +43,23 @@ export function DockPanelExpandEdge({
   onClick: () => void
   className?: string
   railClassName?: string
-  /** 多个 Dock 同时收起时水平错开，避免图标叠在一起 */
+  /** 多个 Dock 同时收起时在列内的序号（0 起） */
   stackIndex?: number
+  /** 同时收起的 Dock 标签总数 */
+  stackCount?: number
 }) {
   return (
     <>
-      <div aria-hidden className={cn('workspace-dock-edge-rail', railClassName)} />
+      {stackIndex === 0 ? (
+        <div aria-hidden className={cn('workspace-dock-edge-rail', railClassName)} />
+      ) : null}
       <button
         type="button"
         aria-label={label}
         title={label}
         onClick={onClick}
-        className={cn(
-          'workspace-dock-edge-tab absolute top-1/2 -translate-y-1/2',
-          className,
-        )}
-        style={stackIndex > 0 ? { left: `${stackIndex * 2.75}rem` } : undefined}
+        className={cn('workspace-dock-edge-tab absolute left-0', className)}
+        style={resolveDockEdgeStackStyle(stackIndex, stackCount)}
       >
         {Icon ? (
           <Icon

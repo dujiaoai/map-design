@@ -102,7 +102,8 @@ export default function Home() {
               <MockMapToolHost />
               <MapToolDrawerPanel />
               <MapDockPanelEdge />
-              <MapBusinessDockEdge />
+              <MapBusinessDockEdge slot="data" />
+              <MapBusinessDockEdge slot="workspace" />
             </div>
           </div>
           <MapStatusBar

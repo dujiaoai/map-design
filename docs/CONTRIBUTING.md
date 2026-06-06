@@ -38,6 +38,11 @@ pnpm --filter @repo/saas check
 - [architecture/map-workspace-ui.md](./architecture/map-workspace-ui.md)
 - [architecture/map-plugin-integration.md](./architecture/map-plugin-integration.md)
 
+接入或选型 Map Tool 插件（`pluginToolId`）前，先读：
+
+- [architecture/map-plugins-catalog.md](./architecture/map-plugins-catalog.md) — 52 个插件 Skill 能力目录
+- `.cursor/skills/map-plugins-index/` — Agent 索引
+
 ## PR
 
 - Conventional Commits（生成建议：`node .cursor/skills/git-commit/scripts/generate-commit-message.mjs`；Skill：`/git-commit`）

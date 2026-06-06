@@ -32,6 +32,24 @@ describe('useMapWorkspaceStore parallel panel tools', () => {
     expect(useMapWorkspaceStore.getState().activePanelTools).toEqual([])
   })
 
+  it('closes non-data modules when opening another non-data module', () => {
+    const store = useMapWorkspaceStore.getState()
+    store.toggleMapDockModule('dock-uav-list', 'uav-list')
+    store.toggleMapModule('module-view-project', 'view-project')
+
+    expect(useMapWorkspaceStore.getState().activeDockModuleId).toBeNull()
+    expect(useMapWorkspaceStore.getState().activeModuleId).toBe('view-project')
+  })
+
+  it('keeps data module open when opening non-data module', () => {
+    const store = useMapWorkspaceStore.getState()
+    store.toggleMapModule('module-thematic', 'thematic')
+    store.toggleMapDockModule('dock-uav-list', 'uav-list')
+
+    expect(useMapWorkspaceStore.getState().activeDataModuleId).toBe('thematic')
+    expect(useMapWorkspaceStore.getState().activeDockModuleId).toBe('uav-list')
+  })
+
   it('keeps panel tools when opening drawer tool', () => {
     const store = useMapWorkspaceStore.getState()
     store.togglePanelTool('tool-hd-image-compare', 'hd-image-compare')

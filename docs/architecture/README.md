@@ -81,6 +81,7 @@ flowchart LR
 | [backend-integration.md](./backend-integration.md) | RuoYi / SaaS API 集成 |
 | [map-workspace-ui.md](./map-workspace-ui.md) | 地图工作台 UI 载体 |
 | [map-plugin-integration.md](./map-plugin-integration.md) | 地图插件桥接 |
+| [map-plugins-catalog.md](./map-plugins-catalog.md) | 地图插件 Skill 能力目录（52 个） |
 | [auth-rbac.md](./auth-rbac.md) | 认证权限 |
 | [multi-tenancy.md](./multi-tenancy.md) | 多租户 |
 

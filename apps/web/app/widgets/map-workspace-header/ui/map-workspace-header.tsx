@@ -11,9 +11,10 @@ import {
   type NavUserData,
 } from '@repo/ui'
 import { ScanSearchIcon } from 'lucide-react'
-import { type CSSProperties } from 'react'
+import { type CSSProperties, useMemo } from 'react'
 
 import {
+  buildWorkspaceBreadcrumbTrail,
   resolveWorkspaceContext,
   useMapWorkspaceStore,
 } from '~/features/map-workspace'
@@ -38,7 +39,19 @@ export function MapWorkspaceHeader({
   onAccountClick?: () => void
   onLogout?: () => void
 }) {
-  const contextLabel = useMapWorkspaceStore((state) => resolveWorkspaceContext(state).contextLabel)
+  const sectionLabel = useMapWorkspaceStore(
+    (state) => resolveWorkspaceContext(state).sectionLabel,
+  )
+  const moduleLabel = useMapWorkspaceStore(
+    (state) => resolveWorkspaceContext(state).moduleLabel,
+  )
+  const contextLabel = useMapWorkspaceStore(
+    (state) => resolveWorkspaceContext(state).contextLabel,
+  )
+  const breadcrumbTrail = useMemo(
+    () => buildWorkspaceBreadcrumbTrail({ sectionLabel, moduleLabel, contextLabel }),
+    [contextLabel, moduleLabel, sectionLabel],
+  )
   const openCommandPalette = useMapWorkspaceStore((state) => state.openCommandPalette)
 
   function openMobileSearch() {
@@ -62,27 +75,18 @@ export function MapWorkspaceHeader({
 
         <Breadcrumb className="workspace-header-breadcrumb min-w-0">
           <BreadcrumbList className="flex-nowrap items-center gap-1.5 text-[13px] leading-none sm:gap-2">
-            <BreadcrumbItem className="inline-flex h-8 items-center">
-              <span className="workspace-header-crumb cc-display text-foreground/80 dark:text-white/70">
-                云眼平台
+            <BreadcrumbItem className="inline-flex h-8 min-w-0 max-w-[7.5rem] shrink items-center sm:max-w-[10rem]">
+              <span className="workspace-header-crumb cc-display truncate text-foreground/80 dark:text-white/70">
+                云眼综合服务平台
               </span>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="inline-flex h-8 items-center [&>svg]:size-3" />
-            <BreadcrumbItem className="inline-flex h-8 min-w-0 items-center">
-              <BreadcrumbPage className="workspace-header-crumb truncate text-foreground dark:text-white/85">
-                地图工作台
-              </BreadcrumbPage>
-            </BreadcrumbItem>
-            {contextLabel ? (
-              <>
-                <BreadcrumbSeparator className="hidden h-8 items-center sm:inline-flex [&>svg]:size-3" />
-                <BreadcrumbItem className="hidden h-8 min-w-0 items-center sm:inline-flex">
-                  <BreadcrumbPage className="workspace-header-crumb workspace-breadcrumb-active cc-display truncate">
-                    {contextLabel}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </>
-            ) : null}
+            {breadcrumbTrail.map((label, index) => {
+              const isLast = index === breadcrumbTrail.length - 1
+
+              return (
+                <BreadcrumbTrailSegment key={`${label}-${index}`} label={label} active={isLast} />
+              )
+            })}
           </BreadcrumbList>
         </Breadcrumb>
       </div>
@@ -112,5 +116,25 @@ export function MapWorkspaceHeader({
         />
       </div>
     </header>
+  )
+}
+
+function BreadcrumbTrailSegment({ label, active }: { label: string; active: boolean }) {
+  return (
+    <>
+      <BreadcrumbSeparator className="inline-flex h-8 items-center [&>svg]:size-3" />
+      <BreadcrumbItem className="inline-flex h-8 min-w-0 items-center">
+        <BreadcrumbPage
+          className={cn(
+            'workspace-header-crumb truncate',
+            active
+              ? 'workspace-breadcrumb-active cc-display text-foreground dark:text-white/85'
+              : 'text-foreground/80 dark:text-white/70',
+          )}
+        >
+          {label}
+        </BreadcrumbPage>
+      </BreadcrumbItem>
+    </>
   )
 }

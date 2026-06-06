@@ -18,8 +18,11 @@ compatibility: Requires map-design apps/web and packages-map map-plugins (parent
 | 主题 | 文档 |
 | --- | --- |
 | 完整架构 | [docs/architecture/map-plugin-integration.md](../../docs/architecture/map-plugin-integration.md) |
+| **插件能力目录（52 个）** | [docs/architecture/map-plugins-catalog.md](../../docs/architecture/map-plugins-catalog.md) |
 | UI 载体与 store | [docs/architecture/map-workspace-ui.md](../../docs/architecture/map-workspace-ui.md) |
 | UI 载体 Skill | [../map-workspace-ui/SKILL.md](../map-workspace-ui/SKILL.md) |
+| 插件索引 Skill | [../map-plugins-index/SKILL.md](../map-plugins-index/SKILL.md) |
+| 宿主契约 Skill | [../map-plugins-pack/map-workspace-host-react/SKILL.md](../map-plugins-pack/map-workspace-host-react/SKILL.md) |
 
 **不要**与 `cloud/uav` ESM 远程模块混用 — 后者见 Skill `cloud-uav-esm-plugin`。
 

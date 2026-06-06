@@ -1,0 +1,32 @@
+---
+description: map-design 产品文档、PRD、路线图与用户研究产出；Anthropic PM Plugin 编排入口
+globs:
+  - docs/product/**
+  - .cursor/skills/saas-product/**
+  - .cursor/skills/pm-*/**
+alwaysApply: false
+---
+
+# SaaS 产品（map-design）
+
+完整流程见 `.cursor/skills/saas-product/SKILL.md` 与 [map-design-product.md](../../skills/saas-product/references/map-design-product.md)。
+
+## 快速路由
+
+| 任务 | Skill |
+| --- | --- |
+| PRD / 需求 | `pm-write-spec` |
+| 路线图 | `pm-roadmap-update` |
+| 研究合成 | `pm-synthesize-research` |
+| 竞品 | `pm-competitive-brief` |
+| 指标 | `pm-metrics-review` |
+| 汇报 | `pm-stakeholder-update` |
+| 头脑风暴 | `pm-product-brainstorming` |
+| Sprint | `pm-sprint-planning` |
+
+## 规格约束
+
+- 活跃开发：`@repo/saas-web` 地图工作台  
+- 架构：[docs/architecture/README.md](../../docs/architecture/README.md)  
+- 定稿后实现：`saas-fsd-feature`、`map-workspace-ui`、`repo-ui-package`  
+- 产出写入 `docs/product/`  

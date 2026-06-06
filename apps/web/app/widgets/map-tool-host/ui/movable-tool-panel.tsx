@@ -14,9 +14,15 @@ import {
   WorkspaceSnapGuides,
 } from '~/features/workspace-surface-drag'
 
+import { MockToolContent } from '~/entities/mock-workspace-content'
+
 import type { MapToolEntry } from '../lib/build-map-tool-entries'
 import { mapToolColumnWidth } from '../lib/build-map-tool-entries'
-import { MapToolPanelHeader, mapToolPanelShellClass } from './map-tool-panel-header'
+import {
+  MapToolPanelBody,
+  MapToolPanelHeader,
+  mapToolPanelShellClass,
+} from './map-tool-panel-header'
 
 function ToolPanelCardBody({
   entry,
@@ -50,14 +56,15 @@ function ToolPanelCardBody({
         dragHandleProps={dragHandleProps}
         isDragging={isDragging}
       />
-      <div className="text-muted-foreground space-y-1 overflow-y-auto px-3 py-2 text-sm">
-        <p>
-          地图互斥工具占位：{entry.title}（plugin: {entry.pluginToolId}）
-        </p>
-        <p className="text-xs">
-          拖动手柄可移动面板并对齐；在地图上点击绘制，双击结束线/面。退出请用底栏或侧栏再次点击。
-        </p>
-      </div>
+      <MapToolPanelBody>
+        <MockToolContent
+          toolId={entry.toolId}
+          navItemId={entry.navItemId}
+          title={entry.title}
+          pluginToolId={entry.pluginToolId}
+          variantKey={entry.variantKey}
+        />
+      </MapToolPanelBody>
     </aside>
   )
 }

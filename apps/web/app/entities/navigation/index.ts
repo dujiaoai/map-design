@@ -41,4 +41,6 @@ export {
 } from './lib/find-nav-by-resource-id'
 export { resolveNavToolMeta, resolveNavToolMetaFromUrl } from './lib/resolve-nav-tool-meta'
 export { findNavSubItem } from './lib/find-nav-sub-item'
+export { findNavSectionLabelByNavItemId } from './lib/find-nav-section'
+export { findNavSectionIdByNavItemId, isDataModuleNavItem } from './lib/find-nav-section-id'
 export { toNavMainUiItems } from './lib/to-nav-main-ui-items'

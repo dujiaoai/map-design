@@ -1,61 +1,69 @@
 import { cn, Sheet, SheetContent, useIsMobile } from '@repo/ui'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 
 import { mockDockModuleMeta, mockModuleMeta } from '~/entities/navigation'
 import { useMapWorkspaceStore } from '~/features/map-workspace'
 import { MapBusinessDock } from '~/widgets/map-business-dock'
 import { MapDockPanel } from '~/widgets/map-dock-panel'
 
-type ContextTab = 'module' | 'uav'
+import {
+  WORKSPACE_CONTEXT_PANEL_MS,
+  useWorkspaceContextPanelTransition,
+} from '../lib/use-workspace-context-panel-transition'
+import { useWorkspaceModuleContentMotion } from '../lib/use-workspace-module-content-motion'
+import {
+  resolveVisibleModuleSurfaceKey,
+  type ContextTab,
+} from '../lib/workspace-module-surface'
 
 function ContextPanelTabs({
   tab,
   showTabs,
-  moduleTitle,
-  uavTitle,
+  dataTitle,
+  workspaceTitle,
   onTabChange,
 }: {
   tab: ContextTab
   showTabs: boolean
-  moduleTitle?: string
-  uavTitle?: string
+  dataTitle?: string
+  workspaceTitle?: string
   onTabChange: (tab: ContextTab) => void
 }) {
   if (!showTabs) return null
 
   return (
     <div
-      className="border-border flex shrink-0 border-b bg-muted/35 dark:bg-black/10"
+      className="workspace-context-tabs border-border flex shrink-0 border-b bg-muted/35 dark:bg-black/10"
       role="tablist"
       aria-label="上下文面板"
     >
       <button
         type="button"
         role="tab"
-        aria-selected={tab === 'module'}
+        aria-selected={tab === 'data'}
         className={cn(
           'flex-1 px-3 py-2 text-xs transition-colors',
-          tab === 'module'
+          tab === 'data'
             ? 'border-primary text-brand-deep dark:text-brand-light border-b-2 bg-primary/10'
             : 'text-muted-foreground hover:text-foreground',
         )}
-        onClick={() => onTabChange('module')}
+        onClick={() => onTabChange('data')}
       >
-        {moduleTitle ?? '业务'}
+        {dataTitle ?? '数据'}
       </button>
       <button
         type="button"
         role="tab"
-        aria-selected={tab === 'uav'}
+        aria-selected={tab === 'workspace'}
         className={cn(
           'flex-1 px-3 py-2 text-xs transition-colors',
-          tab === 'uav'
+          tab === 'workspace'
             ? 'border-primary text-brand-deep dark:text-brand-light border-b-2 bg-primary/10'
             : 'text-muted-foreground hover:text-foreground',
         )}
-        onClick={() => onTabChange('uav')}
+        onClick={() => onTabChange('workspace')}
       >
-        {uavTitle ?? '机库'}
+        {workspaceTitle ?? '模块'}
       </button>
     </div>
   )
@@ -64,30 +72,51 @@ function ContextPanelTabs({
 function ContextPanelBody({
   tab,
   showTabs,
-  moduleTitle,
-  uavTitle,
+  dataTitle,
+  workspaceTitle,
+  workspaceIsUav,
   onTabChange,
+  motionKey,
+  motionDirection,
+  motionSwap,
 }: {
   tab: ContextTab
   showTabs: boolean
-  moduleTitle?: string
-  uavTitle?: string
+  dataTitle?: string
+  workspaceTitle?: string
+  workspaceIsUav: boolean
   onTabChange: (tab: ContextTab) => void
+  motionKey: string
+  motionDirection: 'forward' | 'back'
+  motionSwap: boolean
 }) {
   return (
-    <>
+    <div
+      key={motionKey}
+      className={cn(
+        'workspace-module-surface flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden',
+        motionSwap &&
+          (motionDirection === 'forward'
+            ? 'workspace-module-surface--enter-forward'
+            : 'workspace-module-surface--enter-back'),
+      )}
+    >
       <ContextPanelTabs
         tab={tab}
         showTabs={showTabs}
-        moduleTitle={moduleTitle}
-        uavTitle={uavTitle}
+        dataTitle={dataTitle}
+        workspaceTitle={workspaceTitle}
         onTabChange={onTabChange}
       />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <MapBusinessDock hidden={showTabs && tab !== 'module'} />
-        <MapDockPanel hidden={showTabs && tab !== 'uav'} />
+        <MapBusinessDock slot="data" hidden={!showTabs ? false : tab !== 'data'} />
+        {workspaceIsUav ? (
+          <MapDockPanel hidden={showTabs && tab !== 'workspace'} />
+        ) : (
+          <MapBusinessDock slot="workspace" hidden={showTabs && tab !== 'workspace'} />
+        )}
       </div>
-    </>
+    </div>
   )
 }
 
@@ -122,41 +151,79 @@ function MapContextPanelSheet({
  */
 export function MapContextPanel() {
   const isMobile = useIsMobile()
+  const activeDataModuleId = useMapWorkspaceStore((state) => state.activeDataModuleId)
+  const dataCollapsed = useMapWorkspaceStore((state) => state.dataModulePanelCollapsed)
   const activeDockModuleId = useMapWorkspaceStore((state) => state.activeDockModuleId)
   const dockCollapsed = useMapWorkspaceStore((state) => state.dockPanelCollapsed)
   const activeModuleId = useMapWorkspaceStore((state) => state.activeModuleId)
   const moduleCollapsed = useMapWorkspaceStore((state) => state.modulePanelCollapsed)
+  const setDataModulePanelCollapsed = useMapWorkspaceStore(
+    (state) => state.setDataModulePanelCollapsed,
+  )
   const setDockPanelCollapsed = useMapWorkspaceStore((state) => state.setDockPanelCollapsed)
   const setModulePanelCollapsed = useMapWorkspaceStore((state) => state.setModulePanelCollapsed)
+  const setContextPanelPresent = useMapWorkspaceStore((state) => state.setContextPanelPresent)
 
-  const uavOpen = Boolean(activeDockModuleId && !dockCollapsed)
-  const moduleOpen = Boolean(activeModuleId && !moduleCollapsed)
-  const isOpen = uavOpen || moduleOpen
-  const showTabs = uavOpen && moduleOpen
+  const dataOpen = Boolean(activeDataModuleId && !dataCollapsed)
+  const workspaceIsUav = Boolean(activeDockModuleId)
+  const workspaceOpen = Boolean(
+    (activeDockModuleId && !dockCollapsed) || (activeModuleId && !moduleCollapsed),
+  )
+  const isOpen = dataOpen || workspaceOpen
+  const showTabs = dataOpen && workspaceOpen
 
-  const moduleTitle = activeModuleId ? mockModuleMeta[activeModuleId]?.title : undefined
-  const uavTitle = activeDockModuleId ? mockDockModuleMeta[activeDockModuleId]?.title : undefined
+  const dataTitle = activeDataModuleId ? mockModuleMeta[activeDataModuleId]?.title : undefined
+  const workspaceTitle = workspaceIsUav
+    ? activeDockModuleId
+      ? mockDockModuleMeta[activeDockModuleId]?.title
+      : undefined
+    : activeModuleId
+      ? mockModuleMeta[activeModuleId]?.title
+      : undefined
 
-  const [tab, setTab] = useState<ContextTab>('module')
+  const [tab, setTab] = useState<ContextTab>('data')
 
   useEffect(() => {
-    if (moduleOpen) {
-      setTab('module')
-    } else if (uavOpen) {
-      setTab('uav')
+    if (dataOpen) {
+      setTab('data')
+    } else if (workspaceOpen) {
+      setTab('workspace')
     }
-  }, [moduleOpen, uavOpen, activeModuleId, activeDockModuleId])
+  }, [dataOpen, workspaceOpen, activeDataModuleId, activeDockModuleId, activeModuleId])
+
+  const { mounted, open, exiting, phase } = useWorkspaceContextPanelTransition(isOpen)
+
+  useEffect(() => {
+    setContextPanelPresent(mounted)
+    return () => setContextPanelPresent(false)
+  }, [mounted, setContextPanelPresent])
+
+  const surfaceKey = resolveVisibleModuleSurfaceKey({
+    tab,
+    showTabs,
+    activeDataModuleId,
+    activeDockModuleId,
+    activeModuleId,
+    dataOpen,
+    workspaceOpen,
+    workspaceIsUav,
+  })
+  const { motionKey, direction, isSwap } = useWorkspaceModuleContentMotion(surfaceKey, open)
 
   function closePanel() {
-    if (moduleOpen) {
-      setModulePanelCollapsed(true)
+    if (dataOpen) {
+      setDataModulePanelCollapsed(true)
     }
-    if (uavOpen) {
-      setDockPanelCollapsed(true)
+    if (workspaceOpen) {
+      if (workspaceIsUav) {
+        setDockPanelCollapsed(true)
+      } else {
+        setModulePanelCollapsed(true)
+      }
     }
   }
 
-  if (!isOpen) {
+  if (!mounted) {
     return null
   }
 
@@ -164,9 +231,13 @@ export function MapContextPanel() {
     <ContextPanelBody
       tab={tab}
       showTabs={showTabs}
-      moduleTitle={moduleTitle}
-      uavTitle={uavTitle}
+      dataTitle={dataTitle}
+      workspaceTitle={workspaceTitle}
+      workspaceIsUav={workspaceIsUav}
       onTabChange={setTab}
+      motionKey={motionKey}
+      motionDirection={direction}
+      motionSwap={isSwap}
     />
   )
 
@@ -179,8 +250,25 @@ export function MapContextPanel() {
   }
 
   return (
-    <div className="workspace-context-panel border-border flex min-h-0 w-[min(360px,38vw)] shrink-0 flex-col border-r dark:border-white/8">
-      {body}
+    <div
+      data-phase={phase}
+      data-state={exiting ? 'closed' : 'open'}
+      className={cn(
+        'workspace-context-panel-shell shrink-0',
+        open && 'workspace-context-panel-shell--open',
+        exiting && 'workspace-context-panel-shell--exit',
+      )}
+      style={{ '--ws-panel-ms': `${WORKSPACE_CONTEXT_PANEL_MS}ms` } as CSSProperties}
+      inert={exiting ? true : undefined}
+    >
+      <div
+        className={cn(
+          'workspace-context-panel border-border relative flex h-full min-h-0 flex-col border-r dark:border-white/8',
+          exiting && 'pointer-events-none',
+        )}
+      >
+        {body}
+      </div>
     </div>
   )
 }

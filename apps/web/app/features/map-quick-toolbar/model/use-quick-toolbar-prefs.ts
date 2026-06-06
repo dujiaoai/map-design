@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
+  canReorderQuickTools,
   MIN_QUICK_TOOLS,
+  orderQuickToolbarIds,
   QUICK_TOOL_CATALOG,
   sanitizeQuickToolbarIds,
 } from '../lib/quick-toolbar-catalog'
@@ -45,12 +47,17 @@ export function useQuickToolbarPrefs() {
   }, [])
 
   const reorderTools = useCallback((activeId: string, overId: string) => {
+    if (!canReorderQuickTools(activeId, overId)) {
+      return
+    }
+
     setSelectedIds((prev) => {
-      const oldIndex = prev.indexOf(activeId)
-      const newIndex = prev.indexOf(overId)
+      const ordered = orderQuickToolbarIds(prev)
+      const oldIndex = ordered.indexOf(activeId)
+      const newIndex = ordered.indexOf(overId)
       if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return prev
 
-      const next = [...prev]
+      const next = [...ordered]
       const [item] = next.splice(oldIndex, 1)
       next.splice(newIndex, 0, item)
       return next

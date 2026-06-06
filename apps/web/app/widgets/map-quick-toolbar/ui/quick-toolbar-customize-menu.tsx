@@ -32,7 +32,10 @@ import {
 import { useMemo } from 'react'
 
 import {
+  canReorderQuickTools,
   groupQuickToolCatalog,
+  groupSelectedQuickTools,
+  orderQuickToolbarIds,
   resolveQuickToolDef,
   type QuickToolDef,
 } from '~/features/map-quick-toolbar'
@@ -140,12 +143,14 @@ export function QuickToolbarCustomizeMenu({
   )
 
   const groupedCatalog = useMemo(() => groupQuickToolCatalog(catalog), [catalog])
-  const menuSortableIds = selectedIds.map(toMenuSortableId)
+  const groupedSelected = useMemo(() => groupSelectedQuickTools(selectedIds), [selectedIds])
+  const orderedSelectedIds = useMemo(() => orderQuickToolbarIds(selectedIds), [selectedIds])
+  const menuSortableIds = orderedSelectedIds.map(toMenuSortableId)
 
   function handleMenuDragEnd(event: DragEndEvent) {
     const activeId = fromMenuSortableId(String(event.active.id))
     const overId = event.over ? fromMenuSortableId(String(event.over.id)) : null
-    if (!overId || activeId === overId) {
+    if (!overId || activeId === overId || !canReorderQuickTools(activeId, overId)) {
       return
     }
     reorderTools(activeId, overId)
@@ -181,31 +186,44 @@ export function QuickToolbarCustomizeMenu({
         <div className="border-border shrink-0 border-b px-2 py-2 dark:border-white/8">
           <p className="text-foreground text-sm font-medium">自定义快捷工具</p>
           <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">
-            已选 {selectedIds.length} 个 · 工具条内也可拖拽排序
+            已选 {selectedIds.length} 个 · 按分类展示，同类内可拖动排序
           </p>
         </div>
 
         <div className="workspace-quick-toolbar-menu-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain py-1">
           <p className="text-muted-foreground px-2 py-1.5 text-[10px] font-medium tracking-wide uppercase">
-            已选工具（拖动排序）
+            已选工具
           </p>
           <DndContext sensors={menuSensors} onDragEnd={handleMenuDragEnd}>
             <SortableContext items={menuSortableIds} strategy={verticalListSortingStrategy}>
-              <div className="space-y-0.5 px-1 pb-1">
-                {selectedIds.map((navItemId) => (
-                  <QuickToolbarSelectedRow
-                    key={navItemId}
-                    navItemId={navItemId}
-                    disabled={false}
-                    disableRemove={selectedIds.length <= minTools}
-                    onRemove={() => toggleTool(navItemId, false)}
-                  />
+              <div className="space-y-1 px-1 pb-1">
+                {groupedSelected.map((section) => (
+                  <div key={section.group}>
+                    <p className="text-muted-foreground px-2 py-1 text-[10px] font-medium tracking-wide uppercase">
+                      {section.label}
+                    </p>
+                    <div className="space-y-0.5">
+                      {section.items.map(({ navItemId }) => (
+                        <QuickToolbarSelectedRow
+                          key={navItemId}
+                          navItemId={navItemId}
+                          disabled={false}
+                          disableRemove={selectedIds.length <= minTools}
+                          onRemove={() => toggleTool(navItemId, false)}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </SortableContext>
           </DndContext>
 
           <DropdownMenuSeparator className="my-1" />
+
+          <p className="text-muted-foreground px-2 py-1.5 text-[10px] font-medium tracking-wide uppercase">
+            添加工具
+          </p>
 
           {groupedCatalog.map(({ group, label, items }) => {
             const visibleItems = items.filter((tool) => !selectedIds.includes(tool.navItemId))

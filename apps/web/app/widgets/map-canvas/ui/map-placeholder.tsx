@@ -38,7 +38,7 @@ export function MapPlaceholder() {
           </p>
         </div>
         <p className="workspace-map-hint cc-mono max-w-sm text-left">
-          使用顶栏搜索（/）· 上方快捷工具 · 侧栏打开数据与业务模块
+          按 ⌘K 打开命令面板 · 右键地图 · 左上角快捷工具 · 侧栏打开业务模块
         </p>
       </div>
     </div>

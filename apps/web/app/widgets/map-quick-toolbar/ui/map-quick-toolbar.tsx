@@ -6,25 +6,25 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { Button, cn, Tooltip, TooltipContent, TooltipTrigger } from '@repo/ui'
 import { GripVerticalIcon, XIcon } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, Fragment } from 'react'
 import { useNavigate } from 'react-router'
 
 import { mockNavMainItems } from '~/entities/navigation'
 import { createNavSelectHandler, useActiveNavItemIds, useMapWorkspaceStore } from '~/features/map-workspace'
 import {
+  canReorderQuickTools,
+  DEFAULT_QUICK_TOOLBAR_POSITION,
+  groupSelectedQuickTools,
   hasSeenQuickToolbarOnboarding,
   loadQuickToolbarPosition,
   markQuickToolbarOnboardingSeen,
+  orderQuickToolbarIds,
   resetQuickToolbarPosition,
-  resolveQuickToolDef,
   saveQuickToolbarPosition,
   useQuickToolbarPrefs,
 } from '~/features/map-quick-toolbar'
 import {
-  EDGE_MARGIN,
-  NEEDS_LAYOUT_CENTER,
   QUICK_TOOLBAR_DRAG_ID,
-  resolveDefaultCenter,
   useWorkspaceSurfaceDnd,
   WorkspaceSnapGuides,
 } from '~/features/workspace-surface-drag'
@@ -52,17 +52,23 @@ export function MapQuickToolbar({ className }: { className?: string }) {
     elementRef: toolbarRef,
     layoutKey,
     readySignal: toolbarReadySignal,
-    initialPosition: loadQuickToolbarPosition() ?? { x: NEEDS_LAYOUT_CENTER, y: EDGE_MARGIN },
-    layoutResetPosition: { x: NEEDS_LAYOUT_CENTER, y: EDGE_MARGIN },
-    needsLayout: (position) => position.x === NEEDS_LAYOUT_CENTER,
-    resolveDefault: resolveDefaultCenter,
+    initialPosition: loadQuickToolbarPosition() ?? DEFAULT_QUICK_TOOLBAR_POSITION,
+    layoutResetPosition: DEFAULT_QUICK_TOOLBAR_POSITION,
+    needsLayout: () => false,
+    resolveDefault: () => DEFAULT_QUICK_TOOLBAR_POSITION,
     onPersist: saveQuickToolbarPosition,
     onPersistReset: resetQuickToolbarPosition,
     enableKeyboardSensor: true,
     onDragEnd: (event) => {
       const activeId = String(event.active.id)
-      if (activeId !== QUICK_TOOLBAR_DRAG_ID && event.over && activeId !== String(event.over.id)) {
-        reorderTools(activeId, String(event.over.id))
+      const overId = event.over ? String(event.over.id) : null
+      if (
+        activeId !== QUICK_TOOLBAR_DRAG_ID &&
+        overId &&
+        activeId !== overId &&
+        canReorderQuickTools(activeId, overId)
+      ) {
+        reorderTools(activeId, overId)
       }
     },
   })
@@ -200,9 +206,8 @@ function MapQuickToolbarDraggable({
     [navigate, toggleMapDockModule, toggleMapModule, toggleMapTool, togglePanelTool],
   )
 
-  const visibleTools = selectedIds
-    .map((navItemId) => resolveQuickToolDef(navItemId))
-    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+  const groupedTools = useMemo(() => groupSelectedQuickTools(selectedIds), [selectedIds])
+  const orderedSelectedIds = useMemo(() => orderQuickToolbarIds(selectedIds), [selectedIds])
 
   function syncMenuAlignOffset() {
     const toolbar = toolbarRef.current
@@ -271,17 +276,29 @@ function MapQuickToolbarDraggable({
           <TooltipContent side="bottom">拖动工具条（靠近边缘/中线自动对齐）</TooltipContent>
         </Tooltip>
 
-        <SortableContext items={selectedIds} strategy={horizontalListSortingStrategy}>
-          {visibleTools.map(({ navItemId, label, icon }) => (
-            <QuickToolbarSortableTool
-              key={navItemId}
-              navItemId={navItemId}
-              label={label}
-              icon={icon}
-              active={activeNavItemIds.includes(navItemId)}
-              disabled={sortableDisabled}
-              onSelect={() => handleNavSelect(navItemId)}
-            />
+        <SortableContext items={orderedSelectedIds} strategy={horizontalListSortingStrategy}>
+          {groupedTools.map((section, sectionIndex) => (
+            <Fragment key={section.group}>
+              {sectionIndex > 0 ? (
+                <div
+                  className="bg-border mx-0.5 h-6 w-px shrink-0 dark:bg-white/8"
+                  role="separator"
+                  aria-orientation="vertical"
+                  aria-hidden
+                />
+              ) : null}
+              {section.items.map(({ navItemId, label, icon }) => (
+                <QuickToolbarSortableTool
+                  key={navItemId}
+                  navItemId={navItemId}
+                  label={label}
+                  icon={icon}
+                  active={activeNavItemIds.includes(navItemId)}
+                  disabled={sortableDisabled}
+                  onSelect={() => handleNavSelect(navItemId)}
+                />
+              ))}
+            </Fragment>
           ))}
         </SortableContext>
 

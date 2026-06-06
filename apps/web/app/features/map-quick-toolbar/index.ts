@@ -4,13 +4,17 @@ export {
   QUICK_TOOL_CATALOG,
   QUICK_TOOL_GROUP_LABELS,
   QUICK_TOOL_GROUP_ORDER,
+  canReorderQuickTools,
   groupQuickToolCatalog,
+  groupSelectedQuickTools,
+  orderQuickToolbarIds,
   resolveQuickToolDef,
   sanitizeQuickToolbarIds,
   type QuickToolDef,
   type QuickToolGroup,
 } from './lib/quick-toolbar-catalog'
 export {
+  DEFAULT_QUICK_TOOLBAR_POSITION,
   hasSeenQuickToolbarOnboarding,
   loadQuickToolbarIds,
   loadQuickToolbarPosition,

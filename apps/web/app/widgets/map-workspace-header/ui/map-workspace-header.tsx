@@ -16,10 +16,9 @@ import { type CSSProperties } from 'react'
 import {
   resolveWorkspaceContext,
   useMapWorkspaceStore,
-  WORKSPACE_GLOBAL_SEARCH_INPUT_ID,
 } from '~/features/map-workspace'
 import { WORKSPACE_CHROME_ICON_BUTTON_CLASS } from '~/shared/lib/workspace-chrome-styles'
-import { GlobalSearchField } from '~/widgets/global-search-field'
+import { WorkspaceCommandTrigger } from '~/widgets/workspace-command-palette'
 import { WorkspaceHeaderActions } from '~/widgets/workspace-chrome'
 
 export function MapWorkspaceHeader({
@@ -40,12 +39,10 @@ export function MapWorkspaceHeader({
   onLogout?: () => void
 }) {
   const contextLabel = useMapWorkspaceStore((state) => resolveWorkspaceContext(state).contextLabel)
-  const setGlobalSearchPopoverOpen = useMapWorkspaceStore((state) => state.setGlobalSearchPopoverOpen)
-  const openGlobalSearchDrawer = useMapWorkspaceStore((state) => state.openGlobalSearchDrawer)
+  const openCommandPalette = useMapWorkspaceStore((state) => state.openCommandPalette)
 
   function openMobileSearch() {
-    setGlobalSearchPopoverOpen(false)
-    openGlobalSearchDrawer()
+    openCommandPalette()
   }
 
   return (
@@ -91,7 +88,7 @@ export function MapWorkspaceHeader({
       </div>
 
       <div className="mx-1 hidden min-w-0 flex-1 md:block lg:max-w-md xl:max-w-lg">
-        <GlobalSearchField inputId={WORKSPACE_GLOBAL_SEARCH_INPUT_ID} />
+        <WorkspaceCommandTrigger onOpen={() => openCommandPalette()} />
       </div>
 
       <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">

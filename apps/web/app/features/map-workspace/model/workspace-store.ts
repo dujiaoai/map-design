@@ -31,10 +31,17 @@ export interface MapWorkspaceStore {
   modulePanelFullscreen: boolean
   globalSearchQuery: string
   globalSearchPopoverOpen: boolean
+  commandPaletteOpen: boolean
+  commandPaletteQuery: string
   toggleMapTool: (navItemId: string) => void
   clearMapTool: () => void
+  clearPanelTools: () => void
   setGlobalSearchQuery: (query: string) => void
   setGlobalSearchPopoverOpen: (open: boolean) => void
+  setCommandPaletteOpen: (open: boolean) => void
+  setCommandPaletteQuery: (query: string) => void
+  openCommandPalette: (query?: string) => void
+  closeCommandPalette: () => void
   openGlobalSearchDrawer: () => void
   togglePanelTool: (navItemId: string, toolId: string) => void
   toggleMapDockModule: (navItemId: string, moduleId: string) => void
@@ -127,6 +134,28 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
   ...readInitialWorkspaceState(),
   globalSearchQuery: '',
   globalSearchPopoverOpen: false,
+  commandPaletteOpen: false,
+  commandPaletteQuery: '',
+
+  setCommandPaletteOpen(open) {
+    set({ commandPaletteOpen: open })
+  },
+
+  setCommandPaletteQuery(query) {
+    set({ commandPaletteQuery: query })
+  },
+
+  openCommandPalette(query = '') {
+    set({
+      commandPaletteOpen: true,
+      commandPaletteQuery: query,
+      globalSearchPopoverOpen: false,
+    })
+  },
+
+  closeCommandPalette() {
+    set({ commandPaletteOpen: false })
+  },
 
   setGlobalSearchQuery(query) {
     set({ globalSearchQuery: query })
@@ -178,6 +207,10 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
 
   clearMapTool() {
     set({ activeMapTool: null, activeDrawerTool: null })
+  },
+
+  clearPanelTools() {
+    set({ activePanelTools: [] })
   },
 
   togglePanelTool(navItemId, toolId) {

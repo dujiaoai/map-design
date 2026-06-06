@@ -38,7 +38,7 @@
 | --- | --- | --- |
 | `EDGE_MARGIN` | 8 | 画布边距 |
 | `SNAP_THRESHOLD` | 28 | 吸附阈值（px） |
-| `NEEDS_LAYOUT_CENTER` | -1 | 首次居中布局（快捷工具条） |
+| `NEEDS_LAYOUT_CENTER` | -1 | 预留：首次居中布局 |
 | `NEEDS_LAYOUT_ANCHOR` | -2 | 首次锚点布局（anchor 面板） |
 | `PANEL_ANCHOR_TOP` | 56 | anchor 面板默认 top |
 | `PANEL_ANCHOR_INSET` | 12 | anchor 面板左右 inset |

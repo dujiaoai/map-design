@@ -11,12 +11,13 @@ import {
 import { AppSidebar } from '~/widgets/app-sidebar'
 import { AccountSheet } from '~/widgets/account-sheet'
 import { MapContextPanel } from '~/widgets/map-context-panel'
-import { MapPlaceholder } from '~/widgets/map-canvas'
+import { MapCanvasContextMenu, MapPlaceholder } from '~/widgets/map-canvas'
 import { MapToolDrawerPanel } from '~/widgets/map-import-drawer'
 import { MapBusinessDockEdge } from '~/widgets/map-business-dock'
 import { MapDockPanelEdge } from '~/widgets/map-dock-panel'
 import { MapQuickToolbar } from '~/widgets/map-quick-toolbar'
 import { MapStatusBar } from '~/widgets/map-status-bar'
+import { WorkspaceCommandPalette } from '~/widgets/workspace-command-palette'
 import { MockMapToolHost } from '~/widgets/map-tool-host'
 import { MapWorkspaceHeader } from '~/widgets/map-workspace-header'
 import { NotificationSheet } from '~/widgets/notification-sheet'
@@ -95,6 +96,7 @@ export default function Home() {
               )}
             >
               <WorkspaceMapAtmosphere subdued={mapEngineReady || hasActiveTools} />
+              <MapCanvasContextMenu />
               <MapPlaceholder />
               <MapQuickToolbar />
               <MockMapToolHost />
@@ -112,6 +114,7 @@ export default function Home() {
 
       <AccountSheet open={chrome.accountOpen} onOpenChange={chrome.setAccountOpen} />
       <NotificationSheet open={chrome.notificationOpen} onOpenChange={chrome.setNotificationOpen} />
+      <WorkspaceCommandPalette />
     </div>
   )
 }

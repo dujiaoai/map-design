@@ -79,11 +79,55 @@ export function groupQuickToolCatalog(catalog: QuickToolDef[]): Array<{
   })).filter((section) => section.items.length > 0)
 }
 
+/** 按分类顺序排列已选工具 id，组内保留原有相对顺序 */
+export function orderQuickToolbarIds(ids: string[]): string[] {
+  const grouped = new Map<QuickToolGroup, string[]>()
+
+  for (const id of ids) {
+    if (!isQuickToolCatalogId(id)) continue
+    const tool = resolveQuickToolDef(id)
+    if (!tool) continue
+
+    const list = grouped.get(tool.group) ?? []
+    if (!list.includes(id)) {
+      list.push(id)
+    }
+    grouped.set(tool.group, list)
+  }
+
+  return QUICK_TOOL_GROUP_ORDER.flatMap((group) => grouped.get(group) ?? [])
+}
+
+/** 已选工具按分类分组（用于工具条与自定义菜单展示） */
+export function groupSelectedQuickTools(selectedIds: string[]): Array<{
+  group: QuickToolGroup
+  label: string
+  items: QuickToolDef[]
+}> {
+  const ordered = orderQuickToolbarIds(selectedIds)
+
+  return QUICK_TOOL_GROUP_ORDER.map((group) => ({
+    group,
+    label: QUICK_TOOL_GROUP_LABELS[group],
+    items: ordered
+      .map((id) => resolveQuickToolDef(id))
+      .filter((tool): tool is QuickToolDef => Boolean(tool && tool.group === group)),
+  })).filter((section) => section.items.length > 0)
+}
+
+export function canReorderQuickTools(activeId: string, overId: string): boolean {
+  const activeTool = resolveQuickToolDef(activeId)
+  const overTool = resolveQuickToolDef(overId)
+  return Boolean(activeTool && overTool && activeTool.group === overTool.group)
+}
+
 export function sanitizeQuickToolbarIds(ids: string[]): string[] {
   const unique: string[] = []
   for (const id of ids) {
     if (!isQuickToolCatalogId(id) || unique.includes(id)) continue
     unique.push(id)
   }
-  return unique.length >= MIN_QUICK_TOOLS ? unique : [...DEFAULT_QUICK_TOOL_IDS]
+  const normalized =
+    unique.length >= MIN_QUICK_TOOLS ? orderQuickToolbarIds(unique) : [...DEFAULT_QUICK_TOOL_IDS]
+  return normalized
 }

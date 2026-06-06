@@ -2,6 +2,7 @@ import {
   DEFAULT_QUICK_TOOL_IDS,
   sanitizeQuickToolbarIds,
 } from './quick-toolbar-catalog'
+import { EDGE_MARGIN } from '../../workspace-surface-drag/lib/surface-drag-math'
 
 const ONBOARDING_STORAGE_KEY = 'map-quick-toolbar-onboarding-seen'
 
@@ -20,6 +21,11 @@ const POSITION_STORAGE_KEY = 'map-quick-toolbar-position'
 export interface QuickToolbarPosition {
   x: number
   y: number
+}
+
+export const DEFAULT_QUICK_TOOLBAR_POSITION: QuickToolbarPosition = {
+  x: EDGE_MARGIN,
+  y: EDGE_MARGIN,
 }
 
 export function loadQuickToolbarPosition(): QuickToolbarPosition | null {

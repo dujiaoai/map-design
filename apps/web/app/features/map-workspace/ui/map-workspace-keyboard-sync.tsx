@@ -17,22 +17,13 @@ function isEditableTarget(target: EventTarget | null): boolean {
   return target.isContentEditable
 }
 
-function focusGlobalSearch() {
-  const input = document.getElementById(SEARCH_INPUT_ID)
-  if (!(input instanceof HTMLInputElement)) {
-    return
-  }
-
-  input.focus()
-  input.select()
-}
-
-function openGlobalSearchPopover() {
-  useMapWorkspaceStore.getState().setGlobalSearchPopoverOpen(true)
-}
-
 function dismissActiveTools() {
   const state = useMapWorkspaceStore.getState()
+
+  if (state.commandPaletteOpen) {
+    state.closeCommandPalette()
+    return true
+  }
 
   if (state.globalSearchPopoverOpen) {
     state.setGlobalSearchPopoverOpen(false)
@@ -45,14 +36,14 @@ function dismissActiveTools() {
   }
 
   if (state.activePanelTools.length > 0) {
-    useMapWorkspaceStore.setState({ activePanelTools: [] })
+    state.clearPanelTools()
     return true
   }
 
   return false
 }
 
-/** 工作台全局快捷键：/ 聚焦搜索、Ctrl/Cmd+K 打开搜索、Esc 退出工具 */
+/** 工作台全局快捷键：/ 与 Ctrl/Cmd+K 打开命令面板、Esc 逐级退出 */
 export function MapWorkspaceKeyboardSync() {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -64,20 +55,28 @@ export function MapWorkspaceKeyboardSync() {
       }
 
       if (isEditableTarget(event.target)) {
+        const target = event.target
+        if (
+          target instanceof HTMLInputElement &&
+          target.id === SEARCH_INPUT_ID &&
+          (event.metaKey || event.ctrlKey) &&
+          event.key.toLowerCase() === 'k'
+        ) {
+          event.preventDefault()
+          useMapWorkspaceStore.getState().openCommandPalette(target.value)
+        }
         return
       }
 
       if (event.key === '/') {
         event.preventDefault()
-        openGlobalSearchPopover()
-        focusGlobalSearch()
+        useMapWorkspaceStore.getState().openCommandPalette()
         return
       }
 
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault()
-        openGlobalSearchPopover()
-        focusGlobalSearch()
+        useMapWorkspaceStore.getState().openCommandPalette()
       }
     }
 

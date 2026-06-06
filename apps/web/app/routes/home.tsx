@@ -1,7 +1,13 @@
-import { SidebarInset, SidebarProvider } from '@repo/ui'
+import { SidebarInset, SidebarProvider, cn } from '@repo/ui'
 import { type CSSProperties } from 'react'
 
-import { MapToolLifecycleSync, MapWorkspaceUrlSync } from '~/features/map-workspace'
+import {
+  MapToolLifecycleSync,
+  MapWorkspaceKeyboardSync,
+  MapWorkspaceUrlSync,
+  useMapEngineReady,
+  useMapWorkspaceStore,
+} from '~/features/map-workspace'
 import { AppSidebar } from '~/widgets/app-sidebar'
 import { AccountSheet } from '~/widgets/account-sheet'
 import { MapContextPanel } from '~/widgets/map-context-panel'
@@ -42,30 +48,53 @@ export function links(_args: Route.LinksArgs) {
 export default function Home() {
   const pointer = useWorkspacePointer()
   const chrome = useWorkspaceChrome()
+  const mapEngineReady = useMapEngineReady()
+  const hasActiveTools = useMapWorkspaceStore(
+    (state) =>
+      Boolean(
+        state.activeMapTool ||
+          state.activeDrawerTool ||
+          state.activePanelTools.length > 0,
+      ),
+  )
 
   const pointerStyle = {
     '--ws-px': pointer.x,
     '--ws-py': pointer.y,
   } as CSSProperties
 
+  const canvasToneClass =
+    mapEngineReady || hasActiveTools ? 'workspace-canvas--focused' : undefined
+
   return (
-    <div className="workspace-page" style={pointerStyle}>
+    <div className="workspace-page workspace-page-enter" style={pointerStyle}>
       <SidebarProvider>
         <MapWorkspaceUrlSync />
         <MapToolLifecycleSync />
+        <MapWorkspaceKeyboardSync />
         <AppSidebar user={chrome.user} />
         <SidebarInset className="workspace-inset flex min-h-0 flex-1 flex-col overflow-hidden">
           <MapWorkspaceHeader
+            className="workspace-reveal"
+            style={{ '--stagger': 0 } as CSSProperties}
             user={chrome.user}
             notificationUnreadCount={chrome.notificationUnreadCount}
             onNotificationsClick={chrome.openNotifications}
             onAccountClick={chrome.openAccount}
             onLogout={() => void chrome.handleLogout()}
           />
-          <div className="workspace-main flex min-h-0 flex-1 overflow-hidden">
+          <div
+            className="workspace-main workspace-reveal flex min-h-0 flex-1 overflow-hidden"
+            style={{ '--stagger': 1 } as CSSProperties}
+          >
             <MapContextPanel />
-            <div className="workspace-canvas relative min-h-0 min-w-0 flex-1">
-              <WorkspaceMapAtmosphere />
+            <div
+              className={cn(
+                'workspace-canvas relative min-h-0 min-w-0 flex-1',
+                canvasToneClass,
+              )}
+            >
+              <WorkspaceMapAtmosphere subdued={mapEngineReady || hasActiveTools} />
               <MapPlaceholder />
               <MapQuickToolbar />
               <MockMapToolHost />
@@ -74,7 +103,10 @@ export default function Home() {
               <MapBusinessDockEdge />
             </div>
           </div>
-          <MapStatusBar />
+          <MapStatusBar
+            className="workspace-reveal"
+            style={{ '--stagger': 2 } as CSSProperties}
+          />
         </SidebarInset>
       </SidebarProvider>
 

@@ -3,6 +3,57 @@ import {
   sanitizeQuickToolbarIds,
 } from './quick-toolbar-catalog'
 
+const ONBOARDING_STORAGE_KEY = 'map-quick-toolbar-onboarding-seen'
+
+export function hasSeenQuickToolbarOnboarding(): boolean {
+  if (typeof window === 'undefined') return true
+  return localStorage.getItem(ONBOARDING_STORAGE_KEY) === '1'
+}
+
+export function markQuickToolbarOnboardingSeen(): void {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(ONBOARDING_STORAGE_KEY, '1')
+}
+
+const POSITION_STORAGE_KEY = 'map-quick-toolbar-position'
+
+export interface QuickToolbarPosition {
+  x: number
+  y: number
+}
+
+export function loadQuickToolbarPosition(): QuickToolbarPosition | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const raw = localStorage.getItem(POSITION_STORAGE_KEY)
+    if (!raw) return null
+    const parsed: unknown = JSON.parse(raw)
+    if (
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      typeof (parsed as QuickToolbarPosition).x === 'number' &&
+      typeof (parsed as QuickToolbarPosition).y === 'number'
+    ) {
+      return parsed as QuickToolbarPosition
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
+export function saveQuickToolbarPosition(position: QuickToolbarPosition): void {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(position))
+}
+
+export function resetQuickToolbarPosition(): void {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem(POSITION_STORAGE_KEY)
+}
+
 const STORAGE_KEY = 'map-workspace-quick-toolbar'
 
 export function loadQuickToolbarIds(): string[] {

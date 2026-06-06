@@ -1,0 +1,180 @@
+/* 指挥舱 — 菜单 Sheet / 下拉弹层动效（仅工作台页） */
+
+html:has(.workspace-page) [data-slot='sheet-overlay'] {
+  transition-duration: 320ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  background: color-mix(in srgb, var(--surface-deep) 68%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+html:has(.workspace-page) [data-slot='sheet-content'] {
+  overflow: hidden;
+  transition-duration: 460ms !important;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+  border-color: color-mix(in srgb, var(--brand) 24%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 24px 64px rgba(0, 0, 0, 0.45),
+    0 0 40px color-mix(in srgb, var(--brand) 14%, transparent);
+}
+
+html:has(.workspace-page) [data-slot='sheet-content']::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    color-mix(in srgb, var(--brand-light) 12%, transparent) 48%,
+    transparent 100%
+  );
+  opacity: 0;
+  transform: translateX(-120%);
+  animation: cc-sheet-sheen 680ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+}
+
+html:has(.workspace-page) [data-slot='sheet-content'][data-side='left'][data-starting-style],
+html:has(.workspace-page) [data-slot='sheet-content'][data-side='left'][data-ending-style] {
+  transform: translateX(calc(-100% + 1.5rem)) scale(0.985);
+  opacity: 0;
+}
+
+html:has(.workspace-page) [data-slot='sheet-content'][data-mobile='true'] [data-slot='sidebar-inner'] > * {
+  animation: cc-sheet-section-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html:has(.workspace-page) [data-slot='sheet-content'][data-mobile='true'] [data-slot='sidebar-inner'] > *:nth-child(1) {
+  animation-delay: 0.06s;
+}
+
+html:has(.workspace-page) [data-slot='sheet-content'][data-mobile='true'] [data-slot='sidebar-inner'] > *:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+html:has(.workspace-page) .workspace-context-sheet {
+  border-right-color: color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+/* 下拉 / 搜索等 Portal 弹层（挂到 body，勿依赖 .workspace-page 祖先） */
+.cc-menu-popover {
+  transform-origin: var(--transform-origin, top);
+  overflow: hidden !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  backdrop-filter: blur(16px);
+}
+
+.cc-menu-popover::-webkit-scrollbar {
+  display: none;
+}
+
+html:not(.dark) .cc-menu-popover {
+  border-color: color-mix(in srgb, var(--brand) 18%, transparent) !important;
+  background: color-mix(in srgb, var(--popover) 98%, transparent) !important;
+  color: var(--popover-foreground);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.75) inset,
+    0 8px 24px rgba(48, 148, 255, 0.1),
+    0 0 18px color-mix(in srgb, var(--brand) 8%, transparent) !important;
+}
+
+html.dark .cc-menu-popover {
+  border-color: color-mix(in srgb, var(--brand) 22%, transparent) !important;
+  background: color-mix(in srgb, var(--surface-panel) 94%, transparent) !important;
+  color: var(--popover-foreground);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 16px 40px rgba(0, 0, 0, 0.38),
+    0 0 28px color-mix(in srgb, var(--brand) 12%, transparent) !important;
+}
+
+.cc-menu-popover[data-open] {
+  animation: cc-menu-popover-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+.cc-menu-popover[data-closed] {
+  animation: cc-menu-popover-out 0.18s cubic-bezier(0.4, 0, 1, 1) both !important;
+}
+
+/* 搜索 Combobox：输入框即锚点，避免关→开闪动；用轻过渡替代缩放动画 */
+.cc-global-search-popover[data-open],
+.cc-global-search-popover[data-closed] {
+  animation: none !important;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.cc-global-search-popover[data-starting-style],
+.cc-global-search-popover[data-ending-style] {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.cc-global-search-popover[data-open]:not([data-starting-style]):not([data-ending-style]) {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes cc-sheet-sheen {
+  0% {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+  35% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
+@keyframes cc-sheet-section-in {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes cc-menu-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes cc-menu-popover-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.99);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:has(.workspace-page) [data-slot='sheet-content']::after,
+  html:has(.workspace-page) [data-slot='sheet-content'][data-mobile='true'] [data-slot='sidebar-inner'] > *,
+  .cc-menu-popover[data-open]:not(.cc-global-search-popover),
+  .cc-menu-popover[data-closed]:not(.cc-global-search-popover),
+  .cc-global-search-popover[data-open],
+  .cc-global-search-popover[data-closed] {
+    animation: none !important;
+  }
+
+  html:has(.workspace-page) [data-slot='sheet-overlay'],
+  html:has(.workspace-page) [data-slot='sheet-content'] {
+    transition-duration: 0.01ms !important;
+  }
+}

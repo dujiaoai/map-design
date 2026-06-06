@@ -24,14 +24,14 @@ export function MapToolActionBar() {
       role="toolbar"
       aria-label="地图工具操作条"
     >
-      <span className="cc-mono max-w-[140px] truncate px-1 text-[11px] text-brand-soft">
+      <span className="text-brand-deep dark:text-brand-soft cc-mono max-w-[140px] truncate px-1 text-[11px]">
         ACTIVE · {title}
       </span>
       <Button
         type="button"
         variant="secondary"
         size="sm"
-        className="h-8 gap-1 border-white/10 bg-white/5 text-white/85 hover:bg-white/10"
+        className="h-8 gap-1 border-border bg-muted/60 text-foreground hover:bg-accent dark:border-white/10 dark:bg-white/5 dark:text-white/85 dark:hover:bg-white/10"
         aria-label={`退出${title}`}
         onClick={() => clearMapTool()}
       >

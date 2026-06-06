@@ -5,7 +5,8 @@ import * as React from "react"
 import { NavMain, type NavMainUiItem } from "@/components/nav-main"
 import { NavNotifications } from "@/components/nav-notifications"
 import { NavUser, type NavUserData } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { SidebarBrand, type SidebarBrandProps } from "@/components/sidebar-brand"
+import { TeamSwitcher, type TeamSwitcherTeam } from "@/components/team-switcher"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar"
 
 const defaultData = {
@@ -16,6 +17,7 @@ const defaultData = {
   },
   teams: [
     {
+      id: "default",
       name: "云眼",
       logo: <img src="/avatars/logo.png" alt="云眼" className="w-full" />,
       plan: "综合服务平台",
@@ -56,6 +58,10 @@ export function AppSidebar({
   notificationUnreadCount,
   onLogout,
   hideFooter = false,
+  brand,
+  teams = defaultData.teams,
+  activeTeamId,
+  onTeamChange,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   user?: NavUserData | null
@@ -77,6 +83,11 @@ export function AppSidebar({
   onLogout?: () => void
   /** 工作台顶栏已承载通知/账号时隐藏侧栏页脚 */
   hideFooter?: boolean
+  /** 静态品牌头（Logo + 平台名），与 teams 二选一 */
+  brand?: SidebarBrandProps
+  teams?: TeamSwitcherTeam[]
+  activeTeamId?: string
+  onTeamChange?: (teamId: string) => void
 }) {
   const user = userProp ?? defaultData.user
 
@@ -103,7 +114,11 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={defaultData.teams} />
+        {brand ? (
+          <SidebarBrand {...brand} />
+        ) : (
+          <TeamSwitcher teams={teams} activeTeamId={activeTeamId} onTeamChange={onTeamChange} />
+        )}
       </SidebarHeader>
       <SidebarContent>
         {onNavSelect ? (

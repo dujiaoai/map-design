@@ -1,7 +1,8 @@
 import type { ComponentProps } from 'react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { AppSidebar as UiAppSidebar } from '@repo/ui'
+import { MapIcon } from 'lucide-react'
 import { useNavigate } from 'react-router'
 
 import {
@@ -14,6 +15,27 @@ import {
   useActiveNavItemIds,
   useMapWorkspaceStore,
 } from '~/features/map-workspace'
+
+function WorkspaceBrandLogo() {
+  const [useFallback, setUseFallback] = useState(false)
+
+  if (useFallback) {
+    return (
+      <div className="flex size-full items-center justify-center rounded-md bg-gradient-to-br from-primary to-brand-deep">
+        <MapIcon className="size-4 text-primary-foreground" aria-hidden />
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src="/avatars/logo.png"
+      alt=""
+      className="size-full object-contain"
+      onError={() => setUseFallback(true)}
+    />
+  )
+}
 
 export function AppSidebar(props: ComponentProps<typeof UiAppSidebar>) {
   const navigate = useNavigate()
@@ -44,6 +66,10 @@ export function AppSidebar(props: ComponentProps<typeof UiAppSidebar>) {
   return (
     <UiAppSidebar
       hideFooter
+      brand={{
+        logo: <WorkspaceBrandLogo />,
+        title: '云眼平台',
+      }}
       navMapSections={navMapSections}
       onNavSelect={handleNavSelect}
       {...props}

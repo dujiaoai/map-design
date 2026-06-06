@@ -34,10 +34,15 @@ function createNoopBridge(): MapPluginBridge {
 }
 
 let bridge: MapPluginBridge = createNoopBridge()
+let customBridgeAttached = false
 
 /** 接入 MapProvider 后由宿主注入真实 bridge */
 export function setMapPluginBridge(next: MapPluginBridge): void {
   bridge = next
+  customBridgeAttached = true
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('map-engine-ready'))
+  }
 }
 
 export function getMapPluginBridge(): MapPluginBridge {
@@ -46,6 +51,12 @@ export function getMapPluginBridge(): MapPluginBridge {
 
 export function resetMapPluginBridge(): void {
   bridge = createNoopBridge()
+  customBridgeAttached = false
+}
+
+/** 地图引擎已挂载（注入 bridge 或显式 env 开启） */
+export function isMapEngineReady(): boolean {
+  return customBridgeAttached || import.meta.env.VITE_MAP_ENGINE_READY === 'true'
 }
 
 /**

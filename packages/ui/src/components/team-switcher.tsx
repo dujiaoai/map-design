@@ -2,23 +2,50 @@
 
 import * as React from "react"
 
-import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
 import { ChevronsUpDownIcon, PlusIcon } from "lucide-react"
+
+export interface TeamSwitcherTeam {
+  id: string
+  name: string
+  logo: React.ReactNode
+  plan: string
+}
 
 export function TeamSwitcher({
   teams,
+  activeTeamId,
+  onTeamChange,
 }: {
-  teams: {
-    name: string
-    logo: React.ReactNode
-    plan: string
-  }[]
+  teams: TeamSwitcherTeam[]
+  activeTeamId?: string
+  onTeamChange?: (teamId: string) => void
 }) {
-  const [activeTeam] = React.useState(teams[0])
+  const [internalTeamId, setInternalTeamId] = React.useState(teams[0]?.id ?? "")
+
+  const resolvedTeamId = activeTeamId ?? internalTeamId
+  const activeTeam = teams.find((team) => team.id === resolvedTeamId) ?? teams[0]
+
   if (!activeTeam) {
     return null
   }
+
+  function selectTeam(teamId: string) {
+    if (onTeamChange) {
+      onTeamChange(teamId)
+    } else {
+      setInternalTeamId(teamId)
+    }
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -26,19 +53,43 @@ export function TeamSwitcher({
           <DropdownMenuTrigger
             render={
               <SidebarMenuButton
-                size="lg"
+                size="default"
                 className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
               />
             }
           >
-            <div className="size-13 bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square items-center justify-center rounded-lg p-1">
+            <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg p-1">
               {activeTeam.logo}
             </div>
-            <div className="grid flex-1 gap-1 pl-2 text-left leading-tight text-brand">
-              <span className="truncate text-[18px] font-bold">{activeTeam.name}</span>
-              <span className="truncate text-[13px]">{activeTeam.plan}</span>
+            <div className="grid min-w-0 flex-1 gap-0.5 pl-2 text-left leading-tight text-brand group-data-[collapsible=icon]:hidden">
+              <span className="truncate text-sm font-semibold">{activeTeam.name}</span>
+              <span className="text-muted-foreground truncate text-xs">{activeTeam.plan}</span>
             </div>
+            <ChevronsUpDownIcon className="text-muted-foreground ml-auto size-4 group-data-[collapsible=icon]:hidden" />
           </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" side="bottom" className="w-56">
+            <DropdownMenuLabel className="text-xs">切换项目</DropdownMenuLabel>
+            {teams.map((team) => (
+              <DropdownMenuItem
+                key={team.id}
+                className="gap-2"
+                onClick={() => selectTeam(team.id)}
+              >
+                <div className="flex size-6 shrink-0 items-center justify-center rounded-md border">
+                  {team.logo}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm">{team.name}</p>
+                  <p className="text-muted-foreground truncate text-xs">{team.plan}</p>
+                </div>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem disabled className="gap-2">
+              <PlusIcon className="size-4" />
+              新建项目
+            </DropdownMenuItem>
+          </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>

@@ -17,7 +17,7 @@ export interface ActivePanelTool {
   toolId: string
 }
 
-interface MapWorkspaceStore {
+export interface MapWorkspaceStore {
   activeMapTool: ActiveMapTool | null
   activeDrawerTool: ActiveDrawerTool | null
   activePanelTools: ActivePanelTool[]
@@ -29,8 +29,13 @@ interface MapWorkspaceStore {
   activeModuleId: string | null
   modulePanelCollapsed: boolean
   modulePanelFullscreen: boolean
+  globalSearchQuery: string
+  globalSearchPopoverOpen: boolean
   toggleMapTool: (navItemId: string) => void
   clearMapTool: () => void
+  setGlobalSearchQuery: (query: string) => void
+  setGlobalSearchPopoverOpen: (open: boolean) => void
+  openGlobalSearchDrawer: () => void
   togglePanelTool: (navItemId: string, toolId: string) => void
   toggleMapDockModule: (navItemId: string, moduleId: string) => void
   closeMapDockModule: () => void
@@ -120,6 +125,23 @@ function buildDrawerToolFromNav(navItemId: string): ActiveDrawerTool | null {
 
 export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
   ...readInitialWorkspaceState(),
+  globalSearchQuery: '',
+  globalSearchPopoverOpen: false,
+
+  setGlobalSearchQuery(query) {
+    set({ globalSearchQuery: query })
+  },
+
+  setGlobalSearchPopoverOpen(open) {
+    set({ globalSearchPopoverOpen: open })
+  },
+
+  openGlobalSearchDrawer() {
+    const { activeDrawerTool } = get()
+    if (activeDrawerTool?.navItemId !== 'tool-global-search') {
+      get().toggleMapTool('tool-global-search')
+    }
+  },
 
   toggleMapTool(navItemId) {
     const meta = resolveNavToolMeta(mockNavMainItems, navItemId)

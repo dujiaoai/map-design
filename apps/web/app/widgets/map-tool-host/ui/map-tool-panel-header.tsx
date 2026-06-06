@@ -13,15 +13,15 @@ export function MapToolPanelHeader({
   onClose,
   dragHandleProps,
   reserveDragSlot = false,
+  isDragging = false,
   className,
 }: {
   title: string
   variantLabel?: string | null
   onClose: () => void
-  /** movable-panel：拖动手柄事件 */
   dragHandleProps?: ComponentPropsWithoutRef<'button'>
-  /** anchor 面板：占位与 movable 标题左缘对齐 */
   reserveDragSlot?: boolean
+  isDragging?: boolean
   className?: string
 }) {
   const showDragSlot = Boolean(dragHandleProps) || reserveDragSlot
@@ -41,10 +41,11 @@ export function MapToolPanelHeader({
           <button
             type="button"
             aria-label={`拖动${title}面板`}
-            title="拖动面板"
+            title="拖动面板（靠近边缘/中线自动对齐）"
             className={cn(
               DOCK_PANEL_ICON_BUTTON_CLASS,
               'cursor-grab touch-none active:cursor-grabbing',
+              isDragging && 'cursor-grabbing',
             )}
             {...dragHandleProps}
           >
@@ -75,12 +76,12 @@ export function MapToolPanelHeader({
   )
 }
 
-/** 地图工具浮层外壳：单层 border，避免 Card 双层 ring */
+/** 地图工具浮层外壳：复用 cc-glass-panel 浅/深主题（见 home.css） */
 export function mapToolPanelShellClass(options: {
   presentation: 'movable-panel' | 'anchor'
 }): string {
   return cn(
-    'border-border bg-background/95 flex max-h-[min(420px,50vh)] shrink-0 flex-col overflow-hidden rounded-lg border shadow-lg backdrop-blur-sm',
+    'cc-glass-panel text-foreground flex max-h-[min(420px,50vh)] shrink-0 flex-col overflow-hidden rounded-lg backdrop-blur-sm',
     options.presentation === 'movable-panel' && 'border-primary/30',
   )
 }

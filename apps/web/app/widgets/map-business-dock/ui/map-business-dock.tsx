@@ -1,5 +1,3 @@
-import { cn } from '@repo/ui'
-
 import { mockModuleMeta } from '~/entities/navigation'
 import { useMapWorkspaceStore } from '~/features/map-workspace'
 import {
@@ -82,8 +80,7 @@ export function MapBusinessDockEdge() {
       label={`展开${meta.title}`}
       shortLabel={resolveModuleEdgeShortLabel(activeModuleId, meta.title)}
       icon={EdgeIcon}
-      className={cn(dockEdgeVisible ? 'left-8 -translate-x-1/2' : 'left-0 -translate-x-1/2')}
-      railClassName={cn(dockEdgeVisible ? 'left-8' : 'left-0')}
+      stackIndex={dockEdgeVisible ? 1 : 0}
       onClick={() => setModulePanelCollapsed(false)}
     />
   )

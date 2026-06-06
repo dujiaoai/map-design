@@ -72,8 +72,7 @@ export function MapDockPanelEdge() {
       label={`展开${meta.title}`}
       shortLabel={resolveModuleEdgeShortLabel(activeDockModuleId, meta.title)}
       icon={resolveDockModuleEdgeIcon(activeDockModuleId)}
-      className="left-0 -translate-x-1/2"
-      railClassName="left-0"
+      stackIndex={0}
       onClick={() => setDockPanelCollapsed(false)}
     />
   )

@@ -81,7 +81,11 @@ export function WorkspaceHeaderActions({
           <span className="hidden max-w-[72px] truncate text-xs sm:inline">{displayUser.name}</span>
           <ChevronsUpDownIcon className="hidden size-3.5 opacity-60 sm:inline" />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" sideOffset={6} className="w-56">
+        <DropdownMenuContent
+          align="end"
+          sideOffset={6}
+          className="cc-menu-popover w-56 max-h-none overflow-hidden border-border bg-popover text-popover-foreground data-open:animate-none data-closed:animate-none"
+        >
           <DropdownMenuGroup>
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">

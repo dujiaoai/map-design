@@ -34,19 +34,21 @@ describe('quick-toolbar prefs', () => {
     expect(loadQuickToolbarIds()).toEqual([...DEFAULT_QUICK_TOOL_IDS])
   })
 
-  it('sanitize keeps order and max size', () => {
-    expect(
-      sanitizeQuickToolbarIds([
-        'tool-measure-distance',
-        'tool-measure-area',
-        'tool-plot-point',
-        'tool-draw-line',
-        'tool-draw-surface',
-        'tool-pick-point',
-        'tool-locate-point',
-        'tool-global-search',
-        'tool-import-file',
-      ]),
-    ).toHaveLength(8)
+  it('sanitize keeps order and all valid catalog ids', () => {
+    const ids = [
+      'tool-measure-distance',
+      'tool-measure-area',
+      'tool-plot-point',
+      'tool-draw-line',
+      'tool-draw-surface',
+      'tool-pick-point',
+      'tool-locate-point',
+      'tool-import-file',
+      'tool-admin-divisions',
+      'tool-panorama-point',
+      'tool-swipe-compare',
+      'tool-hd-image-compare',
+    ]
+    expect(sanitizeQuickToolbarIds(ids)).toEqual(ids)
   })
 })

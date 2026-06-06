@@ -1,11 +1,24 @@
 export {
   DEFAULT_QUICK_TOOL_IDS,
-  MAX_QUICK_TOOLS,
   MIN_QUICK_TOOLS,
   QUICK_TOOL_CATALOG,
+  QUICK_TOOL_GROUP_LABELS,
+  QUICK_TOOL_GROUP_ORDER,
+  groupQuickToolCatalog,
   resolveQuickToolDef,
   sanitizeQuickToolbarIds,
   type QuickToolDef,
+  type QuickToolGroup,
 } from './lib/quick-toolbar-catalog'
-export { loadQuickToolbarIds, resetQuickToolbarIds, saveQuickToolbarIds } from './lib/quick-toolbar-prefs'
+export {
+  hasSeenQuickToolbarOnboarding,
+  loadQuickToolbarIds,
+  loadQuickToolbarPosition,
+  markQuickToolbarOnboardingSeen,
+  resetQuickToolbarIds,
+  resetQuickToolbarPosition,
+  saveQuickToolbarIds,
+  saveQuickToolbarPosition,
+  type QuickToolbarPosition,
+} from './lib/quick-toolbar-prefs'
 export { useQuickToolbarPrefs } from './model/use-quick-toolbar-prefs'

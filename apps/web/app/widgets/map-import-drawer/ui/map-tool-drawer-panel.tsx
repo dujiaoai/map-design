@@ -14,6 +14,7 @@ import {
  */
 export function MapToolDrawerPanel() {
   const activeDrawerTool = useMapWorkspaceStore((state) => state.activeDrawerTool)
+  const globalSearchQuery = useMapWorkspaceStore((state) => state.globalSearchQuery)
   const toggleMapTool = useMapWorkspaceStore((state) => state.toggleMapTool)
   const { panel, open, exiting, mounted } = useMapToolDrawerTransition(activeDrawerTool)
 
@@ -23,6 +24,13 @@ export function MapToolDrawerPanel() {
 
   const meta = resolveNavToolMeta(mockNavMainItems, panel.navItemId)
   const title = meta?.title ?? panel.toolId
+
+  function handleClose() {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+    toggleMapTool(panel.navItemId)
+  }
 
   return (
     <aside
@@ -39,12 +47,9 @@ export function MapToolDrawerPanel() {
       style={{ animationDuration: `${MAP_TOOL_DRAWER_ANIMATION_MS}ms` }}
       role="complementary"
       aria-label={`${title}面板`}
-      aria-hidden={exiting}
+      inert={exiting ? true : undefined}
     >
-      <DockPanelHeader
-        title={title}
-        onClose={() => toggleMapTool(panel.navItemId)}
-      />
+      <DockPanelHeader title={title} onClose={handleClose} />
       <div className="text-muted-foreground flex-1 space-y-2 overflow-y-auto p-4 text-sm">
         <p className="text-foreground/80 text-xs">
           地图交互区保持可用；本面板仅占用右侧条带（toolId: {panel.toolId}）。
@@ -53,7 +58,16 @@ export function MapToolDrawerPanel() {
         {panel.toolId === 'import-file' ? (
           <p>支持上传文件、目录选择与标绘入库；拾取/预览在地图画布完成。</p>
         ) : panel.toolId === 'global-search' ? (
-          <p>检索结果可定位至地图；画布不被模态层遮挡。</p>
+          <>
+            <p>多源检索、历史记录与高级筛选在此展示；快捷候选已在顶栏下拉中呈现。</p>
+            {globalSearchQuery.trim() ? (
+              <p className="text-foreground/70 rounded-md border border-border px-2 py-1.5 text-xs dark:border-white/10">
+                当前检索：<span className="text-foreground">{globalSearchQuery.trim()}</span>
+              </p>
+            ) : (
+              <p className="text-xs">在顶栏输入关键词，Enter 或「查看全部结果」打开本面板。</p>
+            )}
+          </>
         ) : null}
       </div>
     </aside>

@@ -1,6 +1,6 @@
 import { Button, cn } from '@repo/ui'
 import { CrosshairIcon, LayersIcon, LogOutIcon, RulerIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 
 import { mockNavMainItems, resolveNavToolMeta } from '~/entities/navigation'
 import { resolveWorkspaceContext, useMapWorkspaceStore } from '~/features/map-workspace'
@@ -30,7 +30,13 @@ function useLiveCoords() {
   return coords
 }
 
-export function MapStatusBar({ className }: { className?: string }) {
+export function MapStatusBar({
+  className,
+  style,
+}: {
+  className?: string
+  style?: CSSProperties
+}) {
   const statusSummary = useMapWorkspaceStore((state) => resolveWorkspaceContext(state).statusSummary)
   const activeMapTool = useMapWorkspaceStore((state) => state.activeMapTool)
   const clearMapTool = useMapWorkspaceStore((state) => state.clearMapTool)
@@ -47,11 +53,12 @@ export function MapStatusBar({ className }: { className?: string }) {
         MAP_STATUS_BAR_HEIGHT_CLASS,
         className,
       )}
+      style={style}
       aria-label="地图状态栏"
     >
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <CrosshairIcon className="size-3.5 shrink-0 text-brand-light/70" aria-hidden />
-        <span className="workspace-status-label hidden sm:inline">Coords</span>
+        <span className="workspace-status-label hidden sm:inline">坐标</span>
         <span className="truncate tabular-nums text-foreground/85 dark:text-white/80">
           {coords.lng.toFixed(6)}, {coords.lat.toFixed(6)}
         </span>

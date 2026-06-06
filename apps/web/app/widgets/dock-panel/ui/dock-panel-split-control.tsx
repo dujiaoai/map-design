@@ -19,7 +19,7 @@ export function DockPanelCollapseHandle({
       onClick={onClick}
       className={cn('workspace-dock-collapse-handle absolute top-1/2 -translate-y-1/2', className)}
     >
-      <PanelLeftCloseIcon className="size-3.5" strokeWidth={2.25} />
+      <PanelLeftCloseIcon className="size-3.5 text-current" strokeWidth={2.25} />
     </button>
   )
 }
@@ -32,6 +32,7 @@ export function DockPanelExpandEdge({
   onClick,
   className,
   railClassName,
+  stackIndex = 0,
 }: {
   label: string
   shortLabel?: string
@@ -39,6 +40,8 @@ export function DockPanelExpandEdge({
   onClick: () => void
   className?: string
   railClassName?: string
+  /** 多个 Dock 同时收起时水平错开，避免图标叠在一起 */
+  stackIndex?: number
 }) {
   return (
     <>
@@ -52,12 +55,25 @@ export function DockPanelExpandEdge({
           'workspace-dock-edge-tab absolute top-1/2 -translate-y-1/2',
           className,
         )}
+        style={stackIndex > 0 ? { left: `${stackIndex * 2.75}rem` } : undefined}
       >
-        {Icon ? <Icon className="text-brand-light/90 size-3.5 shrink-0" strokeWidth={2} /> : null}
-        {shortLabel ? (
-          <span className="text-[10px] leading-none font-medium text-white/75">{shortLabel}</span>
+        {Icon ? (
+          <Icon
+            className="size-4 shrink-0 text-brand-deep dark:text-brand-light/90"
+            strokeWidth={2}
+            aria-hidden
+          />
         ) : null}
-        <ChevronRightIcon className="size-3 shrink-0 text-white/45" strokeWidth={2.25} />
+        {shortLabel ? (
+          <span className="text-[10px] leading-none font-medium text-muted-foreground dark:text-white/75">
+            {shortLabel}
+          </span>
+        ) : null}
+        <ChevronRightIcon
+          className="size-3 shrink-0 text-muted-foreground/75 dark:text-white/45"
+          strokeWidth={2.25}
+          aria-hidden
+        />
       </button>
     </>
   )

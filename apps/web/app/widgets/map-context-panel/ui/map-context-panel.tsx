@@ -25,7 +25,7 @@ function ContextPanelTabs({
 
   return (
     <div
-      className="border-border flex shrink-0 border-b bg-black/10"
+      className="border-border flex shrink-0 border-b bg-muted/35 dark:bg-black/10"
       role="tablist"
       aria-label="上下文面板"
     >
@@ -36,8 +36,8 @@ function ContextPanelTabs({
         className={cn(
           'flex-1 px-3 py-2 text-xs transition-colors',
           tab === 'module'
-            ? 'border-primary text-brand-light border-b-2 bg-primary/10'
-            : 'text-white/50 hover:text-white/75',
+            ? 'border-primary text-brand-deep dark:text-brand-light border-b-2 bg-primary/10'
+            : 'text-muted-foreground hover:text-foreground',
         )}
         onClick={() => onTabChange('module')}
       >
@@ -50,8 +50,8 @@ function ContextPanelTabs({
         className={cn(
           'flex-1 px-3 py-2 text-xs transition-colors',
           tab === 'uav'
-            ? 'border-primary text-brand-light border-b-2 bg-primary/10'
-            : 'text-white/50 hover:text-white/75',
+            ? 'border-primary text-brand-deep dark:text-brand-light border-b-2 bg-primary/10'
+            : 'text-muted-foreground hover:text-foreground',
         )}
         onClick={() => onTabChange('uav')}
       >
@@ -109,7 +109,7 @@ function MapContextPanelSheet({
     >
       <SheetContent
         side="left"
-        className="workspace-context-sheet flex w-[min(360px,92vw)] max-w-[92vw] flex-col gap-0 p-0 sm:max-w-md"
+        className="workspace-context-sheet cc-sheet-menu flex w-[min(360px,92vw)] max-w-[92vw] flex-col gap-0 p-0 sm:max-w-md"
       >
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
       </SheetContent>
@@ -179,7 +179,7 @@ export function MapContextPanel() {
   }
 
   return (
-    <div className="workspace-context-panel flex min-h-0 w-[min(360px,38vw)] shrink-0 flex-col border-r border-white/8">
+    <div className="workspace-context-panel border-border flex min-h-0 w-[min(360px,38vw)] shrink-0 flex-col border-r dark:border-white/8">
       {body}
     </div>
   )

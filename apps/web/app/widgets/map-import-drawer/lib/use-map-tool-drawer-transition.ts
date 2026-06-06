@@ -31,6 +31,12 @@ export function useMapToolDrawerTransition(active: ActiveDrawerTool | null) {
     if (phase !== 'exit') {
       return
     }
+
+    const active = document.activeElement
+    if (active instanceof HTMLElement) {
+      active.blur()
+    }
+
     const timer = window.setTimeout(() => {
       setPanel(null)
       setPhase('idle')

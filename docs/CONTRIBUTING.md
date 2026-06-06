@@ -26,9 +26,10 @@ pnpm --filter @repo/saas check
 ## 新增 Feature
 
 1. 在 `app/features/<name>/` 实现（FSD 分层）
-2. 在 `app/routes.ts` 注册路由
-3. 配置 `clientLoader` 权限守卫
-4. 经切片 `index.ts` 导出 Public API
+2. **UI 优先 shadcn**：从 `@repo/ui` 组合；缺 primitive 时先在 `packages/ui` 执行 `ui:add`（见 [frontend.md](./architecture/frontend.md#ui-组件选型shadcn-优先)）
+3. 在 `app/routes.ts` 注册路由
+4. 配置 `clientLoader` 权限守卫
+5. 经切片 `index.ts` 导出 Public API
 
 ## 地图工作台变更
 
@@ -39,7 +40,7 @@ pnpm --filter @repo/saas check
 
 ## PR
 
-- Conventional Commits
+- Conventional Commits（生成建议：`node .cursor/skills/git-commit/scripts/generate-commit-message.mjs`；Skill：`/git-commit`）
 - 架构变更需同步更新 `docs/architecture/` 或 `docs/adr/`
 
 ## 文档

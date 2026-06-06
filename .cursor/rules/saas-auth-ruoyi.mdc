@@ -1,0 +1,54 @@
+---
+description: saas-web RuoYi 登录、Session 守卫、bootstrap 与 queries 边界
+globs:
+  - apps/web/app/shared/auth/**
+  - apps/web/app/shared/session/**
+  - apps/web/app/shared/queries/**
+  - apps/web/app/shared/mock/dev-auth.ts
+  - apps/web/app/shared/api/**
+  - apps/web/app/layouts/**
+  - apps/web/app/routes/login.tsx
+  - apps/web/app/features/account/**
+  - apps/web/app/entities/ruoyi-user/**
+  - packages/auth/**
+  - packages/ruoyi-api/**
+alwaysApply: false
+---
+
+# SaaS Auth — RuoYi（saas-web）
+
+完整说明见 [auth-rbac.md](../../docs/architecture/auth-rbac.md)、[backend-integration.md](../../docs/architecture/backend-integration.md)。Skill：`.cursor/skills/saas-auth-ruoyi/`。
+
+## 链路
+
+```
+login → ruoyi-api login → auth.setSession
+app-layout clientLoader → requireAuthenticated → bootstrapAuthenticatedApp
+  → userInfo + menuRouters queries → 失败 clearAppSession → /login
+```
+
+## API 选用（当前）
+
+| 场景 | 包 |
+| --- | --- |
+| 登录、getInfo、菜单、profile | `@repo/ruoyi-api` |
+| App 数据层 | `shared/queries/*` + TanStack Query |
+| 未来 SaaS `/v1` | `@repo/api-client`（勿替换登录链路） |
+
+UI **禁止**裸 `fetch` `/YunYanApi` 或直接 `createRuoYiClient`。
+
+## 新受保护路由
+
+1. 挂 `app-layout` 子路由 — 已有 `clientLoader` 守卫
+2. 新 RuoYi 数据 → `shared/queries/` 封装
+3. 401/403 → `clearAppSession()`，勿半清 session
+
+## Mock
+
+`dev-auth.ts` / `MOCK_ACCESS_TOKEN`：bootstrap 跳过 RuoYi，本地与 Playwright 用。
+
+## 禁止
+
+- widget 层直接调 ruoyi-api
+- 假设 `@repo/api-client` refresh 已可用
+- 前端-only 权限 enforcement（仅 UX 隐藏）

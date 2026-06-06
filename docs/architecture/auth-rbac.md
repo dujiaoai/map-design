@@ -84,3 +84,5 @@ sequenceDiagram
 - [backend-integration.md](./backend-integration.md) — RuoYi 集成细节
 - [packages.md](./packages.md) — `@repo/auth` API
 - [ADR-0005](../adr/0005-ruoyi-transitional-backend.md) — 过渡策略
+- `.cursor/rules/saas-auth-ruoyi.mdc` — Cursor 自动规则
+- Skill `.cursor/skills/saas-auth-ruoyi/` — 完整 Agent 工作流

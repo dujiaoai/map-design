@@ -1,0 +1,30 @@
+---
+description: cloud/uav ESM 远程模块 mount/unmount 与构建约束（非 saas-web map-plugin）
+globs:
+  - cloud/uav/**
+alwaysApply: false
+---
+
+# Cloud UAV ESM Plugin
+
+README：[cloud/uav/README.md](../../cloud/uav/README.md)。Skill：`.cursor/skills/cloud-uav-esm-plugin/`。
+
+## 与 map-plugin 区分
+
+| | Map Tool | Cloud UAV |
+| --- | --- | --- |
+| 宿主 | saas-web | yunyan-web Vue |
+| 集成 | map-plugin-bridge | `import()` + mount/unmount |
+
+## 要点
+
+- 公共 API：`mount(container)` / `unmount(container)`
+- 新模块：`module-manifest.ts` + `src/modules/<id>/`
+- **不用** `@vitejs/plugin-react`（`esbuild.jsx: automatic`）
+- Drawer：用 `DrawerCloseButton`，避免 `DrawerClose asChild` + nested Button
+- 路由离开 **`onBeforeUnmount`** 必须 `unmount`
+
+```bash
+pnpm --filter @repo/cloud-uav dev
+pnpm --filter @repo/cloud-uav build
+```

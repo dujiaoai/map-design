@@ -25,6 +25,8 @@ python scripts/with_server.py \
 ## 验证命令
 
 ```bash
-pnpm --filter @repo/saas-web test
-pnpm --filter @repo/saas-web validate
+pnpm --filter @repo/saas-web test          # Vitest
+pnpm --filter @repo/saas-web validate      # typecheck + lint + test
 ```
+
+Vitest 模式见 Skill `webapp-testing` → `references/vitest-map-design.md`。

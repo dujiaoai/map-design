@@ -1,0 +1,44 @@
+---
+description: saas-web 地图插件 bridge/registry 与 store 边界（MapProvider Phase C 接入）
+globs:
+  - apps/web/app/features/map-workspace/lib/map-plugin-bridge.ts
+  - apps/web/app/features/map-workspace/lib/map-plugin-registry.ts
+  - apps/web/app/features/map-workspace/lib/use-map-engine-ready.ts
+  - apps/web/app/features/map-workspace/ui/map-tool-lifecycle-sync.tsx
+  - apps/web/app/features/map-workspace/lib/workspace-url.ts
+  - apps/web/app/features/map-workspace/lib/workspace-url.test.ts
+alwaysApply: false
+---
+
+# Map Plugin Integration（saas-web）
+
+完整说明见 [map-plugin-integration.md](../../docs/architecture/map-plugin-integration.md)。Skill：`.cursor/skills/map-plugin-integration/`。
+
+## 边界
+
+- **菜单点击** → 只改 `workspace-store`（经 `handle-nav-select`）
+- **`MapToolLifecycleSync`** → 监听 store，调用 `getMapPluginBridge()`
+- **MapProvider** → `setMapPluginBridge(realBridge)`，lazy import map-plugins
+
+不要在 `handle-nav-select` 或 widget 里直接 `startMapTool`。
+
+## Bridge 方法
+
+| store | bridge |
+| --- | --- |
+| `activeMapTool` | `startMapTool` / `stopMapTool` |
+| `activeDrawerTool` | `showDrawerTool` / `hideDrawerTool` |
+| Dock / module 字段 | **不调 bridge** |
+
+## Phase C 接入
+
+1. MapProvider 就绪后 `setMapPluginBridge(realBridge)`（替换 dev bridge 注入）
+2. 新 `pluginToolId` → `map-plugin-registry.ts` + mock `pluginToolId`
+3. `stopMapTool` / `hideDrawerTool` 清理地图 overlay
+4. URL `?tool=` 与 bridge restore 一致
+
+## 禁止
+
+- Cloud UAV `mount`/`unmount` 逻辑放进 bridge
+- Dock 模块调用 `startMapTool`
+- 与 `cloud/uav` ESM 插件混用（见 Skill `cloud-uav-esm-plugin`）

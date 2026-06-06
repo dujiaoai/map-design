@@ -134,4 +134,6 @@ interface MapPluginBridge {
 
 - [map-workspace-ui.md](./map-workspace-ui.md) — UI 载体详细规范
 - [frontend.md](./frontend.md) — FSD 分层
-- `.cursor/rules/saas-map-workspace-ui.mdc` — Cursor 编辑规则
+- `.cursor/rules/saas-map-workspace-ui.mdc` — 地图 UI 载体
+- `.cursor/rules/saas-map-plugin-integration.mdc` — bridge / registry
+- Skill `.cursor/skills/map-plugin-integration/` — Cursor 编辑规则

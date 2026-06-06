@@ -1,12 +1,24 @@
 ---
 name: webapp-testing
-description: Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
+description: >-
+  Test map-design web apps: Vitest/RTL for units and stores, Playwright for
+  browser E2E. Use when writing tests, debugging UI, or choosing test strategy
+  for saas-web—even if the user says "add a test", "run validate", or "automate login".
 license: Complete terms in LICENSE.txt
 ---
 
 # Web Application Testing
 
-To test local web applications, write native Python Playwright scripts.
+## 测试策略（map-design）
+
+```
+单元 / store / URL / 纯函数  →  Vitest（见 references/vitest-map-design.md）
+浏览器 E2E / 截图 / 登录 UI  →  Playwright（下文）
+```
+
+运行 `pnpm --filter @repo/saas-web validate` 包含 Vitest；Playwright 需单独脚本。
+
+To test local web applications with **Playwright**, write native Python Playwright scripts.
 
 **Helper Scripts Available**:
 - `scripts/with_server.py` - Manages server lifecycle (supports multiple servers)
@@ -90,7 +102,8 @@ with sync_playwright() as p:
 
 ## Reference Files
 
-- **references/map-design.md** — 本仓库 dev 端口 5175、mock 登录、验证命令
+- **references/vitest-map-design.md** — Vitest、RTL、store/URL 测试模式与 validate 命令
+- **references/map-design.md** — 本仓库 dev 端口 5175、mock 登录、Playwright 起服
 - **examples/** - Examples showing common patterns:
   - `element_discovery.py` - Discovering buttons, links, and inputs on a page
   - `static_html_automation.py` - Using file:// URLs for local HTML

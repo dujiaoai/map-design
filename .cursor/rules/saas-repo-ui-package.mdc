@@ -1,0 +1,33 @@
+---
+description: shadcn 优先 — @repo/ui 组件选型、ui:add、禁止 app 内另起 shadcn
+globs:
+  - packages/ui/**
+  - apps/web/app/widgets/**/*
+  - apps/web/app/features/**/ui/**
+  - apps/web/app/routes/**/*.tsx
+  - cloud/uav/src/**/*
+alwaysApply: false
+---
+
+# @repo/ui / shadcn 优先
+
+Skill：`.cursor/skills/repo-ui-package/`。架构：[frontend.md](../../docs/architecture/frontend.md#ui-组件选型shadcn-优先)。
+
+## 实现功能组件
+
+**优先** `@repo/ui` 已有 shadcn（Button、Dialog、Input、Tabs、DropdownMenu…）。
+
+```
+已有 → import from '@repo/ui'
+没有 → pnpm --filter @repo/ui ui:add <name> → 导出 index.ts
+```
+
+勿手写原生按钮/弹层替代 shadcn；勿在 apps/web 另起 shadcn 实例。
+
+## 例外（可自定义 DOM）
+
+地图 L4 条带（非 Vaul）、指挥舱 HUD、地图画布专用壳层 — 见 `map-workspace-ui`。
+
+## 样式
+
+语义 token + `saas-theme-mode`；改 primitive 样式在 `globals.css`，不散落 hex。

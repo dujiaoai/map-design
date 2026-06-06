@@ -2,7 +2,7 @@
 
 > 侧栏菜单点击后打开的 UI 形态、状态归属与组件映射。修改 `app-sidebar`、导航 mock、`map-workspace` store 或地图浮层/Dock 时请先读本文。
 >
-> Cursor 自动规则：[`.cursor/rules/saas-map-workspace-ui.mdc`](../../.cursor/rules/saas-map-workspace-ui.mdc)
+> Cursor 自动规则：`.cursor/rules/saas-map-workspace-ui.mdc`（及 `saas-map-plugin-integration.mdc` 等，见 `.cursor/skills/README.md`）
 >
 > 地图插件桥接：[map-plugin-integration.md](./map-plugin-integration.md)
 
@@ -116,14 +116,34 @@ Store：`apps/web/app/features/map-workspace/model/workspace-store.ts`
 `apps/web/app/routes/home.tsx`：
 
 ```
-MapDockPanel          ← map-dock-module
-MapBusinessDock       ← map-module
-  MapPlaceholder
-  MockMapToolHost     ← movable-panel / anchor
-  MapToolActionBar
-  MapToolDrawerPanel  ← drawer (L4)
-  MapDockPanelEdge / MapBusinessDockEdge
+MapContextPanel       ← map-dock-module / map-module（Dock 列）
+  workspace-canvas
+    MapPlaceholder
+    MapQuickToolbar   ← 方案 C：高频 map-tool 快捷入口
+    MockMapToolHost   ← movable-panel / anchor / panel
+    MapToolDrawerPanel← drawer (L4)
+    MapDockPanelEdge / MapBusinessDockEdge
+MapStatusBar
 ```
+
+页级 Vaul：`AccountSheet`、`NotificationSheet`（在 `SidebarProvider` 外）。
+
+## 快捷工具条（方案 C）
+
+侧栏不再列出高频 `map-tool`；改由画布 **`MapQuickToolbar`** 触发，与侧栏共用 `createNavSelectHandler`。
+
+| 项 | 路径 |
+| --- | --- |
+| Widget | `widgets/map-quick-toolbar/` |
+| 目录与 prefs | `features/map-quick-toolbar/`（`QUICK_TOOL_CATALOG`，最多 8 项） |
+| 位置拖拽 | `features/workspace-surface-drag/` + `map-quick-toolbar-position` |
+
+新增 catalog 项前须先在 `mock-nav-items.tsx` 存在对应 `map-tool`。Agent Skill：`.cursor/skills/map-workspace-ui/references/quick-toolbar-and-surfaces.md`。
+
+## 画布表面拖拽
+
+`features/workspace-surface-drag` 为快捷工具条与 `movable-tool-panel` 提供统一 @dnd-kit 拖拽、边距 clamp 与左/中/右吸附参考线。面板位置持久化键前缀 `map-workspace-panel-position:`。
+
 
 ## 新增菜单项检查清单
 

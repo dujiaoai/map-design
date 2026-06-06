@@ -17,6 +17,8 @@
 
 shadcn/ui + Base UI 组件库，含 SaaS 侧栏导航复合组件。
 
+**选型原则**：实现功能 UI 时 **优先 shadcn** — 先查 `@repo/ui` 是否已导出；没有则 `pnpm --filter @repo/ui ui:add <component>` 添加到本包，再在 App 中 `import { … } from '@repo/ui'`。勿在 app 内重复造 Button/Dialog 等基础件。
+
 ### 导出
 
 | 入口 | 内容 |

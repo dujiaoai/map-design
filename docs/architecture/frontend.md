@@ -8,9 +8,24 @@
 | 路由 | React Router 7.16 Framework |
 | 构建 | Vite 8 |
 | 样式 | Tailwind CSS v4 |
-| 组件 | `@repo/ui`（`packages/ui`） |
+| 组件 | `@repo/ui`（`packages/ui`，**shadcn/ui + Base UI**） |
 
 不含 i18n，UI 固定中文。
+
+## UI 组件选型（shadcn 优先）
+
+实现功能界面时，**优先使用 `@repo/ui` 已有的 shadcn 组件**（Button、Dialog、Drawer、Input、Tabs、DropdownMenu 等），不要先手写原生 HTML 或另起组件库。
+
+```
+需要 UI → @repo/ui 是否已有？
+  ├─ 是 → 直接 import，配合 saas-theme-mode 语义 token
+  ├─ 否 → pnpm --filter @repo/ui ui:add <name> → 导出 index.ts → 再使用
+  └─ 仅当 shadcn 不适用 → 自定义（如地图 L4 条带、指挥舱 HUD），须说明原因
+```
+
+- **唯一 shadcn 实例**：`packages/ui`（`components.json`，style `base-vega`）
+- **禁止**：在 `apps/web` 单独 `shadcn init` 或复制一份 ui 组件
+- Skill：`repo-ui-package`（添加/导出）、`saas-theme-mode`（浅/深色）
 
 ## 目录（FSD 简化）
 

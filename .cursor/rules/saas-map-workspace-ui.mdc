@@ -5,6 +5,8 @@ globs:
   - apps/web/app/widgets/map-*/**
   - apps/web/app/widgets/dock-panel/**
   - apps/web/app/features/map-workspace/**
+  - apps/web/app/features/map-quick-toolbar/**
+  - apps/web/app/features/workspace-surface-drag/**
   - apps/web/app/entities/navigation/**
   - apps/web/app/routes/home.tsx
 alwaysApply: false
@@ -18,7 +20,9 @@ alwaysApply: false
 
 **侧栏分组子菜单** = Collapsible 手风琴（非弹框）。
 
-**侧栏段级折叠**（如「数据」等长列表段）：段标题 + Chevron；持久化 `nav-section-{id}`。`map-tool` **不在侧栏**（方案 C：快捷工具条 + 顶栏搜索）。UI：`packages/ui/src/components/nav-main.tsx`。
+**侧栏段级折叠**（如「运营」等段）：段标题 + Chevron；持久化 `nav-section-{id}`。高频 **`map-tool` 不在侧栏列表**（方案 C：`MapQuickToolbar` + 顶栏搜索）。catalog：`features/map-quick-toolbar/lib/quick-toolbar-catalog.ts`。UI：`packages/ui/src/components/nav-main.tsx`。
+
+**画布表面拖拽**：浮层与快捷工具条共用 `features/workspace-surface-drag`（@dnd-kit + snap）。勿在 widget 内重复 clamp/snap 逻辑。
 
 **菜单 `kind` → UI：**
 
@@ -44,3 +48,4 @@ alwaysApply: false
 1. `mock-nav-items.tsx` 设 `kind` + id
 2. `map-tool` 配 `mockToolMeta.presentation` 与 `coordinatorGroup`
 3. 需要深链则改 `workspace-url.ts`
+4. 若上快捷工具条：加入 `quick-toolbar-catalog.ts`（1–8 项）

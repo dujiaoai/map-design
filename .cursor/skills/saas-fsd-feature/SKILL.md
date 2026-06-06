@@ -37,10 +37,11 @@ app/
 
 ```
 - [ ] 1. 创建 app/features/<name>/{ui,model,lib}/ + index.ts 导出 Public API
-- [ ] 2. 如需路由：在 app/routes.ts 注册 + layouts 守卫
-- [ ] 3. 服务端数据：shared/queries/ 封装 TanStack Query
-- [ ] 4. 鉴权：layouts/app-layout clientLoader 或 requireRole
-- [ ] 5. 验证：pnpm --filter @repo/saas-web validate
+- [ ] 2. UI：优先 @repo/ui shadcn 组件；缺项先在 packages/ui ui:add（Skill repo-ui-package）
+- [ ] 3. 如需路由：在 app/routes.ts 注册 + layouts 守卫
+- [ ] 4. 服务端数据：shared/queries/ 封装 TanStack Query
+- [ ] 5. 鉴权：layouts/app-layout clientLoader 或 requireRole
+- [ ] 6. 验证：pnpm --filter @repo/saas-web validate
 ```
 
 ## API 选用
@@ -64,4 +65,10 @@ pnpm --filter @repo/ui ui:add dialog  # 添加 shadcn 组件
 
 ## 地图相关变更
 
-若 touch 侧栏或 map-workspace，先加载 Skill：`map-workspace-ui`。
+| 场景 | Skill |
+| --- | --- |
+| 侧栏、Dock、浮层、快捷工具条 | `map-workspace-ui` |
+| MapProvider / pluginToolId / bridge | `map-plugin-integration` |
+| 登录、路由守卫、bootstrap | `saas-auth-ruoyi` |
+| `@repo/ui` 组件 | `repo-ui-package` |
+| 浅色/深色主题 | `saas-theme-mode` |

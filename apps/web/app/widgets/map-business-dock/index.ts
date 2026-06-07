@@ -1,1 +1,1 @@
-export { MapBusinessDock, MapBusinessDockEdge } from './ui/map-business-dock'
+export { MapBusinessDock } from './ui/map-business-dock'

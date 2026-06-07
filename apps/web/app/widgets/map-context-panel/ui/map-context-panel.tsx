@@ -1,91 +1,36 @@
 import { cn, Sheet, SheetContent, useIsMobile } from '@repo/ui'
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
+import { useShallow } from 'zustand/react/shallow'
 
-import { mockDockModuleMeta, mockModuleMeta } from '~/entities/navigation'
+import {
+  resolveActiveSidebarModule,
+  resolveNativeSidebarModule,
+  resolveSidebarModuleSurfaceKey,
+  type ActiveSidebarModule,
+} from '~/features/map-workspace/lib/resolve-active-sidebar-module'
 import { useMapWorkspaceStore } from '~/features/map-workspace'
 import { MapBusinessDock } from '~/widgets/map-business-dock'
 import { MapDockPanel } from '~/widgets/map-dock-panel'
+import {
+  DockPanelCollapseHandle,
+  DockPanelHeader,
+} from '~/widgets/dock-panel'
 
+import { useContextPanelSurface } from '../lib/use-context-panel-surface'
 import {
   WORKSPACE_CONTEXT_PANEL_MS,
   useWorkspaceContextPanelTransition,
 } from '../lib/use-workspace-context-panel-transition'
 import { useWorkspaceModuleContentMotion } from '../lib/use-workspace-module-content-motion'
-import {
-  resolveVisibleModuleSurfaceKey,
-  type ContextTab,
-} from '../lib/workspace-module-surface'
-
-function ContextPanelTabs({
-  tab,
-  showTabs,
-  dataTitle,
-  workspaceTitle,
-  onTabChange,
-}: {
-  tab: ContextTab
-  showTabs: boolean
-  dataTitle?: string
-  workspaceTitle?: string
-  onTabChange: (tab: ContextTab) => void
-}) {
-  if (!showTabs) return null
-
-  return (
-    <div
-      className="workspace-context-tabs border-border flex shrink-0 border-b bg-muted/35 dark:bg-black/10"
-      role="tablist"
-      aria-label="上下文面板"
-    >
-      <button
-        type="button"
-        role="tab"
-        aria-selected={tab === 'data'}
-        className={cn(
-          'flex-1 px-3 py-2 text-xs transition-colors',
-          tab === 'data'
-            ? 'border-primary text-brand-deep dark:text-brand-light border-b-2 bg-primary/10'
-            : 'text-muted-foreground hover:text-foreground',
-        )}
-        onClick={() => onTabChange('data')}
-      >
-        {dataTitle ?? '数据'}
-      </button>
-      <button
-        type="button"
-        role="tab"
-        aria-selected={tab === 'workspace'}
-        className={cn(
-          'flex-1 px-3 py-2 text-xs transition-colors',
-          tab === 'workspace'
-            ? 'border-primary text-brand-deep dark:text-brand-light border-b-2 bg-primary/10'
-            : 'text-muted-foreground hover:text-foreground',
-        )}
-        onClick={() => onTabChange('workspace')}
-      >
-        {workspaceTitle ?? '模块'}
-      </button>
-    </div>
-  )
-}
 
 function ContextPanelBody({
-  tab,
-  showTabs,
-  dataTitle,
-  workspaceTitle,
-  workspaceIsUav,
-  onTabChange,
+  activeModule,
   motionKey,
   motionDirection,
   motionSwap,
 }: {
-  tab: ContextTab
-  showTabs: boolean
-  dataTitle?: string
-  workspaceTitle?: string
-  workspaceIsUav: boolean
-  onTabChange: (tab: ContextTab) => void
+  activeModule: ActiveSidebarModule
   motionKey: string
   motionDirection: 'forward' | 'back'
   motionSwap: boolean
@@ -101,21 +46,76 @@ function ContextPanelBody({
             : 'workspace-module-surface--enter-back'),
       )}
     >
-      <ContextPanelTabs
-        tab={tab}
-        showTabs={showTabs}
-        dataTitle={dataTitle}
-        workspaceTitle={workspaceTitle}
-        onTabChange={onTabChange}
+      {activeModule.kind === 'uav' ? (
+        <MapDockPanel embedded />
+      ) : (
+        <MapBusinessDock embedded />
+      )}
+    </div>
+  )
+}
+
+function ContextPanelShell({
+  fullscreen,
+  onExitFullscreen,
+  onCollapse,
+  collapseLabel,
+  headerTitle,
+  onCloseModule,
+  onToggleFullscreen,
+  children,
+  className,
+}: {
+  fullscreen: boolean
+  onExitFullscreen: () => void
+  onCollapse: () => void
+  collapseLabel: string
+  headerTitle: string
+  onCloseModule: () => void
+  onToggleFullscreen: () => void
+  children: ReactNode
+  className?: string
+}) {
+  useEffect(() => {
+    if (!fullscreen) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        onExitFullscreen()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [fullscreen, onExitFullscreen])
+
+  return (
+    <div
+      className={cn(
+        'workspace-context-panel border-border relative flex h-full min-h-0 flex-col dark:border-white/8',
+        fullscreen
+          ? 'fixed inset-0 z-[200] h-svh w-screen max-w-none border-0 bg-background shadow-none'
+          : 'border-r',
+        className,
+      )}
+    >
+      <DockPanelHeader
+        title={headerTitle}
+        fullscreen={fullscreen}
+        onToggleFullscreen={onToggleFullscreen}
+        onClose={onCloseModule}
       />
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <MapBusinessDock slot="data" hidden={!showTabs ? false : tab !== 'data'} />
-        {workspaceIsUav ? (
-          <MapDockPanel hidden={showTabs && tab !== 'workspace'} />
-        ) : (
-          <MapBusinessDock slot="workspace" hidden={showTabs && tab !== 'workspace'} />
-        )}
-      </div>
+      {children}
+      {!fullscreen ? (
+        <DockPanelCollapseHandle
+          label={collapseLabel}
+          className="-right-3.5"
+          onClick={onCollapse}
+        />
+      ) : null}
     </div>
   )
 }
@@ -138,7 +138,8 @@ function MapContextPanelSheet({
     >
       <SheetContent
         side="left"
-        className="workspace-context-sheet cc-sheet-menu flex w-[min(360px,92vw)] max-w-[92vw] flex-col gap-0 p-0 sm:max-w-md"
+        showCloseButton={false}
+        className="workspace-context-sheet cc-sheet-menu flex w-[min(360px,92vw)] max-w-[92vw] flex-col gap-0 overflow-hidden rounded-r-xl p-0 sm:max-w-md"
       >
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
       </SheetContent>
@@ -146,108 +147,109 @@ function MapContextPanelSheet({
   )
 }
 
+function selectSidebarModuleState(state: ReturnType<typeof useMapWorkspaceStore.getState>) {
+  return {
+    activeDockModuleId: state.activeDockModuleId,
+    dockPanelCollapsed: state.dockPanelCollapsed,
+    activeModuleId: state.activeModuleId,
+    modulePanelCollapsed: state.modulePanelCollapsed,
+  }
+}
+
 /**
- * 地图左侧统一上下文面板；移动端以 Sheet 从左侧滑出
+ * 地图左侧统一上下文面板；侧栏模块全局互斥，任意时刻仅展示一个模块
  */
 export function MapContextPanel() {
   const isMobile = useIsMobile()
-  const activeDataModuleId = useMapWorkspaceStore((state) => state.activeDataModuleId)
-  const dataCollapsed = useMapWorkspaceStore((state) => state.dataModulePanelCollapsed)
-  const activeDockModuleId = useMapWorkspaceStore((state) => state.activeDockModuleId)
-  const dockCollapsed = useMapWorkspaceStore((state) => state.dockPanelCollapsed)
-  const activeModuleId = useMapWorkspaceStore((state) => state.activeModuleId)
-  const moduleCollapsed = useMapWorkspaceStore((state) => state.modulePanelCollapsed)
-  const setDataModulePanelCollapsed = useMapWorkspaceStore(
-    (state) => state.setDataModulePanelCollapsed,
-  )
+  const sidebarModuleState = useMapWorkspaceStore(useShallow(selectSidebarModuleState))
   const setDockPanelCollapsed = useMapWorkspaceStore((state) => state.setDockPanelCollapsed)
   const setModulePanelCollapsed = useMapWorkspaceStore((state) => state.setModulePanelCollapsed)
   const setContextPanelPresent = useMapWorkspaceStore((state) => state.setContextPanelPresent)
 
-  const dataOpen = Boolean(activeDataModuleId && !dataCollapsed)
-  const workspaceIsUav = Boolean(activeDockModuleId)
-  const workspaceOpen = Boolean(
-    (activeDockModuleId && !dockCollapsed) || (activeModuleId && !moduleCollapsed),
-  )
-  const isOpen = dataOpen || workspaceOpen
-  const showTabs = dataOpen && workspaceOpen
+  const activeModule = resolveActiveSidebarModule(sidebarModuleState)
+  const nativeModule = resolveNativeSidebarModule(sidebarModuleState)
+  const handoffToNative = nativeModule !== null && activeModule === null
+  const lastModuleRef = useRef(activeModule)
+  if (activeModule) {
+    lastModuleRef.current = activeModule
+  }
+  const displayModule = activeModule ?? (handoffToNative ? null : lastModuleRef.current)
+  const isOpen = activeModule !== null
 
-  const dataTitle = activeDataModuleId ? mockModuleMeta[activeDataModuleId]?.title : undefined
-  const workspaceTitle = workspaceIsUav
-    ? activeDockModuleId
-      ? mockDockModuleMeta[activeDockModuleId]?.title
-      : undefined
-    : activeModuleId
-      ? mockModuleMeta[activeModuleId]?.title
-      : undefined
-
-  const [tab, setTab] = useState<ContextTab>('data')
-
-  useEffect(() => {
-    if (dataOpen) {
-      setTab('data')
-    } else if (workspaceOpen) {
-      setTab('workspace')
-    }
-  }, [dataOpen, workspaceOpen, activeDataModuleId, activeDockModuleId, activeModuleId])
-
-  const { mounted, open, exiting, phase } = useWorkspaceContextPanelTransition(isOpen)
+  const { mounted, open, exiting, phase } = useWorkspaceContextPanelTransition(isOpen, {
+    immediateClose: handoffToNative,
+  })
 
   useEffect(() => {
     setContextPanelPresent(mounted)
     return () => setContextPanelPresent(false)
   }, [mounted, setContextPanelPresent])
 
-  const surfaceKey = resolveVisibleModuleSurfaceKey({
-    tab,
-    showTabs,
-    activeDataModuleId,
-    activeDockModuleId,
-    activeModuleId,
-    dataOpen,
-    workspaceOpen,
-    workspaceIsUav,
-  })
+  const surfaceKey = resolveSidebarModuleSurfaceKey(displayModule)
   const { motionKey, direction, isSwap } = useWorkspaceModuleContentMotion(surfaceKey, open)
 
-  function closePanel() {
-    if (dataOpen) {
-      setDataModulePanelCollapsed(true)
-    }
-    if (workspaceOpen) {
-      if (workspaceIsUav) {
-        setDockPanelCollapsed(true)
-      } else {
-        setModulePanelCollapsed(true)
-      }
+  const activeSurface = useContextPanelSurface()
+
+  function collapsePanel() {
+    const module = activeModule ?? lastModuleRef.current
+    if (!module) return
+    if (module.kind === 'uav') {
+      setDockPanelCollapsed(true)
+    } else {
+      setModulePanelCollapsed(true)
     }
   }
 
-  if (!mounted) {
+  if (!mounted || !displayModule) {
     return null
   }
 
-  const body = (
+  const headerTitle = activeSurface?.title ?? '模块面板'
+
+  const panelBody = (
     <ContextPanelBody
-      tab={tab}
-      showTabs={showTabs}
-      dataTitle={dataTitle}
-      workspaceTitle={workspaceTitle}
-      workspaceIsUav={workspaceIsUav}
-      onTabChange={setTab}
+      activeModule={displayModule}
       motionKey={motionKey}
       motionDirection={direction}
       motionSwap={isSwap}
     />
   )
 
+  const panelShell = (
+    <ContextPanelShell
+      fullscreen={activeSurface?.fullscreen ?? false}
+      onExitFullscreen={() => {
+        if (activeSurface?.fullscreen) {
+          activeSurface.toggleFullscreen()
+        }
+      }}
+      onCollapse={collapsePanel}
+      collapseLabel={`收起${headerTitle}`}
+      headerTitle={headerTitle}
+      onCloseModule={() => {
+        activeSurface?.closeModule()
+      }}
+      onToggleFullscreen={() => {
+        activeSurface?.toggleFullscreen()
+      }}
+      className={exiting ? 'pointer-events-none' : undefined}
+    >
+      {panelBody}
+    </ContextPanelShell>
+  )
+
   if (isMobile) {
     return (
-      <MapContextPanelSheet open={isOpen} onClose={closePanel}>
-        {body}
+      <MapContextPanelSheet open={isOpen} onClose={collapsePanel}>
+        {panelShell}
       </MapContextPanelSheet>
     )
   }
+
+  const desktopPanel =
+    activeSurface?.fullscreen && typeof document !== 'undefined'
+      ? createPortal(panelShell, document.body)
+      : panelShell
 
   return (
     <div
@@ -257,18 +259,12 @@ export function MapContextPanel() {
         'workspace-context-panel-shell shrink-0',
         open && 'workspace-context-panel-shell--open',
         exiting && 'workspace-context-panel-shell--exit',
+        activeSurface?.fullscreen && 'workspace-context-panel-shell--fullscreen',
       )}
       style={{ '--ws-panel-ms': `${WORKSPACE_CONTEXT_PANEL_MS}ms` } as CSSProperties}
       inert={exiting ? true : undefined}
     >
-      <div
-        className={cn(
-          'workspace-context-panel border-border relative flex h-full min-h-0 flex-col border-r dark:border-white/8',
-          exiting && 'pointer-events-none',
-        )}
-      >
-        {body}
-      </div>
+      {desktopPanel}
     </div>
   )
 }

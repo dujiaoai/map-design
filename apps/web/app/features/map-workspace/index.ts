@@ -2,6 +2,9 @@ export { createNavSelectHandler } from './lib/handle-nav-select'
 export {
   buildWorkspaceBreadcrumbTrail,
   resolveWorkspaceContext,
+  selectWorkspaceBreadcrumbTrail,
+  selectWorkspaceStatusSummary,
+  type WorkspaceBreadcrumbInput,
   type WorkspaceContextSnapshot,
 } from './lib/resolve-workspace-context'
 export {
@@ -14,7 +17,13 @@ export {
 } from './lib/map-plugin-bridge'
 export { hasLeftAnchorTools } from './lib/has-left-anchor-tools'
 export { useMapEngineReady } from './lib/use-map-engine-ready'
-export { MAP_PLUGIN_TOOL_REGISTRY, isKnownPluginToolId } from './lib/map-plugin-registry'
+export {
+  MAP_PLUGIN_MODULE_REGISTRY,
+  MAP_PLUGIN_TOOL_REGISTRY,
+  isKnownPluginModuleToolId,
+  isKnownPluginToolId,
+  isKnownPluginToolIdInRegistry,
+} from './lib/map-plugin-registry'
 export {
   buildWorkspaceSearchParams,
   parseWorkspaceUrl,

@@ -12,13 +12,12 @@
 
 .cc-headline-gradient {
   background: linear-gradient(
-    105deg,
-    var(--brand-light) 0%,
-    var(--primary) 38%,
-    var(--brand-deep) 72%,
+    180deg,
+    var(--brand-deep) 0%,
+    var(--brand) 45%,
     var(--brand-light) 100%
   );
-  background-size: 220% auto;
+  background-size: 100% 200%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -154,9 +153,9 @@
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(48, 148, 255, 0.025) 48%,
-    rgba(48, 148, 255, 0.07) 50%,
-    rgba(48, 148, 255, 0.025) 52%,
+    color-mix(in srgb, var(--brand) 2.5%, transparent) 48%,
+    color-mix(in srgb, var(--brand) 7%, transparent) 50%,
+    color-mix(in srgb, var(--brand) 2.5%, transparent) 52%,
     transparent 100%
   );
   background-size: 100% 6px;

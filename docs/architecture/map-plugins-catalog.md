@@ -130,12 +130,40 @@ flowchart TB
 | `comparison-plugin` | ✓ | ✓ | [map-plugin-comparison](../../.cursor/skills/map-plugin-comparison/SKILL.md) |
 | `ortho-imagery-comparison-plugin` | ✓ | ✓ | [map-plugin-ortho-imagery-comparison](../../.cursor/skills/map-plugin-ortho-imagery-comparison/SKILL.md) |
 | `region-navigator-plugin` | ✓ | ✓ | [map-plugin-region-navigator](../../.cursor/skills/map-plugin-region-navigator/SKILL.md) |
-| `panorama-multiple-plugin` | ✓ | ✓ | [map-plugin-panorama-multiple](../../.cursor/skills/map-plugin-panorama-multiple/SKILL.md) |
 | `map-search-plugin` | ✓ | ✓ | [map-plugin-map-search](../../.cursor/skills/map-plugin-map-search/SKILL.md) |
 
-其余 **41 个**插件仅有 Skill 产品契约，尚未写入 `map-plugin-registry` 与侧栏 mock（接入时按 Phase C checklist 补充）。
+**侧栏模块（registry 已登记，bridge 未接）**：
 
----
+| pluginToolId | 侧栏段 | moduleId | registry |
+| --- | --- | --- | --- |
+| `special-topic-layer-plugin` | 图层 | thematic | ✓ |
+| `scenic-spots-plugin` | 图层 | scenic-spots | ✓ |
+| `legend-plugin` | 图层 | legend | ✓ |
+| `do-analysis-plugin` | 分析 | spatial-analysis | ✓ |
+| `property-view-plugin` | 分析 | property-view | ✓ |
+| `favorites-plugin` | 分析 | my-favorites | ✓ |
+| `view-project-plugin` | 运营 | view-project | ✓ |
+| `flight-data-plugin` | 运营 | flight-ledger | ✓ |
+| `events-plugin` | 运营 | flight-ai-alerts | ✓ |
+| `high-speed-warning-plugin` | 运营 | custom-highway-alert | ✓ |
+| `share-list-plugin` | 运营 | custom-live-share | ✓ |
+| `video-monitor` | 运营 | video-monitor | ✓ |
+
+当前 **registry 共 22 项**（工具 10 + 模块 12）；MapProvider 真实 bridge 仍待 Phase C。
+
+## 侧栏分段（saas-web mock）
+
+| 侧栏段 | catalog 分类 | 菜单项 → pluginToolId |
+| --- | --- | --- |
+| **图层** | parallel-panel / display | 专题图层 → `special-topic-layer-plugin`；景点聚类 → `scenic-spots-plugin`；图例 → `legend-plugin` |
+| **分析** | modify-panel 互斥组 | 做分析 → `do-analysis-plugin`；属性查看 → `property-view-plugin`；我的收藏 → `favorites-plugin` |
+| **运营** | display / 业务 | 看项目 → `view-project-plugin`；飞行数据 → `flight-data-plugin`；事件 → `events-plugin`；高速预警 → `high-speed-warning-plugin`；地图分享 → `share-list-plugin`；视频监控 → `video-monitor` |
+| **机库** | uav-workspace | 机库 Dock 三项 |
+| **快捷工具条** | 量测 / 标绘 / 对比 / 工具 | 测距、测面、绘点、卷帘、导入、搜索等（见 `quick-toolbar-catalog.ts`） |
+
+段顺序与 rationale：[2026-06-workspace-nav-ia.md](../product/2026-06-workspace-nav-ia.md)。
+
+实现文件：`apps/web/app/entities/navigation/model/mock-nav-items.tsx`。
 
 ## 按能力分类
 
@@ -178,7 +206,6 @@ flowchart TB
 
 | pluginToolId | 类型 | 说明 |
 | --- | --- | --- |
-| `data-make-plugin` | modify-panel | 全景制作：工具栏 + 右侧 Modify 壳 |
 | `do-analysis-plugin` | modify-panel | 做分析：工具栏 + 分析抽屉壳 |
 | `favorites-plugin` | modify-panel | 收藏夹：目录树、标绘预览、联动编辑 |
 | `goto-report-plugin` | modify-panel | 跳转报表 / 附件上传 |
@@ -207,13 +234,6 @@ flowchart TB
 | `scenic-spots-plugin` | display | 全景点位聚类与详情 |
 | `share-list-plugin` | display | 地图分享列表 |
 | `video-monitor` | display | 视频监控点位与播放 |
-
-### 全景与影像
-
-| pluginToolId | 类型 | 说明 |
-| --- | --- | --- |
-| `panorama-multiple-plugin` | tool | 多全景点位浏览与切换 |
-| `panorama-roam-plugin` | display | 全景漫游（底图切换卡片内） |
 
 ### 三维工具（cesium-toolkit）
 

@@ -16,6 +16,8 @@ export interface WorkspaceContextSnapshot {
   moduleLabel: string
   /** 面包屑末级：工具/面板等上下文（无则为 null） */
   contextLabel: string | null
+  /** 顶栏面包屑：「云眼综合服务平台」之后的层级 */
+  breadcrumbTrail: string[]
   /** 状态栏摘要：当前工具 / 模块 / 面板 */
   statusSummary: string | null
 }
@@ -25,16 +27,20 @@ type WorkspaceContextState = Pick<
   | 'activeMapTool'
   | 'activeDrawerTool'
   | 'activePanelTools'
-  | 'activeDataModuleNavId'
-  | 'activeDataModuleId'
-  | 'dataModulePanelCollapsed'
   | 'activeDockModuleNavId'
   | 'activeDockModuleId'
   | 'dockPanelCollapsed'
   | 'activeModuleNavId'
   | 'activeModuleId'
   | 'modulePanelCollapsed'
+  | 'commandPaletteOpen'
+  | 'globalSearchPopoverOpen'
 >
+
+const GLOBAL_SEARCH_LABEL = '搜索'
+
+/** L4 条带 / 顶栏检索：无侧栏段归属，面包屑不叠在 Dock 模块路径上 */
+const STANDALONE_GLOBAL_TOOL_IDS = new Set(['global-search', 'import-file'])
 
 function resolveNavItemTitle(navItemId: string): string | undefined {
   return findNavSubItem(mockNavMainItems, navItemId)?.title
@@ -72,11 +78,6 @@ function collectStatusLabels(state: WorkspaceContextState): string[] {
   for (const panel of state.activePanelTools) {
     labels.push(resolveToolTitle(panel.navItemId, panel.toolId))
   }
-  if (state.activeDataModuleId && state.activeDataModuleNavId && !state.dataModulePanelCollapsed) {
-    labels.push(
-      resolveBusinessModuleTitle(state.activeDataModuleNavId, state.activeDataModuleId),
-    )
-  }
   if (state.activeDockModuleId && state.activeDockModuleNavId && !state.dockPanelCollapsed) {
     labels.push(
       resolveDockModuleTitle(state.activeDockModuleNavId, state.activeDockModuleId),
@@ -100,9 +101,6 @@ function resolveSectionLabel(state: WorkspaceContextState): string | null {
   if (state.activeDockModuleNavId) {
     return findNavSectionLabelByNavItemId(state.activeDockModuleNavId)
   }
-  if (state.activeDataModuleNavId) {
-    return findNavSectionLabelByNavItemId(state.activeDataModuleNavId)
-  }
   return null
 }
 
@@ -112,9 +110,6 @@ function resolveModuleLabel(state: WorkspaceContextState): string {
   }
   if (state.activeDockModuleId && state.activeDockModuleNavId) {
     return resolveDockModuleTitle(state.activeDockModuleNavId, state.activeDockModuleId)
-  }
-  if (state.activeDataModuleId && state.activeDataModuleNavId) {
-    return resolveBusinessModuleTitle(state.activeDataModuleNavId, state.activeDataModuleId)
   }
   return DEFAULT_MODULE_LABEL
 }
@@ -141,39 +136,113 @@ function resolvePrimaryContextLabel(state: WorkspaceContextState): string | null
   if (state.activeModuleId && state.activeModuleNavId && !state.modulePanelCollapsed) {
     return resolveBusinessModuleTitle(state.activeModuleNavId, state.activeModuleId)
   }
-  if (state.activeDataModuleId && state.activeDataModuleNavId && !state.dataModulePanelCollapsed) {
-    return resolveBusinessModuleTitle(state.activeDataModuleNavId, state.activeDataModuleId)
+  return null
+}
+
+/** 顶栏 foreground 工具（map-tool / drawer / 单 panel），不含模块回落 */
+function resolveForegroundTool(
+  state: WorkspaceContextState,
+): { navItemId: string; toolId: string } | null {
+  if (state.activeMapTool) {
+    return state.activeMapTool
+  }
+  if (state.activeDrawerTool) {
+    return state.activeDrawerTool
+  }
+  if (state.activePanelTools.length === 1) {
+    return state.activePanelTools[0] ?? null
   }
   return null
 }
 
+function isGlobalSearchSurfaceActive(state: WorkspaceContextState): boolean {
+  return state.commandPaletteOpen || state.globalSearchPopoverOpen
+}
+
+function isStandaloneGlobalTool(toolId: string): boolean {
+  return STANDALONE_GLOBAL_TOOL_IDS.has(toolId)
+}
+
 export function resolveWorkspaceContext(state: WorkspaceContextState): WorkspaceContextSnapshot {
   const statusLabels = collectStatusLabels(state)
+  const sectionLabel = resolveSectionLabel(state)
+  const moduleLabel = resolveModuleLabel(state)
+  const contextLabel = resolvePrimaryContextLabel(state)
+  const foregroundTool = resolveForegroundTool(state)
 
   return {
-    sectionLabel: resolveSectionLabel(state),
-    moduleLabel: resolveModuleLabel(state),
-    contextLabel: resolvePrimaryContextLabel(state),
+    sectionLabel,
+    moduleLabel,
+    contextLabel,
+    breadcrumbTrail: buildWorkspaceBreadcrumbTrail({
+      sectionLabel,
+      moduleLabel,
+      contextLabel,
+      activeDrawerTool: state.activeDrawerTool,
+      globalSearchActive: isGlobalSearchSurfaceActive(state),
+      foregroundTool,
+    }),
     statusSummary: statusLabels.length > 0 ? statusLabels.join(' · ') : null,
   }
 }
 
-/** 顶栏面包屑：云眼综合服务平台之后的层级（如 数据 → 专题 → 测距） */
-export function buildWorkspaceBreadcrumbTrail(
-  snapshot: Pick<WorkspaceContextSnapshot, 'sectionLabel' | 'moduleLabel' | 'contextLabel'>,
-): string[] {
-  const trail: string[] = []
+export interface WorkspaceBreadcrumbInput {
+  sectionLabel: string | null
+  moduleLabel: string
+  contextLabel: string | null
+  activeDrawerTool?: { navItemId: string; toolId: string } | null
+  globalSearchActive?: boolean
+  foregroundTool?: { navItemId: string; toolId: string } | null
+}
 
-  if (snapshot.sectionLabel && snapshot.moduleLabel !== DEFAULT_MODULE_LABEL) {
-    trail.push(snapshot.sectionLabel)
-    trail.push(snapshot.moduleLabel)
-  } else {
-    trail.push(snapshot.moduleLabel)
+/** 顶栏面包屑：云眼综合服务平台之后的层级（如 图层 → 专题图层；全局搜索仅「搜索」） */
+export function buildWorkspaceBreadcrumbTrail(input: WorkspaceBreadcrumbInput): string[] {
+  const {
+    sectionLabel,
+    moduleLabel,
+    contextLabel,
+    activeDrawerTool = null,
+    globalSearchActive = false,
+    foregroundTool = null,
+  } = input
+
+  if (activeDrawerTool) {
+    return [resolveToolTitle(activeDrawerTool.navItemId, activeDrawerTool.toolId)]
   }
 
-  if (snapshot.contextLabel && snapshot.contextLabel !== snapshot.moduleLabel) {
-    trail.push(snapshot.contextLabel)
+  if (globalSearchActive) {
+    return [GLOBAL_SEARCH_LABEL]
+  }
+
+  if (
+    contextLabel &&
+    foregroundTool &&
+    isStandaloneGlobalTool(foregroundTool.toolId)
+  ) {
+    return [contextLabel]
+  }
+
+  const trail: string[] = []
+
+  if (sectionLabel && moduleLabel !== DEFAULT_MODULE_LABEL) {
+    trail.push(sectionLabel)
+    trail.push(moduleLabel)
+  } else {
+    trail.push(moduleLabel)
+  }
+
+  if (contextLabel && contextLabel !== moduleLabel) {
+    trail.push(contextLabel)
   }
 
   return trail
+}
+
+/** 供 Zustand 订阅：breadcrumbTrail 为数组，须配合 useShallow */
+export function selectWorkspaceBreadcrumbTrail(state: WorkspaceContextState): string[] {
+  return resolveWorkspaceContext(state).breadcrumbTrail
+}
+
+export function selectWorkspaceStatusSummary(state: WorkspaceContextState): string | null {
+  return resolveWorkspaceContext(state).statusSummary
 }

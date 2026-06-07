@@ -9,6 +9,11 @@ export const DOCK_PANEL_ICON_BUTTON_CLASS = cn(
   'flex size-8 shrink-0 items-center justify-center rounded-md transition-colors',
 )
 
+/** 模块面板唯一滚动区（滚动条样式见 home.css · map-tool-panel-body） */
+export const MODULE_PANEL_BODY_CLASS = cn(
+  'map-tool-panel-body min-h-0 flex-1 overflow-y-auto overscroll-contain',
+)
+
 /** 全屏：固定铺满视口（Portal 到 body，覆盖侧栏 + 地图） */
 export function dockPanelAsideClass(fullscreen: boolean) {
   return cn(
@@ -16,6 +21,6 @@ export function dockPanelAsideClass(fullscreen: boolean) {
     'transition-[width,opacity] duration-200',
     fullscreen
       ? 'fixed inset-0 z-[200] h-svh w-screen max-w-none border-0 shadow-none'
-      : 'relative w-[360px] shrink-0 border-r',
+      : 'relative flex min-h-0 w-[360px] shrink-0 flex-col border-r',
   )
 }

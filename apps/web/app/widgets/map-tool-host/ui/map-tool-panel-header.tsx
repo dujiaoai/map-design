@@ -1,5 +1,5 @@
 import { cn } from '@repo/ui'
-import { GripVerticalIcon, XIcon } from 'lucide-react'
+import { GripVerticalIcon, Minimize2Icon, XIcon } from 'lucide-react'
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 
 import {
@@ -11,6 +11,7 @@ export function MapToolPanelHeader({
   title,
   variantLabel,
   onClose,
+  onMinimize,
   dragHandleProps,
   reserveDragSlot = false,
   isDragging = false,
@@ -19,6 +20,7 @@ export function MapToolPanelHeader({
   title: string
   variantLabel?: string | null
   onClose: () => void
+  onMinimize?: () => void
   dragHandleProps?: ComponentPropsWithoutRef<'button'>
   reserveDragSlot?: boolean
   isDragging?: boolean
@@ -63,6 +65,17 @@ export function MapToolPanelHeader({
         ) : null}
         <h2 className="min-w-0 truncate text-sm font-medium">{title}</h2>
       </div>
+      {onMinimize ? (
+        <button
+          type="button"
+          aria-label={`收起${title}`}
+          title={`收起${title}`}
+          onClick={onMinimize}
+          className={DOCK_PANEL_ICON_BUTTON_CLASS}
+        >
+          <Minimize2Icon className="size-3.5" />
+        </button>
+      ) : null}
       <button
         type="button"
         aria-label={`关闭${title}`}

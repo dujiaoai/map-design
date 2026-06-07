@@ -21,7 +21,7 @@ function WorkspaceBrandLogo() {
 
   if (useFallback) {
     return (
-      <div className="flex size-full items-center justify-center rounded-md bg-gradient-to-br from-primary to-brand-deep">
+      <div className="bg-brand-gradient flex size-full items-center justify-center rounded-md">
         <MapIcon className="size-4 text-primary-foreground" aria-hidden />
       </div>
     )

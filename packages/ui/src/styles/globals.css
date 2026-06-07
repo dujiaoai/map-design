@@ -38,9 +38,14 @@
   --color-brand-soft: var(--brand-soft);
   --color-brand-muted: var(--brand-muted);
   --color-brand-glow: var(--brand-glow);
+  --color-brand-gradient: var(--brand-gradient);
   --color-surface-deep: var(--surface-deep);
   --color-surface-panel: var(--surface-panel);
   --color-surface-elevated: var(--surface-elevated);
+  --color-surface-light-canvas: var(--surface-light-canvas);
+  --color-surface-light-panel: var(--surface-light-panel);
+  --color-surface-light-elevated: var(--surface-light-elevated);
+  --color-surface-light-instrument: var(--surface-light-instrument);
   --color-text-on-dark: var(--text-on-dark);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -60,50 +65,57 @@
 :root {
   --radius: 0.625rem;
 
-  /* 云眼品牌色 — 与登录页一致 */
-  --brand: #3094ff;
-  --brand-deep: #1d6fd8;
-  --brand-light: #7ec4ff;
-  --brand-soft: #9ecbff;
-  --brand-muted: rgba(48, 148, 255, 0.16);
-  --brand-glow: rgba(48, 148, 255, 0.35);
+  /* 云眼品牌色 — 青绿渐变 linear-gradient(180deg, #30758c, #46aeb8) */
+  --brand-deep: #30758c;
+  --brand: #46aeb8;
+  --brand-light: #6ec8cf;
+  --brand-soft: #9de0e5;
+  --brand-muted: rgba(70, 174, 184, 0.16);
+  --brand-glow: rgba(70, 174, 184, 0.35);
+  --brand-gradient: linear-gradient(180deg, #30758c, #46aeb8);
 
   --surface-deep: #07111f;
   --surface-panel: #0b1528;
   --surface-elevated: rgba(15, 28, 52, 0.85);
   --text-on-dark: #e8f1ff;
 
-  --background: oklch(0.99 0.004 248);
-  --foreground: oklch(0.18 0.02 248);
-  --card: oklch(1 0.002 248);
-  --card-foreground: oklch(0.18 0.02 248);
-  --popover: oklch(1 0.002 248);
-  --popover-foreground: oklch(0.18 0.02 248);
+  /* 浅色工作台别名 — 对齐 shadcn / slate 主流 SaaS */
+  --surface-light-canvas: #f1f5f9;
+  --surface-light-panel: #f8fafc;
+  --surface-light-elevated: #ffffff;
+  --surface-light-instrument: #ffffff;
+
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
   --primary: var(--brand);
   --primary-foreground: #ffffff;
-  --secondary: color-mix(in oklch, var(--brand) 10%, white);
-  --secondary-foreground: color-mix(in oklch, var(--brand) 70%, black);
-  --muted: color-mix(in oklch, var(--brand) 6%, white);
-  --muted-foreground: oklch(0.48 0.03 248);
-  --accent: color-mix(in oklch, var(--brand) 12%, white);
-  --accent-foreground: color-mix(in oklch, var(--brand) 72%, black);
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: color-mix(in oklch, var(--brand) 10%, oklch(0.922 0 0));
-  --input: color-mix(in oklch, var(--brand) 8%, oklch(0.922 0 0));
-  --ring: color-mix(in oklch, var(--brand) 45%, white);
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: color-mix(in srgb, var(--brand) 45%, transparent);
   --chart-1: var(--brand);
   --chart-2: var(--brand-light);
   --chart-3: var(--brand-deep);
   --chart-4: color-mix(in oklch, var(--brand) 55%, black);
   --chart-5: color-mix(in oklch, var(--brand) 35%, black);
-  --sidebar: color-mix(in oklch, var(--brand) 4%, white);
-  --sidebar-foreground: oklch(0.18 0.02 248);
+  --sidebar: #f8fafc;
+  --sidebar-foreground: #0f172a;
   --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: color-mix(in oklch, var(--brand) 12%, white);
-  --sidebar-accent-foreground: color-mix(in oklch, var(--brand) 72%, black);
-  --sidebar-border: color-mix(in oklch, var(--brand) 12%, oklch(0.922 0 0));
-  --sidebar-ring: color-mix(in oklch, var(--brand) 45%, white);
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: color-mix(in srgb, var(--brand) 45%, transparent);
 }
 
 .dark {
@@ -189,5 +201,52 @@
     box-shadow:
       0 0 0 1px rgba(255, 255, 255, 0.04) inset,
       0 4px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  /* 浅色侧栏 — 主流 flat + 细边框 */
+  html:not(.dark) [data-sidebar='sidebar'] {
+    border-color: var(--sidebar-border);
+    background: var(--sidebar);
+  }
+
+  html:not(.dark) [data-slot='sidebar-inner'] {
+    box-shadow: none;
+  }
+
+  html:not(.dark) [data-sidebar='menu-button'][data-active='true'],
+  html:not(.dark) [data-sidebar='menu-sub-button'][data-active='true'] {
+    border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent);
+    background: color-mix(in srgb, var(--brand) 12%, var(--sidebar));
+    box-shadow: none;
+    color: var(--brand-deep);
+    font-weight: 500;
+  }
+
+  html:not(.dark) [data-sidebar='menu-button'][data-active='true'] svg,
+  html:not(.dark) [data-sidebar='menu-sub-button'][data-active='true'] svg {
+    color: var(--brand);
+  }
+
+  /* 浅色浮层 — 标准 dropdown / sheet */
+  html:not(.dark) [data-slot='drawer-content'],
+  html:not(.dark) [data-slot='sheet-content'],
+  html:not(.dark) [data-slot='dropdown-menu-content'] {
+    border-color: var(--border);
+    background: var(--popover);
+    box-shadow:
+      0 4px 6px -1px rgb(15 23 42 / 0.08),
+      0 10px 15px -3px rgb(15 23 42 / 0.08);
+  }
+
+  html:not(.dark) [data-slot='card'] {
+    border-color: var(--border);
+    background: var(--card);
+    box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+  }
+}
+
+@layer utilities {
+  .bg-brand-gradient {
+    background-image: var(--brand-gradient);
   }
 }

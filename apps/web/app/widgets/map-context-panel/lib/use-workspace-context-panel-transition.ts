@@ -4,13 +4,27 @@ export const WORKSPACE_CONTEXT_PANEL_MS = 340
 
 type PanelPhase = 'idle' | 'enter' | 'open' | 'exit'
 
+export interface WorkspaceContextPanelTransitionOptions {
+  /** 切至原生载体时不播放退出动画，避免与 MapNativeModuleHost 叠层 */
+  immediateClose?: boolean
+}
+
 /** 上下文列展开/收起时保持挂载以播放退出动画 */
-export function useWorkspaceContextPanelTransition(isOpen: boolean) {
+export function useWorkspaceContextPanelTransition(
+  isOpen: boolean,
+  options?: WorkspaceContextPanelTransitionOptions,
+) {
+  const immediateClose = options?.immediateClose ?? false
   const [mounted, setMounted] = useState(false)
   const [phase, setPhase] = useState<PanelPhase>('idle')
 
   useEffect(() => {
     if (!isOpen) {
+      if (immediateClose) {
+        setMounted(false)
+        setPhase('idle')
+        return
+      }
       setPhase((current) => (current === 'idle' ? 'idle' : 'exit'))
       return
     }
@@ -29,7 +43,7 @@ export function useWorkspaceContextPanelTransition(isOpen: boolean) {
       cancelAnimationFrame(frame1)
       if (frame2) cancelAnimationFrame(frame2)
     }
-  }, [isOpen])
+  }, [immediateClose, isOpen])
 
   useEffect(() => {
     if (phase !== 'exit') {

@@ -2,6 +2,7 @@ import { Button } from '@repo/ui'
 import { BookmarkIcon, MapPinIcon, StarIcon } from 'lucide-react'
 
 import type { MockModuleContentProps } from '../../model/types'
+import { MOCK_MODULE_CONTENT_ROOT_CLASS } from '../primitives/mock-module-content-root'
 import { MockContentSection } from '../primitives/mock-content-section'
 import { MockEmptyState } from '../primitives/mock-empty-state'
 
@@ -31,7 +32,7 @@ const MOCK_FAVORITES = [
 
 export function MyFavoritesModuleContent(_props: MockModuleContentProps) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4 text-sm">
+    <div className={MOCK_MODULE_CONTENT_ROOT_CLASS}>
       <MockContentSection title="我的收藏">
         <ul className="space-y-2">
           {MOCK_FAVORITES.map((item) => (

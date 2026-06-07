@@ -6,6 +6,7 @@
 | --- | --- |
 | Node.js | ≥ 20.19.0 |
 | pnpm | ≥ 9.14.0 |
+| Turbo | 2.9.16（根 devDependency，随 `pnpm install` 安装） |
 
 ## 安装
 
@@ -86,9 +87,13 @@ pnpm --filter @repo/saas format       # format
 ### 测试
 
 ```bash
-pnpm --filter @repo/saas-web test           # Vitest
-pnpm --filter @repo/saas-web validate     # typecheck + lint + test
+pnpm test                 # 全 workspace 单测（Turbo）
+pnpm validate             # typecheck + test + biome
+pnpm --filter @repo/saas-web validate   # 仅 web 包
+pnpm --filter @repo/saas-web test:watch # Vitest watch
 ```
+
+任务编排详见 [turbo.md](./turbo.md)。
 
 ## 常见问题
 

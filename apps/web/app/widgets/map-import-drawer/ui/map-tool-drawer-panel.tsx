@@ -11,7 +11,7 @@ import {
 } from '../lib/use-map-tool-drawer-transition'
 
 /**
- * L4 工具面板：贴地图画布右侧，无遮罩，地图其余区域可继续交互（导入/搜索等）。
+ * L4 工具面板：画布右侧内收玻璃条带，无遮罩，地图其余区域可继续交互（导入/搜索等）。
  */
 export function MapToolDrawerPanel() {
   const activeDrawerTool = useMapWorkspaceStore((state) => state.activeDrawerTool)
@@ -37,8 +37,8 @@ export function MapToolDrawerPanel() {
     <aside
       data-state={exiting ? 'closed' : 'open'}
       className={cn(
-        'cc-glass-panel border-border absolute top-0 right-0 bottom-0 z-30',
-        'flex w-[360px] max-w-[40%] flex-col border-l',
+        'cc-glass-panel workspace-l4-drawer border-border absolute top-2 right-2 bottom-2 z-30',
+        'flex w-[360px] max-w-[calc(40%-0.5rem)] flex-col overflow-hidden rounded-l-xl border-l',
         'ease-out motion-reduce:transition-none',
         exiting ? 'pointer-events-none' : 'pointer-events-auto',
         exiting

@@ -10,6 +10,11 @@
 | 路线图 | `roadmap.md` 或 `roadmap-2026-H1.md` |
 | 研究 | `research/interview-synthesis-2026-06.md` |
 | 竞品 | `competitive/gis-workbench-brief.md` |
+| IA / 信息架构 | `2026-06-workspace-nav-ia.md` |
+
+## 已定稿
+
+- [2026-06-workspace-nav-ia.md](./2026-06-workspace-nav-ia.md) — 侧栏分段、Modify 互斥、运营 display 分流
 
 ## 相关
 

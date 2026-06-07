@@ -16,11 +16,13 @@ export {
 export {
   DEFAULT_QUICK_TOOLBAR_POSITION,
   hasSeenQuickToolbarOnboarding,
+  loadQuickToolbarCollapsed,
   loadQuickToolbarIds,
   loadQuickToolbarPosition,
   markQuickToolbarOnboardingSeen,
   resetQuickToolbarIds,
   resetQuickToolbarPosition,
+  saveQuickToolbarCollapsed,
   saveQuickToolbarIds,
   saveQuickToolbarPosition,
   type QuickToolbarPosition,

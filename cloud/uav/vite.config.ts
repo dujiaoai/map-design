@@ -16,8 +16,21 @@ import {
 import { devStubViteClientPlugin } from './vite-plugin-dev-stub-client'
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
+const pluginSrcDir = path.resolve(rootDir, 'src')
 const uiReactDir = path.resolve(rootDir, '../../packages/ui')
 const buildEntries = resolveModuleBuildEntries(rootDir, cloudPluginModuleManifest)
+
+/** cloud/uav FSD 顶层目录；其余 @/ 归属 packages/ui */
+const PLUGIN_ALIAS_PREFIXES = [
+  'shared',
+  'app',
+  'pages',
+  'modules',
+  'dev',
+  'widgets',
+  'features',
+  'entities',
+] as const
 
 export default defineConfig({
   base: '/yunyan-cloud-uav/',
@@ -36,9 +49,12 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: '@repo/ui', replacement: uiReactDir },
-      // shadcn 组件内 @/ 路径（避免被下方 cloud-plugin @/ 误解析）
-      { find: /^@\/lib\/(.*)$/, replacement: `${uiReactDir}/src/lib/$1` },
-      { find: /^@\//, replacement: `${path.resolve(rootDir, 'src')}/` },
+      {
+        find: new RegExp(`^@/(${PLUGIN_ALIAS_PREFIXES.join('|')})/(.*)$`),
+        replacement: `${pluginSrcDir}/$1/$2`,
+      },
+      // packages/ui 内部 @/components、@/lib、@/hooks 等
+      { find: /^@\/(.*)$/, replacement: `${uiReactDir}/src/$1` },
     ],
   },
   server: {

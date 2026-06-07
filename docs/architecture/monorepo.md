@@ -105,6 +105,7 @@ packages:
 | 工具 | 范围 | 说明 |
 | --- | --- | --- |
 | **Biome** | `apps/**`、`packages/**`、`cloud/**` | 统一 lint/format，根脚本 `@repo/saas check` |
+| **Turborepo** | 全 workspace | 构建/类型检查/测试并行与缓存，见 [turbo.md](../runbooks/turbo.md) |
 | **TypeScript** | 各包独立 `tsconfig.json` | 无根 tsconfig，Vite alias 指向 UI 源码 |
 | **Vitest** | web、packages | 单元测试；Playwright E2E 规划中 |
 | **Vite 8** | web、cloud-uav | React Router 7 Framework + Tailwind 4 |

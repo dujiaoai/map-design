@@ -39,7 +39,7 @@ const loginFormSchema = z.object({
 type LoginFormValues = z.infer<typeof loginFormSchema>
 
 const fieldInputClassName =
-  'login-field-input h-11 rounded-[10px] border-white/10 bg-[var(--surface-elevated)] text-[var(--text-on-dark)] text-base shadow-[0_0_0_1px_rgba(48,148,255,0.06)_inset] transition-[color,box-shadow] placeholder:text-white/35 focus-visible:border-primary focus-visible:ring-primary/30 md:text-sm'
+  'login-field-input h-11 rounded-[10px] border-white/10 bg-[var(--surface-elevated)] text-[var(--text-on-dark)] text-base shadow-[0_0_0_1px_var(--brand-muted)_inset] transition-[color,box-shadow] placeholder:text-white/35 focus-visible:border-primary focus-visible:ring-primary/30 md:text-sm'
 
 const brandFeatures = [
   { icon: RadarIcon, label: '实时空间态势感知' },
@@ -128,7 +128,7 @@ function BrandLogo({ compact = false }: { compact?: boolean }) {
     <div className={cn('flex items-center gap-3', compact && 'justify-center')}>
       <div
         className={cn(
-          'cc-logo-mark relative flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-brand-deep text-primary-foreground shadow-[0_8px_28px_rgba(48,148,255,0.4)]',
+          'cc-logo-mark bg-brand-gradient relative flex shrink-0 items-center justify-center rounded-xl text-primary-foreground shadow-[0_8px_28px_var(--brand-glow)]',
           compact ? 'size-10' : 'size-11',
         )}
       >
@@ -299,7 +299,7 @@ export default function Login() {
           <div className="login-form-card cc-glass-panel">
             <header className="login-form-header">
               <div className="flex items-start gap-3">
-                <div className="flex size-11 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-primary to-brand-deep text-primary-foreground shadow-[0_6px_20px_rgba(48,148,255,0.35)]">
+                <div className="bg-brand-gradient flex size-11 shrink-0 items-center justify-center rounded-[10px] text-primary-foreground shadow-[0_6px_20px_var(--brand-glow)]">
                   <MapIcon className="size-5" />
                 </div>
                 <div className="min-w-0 flex-1 space-y-1">

@@ -10,12 +10,12 @@ import {
 } from '~/features/map-workspace'
 import { AppSidebar } from '~/widgets/app-sidebar'
 import { AccountSheet } from '~/widgets/account-sheet'
-import { MapContextPanel } from '~/widgets/map-context-panel'
+import { MapControls } from '~/widgets/map-controls'
+import { MapContextPanel, MapContextPanelEdge } from '~/widgets/map-context-panel'
 import { MapCanvasContextMenu, MapPlaceholder } from '~/widgets/map-canvas'
-import { MapToolDrawerPanel } from '~/widgets/map-import-drawer'
-import { MapBusinessDockEdge } from '~/widgets/map-business-dock'
-import { MapDockPanelEdge } from '~/widgets/map-dock-panel'
+import { MapNativeModuleHost } from '~/widgets/map-native-module-host'
 import { MapQuickToolbar } from '~/widgets/map-quick-toolbar'
+import { MapToolDrawerPanel } from '~/widgets/map-import-drawer'
 import { MapStatusBar } from '~/widgets/map-status-bar'
 import { WorkspaceCommandPalette } from '~/widgets/workspace-command-palette'
 import { MockMapToolHost } from '~/widgets/map-tool-host'
@@ -99,11 +99,11 @@ export default function Home() {
               <MapCanvasContextMenu />
               <MapPlaceholder />
               <MapQuickToolbar />
+              <MapControls />
               <MockMapToolHost />
               <MapToolDrawerPanel />
-              <MapDockPanelEdge />
-              <MapBusinessDockEdge slot="data" />
-              <MapBusinessDockEdge slot="workspace" />
+              <MapNativeModuleHost />
+              <MapContextPanelEdge />
             </div>
           </div>
           <MapStatusBar

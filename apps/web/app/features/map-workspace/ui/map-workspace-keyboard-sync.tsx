@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { dismissActiveToolsWithPanelMinimize } from '../lib/dismiss-active-tools'
 import { useMapWorkspaceStore } from '../model/workspace-store'
 
 const SEARCH_INPUT_ID = 'workspace-global-search'
@@ -17,38 +18,12 @@ function isEditableTarget(target: EventTarget | null): boolean {
   return target.isContentEditable
 }
 
-function dismissActiveTools() {
-  const state = useMapWorkspaceStore.getState()
-
-  if (state.commandPaletteOpen) {
-    state.closeCommandPalette()
-    return true
-  }
-
-  if (state.globalSearchPopoverOpen) {
-    state.setGlobalSearchPopoverOpen(false)
-    return true
-  }
-
-  if (state.activeMapTool || state.activeDrawerTool) {
-    state.clearMapTool()
-    return true
-  }
-
-  if (state.activePanelTools.length > 0) {
-    state.clearPanelTools()
-    return true
-  }
-
-  return false
-}
-
 /** 工作台全局快捷键：/ 与 Ctrl/Cmd+K 打开命令面板、Esc 逐级退出 */
 export function MapWorkspaceKeyboardSync() {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        if (dismissActiveTools()) {
+        if (dismissActiveToolsWithPanelMinimize()) {
           event.preventDefault()
         }
         return

@@ -1,24 +1,30 @@
 import {
-  mockNavDataItems,
+  mockNavAnalysisItems,
+  mockNavLayerItems,
+  mockNavMapSectionDefs,
   mockNavOpsItems,
-  mockNavPanoramaModuleItems,
   mockNavUavItems,
   type NavMainItem,
 } from '~/entities/navigation'
 import { findNavSubItemByDockModuleId, findNavSubItemByModuleId } from '~/entities/navigation'
 
-export type WorkspaceModuleSection = 'data' | 'uav' | 'ops' | 'panorama'
+/** URL 路径段（/data 聚合图层+分析模块） */
+export type WorkspaceModuleSection = 'data' | 'uav' | 'ops'
+
+/** 侧栏段 id（mockNavMapSectionDefs） */
+export type NavSidebarSectionId = 'layers' | 'analysis' | 'ops' | 'uav' | 'app'
+
+const DATA_DOCK_MODULE_IDS = [...mockNavLayerItems, ...mockNavAnalysisItems]
+  .map((item) => item.moduleId)
+  .filter(Boolean) as string[]
 
 const SECTION_MODULE_IDS: Record<WorkspaceModuleSection, readonly string[]> = {
-  data: mockNavDataItems.map((item) => item.moduleId).filter(Boolean) as string[],
+  data: DATA_DOCK_MODULE_IDS,
   uav: mockNavUavItems.map((item) => item.moduleId).filter(Boolean) as string[],
   ops: mockNavOpsItems.map((item) => item.moduleId).filter(Boolean) as string[],
-  panorama: mockNavPanoramaModuleItems
-    .map((item) => item.moduleId)
-    .filter(Boolean) as string[],
 }
 
-const NON_DATA_SECTIONS = new Set<WorkspaceModuleSection>(['uav', 'ops', 'panorama'])
+const NON_DATA_SECTIONS = new Set<WorkspaceModuleSection>(['uav', 'ops'])
 
 export function isNonDataModuleSection(
   section: WorkspaceModuleSection,
@@ -44,22 +50,32 @@ export function resolveModuleSectionByModuleId(
   return null
 }
 
-export function resolveModuleSectionByNavItemId(navItemId: string): WorkspaceModuleSection | null {
-  for (const section of mockNavMapSectionDefsFromItems()) {
+export function resolveNavSidebarSectionByNavItemId(
+  navItemId: string,
+): NavSidebarSectionId | null {
+  for (const section of mockNavMapSectionDefs) {
     if (section.items.some((item) => item.id === navItemId)) {
-      return section.id as WorkspaceModuleSection
+      return section.id as NavSidebarSectionId
     }
   }
   return null
 }
 
-function mockNavMapSectionDefsFromItems() {
-  return [
-    { id: 'data' as const, items: mockNavDataItems },
-    { id: 'uav' as const, items: mockNavUavItems },
-    { id: 'ops' as const, items: mockNavOpsItems },
-    { id: 'panorama' as const, items: mockNavPanoramaModuleItems },
-  ]
+/** @deprecated 侧栏段请用 resolveNavSidebarSectionByNavItemId；此处保留 URL 段解析 */
+export function resolveModuleSectionByNavItemId(
+  navItemId: string,
+): WorkspaceModuleSection | null {
+  const sidebarSection = resolveNavSidebarSectionByNavItemId(navItemId)
+  if (!sidebarSection) {
+    return null
+  }
+  if (sidebarSection === 'layers' || sidebarSection === 'analysis') {
+    return 'data'
+  }
+  if (sidebarSection === 'uav' || sidebarSection === 'ops') {
+    return sidebarSection
+  }
+  return null
 }
 
 export interface WorkspaceModuleRoute {
@@ -67,7 +83,7 @@ export interface WorkspaceModuleRoute {
   moduleId: string
 }
 
-const MODULE_PATH_RE = /^\/(data|uav|ops|panorama)\/([^/]+)\/?$/
+const MODULE_PATH_RE = /^\/(data|uav|ops)\/([^/]+)\/?$/
 
 export function parseWorkspaceModulePath(pathname: string): WorkspaceModuleRoute | null {
   const match = MODULE_PATH_RE.exec(pathname)

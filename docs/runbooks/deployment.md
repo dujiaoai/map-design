@@ -1,10 +1,13 @@
 # 部署 Runbook
 
+> **Docker 部署**：完整方案见 [docker-deployment.md](./docker-deployment.md)（含 `deploy/` 目录 Dockerfile 与 compose）。
+
 ## 构建
 
 ```bash
-pnpm --filter @repo/saas-web build:airace
-pnpm --filter @repo/cloud-uav build
+pnpm build:web:airace   # 或 pnpm build:web
+pnpm build:uav
+# 等价于 turbo run build --filter=...
 ```
 
 产物：

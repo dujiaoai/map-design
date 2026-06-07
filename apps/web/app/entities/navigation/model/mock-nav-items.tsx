@@ -6,24 +6,25 @@ import {
   BriefcaseIcon,
   Building2Icon,
   CircleDotIcon,
-  ClapperboardIcon,
   ClipboardListIcon,
   Columns2Icon,
   CrosshairIcon,
+  EyeIcon,
   FileUpIcon,
   FolderKanbanIcon,
-  Globe2Icon,
   HeadphonesIcon,
   LandPlotIcon,
   LayoutGridIcon,
+  ListTreeIcon,
   LocateFixedIcon,
   MapPinnedIcon,
+  MountainIcon,
   PentagonIcon,
-  Rotate3dIcon,
   RouteIcon,
   RulerIcon,
   SatelliteIcon,
   ScanSearchIcon,
+  Share2Icon,
   SparklesIcon,
   SplineIcon,
   VideoIcon,
@@ -39,8 +40,9 @@ import type {
   NavMapSectionDef,
 } from './types'
 
-/** 地图工具全集（方案 C：不在侧栏展示，入口为快捷工具条 + 顶栏搜索） */
+/** 地图工具全集（方案 C：不在侧栏展示，入口为快捷工具条 + 命令面板） */
 export const mockNavToolItems: NavMainItem[] = [
+  // —— 量测与绘制（tool）——
   {
     id: 'tool-measure-distance',
     title: '测距',
@@ -90,6 +92,7 @@ export const mockNavToolItems: NavMainItem[] = [
     kind: 'map-tool',
     toolId: 'locate-point',
   },
+  // —— 影像对比（tool / panel）——
   {
     id: 'tool-swipe-compare',
     title: '卷帘对比',
@@ -104,13 +107,7 @@ export const mockNavToolItems: NavMainItem[] = [
     kind: 'map-tool',
     toolId: 'hd-image-compare',
   },
-  {
-    id: 'tool-admin-divisions',
-    title: '行政区划',
-    icon: <MapPinnedIcon />,
-    kind: 'map-tool',
-    toolId: 'admin-divisions',
-  },
+  // —— 工具条带 / 检索（modify-panel / tool）——
   {
     id: 'tool-import-file',
     title: '导入',
@@ -125,23 +122,56 @@ export const mockNavToolItems: NavMainItem[] = [
     kind: 'map-tool',
     toolId: 'global-search',
   },
+  // —— 底图控件（map-chrome，快捷入口）——
   {
-    id: 'tool-panorama-point',
-    title: '全景点位',
-    icon: <Rotate3dIcon />,
+    id: 'tool-admin-divisions',
+    title: '行政区划',
+    icon: <MapPinnedIcon />,
     kind: 'map-tool',
-    toolId: 'panorama-point',
+    toolId: 'admin-divisions',
   },
 ]
 
-/** 侧栏「数据 / 图层 / 分析」业务模块 */
-export const mockNavDataItems: NavMainItem[] = [
+/** 侧栏「图层」— parallel-panel / display（可见性，非 Modify 工作流） */
+export const mockNavLayerItems: NavMainItem[] = [
   {
     id: 'module-thematic',
-    title: '专题',
+    title: '专题图层',
     icon: <LayoutGridIcon />,
     kind: 'map-module',
     moduleId: 'thematic',
+  },
+  {
+    id: 'module-scenic-spots',
+    title: '景点聚类',
+    icon: <MountainIcon />,
+    kind: 'map-module',
+    moduleId: 'scenic-spots',
+  },
+  {
+    id: 'module-legend',
+    title: '图例',
+    icon: <ListTreeIcon />,
+    kind: 'map-module',
+    moduleId: 'legend',
+  },
+]
+
+/** 侧栏「分析」— modify-panel 互斥组 */
+export const mockNavAnalysisItems: NavMainItem[] = [
+  {
+    id: 'module-spatial-analysis',
+    title: '做分析',
+    icon: <BarChart3Icon />,
+    kind: 'map-module',
+    moduleId: 'spatial-analysis',
+  },
+  {
+    id: 'module-property-view',
+    title: '属性查看',
+    icon: <EyeIcon />,
+    kind: 'map-module',
+    moduleId: 'property-view',
   },
   {
     id: 'module-my-favorites',
@@ -150,16 +180,15 @@ export const mockNavDataItems: NavMainItem[] = [
     kind: 'map-module',
     moduleId: 'my-favorites',
   },
-  {
-    id: 'module-spatial-analysis',
-    title: '做分析',
-    icon: <BarChart3Icon />,
-    kind: 'map-module',
-    moduleId: 'spatial-analysis',
-  },
 ]
 
-/** 侧栏「机库」 */
+/** @deprecated 使用 mockNavLayerItems + mockNavAnalysisItems */
+export const mockNavDataItems: NavMainItem[] = [
+  ...mockNavLayerItems,
+  ...mockNavAnalysisItems,
+]
+
+/** 侧栏「机库」— uav-workspace */
 export const mockNavUavItems: NavMainItem[] = [
   {
     id: 'dock-uav-list',
@@ -184,7 +213,7 @@ export const mockNavUavItems: NavMainItem[] = [
   },
 ]
 
-/** 侧栏「运营」 */
+/** 侧栏「运营」— display / modify-panel */
 export const mockNavOpsItems: NavMainItem[] = [
   {
     id: 'module-view-project',
@@ -195,14 +224,14 @@ export const mockNavOpsItems: NavMainItem[] = [
   },
   {
     id: 'module-flight-ledger',
-    title: '飞行台账',
+    title: '飞行数据',
     icon: <ClipboardListIcon />,
     kind: 'map-module',
     moduleId: 'flight-ledger',
   },
   {
     id: 'module-flight-ai-alerts',
-    title: 'AI事件警告',
+    title: '事件',
     icon: <SparklesIcon />,
     kind: 'map-module',
     moduleId: 'flight-ai-alerts',
@@ -216,35 +245,21 @@ export const mockNavOpsItems: NavMainItem[] = [
   },
   {
     id: 'module-custom-live-share',
-    title: '直播分享',
-    icon: <VideoIcon />,
+    title: '地图分享',
+    icon: <Share2Icon />,
     kind: 'map-module',
     moduleId: 'custom-live-share',
   },
-]
-
-/** 侧栏「全景」业务模块（全景点位等 map-tool 见快捷工具条） */
-export const mockNavPanoramaModuleItems: NavMainItem[] = [
   {
-    id: 'module-panorama-produce',
-    title: '全景制作',
-    icon: <ClapperboardIcon />,
+    id: 'module-video-monitor',
+    title: '视频监控',
+    icon: <VideoIcon />,
     kind: 'map-module',
-    moduleId: 'panorama-produce',
-  },
-  {
-    id: 'module-panorama-viewer',
-    title: '全景多观',
-    icon: <Globe2Icon />,
-    kind: 'map-module',
-    moduleId: 'panorama-viewer',
+    moduleId: 'video-monitor',
   },
 ]
 
-/** @deprecated 请用 mockNavPanoramaModuleItems；保留兼容旧引用 */
-export const mockNavPanoramaItems: NavMainItem[] = mockNavPanoramaModuleItems
-
-/** 侧栏「应用」 */
+/** 侧栏「应用」— 路由 / 外链 */
 export const mockNavAppItems: NavMainItem[] = [
   {
     id: 'route-projects',
@@ -276,30 +291,52 @@ export const mockNavAppItems: NavMainItem[] = [
   },
 ]
 
-/** @deprecated 由 mockNavMapSectionDefs 各段合并；兼容旧引用 */
+/** @deprecated 由 mockNavMapSectionDefs 各段合并 */
 export const mockNavWorkspaceItems: NavMainItem[] = [
+  ...mockNavLayerItems,
+  ...mockNavAnalysisItems,
   ...mockNavUavItems,
   ...mockNavOpsItems,
-  ...mockNavPanoramaItems,
   ...mockNavAppItems,
 ]
 
-/** 侧栏可见分段（方案 C：不含 map-tool 段） */
+/** 侧栏可见分段（用户心智：看图层 → 做分析 → 运营 → 机库 → 应用） */
 export const mockNavMapSectionDefs: NavMapSectionDef[] = [
-  { id: 'data', label: '数据', items: mockNavDataItems },
-  { id: 'uav', label: '机库', items: mockNavUavItems },
-  { id: 'ops', label: '运营', items: mockNavOpsItems },
-  { id: 'panorama', label: '全景', items: mockNavPanoramaModuleItems },
-  { id: 'app', label: '应用', items: mockNavAppItems },
+  { id: 'layers', label: '图层', items: mockNavLayerItems },
+  { id: 'analysis', label: '分析', items: mockNavAnalysisItems },
+  {
+    id: 'ops',
+    label: '运营',
+    items: mockNavOpsItems,
+    collapsible: true,
+    defaultOpen: true,
+    storageKey: 'nav-section-ops',
+  },
+  {
+    id: 'uav',
+    label: '机库',
+    items: mockNavUavItems,
+    collapsible: true,
+    defaultOpen: true,
+    storageKey: 'nav-section-uav',
+  },
+  {
+    id: 'app',
+    label: '应用',
+    items: mockNavAppItems,
+    collapsible: true,
+    defaultOpen: false,
+    storageKey: 'nav-section-app',
+  },
 ]
 
-/** 全量菜单（URL 解析、快捷条、handleNavSelect 等；含侧栏不可见的 map-tool） */
+/** 全量菜单（URL 解析、快捷条、handleNavSelect；含侧栏不可见的 map-tool） */
 export const mockNavMainItems: NavMainItem[] = [
   ...mockNavToolItems,
-  ...mockNavDataItems,
-  ...mockNavUavItems,
+  ...mockNavLayerItems,
+  ...mockNavAnalysisItems,
   ...mockNavOpsItems,
-  ...mockNavPanoramaModuleItems,
+  ...mockNavUavItems,
   ...mockNavAppItems,
 ]
 
@@ -386,14 +423,6 @@ export const mockToolMeta: Record<string, MockToolMeta> = {
     pluginToolId: 'region-navigator-plugin',
     coordinatorGroup: 'mapInteraction',
   },
-  'panorama-point': {
-    title: '全景点位',
-    placement: 'left',
-    category: 'mode',
-    presentation: 'movable-panel',
-    pluginToolId: 'panorama-multiple-plugin',
-    coordinatorGroup: 'mapInteraction',
-  },
   'global-search': {
     title: '搜索',
     placement: 'right',
@@ -436,7 +465,6 @@ export const mockNavToolMetaByItemId: Record<string, MockToolMeta & { toolId: st
   'tool-swipe-compare': { toolId: 'swipe-compare', ...mockToolMeta['swipe-compare'] },
   'tool-hd-image-compare': { toolId: 'hd-image-compare', ...mockToolMeta['hd-image-compare'] },
   'tool-admin-divisions': { toolId: 'admin-divisions', ...mockToolMeta['admin-divisions'] },
-  'tool-panorama-point': { toolId: 'panorama-point', ...mockToolMeta['panorama-point'] },
   'tool-global-search': { toolId: 'global-search', ...mockToolMeta['global-search'] },
 }
 
@@ -447,22 +475,78 @@ export const mockDockModuleMeta: Record<string, MockDockModuleMeta> = {
 }
 
 export const mockModuleMeta: Record<string, MockModuleMeta> = {
-  'view-project': { title: '看项目', segment: 'ops' },
-  'my-favorites': { title: '我的收藏', segment: 'layer' },
-  thematic: { title: '专题', segment: 'layer' },
-  'flight-ledger': { title: '飞行台账', segment: 'ops' },
-  'flight-ai-alerts': { title: 'AI事件警告', segment: 'ops' },
-  'spatial-analysis': { title: '做分析', segment: 'analysis' },
-  'panorama-produce': { title: '全景制作', segment: 'panorama' },
-  'panorama-viewer': { title: '全景多观', segment: 'panorama' },
+  thematic: {
+    title: '专题图层',
+    segment: 'layers',
+    pluginToolId: 'special-topic-layer-plugin',
+    pluginType: 'parallel-panel',
+  },
+  'scenic-spots': {
+    title: '景点聚类',
+    segment: 'layers',
+    pluginToolId: 'scenic-spots-plugin',
+    pluginType: 'display',
+  },
+  legend: {
+    title: '图例',
+    segment: 'layers',
+    pluginToolId: 'legend-plugin',
+    pluginType: 'display',
+  },
+  'spatial-analysis': {
+    title: '做分析',
+    segment: 'analysis',
+    pluginToolId: 'do-analysis-plugin',
+    pluginType: 'modify-panel',
+  },
+  'property-view': {
+    title: '属性查看',
+    segment: 'analysis',
+    pluginToolId: 'property-view-plugin',
+    pluginType: 'modify-panel',
+  },
+  'my-favorites': {
+    title: '我的收藏',
+    segment: 'analysis',
+    pluginToolId: 'favorites-plugin',
+    pluginType: 'modify-panel',
+  },
+  'view-project': {
+    title: '看项目',
+    segment: 'ops',
+    pluginToolId: 'view-project-plugin',
+    pluginType: 'modify-panel',
+  },
+  'flight-ledger': {
+    title: '飞行数据',
+    segment: 'ops',
+    pluginToolId: 'flight-data-plugin',
+    pluginType: 'display',
+  },
+  'flight-ai-alerts': {
+    title: '事件',
+    segment: 'ops',
+    pluginToolId: 'events-plugin',
+    pluginType: 'display',
+  },
   'custom-highway-alert': {
     title: '高速预警',
     segment: 'ops',
+    pluginToolId: 'high-speed-warning-plugin',
+    pluginType: 'display',
     tenantFeature: 'custom.highway-alert',
   },
   'custom-live-share': {
-    title: '直播分享',
+    title: '地图分享',
     segment: 'ops',
+    pluginToolId: 'share-list-plugin',
+    pluginType: 'display',
     tenantFeature: 'custom.live-share',
+  },
+  'video-monitor': {
+    title: '视频监控',
+    segment: 'ops',
+    pluginToolId: 'video-monitor',
+    pluginType: 'display',
   },
 }

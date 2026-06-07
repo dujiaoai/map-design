@@ -10,6 +10,7 @@ export const REGISTERED_MOCK_MODULE_IDS = [
   'thematic',
   'my-favorites',
   'flight-ledger',
+  'view-project',
 ] as const
 
 /** 已注册高保真 mock 的 drawer toolId */

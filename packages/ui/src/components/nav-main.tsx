@@ -66,51 +66,73 @@ function usePersistedSectionOpen(
   return [open, setOpen]
 }
 
-function sectionHasActiveItem(items: NavMainUiItem[]): boolean {
-  return items.some(
-    (item) => item.isActive || item.items?.some((subItem) => subItem.isActive),
-  )
+
+function useCommandCenterNavFxEnabled() {
+  const [enabled, setEnabled] = React.useState(() => {
+    if (typeof document === 'undefined') {
+      return false
+    }
+    return document.documentElement.classList.contains('dark')
+  })
+
+  React.useEffect(() => {
+    const root = document.documentElement
+    const sync = () => setEnabled(root.classList.contains('dark'))
+    sync()
+    const observer = new MutationObserver(sync)
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
+  }, [])
+
+  return enabled
 }
 
-/** 工作台侧栏：点击涟漪坐标 + 激活脉冲（样式见 saas-web home.css） */
+/** 工作台侧栏：暗色指挥舱点击涟漪 + 激活脉冲（样式见 saas-web home.css） */
 function useNavMenuInteraction(isActive?: boolean) {
+  const commandCenterFx = useCommandCenterNavFxEnabled()
   const [flash, setFlash] = React.useState(false)
   const [rip, setRip] = React.useState({ x: 50, y: 50 })
   const [activePulse, setActivePulse] = React.useState(false)
 
   React.useEffect(() => {
-    if (!isActive) {
+    if (!commandCenterFx || !isActive) {
       return
     }
     setActivePulse(true)
     const timer = window.setTimeout(() => setActivePulse(false), 640)
     return () => window.clearTimeout(timer)
-  }, [isActive])
+  }, [commandCenterFx, isActive])
 
   const handleSelect = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement>, onSelect: () => void) => {
-      const rect = event.currentTarget.getBoundingClientRect()
-      setRip({
-        x: ((event.clientX - rect.left) / rect.width) * 100,
-        y: ((event.clientY - rect.top) / rect.height) * 100,
-      })
-      setFlash(true)
+      if (commandCenterFx) {
+        const rect = event.currentTarget.getBoundingClientRect()
+        setRip({
+          x: ((event.clientX - rect.left) / rect.width) * 100,
+          y: ((event.clientY - rect.top) / rect.height) * 100,
+        })
+        setFlash(true)
+        window.setTimeout(() => setFlash(false), 420)
+      }
       onSelect()
-      window.setTimeout(() => setFlash(false), 420)
     },
-    [],
+    [commandCenterFx],
   )
 
   return {
-    fxClassName: cn(
-      "ws-nav-interactive",
-      flash && "ws-nav-flash",
-      activePulse && "ws-nav-active-pulse",
-    ),
-    fxStyle: {
-      "--ws-nav-rip-x": `${rip.x}%`,
-      "--ws-nav-rip-y": `${rip.y}%`,
-    } as React.CSSProperties,
+    fxClassName: commandCenterFx
+      ? cn(
+          'ws-nav-interactive',
+          flash && 'ws-nav-flash',
+          activePulse && 'ws-nav-active-pulse',
+        )
+      : undefined,
+    fxStyle: commandCenterFx
+      ? ({
+          '--ws-nav-rip-x': `${rip.x}%`,
+          '--ws-nav-rip-y': `${rip.y}%`,
+        } as React.CSSProperties)
+      : undefined,
     handleSelect,
   }
 }
@@ -172,6 +194,7 @@ function NavMainCollapsibleItem({
   item: NavMainUiItem
   onSelectItem: (id: string) => void
 }) {
+  const commandCenterFx = useCommandCenterNavFxEnabled()
   const [open, setOpen] = React.useState(Boolean(item.isActive))
 
   React.useEffect(() => {
@@ -188,7 +211,15 @@ function NavMainCollapsibleItem({
       render={<SidebarMenuItem />}
     >
       <CollapsibleTrigger
-        render={<SidebarMenuButton tooltip={item.title} isActive={item.isActive} />}
+        render={
+          <SidebarMenuButton
+            tooltip={item.title}
+            isActive={item.isActive}
+            className={cn(
+              commandCenterFx && 'ws-nav-interactive ws-nav-collapsible-trigger',
+            )}
+          />
+        }
       >
         {item.icon}
         <span>{item.title}</span>
@@ -235,6 +266,8 @@ function NavMainCollapsibleSection({
   groupClassName,
   defaultOpen,
   storageKey,
+  sectionOpen,
+  onSectionOpenChange,
   onSelectItem,
 }: {
   items: NavMainUiItem[]
@@ -242,16 +275,18 @@ function NavMainCollapsibleSection({
   groupClassName?: string
   defaultOpen: boolean
   storageKey?: string
+  /** 受控展开（手风琴模式由 AppSidebar 统一管理） */
+  sectionOpen?: boolean
+  onSectionOpenChange?: (open: boolean) => void
   onSelectItem: (id: string) => void
 }) {
-  const hasActiveItem = sectionHasActiveItem(items)
-  const [open, setOpen] = usePersistedSectionOpen(storageKey, defaultOpen)
-
-  React.useEffect(() => {
-    if (hasActiveItem) {
-      setOpen(true)
-    }
-  }, [hasActiveItem, setOpen])
+  const isControlled = onSectionOpenChange !== undefined
+  const [persistedOpen, setPersistedOpen] = usePersistedSectionOpen(
+    isControlled ? undefined : storageKey,
+    defaultOpen,
+  )
+  const open = isControlled ? Boolean(sectionOpen) : persistedOpen
+  const setOpen = isControlled ? onSectionOpenChange : setPersistedOpen
 
   return (
     <Collapsible
@@ -294,6 +329,8 @@ export function NavMain({
   collapsible = false,
   defaultOpen = true,
   storageKey,
+  sectionOpen,
+  onSectionOpenChange,
   onSelectItem,
 }: {
   items: NavMainUiItem[]
@@ -305,6 +342,9 @@ export function NavMain({
   defaultOpen?: boolean
   /** 传入则持久化展开/收起（如 nav-section-tools） */
   storageKey?: string
+  /** 受控展开，与 onSectionOpenChange 成对使用 */
+  sectionOpen?: boolean
+  onSectionOpenChange?: (open: boolean) => void
   onSelectItem: (id: string) => void
 }) {
   if (collapsible) {
@@ -315,6 +355,8 @@ export function NavMain({
         groupClassName={groupClassName}
         defaultOpen={defaultOpen}
         storageKey={storageKey}
+        sectionOpen={sectionOpen}
+        onSectionOpenChange={onSectionOpenChange}
         onSelectItem={onSelectItem}
       />
     )

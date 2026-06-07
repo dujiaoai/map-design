@@ -1,13 +1,13 @@
 import { MapIcon } from 'lucide-react'
 
-import { resolveWorkspaceContext, useMapEngineReady, useMapWorkspaceStore } from '~/features/map-workspace'
+import { selectWorkspaceStatusSummary, useMapEngineReady, useMapWorkspaceStore } from '~/features/map-workspace'
 
 export function MapPlaceholder() {
   const mapEngineReady = useMapEngineReady()
   const activeMapTool = useMapWorkspaceStore((state) => state.activeMapTool)
   const activeDrawerTool = useMapWorkspaceStore((state) => state.activeDrawerTool)
   const activePanelTools = useMapWorkspaceStore((state) => state.activePanelTools)
-  const statusSummary = useMapWorkspaceStore((state) => resolveWorkspaceContext(state).statusSummary)
+  const statusSummary = useMapWorkspaceStore(selectWorkspaceStatusSummary)
 
   const hasToolContext = Boolean(
     activeMapTool || activeDrawerTool || activePanelTools.length > 0 || statusSummary,

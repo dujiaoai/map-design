@@ -60,14 +60,15 @@ cp .env.example .env
 pnpm install
 
 # 租户 Web 工作台
-pnpm --filter @repo/saas-web dev
+pnpm dev
 
 # 机库云插件（需与 yunyan-web 宿主联调）
-pnpm --filter @repo/cloud-uav dev
+pnpm dev:uav
 
-# 全目录 Biome
-pnpm --filter @repo/saas check
-pnpm --filter @repo/saas format
+# 全目录 Biome / 校验
+pnpm check
+pnpm format
+pnpm validate   # typecheck + test + biome（Turbo）
 ```
 
 | 服务 | 端口 |
@@ -111,7 +112,9 @@ pnpm --filter @repo/saas format
 | [docs/architecture/multi-tenancy.md](docs/architecture/multi-tenancy.md) | 多租户 |
 | [docs/adr/](docs/adr/) | 架构决策记录 |
 | [docs/runbooks/local-dev.md](docs/runbooks/local-dev.md) | 本地开发 |
+| [docs/runbooks/turbo.md](docs/runbooks/turbo.md) | Turborepo 任务编排 |
 | [docs/runbooks/deployment.md](docs/runbooks/deployment.md) | 部署 |
+| [docs/runbooks/docker-deployment.md](docs/runbooks/docker-deployment.md) | Docker 部署 |
 | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | 贡献规范 |
 | [.cursor/skills/README.md](.cursor/skills/README.md) | Cursor Agent Skills |
 

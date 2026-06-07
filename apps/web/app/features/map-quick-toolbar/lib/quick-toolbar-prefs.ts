@@ -60,6 +60,18 @@ export function resetQuickToolbarPosition(): void {
   localStorage.removeItem(POSITION_STORAGE_KEY)
 }
 
+const COLLAPSED_STORAGE_KEY = 'map-quick-toolbar-collapsed'
+
+export function loadQuickToolbarCollapsed(): boolean {
+  if (typeof window === 'undefined') return false
+  return localStorage.getItem(COLLAPSED_STORAGE_KEY) === '1'
+}
+
+export function saveQuickToolbarCollapsed(collapsed: boolean): void {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(COLLAPSED_STORAGE_KEY, collapsed ? '1' : '0')
+}
+
 const STORAGE_KEY = 'map-workspace-quick-toolbar'
 
 export function loadQuickToolbarIds(): string[] {

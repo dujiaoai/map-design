@@ -6,6 +6,7 @@ import {
   resolveWorkspaceStorePatch,
   searchParamsEqual,
   selectWorkspaceLocation,
+  workspaceLocationsEqual,
 } from './workspace-url'
 
 describe('workspace-url', () => {
@@ -61,20 +62,109 @@ describe('workspace-url', () => {
     expect(parsed.nonDataModuleRoute).toBeNull()
   })
 
-  it('非数据子路由全局互斥：pathname 只反映一个非数据模块', () => {
+  it('数据段收起写入 dataDock，非数据段收起写入 dock', () => {
+    const dataParams = buildWorkspaceSearchParams({
+      mapToolId: null,
+      mapToolVariant: null,
+      drawerToolId: null,
+      panelToolIds: [],
+      dataModuleId: 'thematic',
+      dataModuleCollapsed: true,
+      nonDataModuleRoute: null,
+      nonDataModuleCollapsed: false,
+    })
+    expect(dataParams.get('dataDock')).toBe('collapsed')
+    expect(dataParams.get('dock')).toBeNull()
+
+    const opsParams = buildWorkspaceSearchParams({
+      mapToolId: null,
+      mapToolVariant: null,
+      drawerToolId: null,
+      panelToolIds: [],
+      dataModuleId: null,
+      dataModuleCollapsed: false,
+      nonDataModuleRoute: { section: 'ops', moduleId: 'view-project' },
+      nonDataModuleCollapsed: true,
+    })
+    expect(opsParams.get('dock')).toBe('collapsed')
+    expect(opsParams.get('dataDock')).toBeNull()
+  })
+
+  it('侧栏模块全局互斥：pathname 只反映当前唯一模块', () => {
     const location = selectWorkspaceLocation({
       activeMapTool: null,
       activeDrawerTool: null,
       activePanelTools: [],
-      activeDataModuleId: 'thematic',
-      dataModulePanelCollapsed: false,
       activeDockModuleId: 'uav-list',
       dockPanelCollapsed: false,
       activeModuleId: null,
       modulePanelCollapsed: false,
     })
     expect(location.pathname).toBe('/uav/uav-list')
-    expect(location.searchParams.get('data')).toBe('thematic')
+    expect(location.searchParams.get('data')).toBeNull()
+  })
+
+  it('业务模块仅写入 pathname，不写入 ?data= query', () => {
+    const location = selectWorkspaceLocation({
+      activeMapTool: null,
+      activeDrawerTool: null,
+      activePanelTools: [],
+      activeDockModuleId: null,
+      dockPanelCollapsed: false,
+      activeModuleId: 'thematic',
+      modulePanelCollapsed: false,
+    })
+    expect(location.pathname).toBe('/data/thematic')
+    expect(location.searchParams.get('data')).toBeNull()
+    expect(location.searchParams.toString()).toBe('')
+  })
+
+  it('遗留 ?data= 与非数据 pathname 并存时只保留 pathname 模块', () => {
+    const parsed = parseWorkspaceUrl(new URLSearchParams('data=thematic'), '/uav/uav-list')
+    expect(parsed.nonDataModuleRoute).toEqual({ section: 'uav', moduleId: 'uav-list' })
+    expect(parsed.dataModuleId).toBeNull()
+
+    const patch = resolveWorkspaceStorePatch(parsed)
+    expect(patch.activeModuleId).toBeNull()
+    expect(patch.activeDockModuleId).toBe('uav-list')
+  })
+
+  it('workspaceLocationsEqual 检测到遗留 ?data= 并触发 URL 清理', () => {
+    const target = selectWorkspaceLocation({
+      activeMapTool: null,
+      activeDrawerTool: null,
+      activePanelTools: [],
+      activeDockModuleId: null,
+      dockPanelCollapsed: false,
+      activeModuleId: 'thematic',
+      modulePanelCollapsed: false,
+    })
+
+    expect(
+      workspaceLocationsEqual(
+        {
+          pathname: '/data/thematic',
+          searchParams: new URLSearchParams('data=thematic'),
+        },
+        target,
+      ),
+    ).toBe(false)
+
+    expect(
+      workspaceLocationsEqual(
+        {
+          pathname: '/data/thematic',
+          searchParams: new URLSearchParams(),
+        },
+        target,
+      ),
+    ).toBe(true)
+  })
+
+  it('legacy /?data= 可解析为单模块并等待同步到 /data/:moduleId', () => {
+    const parsed = parseWorkspaceUrl(new URLSearchParams('data=thematic'), '/')
+    expect(parsed.dataModuleId).toBe('thematic')
+    expect(parsed.nonDataModuleRoute).toBeNull()
   })
 
   it('空状态不写入 query', () => {
@@ -97,7 +187,7 @@ describe('workspace-url', () => {
       mapToolVariant: 'drawLine',
       drawerToolId: null,
       panelToolIds: [],
-      dataModuleId: 'thematic',
+      dataModuleId: null,
       dataModuleCollapsed: false,
       nonDataModuleRoute: { section: 'uav', moduleId: 'uav-collect' },
       nonDataModuleCollapsed: true,
@@ -109,11 +199,25 @@ describe('workspace-url', () => {
       variantKey: 'drawLine',
     })
     expect(patch.activeDrawerTool).toBeNull()
-    expect(patch.activeDataModuleNavId).toBe('module-thematic')
-    expect(patch.activeDataModuleId).toBe('thematic')
+    expect(patch.activeModuleId).toBeNull()
     expect(patch.activeDockModuleNavId).toBe('dock-uav-collect')
     expect(patch.dockPanelCollapsed).toBe(true)
     expect(patch.activeModuleNavId).toBeNull()
+  })
+
+  it('resolveWorkspaceStorePatch 将 data 段写入 activeModuleId', () => {
+    const patch = resolveWorkspaceStorePatch({
+      mapToolId: null,
+      mapToolVariant: null,
+      drawerToolId: null,
+      panelToolIds: [],
+      dataModuleId: 'thematic',
+      dataModuleCollapsed: false,
+      nonDataModuleRoute: null,
+      nonDataModuleCollapsed: false,
+    })
+    expect(patch.activeModuleNavId).toBe('module-thematic')
+    expect(patch.activeModuleId).toBe('thematic')
   })
 
   it('searchParamsEqual 忽略无关 query', () => {

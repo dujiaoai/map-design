@@ -3,15 +3,11 @@ import { CrosshairIcon, LayersIcon, LogOutIcon, RulerIcon } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 
 import { mockNavMainItems, resolveNavToolMeta } from '~/entities/navigation'
-import { resolveWorkspaceContext, useMapWorkspaceStore } from '~/features/map-workspace'
+import { selectWorkspaceStatusSummary, useMapWorkspaceStore } from '~/features/map-workspace'
+import { MapControlsRatioReadout, useMockMapViewportStore } from '~/widgets/map-controls'
 
 /** 底栏高度，供地图浮层避让 */
 export const MAP_STATUS_BAR_HEIGHT_CLASS = 'h-9'
-
-const MOCK_VIEWPORT = {
-  scale: '1:5,000',
-  zoom: 14,
-} as const
 
 function useLiveCoords() {
   const [coords, setCoords] = useState({ lng: 116.391234, lat: 39.907128 })
@@ -37,9 +33,10 @@ export function MapStatusBar({
   className?: string
   style?: CSSProperties
 }) {
-  const statusSummary = useMapWorkspaceStore((state) => resolveWorkspaceContext(state).statusSummary)
+  const statusSummary = useMapWorkspaceStore(selectWorkspaceStatusSummary)
   const activeMapTool = useMapWorkspaceStore((state) => state.activeMapTool)
   const clearMapTool = useMapWorkspaceStore((state) => state.clearMapTool)
+  const mockZoom = useMockMapViewportStore((state) => state.zoom)
   const coords = useLiveCoords()
 
   const activeToolTitle = activeMapTool
@@ -56,23 +53,30 @@ export function MapStatusBar({
       style={style}
       aria-label="地图状态栏"
     >
-      <div className="flex min-w-0 flex-1 items-center gap-2">
-        <CrosshairIcon className="size-3.5 shrink-0 text-brand-light/70" aria-hidden />
-        <span className="workspace-status-label hidden sm:inline">坐标</span>
-        <span className="truncate tabular-nums text-foreground/85 dark:text-white/80">
-          {coords.lng.toFixed(6)}, {coords.lat.toFixed(6)}
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+        <span className="flex min-w-0 items-center gap-1.5">
+          <CrosshairIcon className="size-3.5 shrink-0 text-brand-light/70" aria-hidden />
+          <span className="workspace-status-label hidden sm:inline">坐标</span>
+          <span className="truncate tabular-nums text-foreground/85 dark:text-white/80">
+            {coords.lng.toFixed(6)}, {coords.lat.toFixed(6)}
+          </span>
+        </span>
+
+        <span className="map-foot-scale-divider hidden h-3 w-px shrink-0 sm:block" aria-hidden />
+
+        <span
+          className="map-foot-scale flex min-w-0 shrink-0 items-center gap-1.5 tabular-nums"
+          aria-label="地图比例尺"
+        >
+          <RulerIcon className="size-3.5 shrink-0 text-brand-light/70" aria-hidden />
+          <span className="workspace-status-label hidden md:inline">比例尺</span>
+          <MapControlsRatioReadout zoom={mockZoom} size="footer" />
         </span>
       </div>
 
-      <div className="hidden items-center gap-3 sm:flex">
-        <span className="flex items-center gap-1.5 tabular-nums">
-          <RulerIcon className="size-3.5 shrink-0 text-brand-light/70" aria-hidden />
-          {MOCK_VIEWPORT.scale}
-        </span>
-        <span className="flex items-center gap-1.5 tabular-nums">
-          <LayersIcon className="size-3.5 shrink-0 text-brand-light/70" aria-hidden />
-          Z{MOCK_VIEWPORT.zoom}
-        </span>
+      <div className="hidden items-center gap-1.5 tabular-nums sm:flex">
+        <LayersIcon className="size-3.5 shrink-0 text-brand-light/70" aria-hidden />
+        <span className="text-foreground/75 dark:text-white/70">Z{mockZoom}</span>
       </div>
 
       <div className="flex min-w-0 items-center justify-end gap-2">

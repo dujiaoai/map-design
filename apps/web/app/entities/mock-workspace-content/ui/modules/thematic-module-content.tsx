@@ -3,6 +3,7 @@ import { ChevronRightIcon, EyeIcon, EyeOffIcon, LayersIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import type { MockModuleContentProps } from '../../model/types'
+import { MOCK_MODULE_CONTENT_ROOT_CLASS } from '../primitives/mock-module-content-root'
 import { MockContentSection } from '../primitives/mock-content-section'
 
 interface LayerNode {
@@ -120,7 +121,7 @@ export function ThematicModuleContent(_props: MockModuleContentProps) {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4 text-sm">
+    <div className={MOCK_MODULE_CONTENT_ROOT_CLASS}>
       <MockContentSection title="图层树">
         <div className="border-border rounded-lg border bg-muted/20 p-2 dark:bg-black/15">
           <div className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs">

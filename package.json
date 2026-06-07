@@ -10,11 +10,22 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "pnpm --filter @repo/saas-web dev",
+    "dev:web": "pnpm --filter @repo/saas-web dev",
+    "dev:web:airace": "pnpm --filter @repo/saas-web dev:airace",
+    "dev:uav": "pnpm --filter @repo/cloud-uav dev",
+    "build": "node scripts/turbo-run.mjs run build",
+    "build:web": "node scripts/turbo-run.mjs run build --filter=@repo/saas-web",
+    "build:web:airace": "node scripts/turbo-run.mjs run build:airace --filter=@repo/saas-web",
+    "build:uav": "node scripts/turbo-run.mjs run build --filter=@repo/cloud-uav",
+    "typecheck": "node scripts/turbo-run.mjs run typecheck",
+    "test": "node scripts/turbo-run.mjs run test",
+    "validate": "node scripts/turbo-run.mjs run typecheck && node scripts/turbo-run.mjs run test && pnpm check",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "format": "biome format --write ."
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.16"
+    "@biomejs/biome": "2.4.16",
+    "turbo": "2.9.16"
   }
 }

@@ -43,12 +43,35 @@ Mock 菜单：`apps/web/app/entities/navigation/model/mock-nav-items.tsx`
 
 ## 侧栏信息架构（mock）
 
-| 段 | 原则 | 典型项 |
-| --- | --- | --- |
-| **工具** | 画布 `map-tool` + 专题图层、空间分析等业务模块；**段标题可折叠**（localStorage `nav-section-tools`），激活项时自动展开 | 测距、测面、专题、做分析… |
-| **运营** | 业务 `map-module` | 看项目、我的收藏、飞行台账… |
-| **全景** | 全景点位（tool）+ 制作 / 多观（module） | 同域能力合并一段 |
-| **应用** | 路由项直接列出，不再套一层「应用」分组 | 项目管理、组织设置 |
+对齐 [map-plugins-catalog.md](./map-plugins-catalog.md) 模块分类。`map-tool` 仍走快捷工具条（方案 C），不进侧栏列表。
+
+| 段 | catalog 模块 | 典型项 | 路由 / 槽位 |
+| --- | --- | --- | --- |
+| **图层** | parallel-panel / display | 专题图层、景点聚类、图例 | `/data/:moduleId` → `activeModuleId` |
+| **分析** | modify-panel 互斥组 | 做分析、属性查看、我的收藏 | `/data/:moduleId` → `activeModuleId` |
+| **运营** | display / 业务面板 | 看项目、飞行数据、事件… | `/ops/:moduleId` → `activeModuleId` |
+| **机库** | uav-workspace | 机库列表 / 设置 / 收藏 | `/uav/:moduleId` → `activeDockModuleId` |
+| **应用** | — | 项目管理、组织设置、外链 | 无 Dock |
+
+**段顺序**：图层 → 分析 → 运营 → 机库 → 应用。定稿说明见 [2026-06-workspace-nav-ia.md](../product/2026-06-workspace-nav-ia.md)。
+
+### 侧栏模块全局互斥
+
+`map-module` 与 `map-dock-module` **任意时刻仅一个**处于展开态（图层/分析/运营/机库之间切换会关闭上一个）。左侧由 **`MapContextPanel`** 统一承载单层外壳（`embedded` 模式内嵌 `MockModuleContent`），不再出现双层标题栏或 Tab 切换。
+
+Store：`toggleMapModule` / `toggleMapDockModule` 打开新模块前调用 `clearAllSidebarModules()`。
+
+**载体分流**（`usesLeftContextPanel`，与运营段一致）：
+
+| pluginType | 载体 |
+| --- | --- |
+| `display` | 画布 `MapNativeModuleHost`（右条/右下，单层壳） |
+| `parallel-panel`、`modify-panel` 等 | 左列 `MapContextPanel` |
+| 机库 | 左列 `MapContextPanel` |
+
+URL 深链：pathname 只反映当前唯一模块；`?data=` 查询参数已移除。
+
+各 `mockModuleMeta` 含 `pluginToolId` / `pluginType`，与 Skill `map-plugin-*` 一一对应。
 
 **pluginToolId** 与 `packages-map/map-core` 常量对齐（如 `comparison-plugin`、`ortho-imagery-comparison-plugin`），见 `map-plugin-registry.ts`。
 
@@ -96,10 +119,12 @@ Store：`apps/web/app/features/map-workspace/model/workspace-store.ts`
 
 | kind | 组件 | 布局 |
 | --- | --- | --- |
-| `map-dock-module` | `MapDockPanel` | 地图区左侧固定列（机库） |
-| `map-module` | `MapBusinessDock` | 地图区左侧固定列（项目/图层/运营等） |
+| `map-dock-module` | `MapDockPanel`（`embedded`） | `MapContextPanel` 内唯一左列 |
+| `map-module` | `MapBusinessDock`（`embedded`） | `MapContextPanel` 内唯一左列 |
 
-共用外壳 `DockPanelFrame`（`widgets/dock-panel`）：
+侧栏模块 **全局互斥**；外壳由 `MapContextPanel` → `ContextPanelShell` 统一提供 `DockPanelHeader`，内层 Dock 仅渲染内容。
+
+独立使用（非嵌入）时仍可用 `DockPanelFrame`（`embedded={false}`）：
 
 - 正常：占 flex 列宽，非浮层
 - 全屏：`createPortal` 至 `document.body`，锁 `body` overflow，Esc 退出
@@ -118,13 +143,14 @@ Store：`apps/web/app/features/map-workspace/model/workspace-store.ts`
 `apps/web/app/routes/home.tsx`：
 
 ```
-MapContextPanel       ← map-dock-module / map-module（Dock 列）
+MapContextPanel       ← 侧栏模块唯一左列（全局互斥，单层 ContextPanelShell）
   workspace-canvas
     MapPlaceholder
     MapQuickToolbar   ← 方案 C：高频 map-tool 快捷入口
     MockMapToolHost   ← movable-panel / anchor / panel
     MapToolDrawerPanel← drawer (L4)
-    MapDockPanelEdge / MapBusinessDockEdge
+    MapNativeModuleHost ← display 模块（不与左列并行）
+    MapContextPanelEdge ← 左列模块收起后的唯一展开条
 MapStatusBar
 ```
 
@@ -171,7 +197,11 @@ MapStatusBar
 | URL 同步 | `apps/web/app/features/map-workspace/lib/workspace-url.ts` |
 | 地图工具浮层 | `apps/web/app/widgets/map-tool-host/`（`MapToolPanelHeader` 与 Dock 标题栏同高） |
 | 地图 L4 条带 | `apps/web/app/widgets/map-import-drawer/` |
-| 机库 Dock | `apps/web/app/widgets/map-dock-panel/` |
-| 业务 Dock | `apps/web/app/widgets/map-business-dock/` |
+| 上下文面板 | `apps/web/app/widgets/map-context-panel/` |
+| 原生模块载体 | `apps/web/app/widgets/map-native-module-host/` |
+| 载体分流 | `apps/web/app/entities/navigation/lib/uses-left-context-panel.ts` |
+| 侧栏模块展开条 | `apps/web/app/widgets/map-context-panel/ui/map-context-panel-edge.tsx` |
+| 机库 Dock 内容 | `apps/web/app/widgets/map-dock-panel/` |
+| 业务 Dock 内容 | `apps/web/app/widgets/map-business-dock/` |
 | Dock 外壳 | `apps/web/app/widgets/dock-panel/` |
 | 侧栏 UI 基座 | `packages/ui/src/components/app-sidebar.tsx`、`nav-main.tsx` |

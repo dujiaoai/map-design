@@ -14,6 +14,7 @@ import { FallbackModuleContent } from '../ui/modules/fallback-module-content'
 import { FlightLedgerModuleContent } from '../ui/modules/flight-ledger-module-content'
 import { MyFavoritesModuleContent } from '../ui/modules/my-favorites-module-content'
 import { ThematicModuleContent } from '../ui/modules/thematic-module-content'
+import { ViewProjectModuleContent } from '../ui/modules/view-project-module-content'
 import { FallbackToolContent } from '../ui/tools/fallback-tool-content'
 import { MeasureDistanceToolContent } from '../ui/tools/measure-distance-tool-content'
 import { PlotPointToolContent } from '../ui/tools/plot-point-tool-content'
@@ -35,6 +36,7 @@ const MOCK_MODULE_REGISTRY: Record<string, MockModuleContentComponent> = {
   thematic: ThematicModuleContent,
   'my-favorites': MyFavoritesModuleContent,
   'flight-ledger': FlightLedgerModuleContent,
+  'view-project': ViewProjectModuleContent,
 }
 
 const MOCK_DRAWER_TOOL_REGISTRY: Record<string, MockDrawerToolContentComponent> = {

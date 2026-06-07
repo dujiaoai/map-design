@@ -7,7 +7,9 @@ export {
   dockPanelAsideClass,
   DOCK_PANEL_HEADER_HEIGHT_CLASS,
   DOCK_PANEL_ICON_BUTTON_CLASS,
+  MODULE_PANEL_BODY_CLASS,
 } from './lib/dock-panel-layout'
+export { DockPanelScrollBody } from './ui/dock-panel-scroll-body'
 export { DockPanelFrame } from './ui/dock-panel-frame'
 export { DockPanelHeader } from './ui/dock-panel-header'
 export { DockPanelCollapseHandle, DockPanelExpandEdge } from './ui/dock-panel-split-control'

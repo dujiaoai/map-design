@@ -8,17 +8,24 @@ import {
   sanitizeQuickToolbarIds,
 } from '../lib/quick-toolbar-catalog'
 import {
+  loadQuickToolbarCollapsed,
   loadQuickToolbarIds,
   resetQuickToolbarIds,
+  saveQuickToolbarCollapsed,
   saveQuickToolbarIds,
 } from '../lib/quick-toolbar-prefs'
 
 export function useQuickToolbarPrefs() {
   const [selectedIds, setSelectedIds] = useState<string[]>(() => loadQuickToolbarIds())
+  const [collapsed, setCollapsed] = useState(() => loadQuickToolbarCollapsed())
 
   useEffect(() => {
     saveQuickToolbarIds(selectedIds)
   }, [selectedIds])
+
+  useEffect(() => {
+    saveQuickToolbarCollapsed(collapsed)
+  }, [collapsed])
 
   const toggleTool = useCallback((navItemId: string, enabled: boolean) => {
     setSelectedIds((prev) => {
@@ -70,6 +77,8 @@ export function useQuickToolbarPrefs() {
 
   return {
     selectedIds,
+    collapsed,
+    setCollapsed,
     catalog: QUICK_TOOL_CATALOG,
     toggleTool,
     moveTool,

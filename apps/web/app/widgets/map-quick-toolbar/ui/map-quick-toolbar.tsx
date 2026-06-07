@@ -5,8 +5,8 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Button, cn, Tooltip, TooltipContent, TooltipTrigger } from '@repo/ui'
-import { GripVerticalIcon, XIcon } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState, Fragment } from 'react'
+import { GripVerticalIcon, Minimize2Icon, WrenchIcon, XIcon } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { mockNavMainItems } from '~/entities/navigation'
@@ -24,6 +24,7 @@ import {
   useQuickToolbarPrefs,
 } from '~/features/map-quick-toolbar'
 import {
+  EDGE_MARGIN,
   QUICK_TOOLBAR_DRAG_ID,
   useWorkspaceSurfaceDnd,
   WorkspaceSnapGuides,
@@ -36,15 +37,16 @@ import { QuickToolbarSortableTool } from './quick-toolbar-sortable-tool'
  * 地图画布快捷工具条（@dnd-kit：拖动手柄定位 + sortable 排序 + 对齐吸附）
  */
 export function MapQuickToolbar({ className }: { className?: string }) {
-  const { selectedIds, catalog, toggleTool, reorderTools, restoreDefaults, minTools } =
+  const { selectedIds, collapsed, setCollapsed, catalog, toggleTool, reorderTools, restoreDefaults, minTools } =
     useQuickToolbarPrefs()
 
   const containerRef = useRef<HTMLElement | null>(null)
   const toolbarRef = useRef<HTMLDivElement>(null)
   const [toolbarReadySignal, setToolbarReadySignal] = useState(0)
+  const [canvasWidth, setCanvasWidth] = useState(0)
   const [showOnboarding, setShowOnboarding] = useState(false)
 
-  const layoutKey = selectedIds.join('|')
+  const layoutKey = `${collapsed ? 'collapsed' : 'expanded'}|${selectedIds.join('|')}|${canvasWidth}`
 
   const surface = useWorkspaceSurfaceDnd({
     dragId: QUICK_TOOLBAR_DRAG_ID,
@@ -84,6 +86,11 @@ export function MapQuickToolbar({ className }: { className?: string }) {
     setToolbarReadySignal((value) => value + 1)
   }
 
+  function handleCollapse(nextCollapsed: boolean) {
+    setCollapsed(nextCollapsed)
+    setToolbarReadySignal((value) => value + 1)
+  }
+
   return (
     <DndContext
       sensors={surface.sensors}
@@ -103,6 +110,11 @@ export function MapQuickToolbar({ className }: { className?: string }) {
         activeSnapX={surface.activeSnapX}
         activeSnapY={surface.activeSnapY}
         onToolbarReady={() => setToolbarReadySignal((value) => value + 1)}
+        onToolbarLayoutChange={() => setToolbarReadySignal((value) => value + 1)}
+        onCanvasWidthChange={setCanvasWidth}
+        canvasWidth={canvasWidth}
+        collapsed={collapsed}
+        onCollapse={handleCollapse}
         selectedIds={selectedIds}
         catalog={catalog}
         toggleTool={toggleTool}
@@ -130,6 +142,11 @@ function MapQuickToolbarDraggable({
   activeSnapX,
   activeSnapY,
   onToolbarReady,
+  onToolbarLayoutChange,
+  onCanvasWidthChange,
+  canvasWidth,
+  collapsed,
+  onCollapse,
   selectedIds,
   catalog,
   toggleTool,
@@ -149,6 +166,11 @@ function MapQuickToolbarDraggable({
   activeSnapX: ReturnType<typeof useWorkspaceSurfaceDnd>['activeSnapX']
   activeSnapY: ReturnType<typeof useWorkspaceSurfaceDnd>['activeSnapY']
   onToolbarReady: () => void
+  onToolbarLayoutChange: () => void
+  onCanvasWidthChange: (width: number) => void
+  canvasWidth: number
+  collapsed: boolean
+  onCollapse: (collapsed: boolean) => void
   selectedIds: string[]
   catalog: ReturnType<typeof useQuickToolbarPrefs>['catalog']
   toggleTool: ReturnType<typeof useQuickToolbarPrefs>['toggleTool']
@@ -169,6 +191,40 @@ function MapQuickToolbarDraggable({
   const [menuAlignOffset, setMenuAlignOffset] = useState(0)
   const gearRef = useRef<HTMLButtonElement>(null)
   const hasReportedReadyRef = useRef(false)
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) {
+      return
+    }
+
+    function syncCanvasWidth() {
+      onCanvasWidthChange(container!.clientWidth)
+    }
+
+    syncCanvasWidth()
+    const observer = new ResizeObserver(syncCanvasWidth)
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [collapsed, containerRef, onCanvasWidthChange, selectedIds.length])
+
+  useEffect(() => {
+    const toolbar = toolbarRef.current
+    if (!toolbar || collapsed) {
+      return
+    }
+
+    const observer = new ResizeObserver(() => {
+      onToolbarLayoutChange()
+    })
+    observer.observe(toolbar)
+    return () => observer.disconnect()
+  }, [canvasWidth, collapsed, onToolbarLayoutChange, position.x, selectedIds.length, toolbarRef])
+
+  const toolbarMaxWidth =
+    canvasWidth > 0
+      ? Math.max(120, canvasWidth - Math.max(EDGE_MARGIN, position.x) - EDGE_MARGIN)
+      : undefined
 
   const {
     attributes: toolbarAttributes,
@@ -208,6 +264,10 @@ function MapQuickToolbarDraggable({
 
   const groupedTools = useMemo(() => groupSelectedQuickTools(selectedIds), [selectedIds])
   const orderedSelectedIds = useMemo(() => orderQuickToolbarIds(selectedIds), [selectedIds])
+  const activeQuickToolCount = useMemo(
+    () => activeNavItemIds.filter((id) => selectedIds.includes(id)).length,
+    [activeNavItemIds, selectedIds],
+  )
 
   function syncMenuAlignOffset() {
     const toolbar = toolbarRef.current
@@ -229,6 +289,28 @@ function MapQuickToolbarDraggable({
   const toolbarDragging = isDragging || isToolbarNodeDragging
   const sortableDisabled = toolbarDragging || menuOpen
 
+  const dragHandle = (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            type="button"
+            aria-label="拖动快捷工具条"
+            className={cn(
+              'text-muted-foreground flex size-9 shrink-0 cursor-grab items-center justify-center rounded-md touch-none select-none active:cursor-grabbing',
+              'hover:bg-accent hover:text-foreground dark:text-white/45 dark:hover:bg-white/8 dark:hover:text-white/80',
+              toolbarDragging && 'cursor-grabbing bg-accent/80',
+            )}
+            {...toolbarListeners}
+          >
+            <GripVerticalIcon className="size-4" />
+          </button>
+        }
+      />
+      <TooltipContent side="bottom">拖动工具条（靠近边缘/中线自动对齐）</TooltipContent>
+    </Tooltip>
+  )
+
   return (
     <>
       {toolbarDragging && containerWidth > 0 ? (
@@ -243,50 +325,68 @@ function MapQuickToolbarDraggable({
         ref={mergeToolbarRef}
         className={cn(
           'workspace-map-toolbar cc-glass-panel pointer-events-auto absolute z-20 touch-none',
-          'flex w-max max-w-none flex-nowrap items-center gap-0.5 rounded-lg p-1',
+          collapsed
+            ? 'workspace-map-toolbar--collapsed flex items-center gap-0.5 rounded-full p-1'
+            : 'workspace-map-toolbar--expanded flex flex-wrap items-center gap-x-0.5 gap-y-1 rounded-lg p-1',
           toolbarDragging && 'workspace-surface-dragging workspace-map-toolbar--dragging shadow-[0_12px_40px_rgba(0,0,0,0.35)]',
           className,
         )}
         style={{
           left: Math.max(0, position.x),
           top: Math.max(0, position.y),
+          maxWidth: toolbarMaxWidth,
           transform: toolbarTransform ? CSS.Translate.toString(toolbarTransform) : undefined,
         }}
         {...toolbarAttributes}
         role="toolbar"
-        aria-label="地图快捷工具"
+        aria-label={collapsed ? '快捷工具浮标' : '地图快捷工具'}
       >
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <button
-                type="button"
-                aria-label="拖动快捷工具条"
-                className={cn(
-                  'text-muted-foreground flex size-9 shrink-0 cursor-grab items-center justify-center rounded-md touch-none select-none active:cursor-grabbing',
-                  'hover:bg-accent hover:text-foreground dark:text-white/45 dark:hover:bg-white/8 dark:hover:text-white/80',
-                  toolbarDragging && 'cursor-grabbing bg-accent/80',
-                )}
-                {...toolbarListeners}
-              >
-                <GripVerticalIcon className="size-4" />
-              </button>
-            }
-          />
-          <TooltipContent side="bottom">拖动工具条（靠近边缘/中线自动对齐）</TooltipContent>
-        </Tooltip>
+        {collapsed ? (
+          <>
+            {dragHandle}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label={`展开快捷工具（${selectedIds.length} 项）`}
+                    className={cn(
+                      'relative flex size-9 shrink-0 items-center justify-center rounded-full transition-colors',
+                      'text-muted-foreground hover:bg-accent hover:text-foreground dark:text-white/55 dark:hover:bg-white/8 dark:hover:text-white/90',
+                      activeQuickToolCount > 0 &&
+                        'text-brand-deep dark:text-brand-light shadow-[0_0_12px_var(--brand-glow)]',
+                    )}
+                    onClick={() => onCollapse(false)}
+                  >
+                    <WrenchIcon className="size-4" />
+                    <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex min-w-4 items-center justify-center rounded-full px-1 text-[9px] leading-4 font-medium tabular-nums">
+                      {selectedIds.length}
+                    </span>
+                    {activeQuickToolCount > 0 ? (
+                      <span
+                        className="bg-brand-light absolute right-0 bottom-0 size-2 rounded-full ring-2 ring-background dark:ring-surface-panel"
+                        aria-hidden
+                      />
+                    ) : null}
+                  </button>
+                }
+              />
+              <TooltipContent side="bottom">展开快捷工具</TooltipContent>
+            </Tooltip>
+          </>
+        ) : (
+          <>
+            {dragHandle}
 
         <SortableContext items={orderedSelectedIds} strategy={horizontalListSortingStrategy}>
           {groupedTools.map((section, sectionIndex) => (
-            <Fragment key={section.group}>
-              {sectionIndex > 0 ? (
-                <div
-                  className="bg-border mx-0.5 h-6 w-px shrink-0 dark:bg-white/8"
-                  role="separator"
-                  aria-orientation="vertical"
-                  aria-hidden
-                />
-              ) : null}
+            <div
+              key={section.group}
+              className={cn(
+                'flex flex-wrap items-center gap-0.5',
+                sectionIndex > 0 && 'workspace-map-toolbar-group border-border ml-0.5 border-l pl-0.5 dark:border-white/8',
+              )}
+            >
               {section.items.map(({ navItemId, label, icon }) => (
                 <QuickToolbarSortableTool
                   key={navItemId}
@@ -298,11 +398,31 @@ function MapQuickToolbarDraggable({
                   onSelect={() => handleNavSelect(navItemId)}
                 />
               ))}
-            </Fragment>
+            </div>
           ))}
         </SortableContext>
 
-        <div className="bg-border mx-0.5 h-6 w-px shrink-0 dark:bg-white/8" aria-hidden />
+        <div className="workspace-map-toolbar-actions border-border ml-0.5 flex shrink-0 items-center gap-0.5 border-l pl-0.5 dark:border-white/8">
+
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <button
+                type="button"
+                aria-label="收起为浮标"
+                title="收起为浮标"
+                className={cn(
+                  'text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-md transition-colors',
+                  'hover:bg-accent hover:text-foreground dark:text-white/45 dark:hover:bg-white/8 dark:hover:text-white/80',
+                )}
+                onClick={() => onCollapse(true)}
+              >
+                <Minimize2Icon className="size-4" />
+              </button>
+            }
+          />
+          <TooltipContent side="bottom">收起为浮标</TooltipContent>
+        </Tooltip>
 
         <div className="relative shrink-0">
           <QuickToolbarCustomizeMenu
@@ -316,6 +436,7 @@ function MapQuickToolbarDraggable({
             reorderTools={reorderTools}
             restoreDefaults={restoreDefaults}
             onResetToolbarPosition={onResetToolbarPosition}
+            onCollapseToolbar={() => onCollapse(true)}
             minTools={minTools}
           />
 
@@ -323,13 +444,14 @@ function MapQuickToolbarDraggable({
             <div className="workspace-toolbar-onboarding pointer-events-auto absolute top-full left-0 z-30 mt-2 w-56 rounded-lg border border-border bg-background/95 p-3 text-left shadow-lg backdrop-blur-md dark:border-white/12 dark:bg-surface-panel/95">
               <p className="text-foreground mb-1 text-xs font-medium">自定义快捷工具</p>
               <p className="text-muted-foreground mb-2 text-[11px] leading-relaxed">
-                点击齿轮选择常用工具、拖动排序；左侧手柄可移动并对齐工具条位置。
+                点击齿轮选择常用工具；可收起为浮标少占地图，⌘K 仍可打开命令面板。
               </p>
               <Button type="button" size="sm" className="h-7 w-full text-xs" onClick={onDismissOnboarding}>
                 知道了
               </Button>
             </div>
           ) : null}
+        </div>
         </div>
 
         {showOnboarding ? (
@@ -342,6 +464,8 @@ function MapQuickToolbarDraggable({
             <XIcon className="size-3" />
           </button>
         ) : null}
+          </>
+        )}
       </div>
     </>
   )

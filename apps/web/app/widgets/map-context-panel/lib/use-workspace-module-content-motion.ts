@@ -5,7 +5,7 @@ import {
   type ModuleSurfaceDirection,
 } from './workspace-module-surface'
 
-/** 子路由 / Tab 切换时给出带方向的内容入场类名（列展开时不重复播） */
+/** 侧栏模块切换时给出带方向的内容入场类名（列展开时不重复播） */
 export function useWorkspaceModuleContentMotion(surfaceKey: string | null, panelOpen: boolean) {
   const previousKeyRef = useRef<string | null>(null)
   const [direction, setDirection] = useState<ModuleSurfaceDirection>('forward')

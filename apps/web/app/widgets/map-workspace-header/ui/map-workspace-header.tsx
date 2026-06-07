@@ -11,11 +11,11 @@ import {
   type NavUserData,
 } from '@repo/ui'
 import { ScanSearchIcon } from 'lucide-react'
-import { type CSSProperties, useMemo } from 'react'
+import { type CSSProperties } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 
 import {
-  buildWorkspaceBreadcrumbTrail,
-  resolveWorkspaceContext,
+  selectWorkspaceBreadcrumbTrail,
   useMapWorkspaceStore,
 } from '~/features/map-workspace'
 import { WORKSPACE_CHROME_ICON_BUTTON_CLASS } from '~/shared/lib/workspace-chrome-styles'
@@ -39,19 +39,7 @@ export function MapWorkspaceHeader({
   onAccountClick?: () => void
   onLogout?: () => void
 }) {
-  const sectionLabel = useMapWorkspaceStore(
-    (state) => resolveWorkspaceContext(state).sectionLabel,
-  )
-  const moduleLabel = useMapWorkspaceStore(
-    (state) => resolveWorkspaceContext(state).moduleLabel,
-  )
-  const contextLabel = useMapWorkspaceStore(
-    (state) => resolveWorkspaceContext(state).contextLabel,
-  )
-  const breadcrumbTrail = useMemo(
-    () => buildWorkspaceBreadcrumbTrail({ sectionLabel, moduleLabel, contextLabel }),
-    [contextLabel, moduleLabel, sectionLabel],
-  )
+  const breadcrumbTrail = useMapWorkspaceStore(useShallow(selectWorkspaceBreadcrumbTrail))
   const openCommandPalette = useMapWorkspaceStore((state) => state.openCommandPalette)
 
   function openMobileSearch() {

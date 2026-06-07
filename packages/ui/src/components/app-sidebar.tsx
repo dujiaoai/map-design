@@ -67,7 +67,7 @@ export function AppSidebar({
   user?: NavUserData | null
   /** @deprecated 单分组 */
   navMain?: NavMainUiItem[]
-  /** 推荐：工具 / 机库 / 项目 / 图层 / 运营 / 分析 / 全景 / 应用 */
+  /** 推荐：工具 / 机库 / 项目 / 图层 / 运营 / 分析 / 应用 */
   navMapSections?: NavMapSectionUi[]
   /** @deprecated 与 navMapSections 二选一 */
   navToolItems?: NavMainUiItem[]

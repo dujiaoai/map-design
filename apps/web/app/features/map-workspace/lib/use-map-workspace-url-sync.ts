@@ -4,24 +4,24 @@ import { useLocation, useNavigate } from 'react-router'
 import {
   parseWorkspaceUrl,
   selectWorkspaceLocation,
+  selectWorkspaceUrlState,
   workspaceLocationsEqual,
+  workspaceUrlStatesEqual,
 } from './workspace-url'
 import { useMapWorkspaceStore } from '../model/workspace-store'
 
 /**
  * 地图工作台 ↔ URL（子路由 + query）双向同步
  *
- * Path 约定（模块子路由，非数据段全局互斥）：
- * - /data/:moduleId — 数据段业务模块
+ * Path 约定（侧栏模块全局互斥，pathname 仅反映当前模块）：
+ * - /data/:moduleId — 图层 / 分析模块
  * - /uav/:moduleId — 机库模块
  * - /ops/:moduleId — 运营模块
- * - /panorama/:moduleId — 全景模块
  *
  * Query 约定：
- * - tool / variant / panels — 地图工具（同前）
- * - data — 与非数据子路由并存时的数据段 moduleId
- * - dataDock=collapsed — 数据段 Dock 收起
- * - dock=collapsed — 非数据段 Dock 收起
+ * - tool / variant / panels — 地图工具
+ * - dataDock=collapsed — 数据段模块收起（pathname 为 /data/...）
+ * - dock=collapsed — 非数据段模块收起
  */
 export function useMapWorkspaceUrlSync() {
   const location = useLocation()
@@ -39,8 +39,14 @@ export function useMapWorkspaceUrlSync() {
   }, [location.pathname, location.search])
 
   useEffect(() => {
+    let prevUrlState = selectWorkspaceUrlState(useMapWorkspaceStore.getState())
+
     return useMapWorkspaceStore.subscribe((state) => {
       if (applyingFromUrl.current) return
+
+      const urlState = selectWorkspaceUrlState(state)
+      if (workspaceUrlStatesEqual(urlState, prevUrlState)) return
+      prevUrlState = urlState
 
       const next = selectWorkspaceLocation(state)
       const current = {

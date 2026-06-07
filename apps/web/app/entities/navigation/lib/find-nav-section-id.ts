@@ -1,6 +1,8 @@
 import { mockNavMapSectionDefs } from '../model/mock-nav-items'
 
-/** 按菜单 id 查找所属侧栏段 id（如 data / uav / ops） */
+const DATA_DOCK_SECTION_IDS = new Set(['layers', 'analysis'])
+
+/** 按菜单 id 查找所属侧栏段 id（如 layers / analysis / ops） */
 export function findNavSectionIdByNavItemId(navItemId: string): string | null {
   for (const section of mockNavMapSectionDefs) {
     const matched = section.items.some(
@@ -14,6 +16,8 @@ export function findNavSectionIdByNavItemId(navItemId: string): string | null {
   return null
 }
 
+/** 图层 / 分析段模块走左侧「图层」Dock 槽位（URL 仍为 /data/:moduleId） */
 export function isDataModuleNavItem(navItemId: string): boolean {
-  return findNavSectionIdByNavItemId(navItemId) === 'data'
+  const sectionId = findNavSectionIdByNavItemId(navItemId)
+  return sectionId !== null && DATA_DOCK_SECTION_IDS.has(sectionId)
 }

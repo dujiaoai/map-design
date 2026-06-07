@@ -3,19 +3,37 @@
 html:has(.workspace-page) [data-slot='sheet-overlay'] {
   transition-duration: 320ms;
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  background: color-mix(in srgb, var(--surface-deep) 68%, transparent);
   backdrop-filter: blur(10px);
+}
+
+html.dark:has(.workspace-page) [data-slot='sheet-overlay'] {
+  background: color-mix(in srgb, var(--surface-deep) 68%, transparent);
+}
+
+html:not(.dark):has(.workspace-page) [data-slot='sheet-overlay'] {
+  background: rgb(15 23 42 / 0.4);
+  backdrop-filter: blur(4px);
 }
 
 html:has(.workspace-page) [data-slot='sheet-content'] {
   overflow: hidden;
   transition-duration: 460ms !important;
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+html.dark:has(.workspace-page) [data-slot='sheet-content'] {
   border-color: color-mix(in srgb, var(--brand) 24%, transparent);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04) inset,
     0 24px 64px rgba(0, 0, 0, 0.45),
     0 0 40px color-mix(in srgb, var(--brand) 14%, transparent);
+}
+
+html:not(.dark):has(.workspace-page) [data-slot='sheet-content'] {
+  border-color: var(--border);
+  box-shadow:
+    0 10px 15px -3px rgb(15 23 42 / 0.08),
+    0 4px 6px -4px rgb(15 23 42 / 0.06);
 }
 
 html:has(.workspace-page) [data-slot='sheet-content']::after {
@@ -71,13 +89,13 @@ html:has(.workspace-page) .workspace-context-sheet {
 }
 
 html:not(.dark) .cc-menu-popover {
-  border-color: color-mix(in srgb, var(--brand) 18%, transparent) !important;
-  background: color-mix(in srgb, var(--popover) 98%, transparent) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--popover) !important;
   color: var(--popover-foreground);
+  backdrop-filter: none;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.75) inset,
-    0 8px 24px rgba(48, 148, 255, 0.1),
-    0 0 18px color-mix(in srgb, var(--brand) 8%, transparent) !important;
+    0 4px 6px -1px rgb(15 23 42 / 0.08),
+    0 10px 15px -3px rgb(15 23 42 / 0.08) !important;
 }
 
 html.dark .cc-menu-popover {
@@ -188,15 +206,17 @@ html.dark .cc-menu-popover {
   max-height: min(32rem, calc(100dvh - 6rem));
   overflow: hidden;
   border-radius: 0.75rem;
-  border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent);
-  background: color-mix(in srgb, var(--popover) 98%, transparent);
+  animation: cc-menu-popover-in 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html:not(.dark) .workspace-command-palette-panel {
+  border: 1px solid var(--border);
+  background: var(--popover);
   color: var(--popover-foreground);
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.75) inset,
-    0 16px 40px rgba(0, 0, 0, 0.22),
-    0 0 28px color-mix(in srgb, var(--brand) 10%, transparent);
-  backdrop-filter: blur(16px);
-  animation: cc-menu-popover-in 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+    0 4px 6px -1px rgb(15 23 42 / 0.08),
+    0 10px 15px -3px rgb(15 23 42 / 0.1);
+  backdrop-filter: none;
 }
 
 html.dark .workspace-command-palette-panel {
@@ -226,8 +246,11 @@ html.dark .workspace-command-palette-panel {
 }
 
 .workspace-command-palette-section-label {
-  background: color-mix(in srgb, var(--popover) 92%, transparent);
-  backdrop-filter: blur(8px);
+  backdrop-filter: none;
+}
+
+html:not(.dark) .workspace-command-palette-section-label {
+  background: var(--muted);
 }
 
 html.dark .workspace-command-palette-section-label {

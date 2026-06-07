@@ -1,7 +1,10 @@
 import {
   findNavSubItemByModuleId,
   findNavSubItemByToolId,
+  mockNavAnalysisItems,
+  mockNavLayerItems,
   mockNavMainItems,
+  mockNavOpsItems,
   mockToolMeta,
   resolveNavToolMetaFromUrl,
   type MapToolVariantKey,
@@ -25,17 +28,30 @@ export interface MapWorkspaceUrlState {
   /** Drawer 工具（导入） */
   drawerToolId: string | null
   panelToolIds: string[]
-  /** 数据段业务模块（可与非数据子路由并存时走 query） */
+  /** 数据段业务模块（pathname `/data/:moduleId`） */
   dataModuleId: string | null
   dataModuleCollapsed: boolean
-  /** 非数据段模块子路由（机库 / 运营 / 全景，全局互斥） */
+  /** 非数据段模块子路由（机库 / 运营，全局互斥） */
   nonDataModuleRoute: WorkspaceModuleRoute | null
   nonDataModuleCollapsed: boolean
 }
 
-const URL_KEYS = ['tool', 'variant', 'panels', 'data', 'dataDock', 'dock'] as const
+const URL_KEYS = ['tool', 'variant', 'panels', 'dataDock', 'dock'] as const
+
+/** 已废弃的双模块并行 query；同步时强制剥离 */
+const LEGACY_WORKSPACE_QUERY_KEYS = ['data'] as const
 
 const VARIANT_KEYS = new Set<MapToolVariantKey>(['drawLine', 'drawSurface'])
+
+const mockNavDataModuleIds = new Set(
+  [...mockNavLayerItems, ...mockNavAnalysisItems]
+    .map((item) => item.moduleId)
+    .filter(Boolean) as string[],
+)
+
+const mockNavOpsModuleIds = new Set(
+  mockNavOpsItems.map((item) => item.moduleId).filter(Boolean) as string[],
+)
 
 function parseCsvList(value: string | null): string[] {
   if (!value) return []
@@ -46,23 +62,42 @@ function isKnownPanelTool(toolId: string): boolean {
   return mockToolMeta[toolId]?.category === 'panel'
 }
 
+function parseLegacyDataModuleFromQuery(
+  pathname: string,
+  searchParams: URLSearchParams,
+  hasNonDataModuleRoute: boolean,
+): Pick<MapWorkspaceUrlState, 'dataModuleId' | 'dataModuleCollapsed'> {
+  if (hasNonDataModuleRoute || parseWorkspaceModulePath(pathname)) {
+    return { dataModuleId: null, dataModuleCollapsed: false }
+  }
+
+  const candidate = searchParams.get('data')
+  const dataModuleId =
+    candidate && parseWorkspaceModulePath(`/data/${candidate}`) ? candidate : null
+
+  return {
+    dataModuleId,
+    dataModuleCollapsed: dataModuleId !== null && searchParams.get('dataDock') === 'collapsed',
+  }
+}
+
+export function stripLegacyWorkspaceQueryParams(params: URLSearchParams): URLSearchParams {
+  const next = new URLSearchParams(params)
+  for (const key of LEGACY_WORKSPACE_QUERY_KEYS) {
+    next.delete(key)
+  }
+  return next
+}
+
+function hasLegacyWorkspaceQueryParams(params: URLSearchParams): boolean {
+  return LEGACY_WORKSPACE_QUERY_KEYS.some((key) => params.has(key))
+}
+
 function parseVariantParam(value: string | null): MapToolVariantKey | null {
   if (!value || !VARIANT_KEYS.has(value as MapToolVariantKey)) {
     return null
   }
   return value as MapToolVariantKey
-}
-
-function parseDataModuleFromQuery(
-  searchParams: URLSearchParams,
-): Pick<MapWorkspaceUrlState, 'dataModuleId' | 'dataModuleCollapsed'> {
-  const dataCandidate = searchParams.get('data')
-  const dataModuleId =
-    dataCandidate && parseWorkspaceModulePath(`/data/${dataCandidate}`)
-      ? dataCandidate
-      : null
-  const dataModuleCollapsed = dataModuleId !== null && searchParams.get('dataDock') === 'collapsed'
-  return { dataModuleId, dataModuleCollapsed }
 }
 
 function parseNonDataModuleFromPath(
@@ -119,21 +154,19 @@ export function parseWorkspaceUrl(
 
   const panelToolIds = parseCsvList(searchParams.get('panels')).filter(isKnownPanelTool)
 
-  const pathRoute = parseWorkspaceModulePath(pathname)
   const nonDataFromPath = parseNonDataModuleFromPath(pathname, searchParams)
   const dataFromPath = parseDataModuleFromPath(pathname, searchParams)
-  const dataFromQuery = parseDataModuleFromQuery(searchParams)
+  const legacyDataFromQuery = parseLegacyDataModuleFromQuery(
+    pathname,
+    searchParams,
+    Boolean(nonDataFromPath.nonDataModuleRoute),
+  )
 
-  let dataModuleId: string | null = null
-  let dataModuleCollapsed = false
-
-  if (pathRoute?.section === 'data') {
-    dataModuleId = dataFromPath.dataModuleId
-    dataModuleCollapsed = dataFromPath.dataModuleCollapsed
-  } else if (dataFromQuery.dataModuleId) {
-    dataModuleId = dataFromQuery.dataModuleId
-    dataModuleCollapsed = dataFromQuery.dataModuleCollapsed
-  }
+  const dataModuleId = dataFromPath.dataModuleId ?? legacyDataFromQuery.dataModuleId
+  const dataModuleCollapsed =
+    dataFromPath.dataModuleId !== null
+      ? dataFromPath.dataModuleCollapsed
+      : legacyDataFromQuery.dataModuleCollapsed
 
   return {
     mapToolId,
@@ -151,8 +184,6 @@ interface WorkspaceUrlSource {
   activeMapTool: { toolId: string; variantKey?: MapToolVariantKey } | null
   activeDrawerTool: { toolId: string } | null
   activePanelTools: { toolId: string }[]
-  activeDataModuleId: string | null
-  dataModulePanelCollapsed: boolean
   activeDockModuleId: string | null
   dockPanelCollapsed: boolean
   activeModuleId: string | null
@@ -162,6 +193,23 @@ interface WorkspaceUrlSource {
 export interface WorkspaceLocationState {
   pathname: string
   searchParams: URLSearchParams
+}
+
+function resolveNonDataSectionFromStore(
+  state: WorkspaceUrlSource,
+): Exclude<WorkspaceModuleSection, 'data'> | null {
+  const moduleId = state.activeDockModuleId ?? state.activeModuleId
+  if (!moduleId) return null
+  if (state.activeDockModuleId) return 'uav'
+  if (mockNavOpsModuleIds.has(moduleId)) return 'ops'
+  return null
+}
+
+function resolveDataModuleIdFromStore(state: WorkspaceUrlSource): string | null {
+  if (!state.activeModuleId || state.activeDockModuleId) {
+    return null
+  }
+  return mockNavDataModuleIds.has(state.activeModuleId) ? state.activeModuleId : null
 }
 
 /** 从 store 提取可分享的 pathname + query */
@@ -175,43 +223,19 @@ export function selectWorkspaceLocation(state: WorkspaceUrlSource): WorkspaceLoc
       pathname = buildWorkspaceModulePath({ section, moduleId: state.activeDockModuleId })
     }
   } else if (state.activeModuleId) {
-    const section = resolveNonDataSectionFromStore(state)
-    if (section) {
-      pathname = buildWorkspaceModulePath({ section, moduleId: state.activeModuleId })
-    }
-  } else if (state.activeDataModuleId) {
-    pathname = buildWorkspaceModulePath({ section: 'data', moduleId: state.activeDataModuleId })
-  }
-
-  if (
-    state.activeDataModuleId &&
-    (state.activeDockModuleId || state.activeModuleId) &&
-    pathname !== buildWorkspaceModulePath({ section: 'data', moduleId: state.activeDataModuleId })
-  ) {
-    searchParams.set('data', state.activeDataModuleId)
-    if (state.dataModulePanelCollapsed) {
-      searchParams.set('dataDock', 'collapsed')
+    const dataModuleId = resolveDataModuleIdFromStore(state)
+    if (dataModuleId) {
+      pathname = buildWorkspaceModulePath({ section: 'data', moduleId: dataModuleId })
+    } else {
+      const section = resolveNonDataSectionFromStore(state)
+      if (section) {
+        pathname = buildWorkspaceModulePath({ section, moduleId: state.activeModuleId })
+      }
     }
   }
 
   return { pathname, searchParams }
 }
-
-function resolveNonDataSectionFromStore(
-  state: WorkspaceUrlSource,
-): Exclude<WorkspaceModuleSection, 'data'> | null {
-  const moduleId = state.activeDockModuleId ?? state.activeModuleId
-  if (!moduleId) return null
-  if (state.activeDockModuleId) return 'uav'
-  if (mockNavOpsModuleIds.has(moduleId)) return 'ops'
-  if (mockNavPanoramaModuleIds.has(moduleId)) return 'panorama'
-  return null
-}
-
-const mockNavOpsModuleIds = new Set(
-  ['view-project', 'flight-ledger', 'flight-ai-alerts', 'custom-highway-alert', 'custom-live-share'],
-)
-const mockNavPanoramaModuleIds = new Set(['panorama-produce', 'panorama-viewer'])
 
 /** 从 store 提取可分享 query 状态（不含 pathname） */
 export function selectWorkspaceUrlState(state: WorkspaceUrlSource): MapWorkspaceUrlState {
@@ -228,13 +252,15 @@ export function selectWorkspaceUrlState(state: WorkspaceUrlSource): MapWorkspace
     return null
   })()
 
+  const dataModuleId = resolveDataModuleIdFromStore(state)
+
   return {
     mapToolId: state.activeMapTool?.toolId ?? null,
     mapToolVariant: state.activeMapTool?.variantKey ?? null,
     drawerToolId: state.activeDrawerTool?.toolId ?? null,
     panelToolIds: state.activePanelTools.map((item) => item.toolId),
-    dataModuleId: state.activeDataModuleId,
-    dataModuleCollapsed: state.dataModulePanelCollapsed,
+    dataModuleId,
+    dataModuleCollapsed: dataModuleId ? state.modulePanelCollapsed : false,
     nonDataModuleRoute,
     nonDataModuleCollapsed: state.activeDockModuleId
       ? state.dockPanelCollapsed
@@ -264,6 +290,7 @@ export function workspaceUrlStatesEqual(
 
 export function workspaceLocationsEqual(a: WorkspaceLocationState, b: WorkspaceLocationState): boolean {
   if (a.pathname !== b.pathname) return false
+  if (hasLegacyWorkspaceQueryParams(a.searchParams)) return false
   return searchParamsEqual(a.searchParams, b.searchParams)
 }
 
@@ -284,12 +311,7 @@ export function buildWorkspaceSearchParams(state: MapWorkspaceUrlState): URLSear
     params.set('panels', state.panelToolIds.join(','))
   }
 
-  if (state.dataModuleId && state.nonDataModuleRoute) {
-    params.set('data', state.dataModuleId)
-    if (state.dataModuleCollapsed) {
-      params.set('dataDock', 'collapsed')
-    }
-  } else if (state.dataModuleId && state.dataModuleCollapsed) {
+  if (state.dataModuleId && state.dataModuleCollapsed) {
     params.set('dataDock', 'collapsed')
   }
 
@@ -313,6 +335,9 @@ export function mergeWorkspaceSearchParams(
 ): URLSearchParams {
   const merged = new URLSearchParams(current)
   for (const key of URL_KEYS) {
+    merged.delete(key)
+  }
+  for (const key of LEGACY_WORKSPACE_QUERY_KEYS) {
     merged.delete(key)
   }
   for (const [key, value] of buildWorkspaceSearchParams(state)) {
@@ -344,9 +369,6 @@ export interface WorkspaceStorePatch {
   activeMapTool: ActiveMapTool | null
   activeDrawerTool: ActiveDrawerTool | null
   activePanelTools: { navItemId: string; toolId: string }[]
-  activeDataModuleNavId: string | null
-  activeDataModuleId: string | null
-  dataModulePanelCollapsed: boolean
   activeDockModuleNavId: string | null
   activeDockModuleId: string | null
   dockPanelCollapsed: boolean
@@ -392,9 +414,10 @@ export function resolveWorkspaceStorePatch(
     return [{ navItemId: item.id, toolId: item.toolId }]
   })
 
-  const dataItem = urlState.dataModuleId
-    ? findNavSubItemByModuleId(items, urlState.dataModuleId)
-    : undefined
+  const dataItem =
+    urlState.dataModuleId && !urlState.nonDataModuleRoute
+      ? findNavSubItemByModuleId(items, urlState.dataModuleId)
+      : undefined
 
   let activeDockModuleNavId: string | null = null
   let activeDockModuleId: string | null = null
@@ -416,15 +439,16 @@ export function resolveWorkspaceStorePatch(
         modulePanelCollapsed = urlState.nonDataModuleCollapsed
       }
     }
+  } else if (dataItem) {
+    activeModuleNavId = dataItem.id
+    activeModuleId = dataItem.moduleId ?? null
+    modulePanelCollapsed = urlState.dataModuleCollapsed
   }
 
   return {
     activeMapTool,
     activeDrawerTool,
     activePanelTools,
-    activeDataModuleNavId: dataItem?.id ?? null,
-    activeDataModuleId: dataItem?.moduleId ?? null,
-    dataModulePanelCollapsed: dataItem ? urlState.dataModuleCollapsed : false,
     activeDockModuleNavId,
     activeDockModuleId,
     dockPanelCollapsed,

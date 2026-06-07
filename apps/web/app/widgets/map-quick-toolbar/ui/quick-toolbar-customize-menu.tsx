@@ -24,6 +24,7 @@ import {
 } from '@repo/ui'
 import {
   GripVerticalIcon,
+  Minimize2Icon,
   MapPinIcon,
   RotateCcwIcon,
   Settings2Icon,
@@ -122,6 +123,7 @@ export function QuickToolbarCustomizeMenu({
   reorderTools,
   restoreDefaults,
   onResetToolbarPosition,
+  onCollapseToolbar,
   minTools,
 }: {
   gearRef: React.RefObject<HTMLButtonElement | null>
@@ -134,6 +136,7 @@ export function QuickToolbarCustomizeMenu({
   reorderTools: (activeId: string, overId: string) => void
   restoreDefaults: () => void
   onResetToolbarPosition: () => void
+  onCollapseToolbar: () => void
   minTools: number
 }) {
   const menuSensors = useSensors(
@@ -262,6 +265,10 @@ export function QuickToolbarCustomizeMenu({
         </div>
 
         <div className="border-border shrink-0 border-t dark:border-white/8">
+          <DropdownMenuItem onClick={onCollapseToolbar}>
+            <Minimize2Icon />
+            收起为浮标
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={onResetToolbarPosition}>
             <MapPinIcon />
             重置工具条位置

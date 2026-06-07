@@ -3,6 +3,7 @@ import { FilterIcon, PlaneIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import type { MockModuleContentProps } from '../../model/types'
+import { MOCK_MODULE_CONTENT_ROOT_CLASS } from '../primitives/mock-module-content-root'
 import { MockContentSection } from '../primitives/mock-content-section'
 
 type FlightStatus = 'completed' | 'in_progress' | 'planned'
@@ -49,6 +50,38 @@ const MOCK_FLIGHTS: FlightRow[] = [
     date: '2025-06-04',
     duration: '38 分',
   },
+  {
+    id: 'FL-240605',
+    route: '未来科技城',
+    pilot: '赵强',
+    status: 'completed',
+    date: '2025-06-03',
+    duration: '51 分',
+  },
+  {
+    id: 'FL-240606',
+    route: '良渚遗址巡查',
+    pilot: '李华',
+    status: 'planned',
+    date: '2025-06-08',
+    duration: '—',
+  },
+  {
+    id: 'FL-240607',
+    route: '千岛湖东岸',
+    pilot: '王芳',
+    status: 'completed',
+    date: '2025-06-02',
+    duration: '67 分',
+  },
+  {
+    id: 'FL-240608',
+    route: '临安城区巡检',
+    pilot: '张明',
+    status: 'in_progress',
+    date: '2025-06-06',
+    duration: '—',
+  },
 ]
 
 const STATUS_LABEL: Record<FlightStatus, string> = {
@@ -80,7 +113,7 @@ export function FlightLedgerModuleContent(_props: MockModuleContentProps) {
   }, [filter])
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4 text-sm">
+    <div className={MOCK_MODULE_CONTENT_ROOT_CLASS}>
       <MockContentSection title="筛选">
         <div className="flex flex-wrap gap-1.5">
           {FILTER_OPTIONS.map((option) => (

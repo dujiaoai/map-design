@@ -66,12 +66,26 @@ export interface MockDockModuleMeta {
   title: string
 }
 
-/** 业务 Dock 模块所属侧栏段（行业五柱） */
-export type MockModuleSegment = 'project' | 'layer' | 'ops' | 'analysis' | 'panorama'
+/** 业务 Dock 模块所属侧栏段（对齐 map-plugins-catalog） */
+export type MockModuleSegment = 'layers' | 'analysis' | 'ops' | 'uav' | 'app'
+
+/** 插件 catalog 类型（Skill map-plugins-index） */
+export type MapPluginCatalogType =
+  | 'tool'
+  | 'display'
+  | 'map-chrome'
+  | 'modify-panel'
+  | 'parallel-panel'
+  | 'hybrid'
+  | 'cesium-toolkit'
 
 export interface MockModuleMeta {
   title: string
   segment?: MockModuleSegment
+  /** 对齐 packages-map / map-plugin-registry */
+  pluginToolId?: string
+  /** Skill 插件类型 */
+  pluginType?: MapPluginCatalogType
   /** 租户能力键；未开通时侧栏不展示对应菜单项 */
   tenantFeature?: string
 }

@@ -17,7 +17,7 @@
     "lint": "pnpm --filter @repo/saas check",
     "lint:fix": "pnpm --filter @repo/saas check:fix",
     "format": "pnpm --filter @repo/saas format",
-    "validate": "pnpm run typecheck && pnpm run lint && pnpm run test",
+    "validate": "pnpm run typecheck && pnpm run test",
     "test": "vitest run",
     "test:watch": "vitest"
   },

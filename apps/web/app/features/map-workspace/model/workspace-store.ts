@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 
-import { isDataModuleNavItem, mockNavMainItems, resolveNavToolMeta } from '~/entities/navigation'
+import { mockNavMainItems, resolveNavToolMeta } from '~/entities/navigation'
 
 import {
   type ActiveDrawerTool,
@@ -12,6 +12,7 @@ import {
   selectWorkspaceUrlState,
   workspaceUrlStatesEqual,
 } from '../lib/workspace-url'
+import { saveToolPanelMinimized } from '../lib/tool-panel-minimized-prefs'
 
 export interface ActivePanelTool {
   navItemId: string
@@ -22,10 +23,6 @@ export interface MapWorkspaceStore {
   activeMapTool: ActiveMapTool | null
   activeDrawerTool: ActiveDrawerTool | null
   activePanelTools: ActivePanelTool[]
-  activeDataModuleNavId: string | null
-  activeDataModuleId: string | null
-  dataModulePanelCollapsed: boolean
-  dataModulePanelFullscreen: boolean
   activeDockModuleNavId: string | null
   activeDockModuleId: string | null
   dockPanelCollapsed: boolean
@@ -40,9 +37,11 @@ export interface MapWorkspaceStore {
   globalSearchPopoverOpen: boolean
   commandPaletteOpen: boolean
   commandPaletteQuery: string
+  minimizedToolPanels: Record<string, boolean>
   toggleMapTool: (navItemId: string) => void
   clearMapTool: () => void
   clearPanelTools: () => void
+  setToolPanelMinimized: (navItemId: string, minimized: boolean) => void
   setGlobalSearchQuery: (query: string) => void
   setGlobalSearchPopoverOpen: (open: boolean) => void
   setCommandPaletteOpen: (open: boolean) => void
@@ -55,11 +54,8 @@ export interface MapWorkspaceStore {
   closeMapDockModule: () => void
   toggleMapModule: (navItemId: string, moduleId: string) => void
   closeMapModule: () => void
-  closeDataModule: () => void
   setDockPanelCollapsed: (collapsed: boolean) => void
   toggleDockPanelFullscreen: () => void
-  setDataModulePanelCollapsed: (collapsed: boolean) => void
-  toggleDataModulePanelFullscreen: () => void
   setModulePanelCollapsed: (collapsed: boolean) => void
   toggleModulePanelFullscreen: () => void
   setContextPanelPresent: (present: boolean) => void
@@ -72,10 +68,6 @@ function readInitialWorkspaceState(): Pick<
   | 'activeMapTool'
   | 'activeDrawerTool'
   | 'activePanelTools'
-  | 'activeDataModuleNavId'
-  | 'activeDataModuleId'
-  | 'dataModulePanelCollapsed'
-  | 'dataModulePanelFullscreen'
   | 'activeDockModuleNavId'
   | 'activeDockModuleId'
   | 'dockPanelCollapsed'
@@ -90,10 +82,6 @@ function readInitialWorkspaceState(): Pick<
       activeMapTool: null,
       activeDrawerTool: null,
       activePanelTools: [],
-      activeDataModuleNavId: null,
-      activeDataModuleId: null,
-      dataModulePanelCollapsed: false,
-      dataModulePanelFullscreen: false,
       activeDockModuleNavId: null,
       activeDockModuleId: null,
       dockPanelCollapsed: false,
@@ -115,10 +103,6 @@ function readInitialWorkspaceState(): Pick<
     activeMapTool: patch.activeMapTool,
     activeDrawerTool: patch.activeDrawerTool,
     activePanelTools: patch.activePanelTools,
-    activeDataModuleNavId: patch.activeDataModuleNavId,
-    activeDataModuleId: patch.activeDataModuleId,
-    dataModulePanelCollapsed: patch.dataModulePanelCollapsed,
-    dataModulePanelFullscreen: false,
     activeDockModuleNavId: patch.activeDockModuleNavId,
     activeDockModuleId: patch.activeDockModuleId,
     dockPanelCollapsed: patch.dockPanelCollapsed,
@@ -156,7 +140,7 @@ function buildDrawerToolFromNav(navItemId: string): ActiveDrawerTool | null {
   }
 }
 
-function clearNonDataModules(): Pick<
+function clearSidebarModules(): Pick<
   MapWorkspaceStore,
   | 'activeDockModuleNavId'
   | 'activeDockModuleId'
@@ -179,6 +163,17 @@ function clearNonDataModules(): Pick<
   }
 }
 
+function clearMapToolState(): Pick<
+  MapWorkspaceStore,
+  'activeMapTool' | 'activeDrawerTool' | 'activePanelTools'
+> {
+  return {
+    activeMapTool: null,
+    activeDrawerTool: null,
+    activePanelTools: [],
+  }
+}
+
 export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
   ...readInitialWorkspaceState(),
   contextPanelPresent: false,
@@ -186,6 +181,17 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
   globalSearchPopoverOpen: false,
   commandPaletteOpen: false,
   commandPaletteQuery: '',
+  minimizedToolPanels: {},
+
+  setToolPanelMinimized(navItemId, minimized) {
+    saveToolPanelMinimized(navItemId, minimized)
+    set((state) => ({
+      minimizedToolPanels: {
+        ...state.minimizedToolPanels,
+        [navItemId]: minimized,
+      },
+    }))
+  },
 
   setCommandPaletteOpen(open) {
     set({ commandPaletteOpen: open })
@@ -249,9 +255,14 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
     }
 
     const next = buildMapToolFromNav(navItemId)
+    saveToolPanelMinimized(navItemId, false)
     set({
       activeMapTool: next,
       activeDrawerTool: null,
+      minimizedToolPanels: {
+        ...get().minimizedToolPanels,
+        [navItemId]: false,
+      },
     })
   },
 
@@ -270,7 +281,14 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
       set({ activePanelTools: activePanelTools.filter((item) => item.navItemId !== navItemId) })
       return
     }
-    set({ activePanelTools: [...activePanelTools, { navItemId, toolId }] })
+    set({
+      activePanelTools: [...activePanelTools, { navItemId, toolId }],
+      minimizedToolPanels: {
+        ...get().minimizedToolPanels,
+        [navItemId]: false,
+      },
+    })
+    saveToolPanelMinimized(navItemId, false)
   },
 
   toggleMapDockModule(navItemId, moduleId) {
@@ -284,7 +302,8 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
       return
     }
     set({
-      ...clearNonDataModules(),
+      ...clearSidebarModules(),
+      ...clearMapToolState(),
       activeDockModuleNavId: navItemId,
       activeDockModuleId: moduleId,
       dockPanelCollapsed: false,
@@ -293,29 +312,10 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
   },
 
   closeMapDockModule() {
-    set(clearNonDataModules())
+    set(clearSidebarModules())
   },
 
   toggleMapModule(navItemId, moduleId) {
-    if (isDataModuleNavItem(navItemId)) {
-      const { activeDataModuleNavId, dataModulePanelCollapsed } = get()
-      if (activeDataModuleNavId === navItemId) {
-        if (dataModulePanelCollapsed) {
-          set({ dataModulePanelCollapsed: false })
-          return
-        }
-        get().closeDataModule()
-        return
-      }
-      set({
-        activeDataModuleNavId: navItemId,
-        activeDataModuleId: moduleId,
-        dataModulePanelCollapsed: false,
-        dataModulePanelFullscreen: false,
-      })
-      return
-    }
-
     const { activeModuleNavId, modulePanelCollapsed } = get()
     if (activeModuleNavId === navItemId) {
       if (modulePanelCollapsed) {
@@ -326,7 +326,8 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
       return
     }
     set({
-      ...clearNonDataModules(),
+      ...clearSidebarModules(),
+      ...clearMapToolState(),
       activeModuleNavId: navItemId,
       activeModuleId: moduleId,
       modulePanelCollapsed: false,
@@ -335,15 +336,11 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
   },
 
   closeMapModule() {
-    set(clearNonDataModules())
-  },
-
-  closeDataModule() {
     set({
-      activeDataModuleNavId: null,
-      activeDataModuleId: null,
-      dataModulePanelCollapsed: false,
-      dataModulePanelFullscreen: false,
+      activeModuleNavId: null,
+      activeModuleId: null,
+      modulePanelCollapsed: false,
+      modulePanelFullscreen: false,
     })
   },
 
@@ -359,21 +356,6 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
     set({
       dockPanelFullscreen: next,
       ...(next ? { modulePanelFullscreen: false, dockPanelCollapsed: false } : {}),
-    })
-  },
-
-  setDataModulePanelCollapsed(collapsed) {
-    set({
-      dataModulePanelCollapsed: collapsed,
-      ...(collapsed ? { dataModulePanelFullscreen: false } : {}),
-    })
-  },
-
-  toggleDataModulePanelFullscreen() {
-    const next = !get().dataModulePanelFullscreen
-    set({
-      dataModulePanelFullscreen: next,
-      ...(next ? { modulePanelFullscreen: false, dataModulePanelCollapsed: false } : {}),
     })
   },
 
@@ -393,6 +375,9 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
   },
 
   setContextPanelPresent(present) {
+    if (get().contextPanelPresent === present) {
+      return
+    }
     set({ contextPanelPresent: present })
   },
 
@@ -403,8 +388,6 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
       activeMapTool: patch.activeMapTool,
       activeDrawerTool: patch.activeDrawerTool,
       activePanelTools: patch.activePanelTools,
-      activeDataModuleId: patch.activeDataModuleId,
-      dataModulePanelCollapsed: patch.dataModulePanelCollapsed,
       activeDockModuleId: patch.activeDockModuleId,
       dockPanelCollapsed: patch.dockPanelCollapsed,
       activeModuleId: patch.activeModuleId,
@@ -418,9 +401,6 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
       activeMapTool: patch.activeMapTool,
       activeDrawerTool: patch.activeDrawerTool,
       activePanelTools: patch.activePanelTools,
-      activeDataModuleNavId: patch.activeDataModuleNavId,
-      activeDataModuleId: patch.activeDataModuleId,
-      dataModulePanelCollapsed: patch.dataModulePanelCollapsed,
       activeDockModuleNavId: patch.activeDockModuleNavId,
       activeDockModuleId: patch.activeDockModuleId,
       dockPanelCollapsed: patch.dockPanelCollapsed,
@@ -435,10 +415,6 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
       activeMapTool: null,
       activeDrawerTool: null,
       activePanelTools: [],
-      activeDataModuleNavId: null,
-      activeDataModuleId: null,
-      dataModulePanelCollapsed: false,
-      dataModulePanelFullscreen: false,
       activeDockModuleNavId: null,
       activeDockModuleId: null,
       dockPanelCollapsed: false,
@@ -452,6 +428,11 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
   },
 }))
 
+/** 图层 / 分析 / 运营 / 机库 — 侧栏模块全局至多一个高亮 */
+export function selectActiveSidebarModuleNavId(state: MapWorkspaceStore): string | null {
+  return state.activeDockModuleNavId ?? state.activeModuleNavId ?? null
+}
+
 export function selectActiveNavItemIds(state: MapWorkspaceStore): string[] {
   const ids: string[] = []
   if (state.activeMapTool) {
@@ -461,14 +442,9 @@ export function selectActiveNavItemIds(state: MapWorkspaceStore): string[] {
     ids.push(state.activeDrawerTool.navItemId)
   }
   ids.push(...state.activePanelTools.map((item) => item.navItemId))
-  if (state.activeDataModuleNavId) {
-    ids.push(state.activeDataModuleNavId)
-  }
-  if (state.activeDockModuleNavId) {
-    ids.push(state.activeDockModuleNavId)
-  }
-  if (state.activeModuleNavId) {
-    ids.push(state.activeModuleNavId)
+  const sidebarModuleNavId = selectActiveSidebarModuleNavId(state)
+  if (sidebarModuleNavId) {
+    ids.push(sidebarModuleNavId)
   }
   return ids
 }

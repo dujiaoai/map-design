@@ -1,4 +1,5 @@
 export type {
+  MapPluginCatalogType,
   MapToolCategory,
   MapToolCoordinatorGroup,
   MapToolPresentation,
@@ -18,12 +19,12 @@ export {
   mockDockModuleMeta,
   mockModuleMeta,
   mockNavAppItems,
+  mockNavAnalysisItems,
   mockNavDataItems,
+  mockNavLayerItems,
   mockNavMainItems,
   mockNavMapSectionDefs,
   mockNavOpsItems,
-  mockNavPanoramaModuleItems,
-  mockNavPanoramaItems,
   mockNavToolItems,
   mockNavToolMetaByItemId,
   mockNavUavItems,
@@ -43,4 +44,5 @@ export { resolveNavToolMeta, resolveNavToolMetaFromUrl } from './lib/resolve-nav
 export { findNavSubItem } from './lib/find-nav-sub-item'
 export { findNavSectionLabelByNavItemId } from './lib/find-nav-section'
 export { findNavSectionIdByNavItemId, isDataModuleNavItem } from './lib/find-nav-section-id'
+export { usesLeftContextPanel } from './lib/uses-left-context-panel'
 export { toNavMainUiItems } from './lib/to-nav-main-ui-items'

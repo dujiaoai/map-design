@@ -7,7 +7,7 @@ import {
   orderQuickToolbarIds,
   sanitizeQuickToolbarIds,
 } from './quick-toolbar-catalog'
-import { loadQuickToolbarIds, resetQuickToolbarIds, saveQuickToolbarIds } from './quick-toolbar-prefs'
+import { loadQuickToolbarCollapsed, loadQuickToolbarIds, resetQuickToolbarIds, saveQuickToolbarCollapsed, saveQuickToolbarIds } from './quick-toolbar-prefs'
 
 describe('quick-toolbar prefs', () => {
   beforeEach(() => {
@@ -51,7 +51,6 @@ describe('quick-toolbar prefs', () => {
       'tool-locate-point',
       'tool-import-file',
       'tool-admin-divisions',
-      'tool-panorama-point',
       'tool-swipe-compare',
       'tool-hd-image-compare',
     ]
@@ -69,37 +68,37 @@ describe('quick-toolbar prefs', () => {
     expect(orderQuickToolbarIds(shuffled)).toEqual([
       'tool-measure-distance',
       'tool-pick-point',
-      'tool-import-file',
       'tool-swipe-compare',
+      'tool-import-file',
     ])
 
     expect(groupSelectedQuickTools(shuffled)).toEqual([
       {
         group: 'measure',
-        label: '测量',
+        label: '量测',
         items: expect.arrayContaining([
           expect.objectContaining({ navItemId: 'tool-measure-distance' }),
         ]),
       },
       {
         group: 'draw',
-        label: '绘制',
+        label: '标绘',
         items: expect.arrayContaining([
           expect.objectContaining({ navItemId: 'tool-pick-point' }),
         ]),
       },
       {
-        group: 'data',
-        label: '数据',
+        group: 'compare',
+        label: '对比',
         items: expect.arrayContaining([
-          expect.objectContaining({ navItemId: 'tool-import-file' }),
+          expect.objectContaining({ navItemId: 'tool-swipe-compare' }),
         ]),
       },
       {
-        group: 'analysis',
-        label: '分析',
+        group: 'utility',
+        label: '工具',
         items: expect.arrayContaining([
-          expect.objectContaining({ navItemId: 'tool-swipe-compare' }),
+          expect.objectContaining({ navItemId: 'tool-import-file' }),
         ]),
       },
     ])
@@ -108,5 +107,11 @@ describe('quick-toolbar prefs', () => {
   it('only allows reorder within the same category', () => {
     expect(canReorderQuickTools('tool-measure-distance', 'tool-measure-area')).toBe(true)
     expect(canReorderQuickTools('tool-measure-distance', 'tool-pick-point')).toBe(false)
+  })
+
+  it('persists collapsed state', () => {
+    expect(loadQuickToolbarCollapsed()).toBe(false)
+    saveQuickToolbarCollapsed(true)
+    expect(loadQuickToolbarCollapsed()).toBe(true)
   })
 })

@@ -1,0 +1,45 @@
+# --- build ---
+FROM node:20-alpine AS builder
+
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+
+WORKDIR /app
+
+# workspace manifests（利用 Docker 层缓存）
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json apps/web/
+COPY packages/ui/package.json packages/ui/
+COPY packages/auth/package.json packages/auth/
+COPY packages/api-client/package.json packages/api-client/
+COPY packages/ruoyi-api/package.json packages/ruoyi-api/
+
+RUN pnpm install --frozen-lockfile --filter @repo/saas-web...
+
+COPY apps/web apps/web
+COPY packages packages
+
+# 构建时 env（VITE_* 在 compile 阶段注入）
+ARG BUILD_MODE=production
+COPY .env.example .env.production
+# 若存在 .env.airace 且 BUILD_MODE=airace，可在 CI 中 COPY 覆盖
+
+RUN if [ "$BUILD_MODE" = "airace" ]; then \
+      pnpm --filter @repo/saas-web build:airace; \
+    else \
+      pnpm --filter @repo/saas-web build; \
+    fi
+
+# --- runtime ---
+FROM nginx:1.27-alpine AS runtime
+
+RUN apk add --no-cache gettext
+
+COPY deploy/nginx/saas-web.conf.template /etc/nginx/templates/default.conf.template
+COPY --from=builder /app/apps/web/build/client /usr/share/nginx/html
+
+ENV RUOYI_API_UPSTREAM=https://www.airace.com.cn
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget -qO- http://127.0.0.1/ > /dev/null || exit 1

@@ -1,8 +1,9 @@
 import { DndContext, useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import { cn } from '@repo/ui'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { useMapWorkspaceStore } from '~/features/map-workspace'
 import {
   createMovablePanelDragId,
   loadPanelSurfacePosition,
@@ -18,20 +19,24 @@ import { MockToolContent } from '~/entities/mock-workspace-content'
 
 import type { MapToolEntry } from '../lib/build-map-tool-entries'
 import { mapToolColumnWidth } from '../lib/build-map-tool-entries'
+import { loadToolPanelMinimized } from '~/features/map-workspace/lib/tool-panel-minimized-prefs'
 import {
   MapToolPanelBody,
   MapToolPanelHeader,
   mapToolPanelShellClass,
 } from './map-tool-panel-header'
+import { ToolPanelMinimizedChip } from './tool-panel-minimized-chip'
 
 function ToolPanelCardBody({
   entry,
   onClose,
+  onMinimize,
   dragHandleProps,
   isDragging,
 }: {
   entry: MapToolEntry
   onClose: () => void
+  onMinimize?: () => void
   dragHandleProps?: React.ComponentProps<'button'>
   isDragging?: boolean
 }) {
@@ -53,6 +58,7 @@ function ToolPanelCardBody({
         title={entry.title}
         variantLabel={variantLabel}
         onClose={onClose}
+        onMinimize={onMinimize}
         dragHandleProps={dragHandleProps}
         isDragging={isDragging}
       />
@@ -78,15 +84,24 @@ export function MovableToolPanel({
   containerRef: React.RefObject<HTMLElement | null>
   onClose: () => void
 }) {
+  const minimized = useMapWorkspaceStore((state) => Boolean(state.minimizedToolPanels[entry.navItemId]))
+  const setToolPanelMinimized = useMapWorkspaceStore((state) => state.setToolPanelMinimized)
+
   const panelRef = useRef<HTMLDivElement>(null)
   const [readySignal, setReadySignal] = useState(0)
   const dragId = createMovablePanelDragId(entry.navItemId)
+
+  useEffect(() => {
+    if (loadToolPanelMinimized(entry.navItemId)) {
+      setToolPanelMinimized(entry.navItemId, true)
+    }
+  }, [entry.navItemId, setToolPanelMinimized])
 
   const surface = useWorkspaceSurfaceDnd({
     dragId,
     containerRef,
     elementRef: panelRef,
-    layoutKey: entry.navItemId,
+    layoutKey: `${entry.navItemId}|${minimized ? 'min' : 'exp'}`,
     readySignal,
     initialPosition: loadPanelSurfacePosition(entry.navItemId) ?? {
       x: NEEDS_LAYOUT_ANCHOR,
@@ -97,6 +112,16 @@ export function MovableToolPanel({
       resolveDefaultAnchoredPosition(entry.placement, container, element),
     onPersist: (position) => savePanelSurfacePosition(entry.navItemId, position),
   })
+
+  function handleMinimize() {
+    setToolPanelMinimized(entry.navItemId, true)
+    setReadySignal((value) => value + 1)
+  }
+
+  function handleExpand() {
+    setToolPanelMinimized(entry.navItemId, false)
+    setReadySignal((value) => value + 1)
+  }
 
   return (
     <DndContext
@@ -117,8 +142,11 @@ export function MovableToolPanel({
         containerWidth={surface.containerWidth}
         activeSnapX={surface.activeSnapX}
         activeSnapY={surface.activeSnapY}
+        minimized={minimized}
         onPanelReady={() => setReadySignal((value) => value + 1)}
         onClose={onClose}
+        onMinimize={handleMinimize}
+        onExpand={handleExpand}
       />
     </DndContext>
   )
@@ -134,8 +162,11 @@ function MovableToolPanelDraggable({
   containerWidth,
   activeSnapX,
   activeSnapY,
+  minimized,
   onPanelReady,
   onClose,
+  onMinimize,
+  onExpand,
 }: {
   entry: MapToolEntry
   dragId: string
@@ -146,8 +177,11 @@ function MovableToolPanelDraggable({
   containerWidth: number
   activeSnapX: ReturnType<typeof useWorkspaceSurfaceDnd>['activeSnapX']
   activeSnapY: ReturnType<typeof useWorkspaceSurfaceDnd>['activeSnapY']
+  minimized: boolean
   onPanelReady: () => void
   onClose: () => void
+  onMinimize: () => void
+  onExpand: () => void
 }) {
   const hasReportedReadyRef = useRef(false)
 
@@ -173,6 +207,7 @@ function MovableToolPanelDraggable({
   )
 
   const dragging = isDragging || isNodeDragging
+  const dragHandleProps = { ...attributes, ...listeners }
 
   return (
     <>
@@ -188,7 +223,7 @@ function MovableToolPanelDraggable({
         ref={mergePanelRef}
         className={cn(
           'pointer-events-auto absolute z-20 touch-none',
-          mapToolColumnWidth(entry.placement),
+          minimized ? 'w-max max-w-none' : mapToolColumnWidth(entry.placement),
           dragging && 'workspace-surface-dragging',
         )}
         style={{
@@ -197,12 +232,25 @@ function MovableToolPanelDraggable({
           transform: transform ? CSS.Translate.toString(transform) : undefined,
         }}
       >
-        <ToolPanelCardBody
-          entry={entry}
-          onClose={onClose}
-          dragHandleProps={{ ...attributes, ...listeners }}
-          isDragging={dragging}
-        />
+        {minimized ? (
+          <ToolPanelMinimizedChip
+            entry={entry}
+            onExpand={onExpand}
+            onClose={onClose}
+            dragHandleProps={dragHandleProps}
+            isDragging={dragging}
+          />
+        ) : null}
+
+        <div className={cn(minimized && 'hidden')} aria-hidden={minimized}>
+          <ToolPanelCardBody
+            entry={entry}
+            onClose={onClose}
+            onMinimize={onMinimize}
+            dragHandleProps={dragHandleProps}
+            isDragging={dragging}
+          />
+        </div>
       </div>
     </>
   )

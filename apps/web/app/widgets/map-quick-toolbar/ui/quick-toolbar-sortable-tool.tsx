@@ -43,7 +43,7 @@ export function QuickToolbarSortableTool({
               isDragging && 'workspace-map-toolbar-tool--dragging z-30 cursor-grabbing opacity-90',
               !isDragging && 'cursor-grab',
               active
-                ? 'bg-primary/20 text-brand-deep shadow-[0_0_12px_rgba(48,148,255,0.18)] dark:text-brand-light dark:shadow-[0_0_16px_rgba(48,148,255,0.25)]'
+                ? 'bg-primary/20 text-brand-deep shadow-[0_0_12px_var(--brand-glow)] dark:text-brand-light dark:shadow-[0_0_16px_var(--brand-glow)]'
                 : 'text-muted-foreground hover:bg-accent hover:text-foreground dark:text-white/55 dark:hover:bg-white/8 dark:hover:text-white/90',
             )}
             onClick={onSelect}

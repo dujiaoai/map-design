@@ -7,4 +7,4 @@ export const WORKSPACE_CHROME_ICON_BUTTON_CLASS = `size-8 ${WORKSPACE_CHROME_ICO
 
 /** 顶栏带文字的操作按钮（如头像触发器） */
 export const WORKSPACE_CHROME_TEXT_BUTTON_CLASS =
-  'text-foreground/75 hover:bg-accent hover:text-foreground dark:text-white/75 dark:hover:bg-white/8 dark:hover:text-white'
+  'text-foreground/85 hover:bg-accent hover:text-foreground dark:text-white/75 dark:hover:bg-white/8 dark:hover:text-white'

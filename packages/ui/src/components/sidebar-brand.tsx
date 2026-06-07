@@ -29,7 +29,7 @@ export function SidebarBrand({ logo, title, subtitle }: SidebarBrandProps) {
             {logo}
           </div>
           <div className="grid min-w-0 flex-1 gap-0.5 pl-2 text-left leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="truncate text-sm font-semibold text-brand">{title}</span>
+            <span className="truncate text-sm font-semibold text-sidebar-foreground dark:text-brand">{title}</span>
             {subtitle ? (
               <span className="text-muted-foreground truncate text-xs">{subtitle}</span>
             ) : null}

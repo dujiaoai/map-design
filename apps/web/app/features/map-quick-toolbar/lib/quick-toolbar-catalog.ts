@@ -6,9 +6,9 @@ import {
   LandPlotIcon,
   LocateFixedIcon,
   MapPinnedIcon,
-  Rotate3dIcon,
   RulerIcon,
   SatelliteIcon,
+  ScanSearchIcon,
   SplineIcon,
   type LucideIcon,
 } from 'lucide-react'
@@ -20,15 +20,21 @@ export interface QuickToolDef {
   group: QuickToolGroup
 }
 
-export type QuickToolGroup = 'measure' | 'draw' | 'data' | 'analysis'
+/** 对齐 map-plugins-catalog · 量测与绘制 / 影像对比 / 工具 */
+export type QuickToolGroup = 'measure' | 'draw' | 'compare' | 'utility'
 
-export const QUICK_TOOL_GROUP_ORDER: QuickToolGroup[] = ['measure', 'draw', 'data', 'analysis']
+export const QUICK_TOOL_GROUP_ORDER: QuickToolGroup[] = [
+  'measure',
+  'draw',
+  'compare',
+  'utility',
+]
 
 export const QUICK_TOOL_GROUP_LABELS: Record<QuickToolGroup, string> = {
-  measure: '测量',
-  draw: '绘制',
-  data: '数据',
-  analysis: '分析',
+  measure: '量测',
+  draw: '标绘',
+  compare: '对比',
+  utility: '工具',
 }
 
 /** 可加入快捷工具条的地图工具目录 */
@@ -40,19 +46,24 @@ export const QUICK_TOOL_CATALOG: QuickToolDef[] = [
   { navItemId: 'tool-draw-surface', label: '绘面', icon: LandPlotIcon, group: 'draw' },
   { navItemId: 'tool-pick-point', label: '拾取', icon: CrosshairIcon, group: 'draw' },
   { navItemId: 'tool-locate-point', label: '定位', icon: LocateFixedIcon, group: 'draw' },
-  { navItemId: 'tool-import-file', label: '导入', icon: FileUpIcon, group: 'data' },
-  { navItemId: 'tool-admin-divisions', label: '区划', icon: MapPinnedIcon, group: 'data' },
-  { navItemId: 'tool-panorama-point', label: '全景', icon: Rotate3dIcon, group: 'data' },
-  { navItemId: 'tool-swipe-compare', label: '卷帘', icon: Columns2Icon, group: 'analysis' },
-  { navItemId: 'tool-hd-image-compare', label: '影像对比', icon: SatelliteIcon, group: 'analysis' },
+  { navItemId: 'tool-swipe-compare', label: '卷帘', icon: Columns2Icon, group: 'compare' },
+  {
+    navItemId: 'tool-hd-image-compare',
+    label: '影像对比',
+    icon: SatelliteIcon,
+    group: 'compare',
+  },
+  { navItemId: 'tool-import-file', label: '导入', icon: FileUpIcon, group: 'utility' },
+  { navItemId: 'tool-global-search', label: '搜索', icon: ScanSearchIcon, group: 'utility' },
+  { navItemId: 'tool-admin-divisions', label: '区划', icon: MapPinnedIcon, group: 'utility' },
 ]
 
 export const DEFAULT_QUICK_TOOL_IDS = [
   'tool-measure-distance',
   'tool-measure-area',
   'tool-pick-point',
-  'tool-import-file',
   'tool-swipe-compare',
+  'tool-import-file',
 ] as const
 
 export const MIN_QUICK_TOOLS = 1

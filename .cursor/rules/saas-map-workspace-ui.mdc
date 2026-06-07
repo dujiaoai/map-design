@@ -31,11 +31,13 @@ alwaysApply: false
 | `map-tool` + `presentation: movable-panel \| anchor` + `category: mode` | `MockMapToolHost` + `activeMapTool`，互斥 |
 | `map-tool` + `category: panel` | `MockMapToolHost` + `activePanelTools`，并行、仅手动关闭 |
 | `map-tool` + `presentation: drawer` | `MapToolDrawerPanel` 右侧条带（**不是** Vaul） |
-| `map-dock-module` | `MapDockPanel` 固定 Dock 列 |
-| `map-module` | `MapBusinessDock` 固定 Dock 列 |
+| `map-dock-module` | `MapDockPanel`（`MapContextPanel` 内 embedded） |
+| `map-module` | `MapBusinessDock`（`MapContextPanel` 内 embedded） |
 | `route` / `external` | 路由跳转 / 新窗口，无弹层 |
 
 **页脚**：通知、账号 → Vaul `Drawer`（有遮罩）；账号入口先经 `DropdownMenu`。
+
+**侧栏模块**：`map-module` / `map-dock-module` 全局互斥，左栏 `MapContextPanel` 单层外壳；切换菜单项关闭上一模块。
 
 ## 禁止
 

@@ -22,6 +22,27 @@ describe('workspace command registry', () => {
     expect(filtered.some((item) => item.title === '看项目')).toBe(false)
   })
 
+  it('finds module commands by pluginToolId keyword', () => {
+    const registry = buildWorkspaceCommandRegistry()
+    const filtered = filterCommandItems(registry, 'scenic-spots-plugin')
+    expect(filtered.some((item) => item.title === '景点聚类')).toBe(true)
+  })
+
+  it('sorts module commands by sidebar section order', () => {
+    const registry = buildWorkspaceCommandRegistry()
+    const moduleTitles = registry
+      .filter((item) => item.group === 'module')
+      .map((item) => item.title)
+
+    const thematicIndex = moduleTitles.indexOf('专题图层')
+    const analysisIndex = moduleTitles.indexOf('做分析')
+    const projectIndex = moduleTitles.indexOf('看项目')
+
+    expect(thematicIndex).toBeGreaterThanOrEqual(0)
+    expect(analysisIndex).toBeGreaterThan(thematicIndex)
+    expect(projectIndex).toBeGreaterThan(analysisIndex)
+  })
+
   it('adds map search suggestions when typing', () => {
     const registry = buildWorkspaceCommandRegistry()
     const items = resolveCommandItems({

@@ -3,14 +3,19 @@ import { mockDockModuleMeta } from '~/entities/navigation'
 import { useMapWorkspaceStore } from '~/features/map-workspace'
 import {
   DockPanelCollapseHandle,
-  DockPanelExpandEdge,
   DockPanelFrame,
-  resolveDockModuleEdgeIcon,
-  resolveModuleEdgeShortLabel,
+  DockPanelScrollBody,
 } from '~/widgets/dock-panel'
 
 /** 机库模块左侧固定 Dock（与非数据业务模块全局互斥） */
-export function MapDockPanel({ hidden = false }: { hidden?: boolean }) {
+export function MapDockPanel({
+  hidden = false,
+  embedded = false,
+}: {
+  hidden?: boolean
+  /** 嵌入 MapContextPanel 时仅渲染内容，避免双层标题栏/边框 */
+  embedded?: boolean
+}) {
   const activeDockModuleId = useMapWorkspaceStore((state) => state.activeDockModuleId)
   const collapsed = useMapWorkspaceStore((state) => state.dockPanelCollapsed)
   const setDockPanelCollapsed = useMapWorkspaceStore((state) => state.setDockPanelCollapsed)
@@ -25,6 +30,14 @@ export function MapDockPanel({ hidden = false }: { hidden?: boolean }) {
   const meta = mockDockModuleMeta[activeDockModuleId]
   if (!meta) {
     return null
+  }
+
+  if (embedded) {
+    return (
+      <DockPanelScrollBody>
+        <MockModuleContent moduleId={activeDockModuleId} title={meta.title} />
+      </DockPanelScrollBody>
+    )
   }
 
   return (
@@ -46,43 +59,10 @@ export function MapDockPanel({ hidden = false }: { hidden?: boolean }) {
         ) : null
       }
     >
-      <MockModuleContent moduleId={activeDockModuleId} title={meta.title} />
+      <DockPanelScrollBody>
+        <MockModuleContent moduleId={activeDockModuleId} title={meta.title} />
+      </DockPanelScrollBody>
     </DockPanelFrame>
   )
 }
 
-/** 机库 Dock 收起后，地图左缘分割条展开控件 */
-export function MapDockPanelEdge() {
-  const activeDockModuleId = useMapWorkspaceStore((state) => state.activeDockModuleId)
-  const collapsed = useMapWorkspaceStore((state) => state.dockPanelCollapsed)
-  const setDockPanelCollapsed = useMapWorkspaceStore((state) => state.setDockPanelCollapsed)
-  const activeModuleId = useMapWorkspaceStore((state) => state.activeModuleId)
-  const modulePanelCollapsed = useMapWorkspaceStore((state) => state.modulePanelCollapsed)
-  const activeDataModuleId = useMapWorkspaceStore((state) => state.activeDataModuleId)
-  const dataModulePanelCollapsed = useMapWorkspaceStore((state) => state.dataModulePanelCollapsed)
-  const contextPanelPresent = useMapWorkspaceStore((state) => state.contextPanelPresent)
-
-  if (!activeDockModuleId || !collapsed || contextPanelPresent) {
-    return null
-  }
-
-  const meta = mockDockModuleMeta[activeDockModuleId]
-  if (!meta) {
-    return null
-  }
-
-  const workspaceEdgeVisible = Boolean(activeModuleId && modulePanelCollapsed)
-  const dataEdgeVisible = Boolean(activeDataModuleId && dataModulePanelCollapsed)
-  const stackCount = 1 + Number(workspaceEdgeVisible) + Number(dataEdgeVisible)
-
-  return (
-    <DockPanelExpandEdge
-      label={`展开${meta.title}`}
-      shortLabel={resolveModuleEdgeShortLabel(activeDockModuleId, meta.title)}
-      icon={resolveDockModuleEdgeIcon(activeDockModuleId)}
-      stackIndex={0}
-      stackCount={stackCount}
-      onClick={() => setDockPanelCollapsed(false)}
-    />
-  )
-}

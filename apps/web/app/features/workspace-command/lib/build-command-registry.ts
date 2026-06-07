@@ -1,4 +1,6 @@
 import {
+  findNavSectionIdByNavItemId,
+  mockModuleMeta,
   mockNavMainItems,
   mockNavMapSectionDefs,
   mockNavToolItems,
@@ -7,7 +9,7 @@ import {
   type NavMainSubItem,
   type NavMapSectionDef,
 } from '~/entities/navigation'
-import { QUICK_TOOL_GROUP_LABELS, resolveQuickToolDef } from '~/features/map-quick-toolbar'
+import { QUICK_TOOL_GROUP_LABELS, QUICK_TOOL_GROUP_ORDER, resolveQuickToolDef } from '~/features/map-quick-toolbar'
 import { buildSearchSuggestions } from '~/features/global-search'
 
 import {
@@ -18,6 +20,47 @@ import {
   WORKSPACE_COMMAND_GROUP_ORDER,
   workspaceActionKey,
 } from './workspace-action'
+
+const NAV_SECTION_ORDER = ['layers', 'analysis', 'ops', 'uav', 'app'] as const
+
+const PLUGIN_TYPE_LABELS: Record<string, string> = {
+  display: '展示层',
+  'modify-panel': '编辑面板',
+  'parallel-panel': '并行面板',
+  tool: '地图工具',
+}
+
+function navSectionSortIndex(navItemId: string): number {
+  const sectionId = findNavSectionIdByNavItemId(navItemId)
+  if (sectionId) {
+    const index = NAV_SECTION_ORDER.indexOf(sectionId as (typeof NAV_SECTION_ORDER)[number])
+    return index >= 0 ? index : NAV_SECTION_ORDER.length
+  }
+
+  const quick = resolveQuickToolDef(navItemId)
+  if (quick) {
+    const groupIndex = QUICK_TOOL_GROUP_ORDER.indexOf(quick.group)
+    return NAV_SECTION_ORDER.length + 1 + (groupIndex >= 0 ? groupIndex : QUICK_TOOL_GROUP_ORDER.length)
+  }
+
+  return NAV_SECTION_ORDER.length + QUICK_TOOL_GROUP_ORDER.length + 1
+}
+
+function compareNavCommandItems(a: WorkspaceCommandItem, b: WorkspaceCommandItem): number {
+  const navItemIdA = a.action.type === 'selectNav' ? a.action.navItemId : null
+  const navItemIdB = b.action.type === 'selectNav' ? b.action.navItemId : null
+
+  if (!navItemIdA || !navItemIdB) {
+    return 0
+  }
+
+  const sectionDelta = navSectionSortIndex(navItemIdA) - navSectionSortIndex(navItemIdB)
+  if (sectionDelta !== 0) {
+    return sectionDelta
+  }
+
+  return a.title.localeCompare(b.title, 'zh-CN')
+}
 
 const SYSTEM_COMMANDS: WorkspaceCommandItem[] = [
   {
@@ -105,6 +148,12 @@ function buildNavCommandItem(
     }
   }
 
+  if (leaf.kind === 'map-module' && leaf.moduleId) {
+    const meta = mockModuleMeta[leaf.moduleId]
+    const typeLabel = meta?.pluginType ? PLUGIN_TYPE_LABELS[meta.pluginType] : undefined
+    subtitle = [sectionLabel, typeLabel].filter(Boolean).join(' · ')
+  }
+
   if (leaf.kind === 'route' && leaf.url) {
     subtitle = [sectionLabel, leaf.url].filter(Boolean).join(' · ')
   }
@@ -113,9 +162,18 @@ function buildNavCommandItem(
     subtitle = [sectionLabel, '外部链接'].filter(Boolean).join(' · ')
   }
 
-  const keywords = [leaf.title, sectionLabel ?? '', leaf.toolId ?? '', leaf.moduleId ?? ''].filter(
-    Boolean,
-  )
+  const moduleMeta = leaf.moduleId ? mockModuleMeta[leaf.moduleId] : undefined
+  const toolMeta = leaf.toolId ? mockToolMeta[leaf.toolId] : undefined
+
+  const keywords = [
+    leaf.title,
+    sectionLabel ?? '',
+    leaf.toolId ?? '',
+    leaf.moduleId ?? '',
+    toolMeta?.pluginToolId ?? '',
+    moduleMeta?.pluginToolId ?? '',
+    moduleMeta?.pluginType ?? '',
+  ].filter(Boolean)
 
   return {
     id: `nav:${leaf.id}`,
@@ -162,6 +220,7 @@ export function buildWorkspaceCommandRegistry(
   const navCommands = flattenNavLeaves(items)
     .map((leaf) => buildNavCommandItem(leaf, activeNavItemIds))
     .filter((item): item is WorkspaceCommandItem => Boolean(item))
+    .sort(compareNavCommandItems)
 
   return [...navCommands, ...SYSTEM_COMMANDS]
 }

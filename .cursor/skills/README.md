@@ -14,6 +14,7 @@
 | `cloud-uav-esm-plugin` | `cloud/uav` ESM 远程模块 |
 | `saas-theme-mode` | 浅色/深色主题、语义 token、dark: 写法 |
 | `git-commit` | 根据 git diff 生成 Conventional Commit 信息 |
+| `docker-deploy` | `deploy/` Docker 构建、compose 启动、冒烟测试 |
 | **`saas-product`** | **PM 编排入口（PRD / 路线图 / 研究 handoff）** |
 
 ## 产品 Skill（Anthropic PM Plugin 本地化）

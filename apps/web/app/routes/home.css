@@ -1,5 +1,6 @@
 @import '../shared/styles/command-center.css';
 @import '../shared/styles/command-center-overlays.css';
+@import '../shared/styles/workspace-light.css';
 
 html:has(.workspace-page),
 body:has(.workspace-page) {
@@ -15,9 +16,14 @@ body:has(.workspace-page) {
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Noto Sans SC', ui-sans-serif, system-ui, sans-serif;
+}
+
+html.dark .workspace-page {
   background: var(--surface-deep);
   color: var(--text-on-dark);
-  font-family: 'Noto Sans SC', ui-sans-serif, system-ui, sans-serif;
 }
 
 .workspace-inset {
@@ -32,6 +38,9 @@ body:has(.workspace-page) {
   position: absolute;
   inset: 0;
   z-index: 0;
+}
+
+html.dark .workspace-page .workspace-inset::before {
   background:
     linear-gradient(
       180deg,
@@ -71,6 +80,12 @@ body:has(.workspace-page) {
 .workspace-context-panel-shell--exit {
   width: 0;
   max-width: 0;
+}
+
+.workspace-context-panel-shell--fullscreen {
+  width: 0;
+  max-width: 0;
+  overflow: visible;
 }
 
 .workspace-context-panel-shell > .workspace-context-panel {
@@ -118,17 +133,13 @@ body:has(.workspace-page) {
   }
 }
 
-/* 子路由 / Tab 切换：模块内容方向性滑入 */
+/* 子路由切换：模块内容方向性滑入 */
 .workspace-module-surface--enter-forward {
   animation: workspace-module-enter-forward 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .workspace-module-surface--enter-back {
   animation: workspace-module-enter-back 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.workspace-context-tabs {
-  animation: workspace-tabs-reveal 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes workspace-module-enter-forward {
@@ -157,33 +168,23 @@ body:has(.workspace-page) {
   }
 }
 
-@keyframes workspace-tabs-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .workspace-context-panel {
-  background: color-mix(in srgb, var(--surface-panel) 90%, transparent);
+  background: var(--sidebar);
+  border-right: 1px solid var(--border);
 }
 
-.workspace-context-panel > div:last-child aside {
-  width: 100% !important;
-  max-width: 100%;
-  min-height: 0;
-  flex: 1;
-  border-right: none !important;
+html.dark .workspace-page .workspace-context-panel {
+  background: color-mix(in srgb, var(--surface-panel) 90%, transparent);
+  border-right-color: rgba(255, 255, 255, 0.06);
 }
 
 .workspace-map-toolbar {
-  width: max-content;
-  max-width: none;
   transition: none;
+}
+
+.workspace-map-toolbar--expanded {
+  width: max-content;
+  max-width: 100%;
 }
 
 .workspace-map-toolbar-tool--dragging {
@@ -273,68 +274,678 @@ body:has(.workspace-page) {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
 }
 
-html:not(.dark) .workspace-quick-toolbar-selected-row--dragging {
-  box-shadow: 0 4px 16px rgba(48, 148, 255, 0.12);
+/* ── 地图右下角底图控件：内容横排 + 导航纵列 ── */
+.map-controls {
+  pointer-events: auto;
+  position: absolute;
+  z-index: 20;
+  overflow: visible;
+  transition:
+    right 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    bottom 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.map-controls--avoiding .map-controls-dock {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--brand) 12%, transparent) inset,
+    0 6px 20px rgba(0, 0, 0, 0.28),
+    0 0 16px color-mix(in srgb, var(--brand) 6%, transparent);
+}
+
+.map-controls-dock {
+  --mc-rail: 2.375rem;
+  --mc-cell: 1.75rem;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  width: var(--mc-rail);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.125rem;
+  overflow: visible;
+  border-radius: 0.625rem;
+  padding: 0.1875rem;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 8px 24px rgba(0, 0, 0, 0.32),
+    0 0 20px color-mix(in srgb, var(--brand) 8%, transparent);
+}
+
+.map-controls-dock::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--brand) 7%, transparent) 0%,
+    transparent 28%,
+    transparent 100%
+  );
+  opacity: 0.85;
+}
+
+/* ── 数据甲板：图层 / 图例（纵向堆叠） ── */
+.map-controls-dock__data-deck {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0.4375rem;
+  background: color-mix(in srgb, var(--foreground) 3.5%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 7%, transparent);
+}
+
+html.dark .map-controls-dock__data-deck {
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 9%, transparent);
+}
+
+.map-controls-dock__data-seam {
+  flex: 0 0 1px;
+  height: 1px;
+  width: 100%;
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+html.dark .map-controls-dock__data-seam {
+  background: color-mix(in srgb, var(--foreground) 11%, transparent);
+}
+
+.map-controls-dock__data-btn {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: var(--mc-cell);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  transition: color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.map-controls-dock__data-btn:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 45%, transparent);
+  z-index: 1;
+}
+
+.map-controls-dock__data-btn:disabled {
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* ── 区段关节：导航 / 缩放 ── */
+.map-controls-dock__joint {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 0.875rem;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.25rem;
+  padding-inline: 0.125rem;
+}
+
+.map-controls-dock__joint-line {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--foreground) 14%, transparent) 50%,
+    transparent
+  );
+}
+
+html.dark .map-controls-dock__joint-line {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--foreground) 18%, transparent) 50%,
+    transparent
+  );
+}
+
+.map-controls-dock__joint-label {
+  flex-shrink: 0;
+  font-size: 6px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--foreground) 38%, transparent);
+}
+
+html.dark .map-controls-dock__joint-label {
+  color: color-mix(in srgb, var(--foreground) 42%, transparent);
+}
+
+/* ── 导航轨：指北 / 全图 ── */
+.map-controls-dock__nav-rail {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1px;
+  padding-inline: 0.0625rem;
+}
+
+.map-controls-dock__compass-slot {
+  display: flex;
+  min-height: calc(var(--mc-cell) + 0.125rem);
+  align-items: center;
+  justify-content: center;
+  padding-block: 0.125rem;
+}
+
+.map-controls-dock__nav-btn {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: var(--mc-cell);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.3125rem;
+  transition: color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.map-controls-dock__nav-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 45%, transparent);
+}
+
+.map-controls-dock__nav-btn:disabled {
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* ── 缩放 cartridge：+ / 比例尺 / − ── */
+.map-controls-dock__zoom-block {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  overflow: hidden;
+  border-radius: 0.4375rem;
+  background: color-mix(in srgb, var(--foreground) 2.5%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--foreground) 7%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+
+html.dark .map-controls-dock__zoom-block {
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--foreground) 6%, transparent);
+}
+
+.map-controls-dock__zoom-block .map-controls-dock__nav-btn {
+  border-radius: 0;
+}
+
+.map-controls-dock__zoom-block .map-controls-dock__nav-btn:first-child {
+  border-radius: 0.4375rem 0.4375rem 0 0;
+}
+
+.map-controls-dock__zoom-block .map-controls-dock__nav-btn:last-child {
+  border-radius: 0 0 0.4375rem 0.4375rem;
+}
+
+.map-controls-dock__zoom-block .map-controls-dock__nav-btn + .map-controls-dock__nav-btn {
+  border-top: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent);
+}
+
+html.dark .map-controls-dock__zoom-block .map-controls-dock__nav-btn + .map-controls-dock__nav-btn {
+  border-top-color: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+/* ── 按钮激活态 / 角标 ── */
+.map-controls-dock__btn--active {
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  color: var(--brand-deep);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+html.dark .map-controls-dock__btn--active {
+  background: color-mix(in srgb, var(--brand) 20%, transparent);
+  color: var(--brand-soft);
+}
+
+.map-controls-dock__data-btn.map-controls-dock__btn--active {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--brand) 24%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+.map-controls-dock__badge {
+  position: absolute;
+  top: 0.125rem;
+  right: 0.125rem;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--brand) 55%, transparent);
+}
+
+.map-controls-dock__nav-btn:hover:not(:disabled),
+.map-controls-dock__data-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+}
+
+html.dark .map-controls-dock__nav-btn:hover:not(:disabled),
+html.dark .map-controls-dock__data-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.map-controls-compass__hint {
+  white-space: nowrap;
+}
+
+.map-controls-compass__hint--left {
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+}
+
+.map-controls-dock--flash {
+  animation: map-controls-flash 0.48s ease-out;
+}
+
+.map-controls-compass {
+  isolation: isolate;
+  width: calc(var(--mc-cell, 1.75rem) + 0.125rem);
+  height: calc(var(--mc-cell, 1.75rem) + 0.125rem);
+}
+
+.map-controls-compass::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: inherit;
+}
+
+.map-controls-compass--idle {
+  opacity: 0.62;
+}
+
+.map-controls-compass--idle:hover,
+.map-controls-compass--idle:focus-visible {
+  opacity: 1;
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+}
+
+html.dark .map-controls-compass--idle:hover,
+html.dark .map-controls-compass--idle:focus-visible {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.map-controls-compass--idle .map-controls-compass__bezel {
+  opacity: 0.7;
+}
+
+.map-controls-compass--idle .map-controls-compass-dial {
+  opacity: 0.82;
+}
+
+.map-controls-compass--idle .map-controls-compass-dial path:first-child,
+.map-controls-compass--idle .map-controls-compass-dial text {
+  fill: color-mix(in srgb, var(--foreground) 55%, transparent);
+}
+
+html.dark .map-controls-compass--idle .map-controls-compass-dial path:first-child,
+html.dark .map-controls-compass--idle .map-controls-compass-dial text {
+  fill: color-mix(in srgb, var(--foreground) 62%, transparent);
+}
+
+.map-controls-compass--rotated {
+  opacity: 1;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 26%, transparent);
+}
+
+.map-controls-compass--rotated::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 1px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle at 50% 28%,
+    color-mix(in srgb, var(--brand) 18%, transparent),
+    transparent 68%
+  );
+  opacity: 0.9;
+}
+
+.map-controls-compass__bezel {
+  opacity: 0.95;
+}
+
+.map-controls-compass-dial {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: center;
+}
+
+.map-controls-compass--dragging .map-controls-compass-dial {
+  transition: none;
+}
+
+.map-controls-compass--dragging {
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--brand) 38%, transparent),
+    0 0 16px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.map-controls-compass__orbit {
+  animation: map-controls-compass-orbit 1.4s linear infinite;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--brand) 42%, transparent) 36deg,
+    transparent 72deg,
+    transparent 360deg
+  );
+  mask: radial-gradient(circle, transparent 58%, #000 60%, #000 100%);
+  opacity: 0.75;
+}
+
+@keyframes map-controls-compass-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.map-controls-compass__readout {
+  text-shadow: 0 0 8px color-mix(in srgb, var(--brand) 35%, transparent);
+}
+
+.map-controls-compass__readout span:last-child {
+  opacity: 0.92;
+}
+
+.map-controls-compass--pulse .map-controls-compass-dial {
+  transition: transform 0.32s cubic-bezier(0.34, 1.35, 0.64, 1);
+}
+
+.map-controls-compass--pulse {
+  animation: map-controls-compass-pulse 0.42s ease-out;
+}
+
+@keyframes map-controls-compass-pulse {
+  0% {
+    box-shadow: inset 0 0 0 0 color-mix(in srgb, var(--brand) 0%, transparent);
+  }
+  45% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--brand) 45%, transparent),
+      0 0 14px color-mix(in srgb, var(--brand) 28%, transparent);
+  }
+  100% {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 26%, transparent);
+  }
+}
+
+.map-controls-dock-divider {
+  opacity: 0.85;
+}
+
+@keyframes map-controls-flash {
+  0% {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+      0 6px 20px rgba(0, 0, 0, 0.28);
+  }
+  45% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--brand) 40%, transparent) inset,
+      0 0 20px color-mix(in srgb, var(--brand) 18%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+      0 6px 20px rgba(0, 0, 0, 0.28);
+  }
+}
+
+.map-controls-ratio-value {
+  animation: map-controls-ratio-tick 0.22s ease-out;
+}
+
+@keyframes map-controls-ratio-tick {
+  from {
+    opacity: 0.45;
+    transform: translateY(1px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 图例：浮于 HUD 上方，内容全部展示，标题栏可拖动 */
+/* 图例：画布绝对定位，@dnd-kit 拖动，内容全部展示 */
+.map-controls-legend-wing {
+  position: absolute;
+  z-index: 21;
+  display: flex;
+  flex-direction: column;
+  width: max(100%, 16rem);
+  max-width: min(24rem, calc(100vw - 2rem));
+  border-radius: 0.5rem;
+  pointer-events: auto;
+  animation: map-controls-legend-wing-enter 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--brand) 14%, transparent) inset,
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    0 0 20px color-mix(in srgb, var(--brand) 7%, transparent);
+}
+
+.map-controls-legend-wing--dragging {
+  animation: none;
+}
+
+.map-controls-legend-wing__header {
+  flex: 0 0 auto;
+  min-height: 1.75rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+html.dark .map-controls-legend-wing__header {
+  border-bottom-color: color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+
+.map-controls-legend-wing__body {
+  padding: 0.25rem 0.375rem 0.375rem;
+}
+
+.map-controls-legend-wing__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 0.25rem 0.625rem;
+}
+
+@container map-canvas (max-width: 519px) {
+  .map-controls-legend-wing {
+    width: 100%;
+    max-width: min(24rem, calc(100cqw - 0.5rem));
+  }
+}
+
+@keyframes map-controls-legend-wing-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes map-controls-layers-wing-enter {
+  from {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.map-controls-layers-wing {
+  position: absolute;
+  top: auto;
+  bottom: 0;
+  right: calc(100% + 0.375rem);
+  left: auto;
+  z-index: 2;
+  display: flex;
+  max-height: min(24rem, calc(100dvh - 7rem));
+  flex-direction: column;
+  width: max(100%, 16rem);
+  max-width: min(18.5rem, calc(100vw - 2rem));
+  overflow: hidden;
+  border-radius: 0.5rem;
+  pointer-events: auto;
+  animation: map-controls-layers-wing-enter 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--brand) 14%, transparent) inset,
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    0 0 20px color-mix(in srgb, var(--brand) 7%, transparent);
+  transform-origin: bottom right;
+}
+
+.map-controls-layers-wing__header {
+  flex: 0 0 auto;
+  padding: 0.5rem 0.5rem 0.375rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+html.dark .map-controls-layers-wing__header {
+  border-bottom-color: color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+
+.map-controls-layers-wing__body {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0.375rem 0.5rem 0.5rem;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+@container map-canvas (max-width: 519px) {
+  .map-controls-layers-wing {
+    bottom: 0;
+    right: calc(100% + 0.375rem);
+    max-height: min(22rem, calc(100dvh - 7rem));
+    width: min(18.5rem, calc(100cqw - var(--mc-rail, 2.375rem) - 1rem));
+    max-width: min(18.5rem, calc(100cqw - var(--mc-rail, 2.375rem) - 1rem));
+  }
+}
+
+.map-controls-basemap-row--active {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+.map-controls-period-select[data-size='sm'] {
+  font-size: 10px;
+}
+
+.map-controls-period-select [data-slot='select-value'] {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+}
+
+.map-controls-imagery-block {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+.map-controls-layers-group + .map-controls-layers-group {
+  padding-top: 0.125rem;
+  border-top: 1px solid color-mix(in srgb, var(--foreground) 7%, transparent);
+}
+
+html.dark .map-controls-layers-group + .map-controls-layers-group {
+  border-top-color: color-mix(in srgb, var(--foreground) 10%, transparent);
 }
 
 .workspace-page [data-slot='sidebar-content'] {
   padding-top: 0.25rem;
 }
 
-/* ── 侧栏菜单：指挥舱光束、涟漪点击、激活脉冲 ── */
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive,
-.workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive {
+/* ── 侧栏菜单：指挥舱三级反馈（仅暗色）── */
+html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive,
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   border: 1px solid transparent;
   transition:
     transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     background 0.22s ease,
     color 0.2s ease,
-    border-color 0.22s ease;
+    border-color 0.22s ease,
+    box-shadow 0.28s ease;
 }
 
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive::before,
-.workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive::before {
+html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive::before,
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive::before {
   content: '';
   pointer-events: none;
   position: absolute;
   left: 0;
-  top: 16%;
-  bottom: 16%;
+  top: 14%;
+  bottom: 14%;
   z-index: 1;
   width: 3px;
   border-radius: 0 4px 4px 0;
   background: linear-gradient(
     180deg,
     transparent 0%,
-    color-mix(in srgb, var(--brand-light) 90%, transparent) 35%,
+    color-mix(in srgb, var(--brand-light) 92%, transparent) 30%,
     var(--brand) 50%,
-    color-mix(in srgb, var(--brand-light) 90%, transparent) 65%,
+    color-mix(in srgb, var(--brand-light) 92%, transparent) 70%,
     transparent 100%
   );
+  box-shadow: 0 0 10px color-mix(in srgb, var(--brand) 45%, transparent);
   opacity: 0;
-  transform: scaleY(0.35) translateX(-3px);
+  transform: scaleY(0.4) translateX(-4px);
   transition:
-    opacity 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.26s ease;
-  filter: blur(0);
+    opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s ease;
 }
 
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive:hover::before,
-.workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive:hover::before,
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive[data-active='true']::before,
-.workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive[data-active='true']::before {
+html.dark
+  .workspace-page
+  [data-sidebar='menu-button'].ws-nav-interactive[data-active='true']:not(.ws-nav-collapsible-trigger)::before,
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive[data-active='true']::before {
   opacity: 1;
   transform: scaleY(1) translateX(0);
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--brand) 65%, transparent));
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--brand) 55%, transparent),
+    0 0 24px color-mix(in srgb, var(--brand) 22%, transparent);
 }
 
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive::after,
-.workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive::after {
+html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-collapsible-trigger[data-active='true']::before {
+  top: 22%;
+  bottom: 22%;
+  width: 2px;
+  opacity: 0.5;
+  transform: scaleY(0.9) translateX(0);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--brand) 28%, transparent);
+}
+
+html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive::after,
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive::after {
   content: '';
   pointer-events: none;
   position: absolute;
@@ -343,62 +954,89 @@ html:not(.dark) .workspace-quick-toolbar-selected-row--dragging {
   opacity: 0;
   background: radial-gradient(
     circle at var(--ws-nav-rip-x, 50%) var(--ws-nav-rip-y, 50%),
-    color-mix(in srgb, var(--brand-light) 48%, transparent) 0%,
-    color-mix(in srgb, var(--brand) 22%, transparent) 32%,
-    transparent 68%
+    color-mix(in srgb, var(--brand-light) 52%, transparent) 0%,
+    color-mix(in srgb, var(--brand) 24%, transparent) 30%,
+    transparent 66%
   );
 }
 
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-flash::after,
-.workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive.ws-nav-flash::after {
+html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-flash::after,
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive.ws-nav-flash::after {
   animation: ws-nav-ripple 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-flash,
-.workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive.ws-nav-flash {
-  transform: scale(0.975);
+html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-flash,
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive.ws-nav-flash {
+  transform: scale(0.985);
 }
 
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive:hover:not([data-active='true']),
-.workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive:hover:not([data-active='true']) {
+html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive:hover:not([data-active='true']),
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive:hover:not([data-active='true']) {
+  background: color-mix(in srgb, var(--brand) 6%, transparent);
+  color: color-mix(in srgb, var(--brand-light) 55%, var(--sidebar-foreground));
+}
+
+html.dark
+  .workspace-page
+  [data-sidebar='menu-button'].ws-nav-interactive[data-active='true']:not(.ws-nav-collapsible-trigger),
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive[data-active='true'] {
   transform: translateX(4px);
-  background: color-mix(in srgb, var(--brand) 7%, transparent);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--brand) 14%, transparent),
-    0 0 16px color-mix(in srgb, var(--brand) 6%, transparent);
 }
 
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive[data-active='true'],
-.workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive[data-active='true'] {
-  transform: translateX(5px);
+html.dark
+  .workspace-page
+  [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-active-pulse[data-active='true']:not(.ws-nav-collapsible-trigger),
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive.ws-nav-active-pulse[data-active='true'] {
+  animation: ws-nav-active-glow 0.72s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-active-pulse[data-active='true'],
-.workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive.ws-nav-active-pulse[data-active='true'] {
-  animation: ws-nav-active-glow 0.64s cubic-bezier(0.22, 1, 0.36, 1);
+html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-collapsible-trigger[data-active='true'] {
+  border-color: color-mix(in srgb, var(--brand) 14%, transparent);
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+  box-shadow: none;
+  color: color-mix(in srgb, var(--brand-light) 72%, var(--sidebar-foreground));
 }
 
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive > svg:first-of-type {
+html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive > svg:first-of-type,
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive > svg:first-of-type {
   position: relative;
   z-index: 2;
   transition:
-    filter 0.28s ease,
+    color 0.2s ease,
     transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive:hover > svg:first-of-type,
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive[data-active='true'] > svg:first-of-type {
-  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--brand-light) 70%, transparent));
-  transform: scale(1.1);
+html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive:hover:not([data-active='true']) > svg:first-of-type,
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive:hover:not([data-active='true']) > svg:first-of-type {
+  color: color-mix(in srgb, var(--brand-light) 70%, var(--sidebar-foreground));
 }
 
-.workspace-page [data-sidebar='menu-button'].ws-nav-interactive > span,
-.workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive > span {
+html.dark
+  .workspace-page
+  [data-sidebar='menu-button'].ws-nav-interactive[data-active='true']:not(.ws-nav-collapsible-trigger)
+  > svg:first-of-type,
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive[data-active='true'] > svg:first-of-type {
+  color: var(--brand-light);
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--brand) 40%, transparent));
+}
+
+html.dark
+  .workspace-page
+  [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-collapsible-trigger[data-active='true']
+  > svg:first-of-type {
+  color: color-mix(in srgb, var(--brand-light) 80%, var(--sidebar-foreground));
+  transform: none;
+  filter: none;
+}
+
+html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive > span,
+html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive > span {
   position: relative;
   z-index: 2;
 }
 
-.workspace-page .ws-nav-section-label {
+html.dark .workspace-page .ws-nav-section-label {
   position: relative;
   overflow: hidden;
   border-radius: 0.375rem;
@@ -408,13 +1046,13 @@ html:not(.dark) .workspace-quick-toolbar-selected-row--dragging {
     letter-spacing 0.22s ease;
 }
 
-.workspace-page .ws-nav-section-label:hover {
+html.dark .workspace-page .ws-nav-section-label:hover {
   color: color-mix(in srgb, var(--brand-light) 88%, var(--foreground));
   background: color-mix(in srgb, var(--brand) 6%, transparent);
   letter-spacing: 0.04em;
 }
 
-.workspace-page .ws-nav-section-label:active {
+html.dark .workspace-page .ws-nav-section-label:active {
   transform: scale(0.99);
 }
 
@@ -430,28 +1068,27 @@ html:not(.dark) .workspace-quick-toolbar-selected-row--dragging {
 }
 
 @keyframes ws-nav-active-glow {
-  0% {
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--brand) 20%, transparent) inset,
-      0 0 8px color-mix(in srgb, var(--brand) 8%, transparent);
-  }
-  45% {
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--brand-light) 45%, transparent) inset,
-      0 0 28px color-mix(in srgb, var(--brand) 32%, transparent),
-      0 0 48px color-mix(in srgb, var(--brand) 12%, transparent);
-  }
+  0%,
   100% {
+    box-shadow: 0 0 16px color-mix(in srgb, var(--brand) 10%, transparent);
+  }
+  40% {
     box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent) inset,
-      0 0 20px color-mix(in srgb, var(--brand) 12%, transparent);
+      0 0 22px color-mix(in srgb, var(--brand) 22%, transparent),
+      0 0 36px color-mix(in srgb, var(--brand) 10%, transparent);
   }
 }
 
 .workspace-canvas {
+  container-type: inline-size;
+  container-name: map-canvas;
   isolation: isolate;
   overflow: hidden;
-  border-left: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 1px solid var(--border);
+}
+
+html.dark .workspace-page .workspace-canvas {
+  border-left-color: rgba(255, 255, 255, 0.04);
 }
 
 .workspace-map-atmosphere {
@@ -601,13 +1238,13 @@ html:not(.dark) .workspace-quick-toolbar-selected-row--dragging {
     opacity: 0;
     box-shadow:
       0 0 0 1px rgba(255, 255, 255, 0.72) inset,
-      0 0 0 rgba(48, 148, 255, 0);
+      0 0 0 color-mix(in srgb, var(--brand) 0%, transparent);
   }
   to {
     opacity: 1;
     box-shadow:
       0 0 0 1px rgba(255, 255, 255, 0.72) inset,
-      4px 0 20px rgba(48, 148, 255, 0.1),
+      4px 0 20px color-mix(in srgb, var(--brand) 10%, transparent),
       0 0 14px color-mix(in srgb, var(--brand) 8%, transparent);
   }
 }
@@ -619,27 +1256,28 @@ html:not(.dark) .workspace-quick-toolbar-selected-row--dragging {
   .workspace-toolbar-onboarding,
   .workspace-module-surface--enter-forward,
   .workspace-module-surface--enter-back,
-  .workspace-context-tabs,
   .workspace-dock-edge-tab,
-  .workspace-page [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-active-pulse[data-active='true'],
-  .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive.ws-nav-active-pulse[data-active='true'] {
+  html.dark
+    .workspace-page
+    [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-active-pulse[data-active='true']:not(.ws-nav-collapsible-trigger),
+  html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive.ws-nav-active-pulse[data-active='true'] {
     animation: none;
   }
 
-  .workspace-page [data-sidebar='menu-button'].ws-nav-interactive,
-  .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive {
+  html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive,
+  html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive {
     transition: background 0.15s ease, color 0.15s ease;
   }
 
-  .workspace-page [data-sidebar='menu-button'].ws-nav-interactive:hover:not([data-active='true']),
-  .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive:hover:not([data-active='true']),
-  .workspace-page [data-sidebar='menu-button'].ws-nav-interactive[data-active='true'],
-  .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive[data-active='true'] {
+  html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive:hover:not([data-active='true']),
+  html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive:hover:not([data-active='true']),
+  html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive[data-active='true'],
+  html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive[data-active='true'] {
     transform: none;
   }
 
-  .workspace-page [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-flash::after,
-  .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive.ws-nav-flash::after {
+  html.dark .workspace-page [data-sidebar='menu-button'].ws-nav-interactive.ws-nav-flash::after,
+  html.dark .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive.ws-nav-flash::after {
     animation: none;
     opacity: 0;
   }
@@ -792,6 +1430,34 @@ html:not(.dark) .workspace-quick-toolbar-selected-row--dragging {
   backdrop-filter: blur(16px);
 }
 
+.map-foot-scale-divider {
+  background: color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+
+html.dark .map-foot-scale-divider {
+  background: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.map-foot-scale {
+  border-radius: 0.3125rem;
+  padding: 0.125rem 0.375rem;
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+html.dark .map-foot-scale {
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.map-foot-scale__value {
+  color: color-mix(in srgb, var(--foreground) 82%, var(--brand-light) 18%);
+}
+
+html.dark .map-foot-scale__value {
+  color: color-mix(in srgb, var(--foreground) 78%, var(--brand-soft) 22%);
+}
+
 .workspace-status-label {
   font-size: 10px;
   letter-spacing: 0.12em;
@@ -822,17 +1488,6 @@ html.dark .workspace-page aside.border-l {
   background: color-mix(in srgb, var(--surface-panel) 88%, transparent);
 }
 
-html:not(.dark) .workspace-page aside.border-r,
-html:not(.dark) .workspace-page aside.border-l {
-  background: color-mix(in srgb, var(--background) 94%, transparent);
-}
-
-html:not(.dark) .workspace-surface-snap-guide--active,
-html:not(.dark) .workspace-toolbar-snap-guide--active {
-  background: var(--brand-deep);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--brand) 30%, transparent);
-}
-
 .workspace-page [data-slot='sidebar-trigger'] {
   color: var(--muted-foreground);
 }
@@ -853,30 +1508,22 @@ html:not(.dark) .workspace-toolbar-snap-guide--active {
   background: color-mix(in srgb, var(--brand) 12%, transparent);
 }
 
-html:not(.dark) .workspace-page [data-sidebar='menu-button'][data-active='true'],
-html:not(.dark) .workspace-page [data-sidebar='menu-sub-button'][data-active='true'] {
-  color: var(--brand-deep);
-  border: 1px solid color-mix(in srgb, var(--brand) 28%, transparent);
-  background: color-mix(in srgb, var(--brand) 10%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--brand) 10%, transparent);
-}
-
-html:not(.dark) .workspace-page [data-sidebar='menu-button'].ws-nav-interactive:hover:not([data-active='true']),
-html:not(.dark) .workspace-page [data-sidebar='menu-sub-button'].ws-nav-interactive:hover:not([data-active='true']) {
-  background: color-mix(in srgb, var(--brand) 9%, transparent);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--brand) 16%, transparent),
-    0 0 14px color-mix(in srgb, var(--brand) 8%, transparent);
-}
-
-html:not(.dark) .workspace-page [data-sidebar='menu-button'].ws-nav-interactive:hover > svg:first-of-type,
-html:not(.dark) .workspace-page [data-sidebar='menu-button'].ws-nav-interactive[data-active='true'] > svg:first-of-type {
-  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--brand) 45%, transparent));
-}
-
 .workspace-context-sheet {
   background: color-mix(in srgb, var(--background) 96%, transparent);
   border-right: 1px solid var(--border);
+}
+
+/* P0：移动左 Sheet — 与 Vaul 右 Drawer 对称的内缘圆角 */
+html:has(.workspace-page) [data-slot='sheet-content'].workspace-context-sheet[data-side='left'] {
+  border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+}
+
+/* P1：L4 工具条带 — 内收浮卡，强化 cc-glass-panel 阴影层次 */
+.workspace-page .workspace-l4-drawer.cc-glass-panel {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 12px 36px rgba(0, 0, 0, 0.38),
+    0 0 28px color-mix(in srgb, var(--brand) 12%, transparent);
 }
 
 .workspace-context-sheet [data-slot='sheet-close'] {
@@ -897,7 +1544,7 @@ html:not(.dark) .workspace-page [data-sidebar='menu-button'].ws-nav-interactive[
   backdrop-filter: blur(12px);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.72) inset,
-    0 4px 16px rgba(48, 148, 255, 0.12),
+    0 4px 16px color-mix(in srgb, var(--brand) 12%, transparent),
     0 0 12px color-mix(in srgb, var(--brand) 10%, transparent);
   transition:
     border-color 0.2s ease,
@@ -913,7 +1560,7 @@ html:not(.dark) .workspace-page [data-sidebar='menu-button'].ws-nav-interactive[
   color: var(--brand-deep);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.85) inset,
-    0 6px 20px rgba(48, 148, 255, 0.16),
+    0 6px 20px color-mix(in srgb, var(--brand) 16%, transparent),
     0 0 16px color-mix(in srgb, var(--brand) 18%, transparent);
 }
 
@@ -958,7 +1605,7 @@ html:not(.dark) .workspace-page [data-sidebar='menu-button'].ws-nav-interactive[
   backdrop-filter: blur(14px);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.72) inset,
-    4px 0 20px rgba(48, 148, 255, 0.1),
+    4px 0 20px color-mix(in srgb, var(--brand) 10%, transparent),
     0 0 14px color-mix(in srgb, var(--brand) 8%, transparent);
   transition:
     border-color 0.2s ease,
@@ -974,7 +1621,7 @@ html:not(.dark) .workspace-page [data-sidebar='menu-button'].ws-nav-interactive[
   color: var(--foreground);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.85) inset,
-    6px 0 24px rgba(48, 148, 255, 0.14),
+    6px 0 24px color-mix(in srgb, var(--brand) 14%, transparent),
     0 0 18px color-mix(in srgb, var(--brand) 16%, transparent);
 }
 
@@ -1054,116 +1701,4 @@ html:not(.dark) .workspace-page [data-sidebar='menu-button'].ws-nav-interactive[
 
 .workspace-page [data-slot='sidebar'][data-collapsible='icon'] [data-sidebar='menu-button'] > svg:last-child:not(:only-child) {
   display: none;
-}
-
-/* ── 浅色模式（html 无 .dark） ── */
-html:not(.dark) .workspace-page {
-  background: var(--background);
-  color: var(--foreground);
-}
-
-html:not(.dark) .workspace-page .workspace-inset::before {
-  background: linear-gradient(
-    180deg,
-    rgba(48, 148, 255, 0.06) 0%,
-    transparent 18%,
-    transparent 82%,
-    rgba(48, 148, 255, 0.08) 100%
-  );
-}
-
-html:not(.dark) .workspace-page .workspace-context-panel {
-  background: color-mix(in srgb, var(--background) 92%, var(--brand) 8%);
-}
-
-html:not(.dark) .workspace-page .workspace-canvas {
-  border-left-color: var(--border);
-}
-
-html:not(.dark) .workspace-page .workspace-map-atmosphere {
-  background: linear-gradient(
-    165deg,
-    color-mix(in srgb, var(--background) 92%, var(--brand) 8%) 0%,
-    color-mix(in srgb, var(--background) 97%, var(--brand) 3%) 55%,
-    color-mix(in srgb, var(--background) 90%, var(--brand) 10%) 100%
-  );
-}
-
-html:not(.dark) .workspace-page .workspace-map-atmosphere .cc-aurora {
-  opacity: 0.42;
-  background:
-    radial-gradient(
-      ellipse 55% 45% at 20% 14%,
-      color-mix(in srgb, var(--brand) 18%, transparent),
-      transparent 58%
-    ),
-    radial-gradient(
-      ellipse 45% 40% at 82% 78%,
-      color-mix(in srgb, var(--brand-light) 12%, transparent),
-      transparent 55%
-    );
-}
-
-html:not(.dark) .workspace-page .workspace-map-hud {
-  border-color: color-mix(in srgb, var(--brand) 16%, transparent);
-  background: color-mix(in srgb, var(--background) 92%, transparent);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.75) inset,
-    0 6px 24px rgba(48, 148, 255, 0.1);
-}
-
-html:not(.dark) .workspace-page .workspace-map-hint {
-  color: color-mix(in srgb, var(--brand-deep) 68%, transparent);
-}
-
-html:not(.dark) .workspace-page .workspace-map-title {
-  color: color-mix(in srgb, var(--foreground) 92%, transparent);
-}
-
-html:not(.dark) .workspace-page .workspace-map-subtitle {
-  color: var(--muted-foreground);
-}
-
-html:not(.dark) .workspace-page .workspace-breadcrumb-active {
-  color: var(--brand-deep) !important;
-}
-
-html:not(.dark) .workspace-page .workspace-status-bar {
-  border-top-color: var(--border);
-  background: color-mix(in srgb, var(--background) 85%, transparent);
-}
-
-html:not(.dark) .workspace-page .workspace-status-label {
-  color: color-mix(in srgb, var(--brand-deep) 75%, transparent);
-}
-
-html:not(.dark) .workspace-page .workspace-tool-chip {
-  border-color: color-mix(in srgb, var(--brand) 28%, transparent);
-  background: color-mix(in srgb, var(--brand) 8%, transparent);
-  color: var(--brand-deep);
-}
-
-html:not(.dark) .workspace-page .cc-glass-bar {
-  border-bottom-color: var(--border);
-  background: color-mix(in srgb, var(--background) 88%, transparent);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.72) inset,
-    0 4px 20px rgba(48, 148, 255, 0.08);
-}
-
-html:not(.dark) .workspace-page .cc-glass-panel {
-  border-color: color-mix(in srgb, var(--brand) 18%, transparent);
-  background: color-mix(in srgb, var(--background) 94%, transparent);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.65) inset,
-    0 4px 20px rgba(48, 148, 255, 0.1),
-    0 0 16px color-mix(in srgb, var(--brand) 8%, transparent);
-}
-
-html:not(.dark) .workspace-page .cc-grid {
-  opacity: 0.12;
-}
-
-html:not(.dark) .workspace-page .cc-grid-floor {
-  opacity: 0.1;
 }

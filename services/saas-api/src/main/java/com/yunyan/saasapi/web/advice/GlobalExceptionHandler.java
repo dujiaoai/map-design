@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.web.advice;
 
+import com.yunyan.saasapi.security.AuthException;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+  @ExceptionHandler(AuthException.class)
+  ResponseEntity<ProblemDetail> handleAuth(AuthException ex) {
+    var problem = ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());
+    problem.setTitle(ex.getStatus() == HttpStatus.UNAUTHORIZED ? "Unauthorized" : "Bad request");
+    problem.setType(java.net.URI.create("https://api.yunyan.com/errors/auth"));
+    return ResponseEntity.status(ex.getStatus()).body(problem);
+  }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   ResponseEntity<ProblemDetail> handleValidation(MethodArgumentNotValidException ex) {

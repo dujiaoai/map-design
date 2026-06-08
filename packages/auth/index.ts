@@ -4,8 +4,13 @@ export { SessionProvider, useIsAuthenticated, useSession } from './src/react/ses
 export { TenantProvider, useTenant } from './src/react/tenant-provider'
 export { hasAnyRole, hasRole, requireAuthenticated, requireRole } from './src/session/roles'
 export { createTokenStorage, type TokenStorage } from './src/storage/token-storage'
+export { authTokensToTokenPair, loginResponseToSession } from './src/map-auth-response'
 export {
+  type AuthTokensResponse,
+  authTokensSchema,
   type LoginCredentials,
+  type LoginResponse,
+  loginResponseSchema,
   type RedirectFn,
   SaaSRole,
   type Session,

@@ -30,6 +30,7 @@ management:
 saas:
   jwt:
     issuer: yunyan-saas
+    secret: ${SAAS_JWT_SECRET:dev-only-change-me-use-32chars-minimum!!}
     access-ttl: PT15M
     refresh-ttl: P7D
   cors:

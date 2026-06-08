@@ -21,13 +21,13 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- BCrypt hash for plaintext: password
--- (matches SecurityConfig BCryptPasswordEncoder)
+-- ($2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG)
 INSERT INTO sys_user (id, tenant_id, email, password_hash, display_name, status)
 VALUES (
   '22222222-2222-2222-2222-222222222201',
   '11111111-1111-1111-1111-111111111101',
   'admin@demo.local',
-  '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWnRs2e9Csi6ibTuhHGaEYqUxPGuGe',
+  '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG',
   'Demo Admin',
   'active'
 )
@@ -38,7 +38,7 @@ VALUES (
   '22222222-2222-2222-2222-222222222202',
   '11111111-1111-1111-1111-111111111101',
   'member@demo.local',
-  '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWnRs2e9Csi6ibTuhHGaEYqUxPGuGe',
+  '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG',
   'Demo Member',
   'active'
 )

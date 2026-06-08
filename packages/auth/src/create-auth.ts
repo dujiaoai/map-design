@@ -1,4 +1,5 @@
 import { createAuthApi } from './auth-api'
+import { authTokensToTokenPair, loginResponseToSession } from './map-auth-response'
 import { requireAuthenticated, requireRole } from './session/roles'
 import { createSessionStore } from './session/session-store'
 import { createTokenStorage } from './storage/token-storage'
@@ -11,7 +12,7 @@ import type {
   StorageLike,
   TokenPair,
 } from './types'
-import { SaaSRole as Role, sessionSchema } from './types'
+import { SaaSRole as Role, authTokensSchema, loginResponseSchema } from './types'
 
 export interface CreateAuthOptions {
   storageKeyPrefix: string
@@ -74,9 +75,9 @@ export function createAuth(options: CreateAuthOptions) {
 
     async login(credentials: LoginCredentials): Promise<Session> {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用登录接口')
-      const { session: raw, tokens } = await authApi.login(credentials)
-      const session = sessionSchema.parse(raw)
-      persist(session, tokens)
+      const response = loginResponseSchema.parse(await authApi.login(credentials))
+      const session = loginResponseToSession(response)
+      persist(session, authTokensToTokenPair(response))
       return session
     },
 
@@ -105,8 +106,9 @@ export function createAuth(options: CreateAuthOptions) {
       if (!refreshPromise) {
         refreshPromise = authApi
           .refresh(refreshToken)
-          .then((tokens) => {
-            storage.setTokens(tokens)
+          .then((raw) => {
+            const tokens = authTokensSchema.parse(raw)
+            storage.setTokens(authTokensToTokenPair(tokens))
             return tokens.accessToken
           })
           .catch(() => {

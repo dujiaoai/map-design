@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: saas-api
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/saas
+    username: saas
+    password: saas
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+
+saas:
+  jwt:
+    issuer: yunyan-saas
+    access-ttl: PT15M
+    refresh-ttl: P7D
+  cors:
+    allowed-origins: http://localhost:5175
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

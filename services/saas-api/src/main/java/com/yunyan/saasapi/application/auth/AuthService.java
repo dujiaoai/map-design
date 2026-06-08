@@ -8,7 +8,10 @@ import com.yunyan.saasapi.web.dto.auth.LoginRequest;
 import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.LoginUserDto;
 import com.yunyan.saasapi.web.dto.auth.RefreshRequest;
+import com.yunyan.saasapi.security.SaasPrincipal;
+import com.yunyan.saasapi.web.dto.auth.SessionDto;
 import com.yunyan.saasapi.web.dto.auth.SessionTenantDto;
+import com.yunyan.saasapi.web.dto.auth.SessionUserDto;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +62,16 @@ public class AuthService {
     refreshTokenStore.findActiveJti(userId).ifPresent(jti -> refreshTokenStore.revoke(userId, jti));
   }
 
+  public SessionDto getCurrentSession(SaasPrincipal principal) {
+    if (principal == null) {
+      throw AuthException.unauthorized("Not authenticated");
+    }
+    var user = userAuthRepository
+        .findById(principal.userId())
+        .orElseThrow(() -> AuthException.unauthorized("User not found"));
+    return toSessionDto(user);
+  }
+
   private LoginResponse buildLoginResponse(AuthenticatedUser user) {
     var tokens = issueTokens(user);
     var loginUser = new LoginUserDto(
@@ -88,5 +101,16 @@ public class AuthService {
       return null;
     }
     return request.tenantId().trim();
+  }
+
+  private SessionDto toSessionDto(AuthenticatedUser user) {
+    return new SessionDto(
+        new SessionUserDto(
+            user.id().toString(),
+            user.email(),
+            user.displayName(),
+            user.roleCodes()),
+        new SessionTenantDto(user.tenantId().toString(), user.tenantName(), user.tenantSlug()),
+        0);
   }
 }

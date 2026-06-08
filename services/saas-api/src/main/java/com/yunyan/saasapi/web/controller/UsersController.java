@@ -1,11 +1,11 @@
 package com.yunyan.saasapi.web.controller;
 
-import com.yunyan.saasapi.application.auth.UserAuthRepository;
-import com.yunyan.saasapi.security.AuthException;
+import com.yunyan.saasapi.application.auth.AuthService;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.auth.SessionDto;
-import com.yunyan.saasapi.web.dto.auth.SessionTenantDto;
-import com.yunyan.saasapi.web.dto.auth.SessionUserDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,26 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/users")
 @RequiredArgsConstructor
+@Tag(name = "Users")
+@SecurityRequirement(name = "bearerAuth")
 public class UsersController {
 
-  private final UserAuthRepository userAuthRepository;
+  private final AuthService authService;
 
   @GetMapping("/me")
-  SessionDto me(@AuthenticationPrincipal SaasPrincipal principal) {
-    if (principal == null) {
-      throw AuthException.unauthorized("Not authenticated");
-    }
-    var user = userAuthRepository
-        .findById(principal.userId())
-        .orElseThrow(() -> AuthException.unauthorized("User not found"));
-
-    return new SessionDto(
-        new SessionUserDto(
-            user.id().toString(),
-            user.email(),
-            user.displayName(),
-            user.roleCodes()),
-        new SessionTenantDto(user.tenantId().toString(), user.tenantName(), user.tenantSlug()),
-        0);
+  @Operation(summary = "获取当前登录用户与会话信息")
+  public SessionDto me(@AuthenticationPrincipal SaasPrincipal principal) {
+    return authService.getCurrentSession(principal);
   }
 }

@@ -96,6 +96,7 @@ class AuthControllerTest {
             get("/v1/users/me").header("Authorization", "Bearer " + accessToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.user.email").value("admin@test.local"))
+        .andExpect(jsonPath("$.user.roles", hasItem("TENANT_ADMIN")))
         .andExpect(jsonPath("$.tenant.slug").value("test"));
   }
 

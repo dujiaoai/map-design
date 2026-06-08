@@ -24,6 +24,10 @@ public class SaasTenantLineHandler implements TenantLineHandler {
 
   @Override
   public boolean ignoreTable(String tableName) {
-    return !TENANT_TABLES.contains(tableName.toLowerCase());
+    if (!TENANT_TABLES.contains(tableName.toLowerCase())) {
+      return true;
+    }
+    var tenantId = TenantContext.get();
+    return tenantId == null || tenantId.isBlank();
   }
 }

@@ -11,7 +11,7 @@ import lombok.Data;
 @TableName("sys_tenant")
 public class SysTenant {
 
-  @TableId(type = IdType.ASSIGN_UUID)
+  @TableId(type = IdType.INPUT)
   private UUID id;
 
   private String name;

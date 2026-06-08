@@ -17,6 +17,19 @@
 | `docker-deploy` | `deploy/` Docker 构建、compose 启动、冒烟测试 |
 | **`saas-product`** | **PM 编排入口（PRD / 路线图 / 研究 handoff）** |
 
+## Java 后端 Skill（SaaS API，非 RuoYi）
+
+从零在 `services/` 搭建 Spring Boot 3，对接 `@repo/api-client`（`/v1`、JWT）。详见 [backend-integration.md](../../docs/architecture/backend-integration.md)。
+
+| Skill | 用途 |
+| --- | --- |
+| **`java-backend-index`** | **索引与路由（首选入口）** |
+| `java-spring-boot-scaffold` | Maven 多模块、saas-api 脚手架、docker-compose.dev |
+| `java-rest-api` | REST 契约、ProblemDetail、OpenAPI、对齐 api-client |
+| `java-auth-security` | JWT 登录/刷新、RBAC、多租户 tenant_id |
+| `java-persistence` | PostgreSQL + MyBatis-Plus + Flyway |
+| `java-backend-testing` | JUnit 5、MockMvc、Testcontainers |
+
 ## 产品 Skill（Anthropic PM Plugin 本地化）
 
 上游：[anthropics/knowledge-work-plugins/product-management](https://github.com/anthropics/knowledge-work-plugins/tree/main/product-management)（Apache-2.0）。再同步见 `saas-product/references/source-pin.md`。
@@ -80,6 +93,10 @@
 - `/saas-fsd-feature 新增 account settings 路由`
 - `/frontend-design 优化登录页视觉`
 - `/webapp-testing 为 workspace-store 写 Vitest`
+- `/java-backend-index 从零搭 Spring Boot API`
+- `/java-spring-boot-scaffold 初始化 services/saas-api`
+- `/java-rest-api 设计 /v1 用户接口`
+- `/java-auth-security 实现 JWT 登录与 RBAC`
 
 ## Skill 依赖关系
 
@@ -91,6 +108,10 @@ saas-product ──► pm-* ──► docs/product/
                     └──► repo-ui-package ◄── frontend-design
 cloud-uav-esm-plugin ──► repo-ui-package
 webapp-testing ──► vitest-map-design.md + map-design.md
+java-backend-index ──► java-spring-boot-scaffold ──► java-persistence
+                    └──► java-auth-security ──► java-rest-api
+                    └──► java-backend-testing
+                    └── handoff ──► saas-fsd-feature（@repo/api-client）
 ```
 
 ## Rules
@@ -104,6 +125,7 @@ webapp-testing ──► vitest-map-design.md + map-design.md
 | `saas-repo-ui-package.mdc` | shadcn 优先、`packages/ui` 与 app UI 实现 |
 | `saas-theme-mode.mdc` | 组件/UI/CSS 浅色深色主题 |
 | `cloud-uav-esm-plugin.mdc` | `cloud/uav/**` |
+| `java-backend.mdc` | `services/**`、Java 源码、pom.xml、Flyway |
 
 文件位于 `.cursor/rules/`。编辑匹配 glob 时自动注入；完整流程仍用对应 `/skill` 命令。
 

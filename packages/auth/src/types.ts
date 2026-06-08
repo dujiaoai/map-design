@@ -1,10 +1,11 @@
 import { z } from 'zod'
 
+/** 与 DB sys_role.code / JWT claims / SaaS API 响应一致（大写） */
 export const SaaSRole = {
-  PLATFORM_ADMIN: 'platform_admin',
-  TENANT_ADMIN: 'tenant_admin',
-  MEMBER: 'member',
-  VIEWER: 'viewer',
+  PLATFORM_ADMIN: 'PLATFORM_ADMIN',
+  TENANT_ADMIN: 'TENANT_ADMIN',
+  MEMBER: 'MEMBER',
+  VIEWER: 'VIEWER',
 } as const
 
 export type SaaSRole = (typeof SaaSRole)[keyof typeof SaaSRole]
@@ -34,9 +35,32 @@ export type SessionUser = z.infer<typeof sessionUserSchema>
 export type SessionTenant = z.infer<typeof sessionTenantSchema>
 export type Session = z.infer<typeof sessionSchema>
 
+export const loginUserSchema = sessionUserSchema.extend({
+  tenant: sessionTenantSchema,
+})
+
+export const loginResponseSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+  expiresIn: z.number(),
+  user: loginUserSchema,
+})
+
+export const authTokensSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+  expiresIn: z.number(),
+})
+
+export type LoginResponse = z.infer<typeof loginResponseSchema>
+export type AuthTokensResponse = z.infer<typeof authTokensSchema>
+
 export interface TokenPair {
   accessToken: string
   refreshToken?: string
+  /** 服务端返回的 access token 有效秒数 */
+  expiresIn?: number
+  /** 本地计算的过期时间戳（毫秒） */
   expiresAt?: number
 }
 

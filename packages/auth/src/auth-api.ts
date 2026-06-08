@@ -1,4 +1,4 @@
-import type { LoginCredentials, TokenPair } from './types'
+import type { AuthTokensResponse, LoginCredentials, LoginResponse } from './types'
 
 export interface AuthApiOptions {
   baseUrl: string
@@ -18,7 +18,7 @@ export function createAuthApi(options: AuthApiOptions) {
   }
 
   return {
-    async login(credentials: LoginCredentials): Promise<{ session: unknown; tokens: TokenPair }> {
+    async login(credentials: LoginCredentials): Promise<LoginResponse> {
       const res = await fetchFn(`${base}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -27,7 +27,7 @@ export function createAuthApi(options: AuthApiOptions) {
       return parseJson(res)
     },
 
-    async refresh(refreshToken: string): Promise<TokenPair> {
+    async refresh(refreshToken: string): Promise<AuthTokensResponse> {
       const res = await fetchFn(`${base}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },

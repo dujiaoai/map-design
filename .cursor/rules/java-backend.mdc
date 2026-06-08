@@ -1,0 +1,60 @@
+---
+description: Java 后端 Spring Boot 服务（services/）— 与 @repo/api-client /v1 对接，非 RuoYi
+globs:
+  - services/**
+  - "**/pom.xml"
+  - "**/src/main/java/**"
+  - "**/src/test/java/**"
+  - "**/db/migration/**"
+alwaysApply: false
+---
+
+# Java 后端（map-design）
+
+从零搭建 SaaS API 时必读 [java-backend-index](../skills/java-backend-index/SKILL.md)。  
+**排除**：`@repo/ruoyi-api`、RuoYi `{ code, msg, data }` envelope（[ADR-0005](../../docs/adr/0005-ruoyi-transitional-backend.md)）。
+
+## 技术栈
+
+Java 21 · Spring Boot 3.3 · Maven · MyBatis-Plus · PostgreSQL · Flyway · Redis · SpringDoc · JWT
+
+## Skill 路由
+
+| 任务 | Skill |
+| --- | --- |
+| 索引 / 选型 | `java-backend-index` |
+| 脚手架 | `java-spring-boot-scaffold` |
+| REST / OpenAPI | `java-rest-api` |
+| JWT / RBAC / 租户 | `java-auth-security` |
+| 表 / Mapper / 迁移 | `java-persistence` |
+| 测试 | `java-backend-testing` |
+
+## API 契约（与前端对齐）
+
+- 前缀 `/v1`；成功体 **直接 JSON**，无 envelope
+- 错误用 HTTP 状态码 + ProblemDetail（`ApiError` 兼容）
+- 认证：`Authorization: Bearer`；目标路径 `/v1/auth/login`、`/v1/auth/refresh`
+- 多租户：JWT `tenant_id` + 表列 `tenant_id`
+
+详见 [backend-integration.md](../../docs/architecture/backend-integration.md)、[auth-rbac.md](../../docs/architecture/auth-rbac.md)。
+
+## 目录
+
+```
+services/
+├── pom.xml
+├── saas-api/
+└── docker-compose.dev.yml
+```
+
+端口默认 **8082**（避免与 saas-web :8080 冲突）。
+
+## 验证
+
+```bash
+mvn -f services/pom.xml -pl saas-api test
+mvn -pl saas-api spring-boot:run -Dspring-boot.run.profiles=dev
+curl http://localhost:8082/actuator/health
+```
+
+前端接通：`VITE_API_URL` → `@repo/api-client`（`saas-fsd-feature`）。

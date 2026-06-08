@@ -35,6 +35,10 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_APP_BASE_HOST || 'https://www.airace.com.cn',
           changeOrigin: true,
         },
+        '/v1': {
+          target: env.VITE_SAAS_API_HOST || 'http://localhost:8082',
+          changeOrigin: true,
+        },
       },
     },
   }

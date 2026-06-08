@@ -1,5 +1,3 @@
-import { env } from '~/shared/config/env'
-
 export const DEFAULT_AVATAR_URL = '/avatars/shadcn.jpg'
 
 export function isBlankAvatarValue(value: string | null | undefined): boolean {
@@ -9,7 +7,7 @@ export function isBlankAvatarValue(value: string | null | undefined): boolean {
 }
 
 function withApiBase(path: string): string {
-  const base = (env.VITE_API_URL ?? '/YunYanApi').replace(/\/$/, '')
+  const base = '/YunYanApi'.replace(/\/$/, '')
   return `${base}${path}`
 }
 

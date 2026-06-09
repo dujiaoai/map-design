@@ -27,7 +27,7 @@ public class UsersController {
   @Operation(
       summary = "获取当前登录用户与会话信息",
       description = "`expiresAt` 为 access token 过期时间（毫秒 epoch），取自 JWT `exp`。")
-  @ApiResponse(responseCode = "200", description = "当前会话")
+  @ApiResponse(responseCode = "200", description = "当前会话（user、tenant、expiresAt）")
   @ApiResponse(
       responseCode = "401",
       description = "未认证或 token 无效",

@@ -1,4 +1,4 @@
-import type { AuthTokensResponse, LoginCredentials, LoginResponse } from './types'
+import type { AuthTokensResponse, LoginCredentials, LoginResponse, Session } from './types'
 
 export interface AuthApiOptions {
   baseUrl: string
@@ -41,6 +41,16 @@ export function createAuthApi(options: AuthApiOptions) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ refreshToken }),
+      })
+      return parseJson(res)
+    },
+
+    async getSession(accessToken: string): Promise<Session> {
+      const res = await fetchFn(`${base}/users/me`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: 'application/json',
+        },
       })
       return parseJson(res)
     },

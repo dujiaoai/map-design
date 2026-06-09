@@ -82,6 +82,9 @@ async function main() {
   if (me1.body?.user?.email !== credentials.email) {
     fail('users/me', `unexpected email: ${me1.body?.user?.email}`)
   }
+  if (!me1.body?.user?.roles?.length || !me1.body?.tenant?.slug || !me1.body?.expiresAt) {
+    fail('users/me', 'missing roles, tenant.slug, or expiresAt')
+  }
   passed.push('users/me')
 
   const refresh = await api('/auth/refresh', {

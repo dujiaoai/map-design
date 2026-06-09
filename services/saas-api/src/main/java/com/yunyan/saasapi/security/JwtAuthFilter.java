@@ -35,20 +35,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   }
 
   private void authenticate(HttpServletRequest request, String token) {
-    var parsed = jwtService.parseAccessToken(token);
-    TenantContext.set(parsed.tenantId().toString());
+    try {
+      var parsed = jwtService.parseAccessToken(token);
+      TenantContext.set(parsed.tenantId().toString());
 
-    var principal = new SaasPrincipal(
-        parsed.userId(),
-        parsed.tenantId(),
-        parsed.userId().toString(),
-        parsed.roleCodes(),
-        parsed.expiresAt());
+      var principal = new SaasPrincipal(
+          parsed.userId(),
+          parsed.tenantId(),
+          parsed.userId().toString(),
+          parsed.roleCodes(),
+          parsed.expiresAt());
 
-    var authentication = new UsernamePasswordAuthenticationToken(
-        principal, null, principal.getAuthorities());
-    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-    SecurityContextHolder.getContext().setAuthentication(authentication);
+      var authentication = new UsernamePasswordAuthenticationToken(
+          principal, null, principal.getAuthorities());
+      authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+    } catch (AuthException ignored) {
+      // 无效/过期/非 access token — 视为未认证，由 Security 返回 401
+    }
   }
 
   private java.util.Optional<String> resolveBearerToken(HttpServletRequest request) {

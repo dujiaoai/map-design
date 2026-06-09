@@ -14,6 +14,7 @@ import com.yunyan.saasapi.security.TenantContext;
 import com.yunyan.saasapi.web.dto.auth.SessionDto;
 import com.yunyan.saasapi.web.dto.auth.SessionTenantDto;
 import com.yunyan.saasapi.web.dto.auth.SessionUserDto;
+import com.yunyan.saasapi.web.dto.auth.ChangePasswordRequest;
 import com.yunyan.saasapi.web.dto.auth.UpdateUserRequest;
 import java.time.Duration;
 import java.time.Instant;
@@ -79,6 +80,27 @@ public class AuthService {
 
   public void logout(UUID userId) {
     refreshTokenStore.findActiveJti(userId).ifPresent(jti -> refreshTokenStore.revoke(userId, jti));
+  }
+
+  @Transactional
+  public void changePassword(SaasPrincipal principal, ChangePasswordRequest request) {
+    if (principal == null) {
+      throw AuthException.unauthorized("Not authenticated");
+    }
+    var user = userAuthRepository
+        .findById(principal.userId())
+        .orElseThrow(() -> AuthException.unauthorized("User not found"));
+
+    if (!passwordEncoder.matches(request.oldPassword(), user.passwordHash())) {
+      throw AuthException.unauthorized("Current password is incorrect");
+    }
+    if (passwordEncoder.matches(request.newPassword(), user.passwordHash())) {
+      throw AuthException.badRequest("New password must differ from current password");
+    }
+
+    userAuthRepository.updatePasswordHash(
+        principal.userId(), passwordEncoder.encode(request.newPassword()));
+    logout(principal.userId());
   }
 
   @Transactional

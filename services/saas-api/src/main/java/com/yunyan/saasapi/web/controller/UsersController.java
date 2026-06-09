@@ -3,8 +3,11 @@ package com.yunyan.saasapi.web.controller;
 import com.yunyan.saasapi.application.auth.AuthService;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.auth.SessionDto;
+import com.yunyan.saasapi.web.dto.auth.ChangePasswordRequest;
 import com.yunyan.saasapi.web.dto.auth.UpdateUserRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,5 +60,25 @@ public class UsersController {
   public SessionDto updateMe(
       @AuthenticationPrincipal SaasPrincipal principal, @Valid @RequestBody UpdateUserRequest request) {
     return authService.updateCurrentUser(principal, request);
+  }
+
+  @PostMapping("/me/password")
+  @Operation(
+      summary = "修改当前用户密码",
+      description = "校验旧密码后更新；成功后吊销 refresh token（当前 access token 仍可用至过期）。")
+  @ApiResponse(responseCode = "204", description = "密码已更新")
+  @ApiResponse(
+      responseCode = "400",
+      description = "请求体验证失败或新密码与旧密码相同",
+      content = @Content(mediaType = "application/problem+json"))
+  @ApiResponse(
+      responseCode = "401",
+      description = "未认证或当前密码错误",
+      content = @Content(mediaType = "application/problem+json"))
+  public ResponseEntity<Void> changePassword(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @Valid @RequestBody ChangePasswordRequest request) {
+    authService.changePassword(principal, request);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

@@ -215,7 +215,7 @@ flowchart TD
 | C-02 | **注册** ✅ | `POST /v1/auth/register`（email + password + tenant slug；首版可无邮箱验证） |
 | C-03 | **用户信息 · 读** ✅ | `GET /v1/users/me`（SessionDto 含 roles、tenant、expiresAt） |
 | C-04 | **用户信息 · 写** ✅ | `PUT /v1/users/me`（displayName 等可改字段） |
-| C-05 | **改密** | `POST /v1/users/me/password`（旧密码 + 新密码） |
+| C-05 | **改密** ✅ | `POST /v1/users/me/password`（旧密码 + 新密码） |
 
 #### 前端（saas-web）
 

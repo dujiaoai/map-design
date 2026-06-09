@@ -68,6 +68,24 @@ async function main() {
   }
   passed.push('register')
 
+  const newPassword = 'newpass99'
+  const changePwd = await api('/users/me/password', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${register.body.accessToken}` },
+    body: { oldPassword: credentials.password, newPassword },
+  })
+  if (changePwd.status !== 204) {
+    fail('users/me-password', `expected 204, got HTTP ${changePwd.status}`)
+  }
+  passed.push('users/me-password')
+
+  const loginNewPwd = await api('/auth/login', {
+    method: 'POST',
+    body: { email: registerEmail, password: newPassword, tenantId: credentials.tenantId },
+  })
+  if (!loginNewPwd.ok) fail('login-after-password', `HTTP ${loginNewPwd.status}`)
+  passed.push('login-after-password')
+
   const login = await api('/auth/login', { method: 'POST', body: credentials })
   if (!login.ok) fail('login', `HTTP ${login.status} ${JSON.stringify(login.body)}`)
   if (!login.body?.accessToken || !login.body?.refreshToken) {

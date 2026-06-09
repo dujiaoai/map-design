@@ -79,6 +79,88 @@ class UsersControllerTest {
   }
 
   @Test
+  void changePassword_withoutToken_returns401() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/users/me/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("oldPassword", "password", "newPassword", "newpassword"))))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void changePassword_withWrongOldPassword_returns401() throws Exception {
+    var accessToken = loginAccessToken();
+
+    mockMvc
+        .perform(
+            post("/v1/users/me/password")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("oldPassword", "wrong", "newPassword", "newpassword"))))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.detail").value("Current password is incorrect"));
+  }
+
+  @Test
+  void changePassword_withValidPassword_updatesAndRevokesRefresh() throws Exception {
+    var email = "pwd-" + System.currentTimeMillis() + "@test.local";
+    var registerBody =
+        mockMvc
+            .perform(
+                post("/v1/auth/register")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            Map.of(
+                                "email", email,
+                                "password", "password",
+                                "tenantId", "test"))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    var accessToken = JsonPath.read(registerBody, "$.accessToken");
+    var refreshToken = JsonPath.read(registerBody, "$.refreshToken");
+
+    mockMvc
+        .perform(
+            post("/v1/users/me/password")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "oldPassword", "password",
+                            "newPassword", "newpassword"))))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("refreshToken", refreshToken))))
+        .andExpect(status().isUnauthorized());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", email,
+                            "password", "newpassword",
+                            "tenantId", "test"))))
+        .andExpect(status().isOk());
+  }
+
+  @Test
   void updateMe_withoutToken_returns401() throws Exception {
     mockMvc
         .perform(

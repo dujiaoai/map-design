@@ -124,6 +124,15 @@ public class UserAuthRepository {
     return at > 0 ? email.substring(0, at) : email;
   }
 
+  public void updatePasswordHash(UUID userId, String passwordHash) {
+    var user = sysUserMapper.selectById(userId);
+    if (user == null || !"active".equals(user.getStatus())) {
+      throw AuthException.unauthorized("User not found");
+    }
+    user.setPasswordHash(passwordHash);
+    sysUserMapper.updateById(user);
+  }
+
   public AuthenticatedUser updateDisplayName(UUID userId, String displayName) {
     var user = sysUserMapper.selectById(userId);
     if (user == null || !"active".equals(user.getStatus())) {

@@ -68,6 +68,25 @@ export function createAuthApi(options: AuthApiOptions) {
       return parseJson(res)
     },
 
+    async changePassword(
+      accessToken: string,
+      body: { oldPassword: string; newPassword: string },
+    ): Promise<void> {
+      const res = await fetchFn(`${base}/users/me/password`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(`Auth API ${res.status}: ${text}`)
+      }
+    },
+
     async logout(accessToken: string): Promise<void> {
       await fetchFn(`${base}/auth/logout`, {
         method: 'POST',

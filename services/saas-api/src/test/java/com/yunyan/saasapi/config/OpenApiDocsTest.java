@@ -36,6 +36,8 @@ class OpenApiDocsTest {
         .andExpect(content().string(containsString("SessionDto")))
         .andExpect(content().string(containsString("SessionUserDto")))
         .andExpect(content().string(containsString("UpdateUserRequest")))
+        .andExpect(content().string(containsString("/v1/users/me/password")))
+        .andExpect(content().string(containsString("ChangePasswordRequest")))
         .andExpect(content().string(containsString("/v1/tenants")))
         .andExpect(content().string(containsString("/v1/tenants/{tenantId}/features")))
         .andExpect(content().string(containsString("bearerAuth")));

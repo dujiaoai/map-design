@@ -39,7 +39,7 @@ pnpm smoke:saas-api
 node services/saas-api/scripts/smoke-auth.mjs
 ```
 
-覆盖：`health` → `login` → `users/me` → `refresh` → `users/me`（新 token）。
+覆盖：`health` → `login` → `users/me` → `refresh` → `users/me`（新 token）→ `logout` → `refresh`（应 401）。
 
 环境变量（可选）：
 
@@ -75,6 +75,16 @@ curl -s -X POST http://localhost:8082/v1/auth/refresh \
   -d '{"refreshToken":"<refreshToken>"}'
 
 # 5. 用新 accessToken 再请求 users/me
+
+# 6. 登出（替换 <accessToken>）
+curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8082/v1/auth/logout \
+  -H "Authorization: Bearer <accessToken>"
+# 期望 204
+
+# 7. 登出后 refresh 应 401
+curl -s -X POST http://localhost:8082/v1/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken":"<refreshToken>"}'
 ```
 
 ---
@@ -107,6 +117,7 @@ pnpm --filter @repo/saas-web dev
 - [x] `GET /v1/users/me` 返回 `user.email` + `roles`
 - [x] `POST /v1/auth/refresh` 返回新 token 对
 - [x] 刷新后 `users/me` 仍返回 200
+- [x] `POST /v1/auth/logout` 返回 204，且 refresh 被吊销
 - [x] （可选）`/dev/saas-auth-smoke` 四步全部成功
 
 ---

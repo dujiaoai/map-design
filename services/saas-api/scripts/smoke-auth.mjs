@@ -82,6 +82,24 @@ async function main() {
   if (!me2.ok) fail('users/me-after-refresh', `HTTP ${me2.status}`)
   passed.push('users/me-after-refresh')
 
+  const logout = await api('/auth/logout', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${refresh.body.accessToken}` },
+  })
+  if (logout.status !== 204) {
+    fail('logout', `expected 204, got HTTP ${logout.status}`)
+  }
+  passed.push('logout')
+
+  const refreshAfterLogout = await api('/auth/refresh', {
+    method: 'POST',
+    body: { refreshToken: refresh.body.refreshToken },
+  })
+  if (refreshAfterLogout.status !== 401) {
+    fail('refresh-after-logout', `expected 401, got HTTP ${refreshAfterLogout.status}`)
+  }
+  passed.push('refresh-after-logout')
+
   console.log(`PASS (${passed.length} steps): ${passed.join(' → ')}`)
   console.log(`base: ${baseUrl}`)
   console.log(`user: ${me2.body.user.email} roles=${me2.body.user.roles?.join(',')}`)

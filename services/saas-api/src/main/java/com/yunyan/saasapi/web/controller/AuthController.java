@@ -43,8 +43,12 @@ public class AuthController {
   }
 
   @PostMapping("/refresh")
-  @Operation(summary = "刷新 access token", description = "使用 refresh token 换取新的 token 对；旧 refresh 随即失效。")
-  @ApiResponse(responseCode = "200", description = "刷新成功")
+  @Operation(summary = "刷新 access token", description = "使用 refresh token 换取新的 token 对；旧 refresh 随即失效（rotation）。")
+  @ApiResponse(responseCode = "200", description = "刷新成功", content = @Content)
+  @ApiResponse(
+      responseCode = "400",
+      description = "请求体验证失败",
+      content = @Content(mediaType = "application/problem+json"))
   @ApiResponse(
       responseCode = "401",
       description = "refresh token 无效或已吊销",
@@ -54,9 +58,15 @@ public class AuthController {
   }
 
   @PostMapping("/logout")
-  @Operation(summary = "登出", description = "吊销服务端 refresh token；无 token 时仍返回 204。")
+  @Operation(
+      summary = "登出",
+      description = "吊销服务端 refresh token。需 Bearer access token；前端 `@repo/auth` 在登出时携带当前 accessToken。")
   @SecurityRequirement(name = "bearerAuth")
   @ApiResponse(responseCode = "204", description = "已登出")
+  @ApiResponse(
+      responseCode = "401",
+      description = "未提供有效 access token",
+      content = @Content(mediaType = "application/problem+json"))
   ResponseEntity<Void> logout(@AuthenticationPrincipal SaasPrincipal principal) {
     if (principal != null) {
       authService.logout(principal.userId());

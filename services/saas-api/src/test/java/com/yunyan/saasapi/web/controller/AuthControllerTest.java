@@ -108,6 +108,71 @@ class AuthControllerTest {
   }
 
   @Test
+  void logout_withoutToken_returns401() throws Exception {
+    mockMvc.perform(post("/v1/auth/logout")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void logout_withAccessToken_returns204AndRevokesRefresh() throws Exception {
+    var loginBody = loginAndGetBody();
+    var accessToken = JsonPath.read(loginBody, "$.accessToken");
+    var refreshToken = JsonPath.read(loginBody, "$.refreshToken");
+
+    mockMvc
+        .perform(
+            post("/v1/auth/logout").header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("refreshToken", refreshToken))))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void refresh_withBlankRefreshToken_returns400() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("refreshToken", ""))))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"));
+  }
+
+  @Test
+  void refresh_withInvalidToken_returns401() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("refreshToken", "not-a-jwt"))))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void refresh_rotatesToken_oldRefreshCannotBeReused() throws Exception {
+    var loginBody = loginAndGetBody();
+    var refreshToken = JsonPath.read(loginBody, "$.refreshToken");
+
+    mockMvc
+        .perform(
+            post("/v1/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("refreshToken", refreshToken))))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("refreshToken", refreshToken))))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
   void refresh_withValidToken_returnsNewTokens() throws Exception {
     var loginBody =
         mockMvc
@@ -136,5 +201,22 @@ class AuthControllerTest {
         .andExpect(jsonPath("$.accessToken").isNotEmpty())
         .andExpect(jsonPath("$.refreshToken").isNotEmpty())
         .andExpect(jsonPath("$.expiresIn").isNumber());
+  }
+
+  private String loginAndGetBody() throws Exception {
+    return mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "admin@test.local",
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
   }
 }

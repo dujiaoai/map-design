@@ -32,9 +32,11 @@ public class OpenApiConfig {
                     map-design 目标后端 REST API（无 RuoYi envelope）。
 
                     **联调流程**
-                    1. `POST /v1/auth/login` 获取 `accessToken`
-                    2. 点击右上角 **Authorize**，填入 `Bearer <accessToken>` 或仅 token（Swagger 会自动加 Bearer 前缀）
+                    1. `POST /v1/auth/login` 获取 `accessToken` 与 `refreshToken`
+                    2. 点击右上角 **Authorize**，填入 access token
                     3. 调用受保护接口（Users、Tenants 等）
+                    4. access 过期时 `POST /v1/auth/refresh` 轮换 token 对
+                    5. 登出 `POST /v1/auth/logout`（Bearer accessToken）吊销 refresh
 
                     演示账号（需先执行 seed-demo-dev.sql）：`admin@demo.local` / `password` / tenant `demo`
                     """))

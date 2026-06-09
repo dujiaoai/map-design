@@ -20,6 +20,7 @@
     "typecheck": "node scripts/turbo-run.mjs run typecheck",
     "test": "node scripts/turbo-run.mjs run test",
     "validate": "node scripts/turbo-run.mjs run typecheck && node scripts/turbo-run.mjs run test && pnpm check",
+    "smoke:saas-api": "node services/saas-api/scripts/smoke-auth.mjs",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "format": "biome format --write ."

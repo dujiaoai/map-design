@@ -140,14 +140,14 @@ flowchart TD
 | --- | --- | --- | --- |
 | A-01 | ~~实现 CORS 配置 Bean~~ ✅ | `CorsConfig` + `CorsProperties` | `java-rest-api` |
 | A-02 | ~~补充 `local-dev.md` services 启动步骤~~ ✅ | [local-dev.md](../runbooks/local-dev.md#saas-api) | `java-spring-boot-scaffold` |
-| A-03 | 端到端冒烟：`.env` 设 `VITE_API_URL=/v1`，用 demo 账号登录 | 联调 checklist | `webapp-testing` |
+| A-03 | ~~端到端冒烟~~ ✅ | [saas-api-auth-smoke.md](../runbooks/saas-api-auth-smoke.md) + `pnpm smoke:saas-api` | `webapp-testing` |
 | A-04 | 修复 `SessionDto.expiresAt`（从 JWT TTL 计算） | 小改动 | `java-rest-api` |
 
 **验收：**
 
-- [ ] `curl` 登录返回 `accessToken` + `refreshToken`
-- [ ] `curl` / 独立页面可验证 SaaS 登录 + refresh + `/users/me`（**不要求**替换现有 RuoYi 登录页）
-- [ ] refresh 后 access token 可访问 `GET /v1/users/me`
+- [x] `pnpm smoke:saas-api` 通过（login → me → refresh → me）
+- [x] 独立页 `/dev/saas-auth-smoke`（`VITE_API_URL=/v1`）可验证 `@repo/auth` + `api-client`
+- [x] **不要求**替换现有 RuoYi 登录页
 
 ---
 
@@ -222,8 +222,9 @@ flowchart TD
 ## 七、建议立即开工的 3 件事
 
 1. ~~**A-01 CORS**~~ ✅ 已完成
-2. **A-03 Auth 冒烟** — 验证 login / refresh / `users/me` 闭环（独立验证，不切换 RuoYi 登录）
-3. **B-01 `/v1/tenants` + features** — 解锁租户能力门控，比菜单更贴近新功能路径
+2. ~~**A-03 Auth 冒烟**~~ ✅ 已完成
+3. **A-04 `SessionDto.expiresAt`** — 从 JWT TTL 计算
+4. **B-01 `/v1/tenants` + features** — 解锁租户能力门控
 
 ---
 

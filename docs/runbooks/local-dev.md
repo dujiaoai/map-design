@@ -152,7 +152,15 @@ pnpm --filter @repo/saas-web dev
 
 > **说明**：设置 `VITE_API_URL` 仅接通 `@repo/api-client` / `@repo/auth` 的 SaaS 刷新链路；**不会**自动替换 RuoYi 登录页与菜单 bootstrap。
 
-#### 6. 运行测试
+#### 6. Auth 端到端冒烟
+
+```bash
+pnpm smoke:saas-api
+```
+
+完整清单（含前端 `/dev/saas-auth-smoke`）：[saas-api-auth-smoke.md](./saas-api-auth-smoke.md)。
+
+#### 7. 运行测试
 
 ```bash
 mvn -f services/pom.xml -pl saas-api test

@@ -14,6 +14,7 @@ import com.yunyan.saasapi.security.TenantContext;
 import com.yunyan.saasapi.web.dto.auth.SessionDto;
 import com.yunyan.saasapi.web.dto.auth.SessionTenantDto;
 import com.yunyan.saasapi.web.dto.auth.SessionUserDto;
+import com.yunyan.saasapi.web.dto.auth.UpdateUserRequest;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
@@ -78,6 +79,15 @@ public class AuthService {
 
   public void logout(UUID userId) {
     refreshTokenStore.findActiveJti(userId).ifPresent(jti -> refreshTokenStore.revoke(userId, jti));
+  }
+
+  @Transactional
+  public SessionDto updateCurrentUser(SaasPrincipal principal, UpdateUserRequest request) {
+    if (principal == null) {
+      throw AuthException.unauthorized("Not authenticated");
+    }
+    var user = userAuthRepository.updateDisplayName(principal.userId(), request.name().trim());
+    return toSessionDto(user, principal.accessTokenExpiresAt());
   }
 
   public SessionDto getCurrentSession(SaasPrincipal principal) {

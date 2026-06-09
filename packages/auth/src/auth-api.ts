@@ -45,6 +45,19 @@ export function createAuthApi(options: AuthApiOptions) {
       return parseJson(res)
     },
 
+    async updateSession(accessToken: string, body: { name: string }): Promise<Session> {
+      const res = await fetchFn(`${base}/users/me`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+      return parseJson(res)
+    },
+
     async getSession(accessToken: string): Promise<Session> {
       const res = await fetchFn(`${base}/users/me`, {
         headers: {

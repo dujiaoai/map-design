@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThan;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -75,6 +76,52 @@ class UsersControllerTest {
     mockMvc
         .perform(get("/v1/users/me").header("Authorization", "Bearer " + refreshToken))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void updateMe_withoutToken_returns401() throws Exception {
+    mockMvc
+        .perform(
+            put("/v1/users/me")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("name", "New Name"))))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void updateMe_withValidName_persistsAndReturnsSession() throws Exception {
+    var accessToken = loginAccessToken();
+
+    mockMvc
+        .perform(
+            put("/v1/users/me")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("name", "Renamed Admin"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.name").value("Renamed Admin"))
+        .andExpect(jsonPath("$.user.email").value("admin@test.local"))
+        .andExpect(jsonPath("$.tenant.slug").value("test"))
+        .andExpect(jsonPath("$.expiresAt").isNumber());
+
+    mockMvc
+        .perform(get("/v1/users/me").header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.name").value("Renamed Admin"));
+  }
+
+  @Test
+  void updateMe_withBlankName_returns400() throws Exception {
+    var accessToken = loginAccessToken();
+
+    mockMvc
+        .perform(
+            put("/v1/users/me")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("name", ""))))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"));
   }
 
   @Test

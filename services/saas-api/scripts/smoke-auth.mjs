@@ -87,6 +87,17 @@ async function main() {
   }
   passed.push('users/me')
 
+  const updateMe = await api('/users/me', {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${login.body.accessToken}` },
+    body: { name: 'Smoke Updated' },
+  })
+  if (!updateMe.ok) fail('users/me-put', `HTTP ${updateMe.status}`)
+  if (updateMe.body?.user?.name !== 'Smoke Updated') {
+    fail('users/me-put', `unexpected name: ${updateMe.body?.user?.name}`)
+  }
+  passed.push('users/me-put')
+
   const refresh = await api('/auth/refresh', {
     method: 'POST',
     body: { refreshToken: login.body.refreshToken },

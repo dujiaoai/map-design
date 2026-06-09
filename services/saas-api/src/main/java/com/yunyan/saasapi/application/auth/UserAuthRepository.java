@@ -124,6 +124,21 @@ public class UserAuthRepository {
     return at > 0 ? email.substring(0, at) : email;
   }
 
+  public AuthenticatedUser updateDisplayName(UUID userId, String displayName) {
+    var user = sysUserMapper.selectById(userId);
+    if (user == null || !"active".equals(user.getStatus())) {
+      throw AuthException.unauthorized("User not found");
+    }
+    user.setDisplayName(displayName);
+    sysUserMapper.updateById(user);
+
+    var tenant = sysTenantMapper.selectById(user.getTenantId());
+    if (tenant == null) {
+      throw AuthException.unauthorized("User not found");
+    }
+    return toAuthenticatedUser(user, tenant);
+  }
+
   public Optional<AuthenticatedUser> findById(UUID userId) {
     var user = sysUserMapper.selectById(userId);
     if (user == null || !"active".equals(user.getStatus())) {

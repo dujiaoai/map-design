@@ -204,7 +204,7 @@ flowchart TB
 | 0001 | 产品线可置于父仓 `saas/` 子目录 | 文档中 `saas/` 指逻辑根，本仓即根 |
 | 0002 | Marketing / Web / Admin 三 App | PRD 须标明目标 App |
 | 0003 | Web/Admin SPA，Marketing 可 SSR | 不假设 SSR 能力 |
-| 0004 | 共享 DB + RLS + `tenant_id`（Proposed） | 租户标识方案仍开放 |
+| 0004 | 共享 DB + RLS + `tenant_id`（Accepted） | JWT `tenant_id` claim 已定稿 |
 | 0005 | RuoYi 过渡后端 | 登录/菜单规格以 RuoYi 为准直至迁移 ADR |
 | 0006 | Cloud ESM 优于 Module Federation | Cloud UAV 规格写动态 `import()`，不写 MF |
 
@@ -275,7 +275,7 @@ flowchart TB
 | 问题 | 负责人 | 阻塞？ |
 | --- | --- | --- |
 | 租户标识最终方案（JWT / Header / 子域 / 路径） | 工程 + 后端 | 是（多租户 PRD） |
-| ADR-0004 租户隔离是否 Accepted | 架构 | 是（数据类规格） |
+| ~~ADR-0004 租户隔离是否 Accepted~~ | 架构 | ✅ 已完成（B-04） |
 | MapProvider Phase C 时间表与 packages-map 仓库边界 | 工程 | 是（真实插件 PRD） |
 | Marketing SSR vs SPA 最终确认 | 产品 + 工程 | 否（占位 App） |
 | Playwright E2E 纳入 validate 的时机 | 工程 | 否 |

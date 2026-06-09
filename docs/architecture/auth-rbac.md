@@ -45,6 +45,7 @@
 - SaaS `/v1/auth/login`、`/v1/auth/refresh`
 - `@repo/api-client` 接管 token 刷新
 - Web / Admin 独立 OAuth Client ID / Cookie 域（`app.` vs `admin.`）
+- 租户上下文：[ADR-0004](../adr/0004-tenant-isolation-strategy.md) — JWT `tenant_id`（UUID）；登录 `tenantId` 传 slug；切换租户 = 重新登录
 
 ## Session 流对比
 

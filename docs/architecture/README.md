@@ -31,7 +31,7 @@ flowchart LR
 
 ## 多租户
 
-默认：**共享 DB + Row-Level Security + `tenant_id`**。前端 `@repo/auth` 已提供 `TenantProvider`，导航层有 mock 过滤。详见 [multi-tenancy.md](./multi-tenancy.md)。
+默认：**共享 DB + Row-Level Security + `tenant_id`**（[ADR-0004](../adr/0004-tenant-isolation-strategy.md) Accepted）。前端 `@repo/auth` 已提供 `TenantProvider`，导航层有 mock 过滤。详见 [multi-tenancy.md](./multi-tenancy.md)。
 
 ## 认证与授权
 

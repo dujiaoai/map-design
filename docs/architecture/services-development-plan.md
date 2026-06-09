@@ -41,7 +41,7 @@ map-design/
 | 用户会话 | ✅ | `GET /v1/users/me` |
 | 安全 | ✅ | JWT access/refresh、Spring Security 6、`JwtAuthFilter` |
 | RBAC | ✅ | `PLATFORM_ADMIN` / `TENANT_ADMIN` / `MEMBER` / `VIEWER` |
-| 多租户（应用层） | 🟡 部分 | `TenantContext` + MyBatis-Plus 租户拦截（仅 `sys_user`） |
+| 多租户（应用层） | 🟡 部分 | ADR-0004 Accepted；`TenantContext` + JWT `tenant_id` + 租户 API |
 | Refresh 存储 | ✅ | dev 用 Redis，test 用 InMemory |
 | 错误体 | ✅ | RFC 7807 `ProblemDetail` |
 | OpenAPI | ✅ | SpringDoc 已配置 |
@@ -84,7 +84,7 @@ mvn -f services/pom.xml -pl saas-api test
 | --- | --- | --- |
 | ~~**CORS**~~ | ✅ `CorsConfig` + `SecurityConfig.cors()`；`/v1/**` 允许 `saas.cors.allowed-origins` | — |
 | **租户 API 缺失** | TeamSwitcher、`tenantFeature` 门控仍靠 mock | P1 |
-| **PostgreSQL RLS 未做** | ADR-0004 仍为 Proposed，仅应用层 `tenant_id` 过滤 | P1 |
+| **PostgreSQL RLS 未做** | ADR-0004 已 Accepted；纵深防御待 B-05 `V5__rls.sql` | P1 |
 | **用户 Profile / 改密** | SaaS 侧尚无 profile 写接口（旧 RuoYi profile 不在迁移范围） | P2 |
 | **`/v1/admin/**` 空壳** | Security 已配置 `hasRole("PLATFORM_ADMIN")`，无 Controller | P2 |
 | **业务 API 为零** | 地图、专题、机库等无后端 | P3 |
@@ -160,7 +160,7 @@ flowchart TD
 | B-01 | ~~`GET /v1/tenants`~~ ✅ | `TenantsController` + 同邮箱多租户成员 | TeamSwitcher 数据源 |
 | B-02 | ~~`GET /v1/tenants/{id}/features`~~ ✅ | `TenantFeaturesResponse` + 成员校验 | 对接 `tenantFeature` 门控 |
 | B-03 | ~~Flyway `V4__tenant_features.sql`~~ ✅ | `sys_tenant_feature` 表 | 与 B-02 一并交付 |
-| B-04 | 敲定 [ADR-0004](../adr/0004-tenant-isolation-strategy.md) | JWT `tenant_id` claim 定稿 | 文档 Accepted |
+| B-04 | ~~敲定 [ADR-0004](../adr/0004-tenant-isolation-strategy.md)~~ ✅ | JWT `tenant_id` claim + 传播链路定稿 | 文档 Accepted |
 | B-05 | PostgreSQL RLS 策略（`sys_user` 起步） | Flyway `V5__rls.sql` | 可选与本 Sprint 并行 |
 
 **验收：**

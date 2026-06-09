@@ -73,7 +73,7 @@ public class SecurityConfig {
 | Claim | 说明 |
 | --- | --- |
 | `sub` | 用户 ID |
-| `tenant_id` | 当前租户（Platform Admin 可 impersonate，另 claim `act_as_tenant`） |
+| `tenant_id` | 当前租户 UUID（[ADR-0004](../../docs/adr/0004-tenant-isolation-strategy.md) Accepted；登录请求体 `tenantId` 为 slug） |
 | `roles` | `PLATFORM_ADMIN`、`TENANT_ADMIN`、`MEMBER`、`VIEWER` |
 
 密钥：`saas.jwt.secret` 环境变量，**禁止**硬编码进仓库。
@@ -141,7 +141,7 @@ public class TenantLineHandler implements TenantLineHandler {
 
 **规则**：
 
-- 写操作：从 `SecurityContext` 取 `tenant_id`，禁止客户端随意指定（除 Platform Admin impersonation 审计）
+- 写操作：从 JWT / `SecurityContext` 取 `tenant_id`，禁止客户端 header 覆盖；Platform Admin impersonation（`act_as_tenant`）未实现
 - 读操作：Mapper 层强制租户条件
 - 跨租户：仅 `PLATFORM_ADMIN` + 审计日志
 

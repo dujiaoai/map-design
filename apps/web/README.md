@@ -20,6 +20,7 @@ SaaS **租户工作台**（React Router 7.16 SPA），包名 `@repo/saas-web`。
 |------|------|
 | `/` | 工作台首页 |
 | `/login` | 登录 |
+| `/register` | 注册（加入已有租户，需 `VITE_API_URL`） |
 | `/settings/profile` | 个人资料（RHF + Zod 示例） |
 | `/:orgSlug` | 组织动态路由骨架 |
 
@@ -61,6 +62,7 @@ pnpm --filter @repo/saas-web validate      # typecheck + lint + test
 - **`@repo/api-client`**：`app/shared/api/client.ts` 注入 token 与 401 刷新
 - 受保护路由：`layouts/app-layout.tsx` 调用 `auth.requireAuthenticated(redirect)`
 - `/login`：配置 `VITE_API_URL` 后走 `auth.login()` → `POST /v1/auth/login`（邮箱 + 密码 + 租户 slug）；未配置时降级为 `auth.devLogin()` 占位会话
+- `/register`：`auth.register()` → `POST /v1/auth/register`（邮箱 + 密码 ≥8 位 + 租户 slug + 可选显示名），成功后自动登录进入工作台
 - Bootstrap：`VITE_API_URL` 已配置时 `GET /v1/users/me`，不再请求 RuoYi `getUserInfo`
 - 组件内：`useSession()`、`useTenant()`（须在 Provider 内）
 

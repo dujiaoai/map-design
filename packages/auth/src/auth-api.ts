@@ -1,4 +1,10 @@
-import type { AuthTokensResponse, LoginCredentials, LoginResponse, Session } from './types'
+import type {
+  AuthTokensResponse,
+  LoginCredentials,
+  LoginResponse,
+  RegisterCredentials,
+  Session,
+} from './types'
 
 export interface AuthApiOptions {
   baseUrl: string
@@ -18,11 +24,19 @@ export function createAuthApi(options: AuthApiOptions) {
   }
 
   return {
-    async register(credentials: LoginCredentials): Promise<LoginResponse> {
+    async register(credentials: RegisterCredentials): Promise<LoginResponse> {
+      const body: Record<string, string> = {
+        email: credentials.email,
+        password: credentials.password,
+        tenantId: credentials.tenantId ?? '',
+      }
+      if (credentials.displayName?.trim()) {
+        body.displayName = credentials.displayName.trim()
+      }
       const res = await fetchFn(`${base}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify(body),
       })
       return parseJson(res)
     },

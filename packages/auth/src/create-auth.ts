@@ -5,6 +5,7 @@ import { createSessionStore } from './session/session-store'
 import { createTokenStorage } from './storage/token-storage'
 import type {
   LoginCredentials,
+  RegisterCredentials,
   RedirectFn,
   SaaSRole,
   Session,
@@ -76,6 +77,14 @@ export function createAuth(options: CreateAuthOptions) {
     async login(credentials: LoginCredentials): Promise<Session> {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用登录接口')
       const response = loginResponseSchema.parse(await authApi.login(credentials))
+      const session = loginResponseToSession(response)
+      persist(session, authTokensToTokenPair(response))
+      return session
+    },
+
+    async register(credentials: RegisterCredentials): Promise<Session> {
+      if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用注册接口')
+      const response = loginResponseSchema.parse(await authApi.register(credentials))
       const session = loginResponseToSession(response)
       persist(session, authTokensToTokenPair(response))
       return session

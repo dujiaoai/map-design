@@ -10,6 +10,7 @@ export {
   authTokensSchema,
   type LoginCredentials,
   type LoginResponse,
+  type RegisterCredentials,
   loginResponseSchema,
   type RedirectFn,
   SaaSRole,

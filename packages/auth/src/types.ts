@@ -70,6 +70,13 @@ export interface LoginCredentials {
   tenantId?: string
 }
 
+export interface RegisterCredentials {
+  email: string
+  password: string
+  tenantId: string
+  displayName?: string
+}
+
 export type RedirectFn = (path: string) => Response
 
 export interface StorageLike {

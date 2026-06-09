@@ -221,7 +221,7 @@ flowchart TD
 
 | # | 任务 | 产出 |
 | --- | --- | --- |
-| C-06 | 登录页切 SaaS | `routes/login.tsx` → `/v1/auth/login`；`VITE_API_URL` + refresh/logout |
+| C-06 ✅ | 登录页切 SaaS | `routes/login.tsx` → `/v1/auth/login`；`VITE_API_URL` + refresh/logout；bootstrap 最小 SaaS 分支 |
 | C-07 | **注册页** | `routes/register.tsx`（或等价入口）→ `/v1/auth/register` |
 | C-08 | Bootstrap 去 RuoYi | `GET /v1/users/me`；移除 `getUserInfo` / `getMenuRouters` |
 | C-09 | 侧栏 mock bootstrap | `mock-nav-items` + `filterNavByTenant`（features API） |

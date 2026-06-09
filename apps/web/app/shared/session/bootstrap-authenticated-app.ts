@@ -1,13 +1,19 @@
+import { sessionSchema } from '@repo/auth'
+import type { Session } from '@repo/auth'
+import { ApiError } from '@repo/api-client'
 import type { UserInfo } from '@repo/ruoyi-api'
 import { RuoYiApiError } from '@repo/ruoyi-api'
 
 import { useRuoYiProfileStore } from '~/entities/ruoyi-user'
+import { api } from '~/shared/api/client'
 import { auth } from '~/shared/auth/instance'
+import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
 import { createMockUserInfo, isMockAccessToken } from '~/shared/mock/dev-auth'
 import { queryClient } from '~/shared/lib/query-client'
 import { menuRoutersQueryOptions, userInfoQueryOptions } from '~/shared/queries'
 
 import { clearAppSession } from './clear-app-session'
+import { sessionToRuoYiUserInfo } from './saas-session-profile'
 
 function syncAuthSessionFromUserInfo(info: UserInfo) {
   const session = auth.getSession()
@@ -28,7 +34,25 @@ function syncAuthSessionFromUserInfo(info: UserInfo) {
   )
 }
 
-/** 受保护应用壳层启动：拉取 RuoYi 用户/菜单并写入 profile store */
+async function bootstrapSaasAuthenticatedApp(): Promise<UserInfo> {
+  const data = sessionSchema.parse(await api.get<Session>('/users/me'))
+  const token = auth.getAccessToken()
+  const refreshToken = auth.getRefreshToken()
+
+  if (token) {
+    auth.setSession(data, {
+      accessToken: token,
+      refreshToken: refreshToken ?? undefined,
+      expiresAt: data.expiresAt,
+    })
+  }
+
+  const userInfo = sessionToRuoYiUserInfo(data)
+  useRuoYiProfileStore.getState().setProfile(userInfo)
+  return userInfo
+}
+
+/** 受保护应用壳层启动：SaaS `users/me` 或 RuoYi 用户/菜单，并写入 profile store */
 export async function bootstrapAuthenticatedApp() {
   if (isMockAccessToken(auth.getAccessToken())) {
     const session = auth.getSession()
@@ -36,6 +60,17 @@ export async function bootstrapAuthenticatedApp() {
     useRuoYiProfileStore.getState().setProfile(userInfo)
     syncAuthSessionFromUserInfo(userInfo)
     return userInfo
+  }
+
+  if (isSaasAuthEnabled()) {
+    try {
+      return await bootstrapSaasAuthenticatedApp()
+    } catch (error) {
+      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+        clearAppSession()
+      }
+      throw error
+    }
   }
 
   try {

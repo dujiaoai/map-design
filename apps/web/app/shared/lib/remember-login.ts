@@ -7,6 +7,7 @@ const COOKIE_EXPIRES_DAYS = 30
 export interface RememberLoginData {
   username: string
   password: string
+  tenantId?: string
   rememberMe: boolean
 }
 
@@ -22,15 +23,23 @@ export function loadRememberLogin(): RememberLoginData | null {
   return {
     username,
     password,
+    tenantId: Cookies.get('tenantId') ?? undefined,
     rememberMe: Boolean(rememberMe),
   }
 }
 
-export function saveRememberLogin(username: string, password: string): void {
+export function saveRememberLogin(
+  username: string,
+  password: string,
+  tenantId?: string,
+): void {
   Cookies.set('username', username, { expires: COOKIE_EXPIRES_DAYS })
   const encryptedPassword = encrypt(password)
   if (encryptedPassword) {
     Cookies.set('password', encryptedPassword, { expires: COOKIE_EXPIRES_DAYS })
+  }
+  if (tenantId) {
+    Cookies.set('tenantId', tenantId, { expires: COOKIE_EXPIRES_DAYS })
   }
   Cookies.set('rememberMe', 'true', { expires: COOKIE_EXPIRES_DAYS })
 }
@@ -38,5 +47,6 @@ export function saveRememberLogin(username: string, password: string): void {
 export function clearRememberLogin(): void {
   Cookies.remove('username')
   Cookies.remove('password')
+  Cookies.remove('tenantId')
   Cookies.remove('rememberMe')
 }

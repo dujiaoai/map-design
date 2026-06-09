@@ -60,10 +60,11 @@ pnpm --filter @repo/saas-web validate      # typecheck + lint + test
 - **`@repo/auth`**：`app/shared/auth/client.ts` 创建 `auth` 实例（`storageKeyPrefix: saas-web`）
 - **`@repo/api-client`**：`app/shared/api/client.ts` 注入 token 与 401 刷新
 - 受保护路由：`layouts/app-layout.tsx` 调用 `auth.requireAuthenticated(redirect)`
-- `/login` 开发登录：`auth.devLogin()` 写入占位会话
+- `/login`：配置 `VITE_API_URL` 后走 `auth.login()` → `POST /v1/auth/login`（邮箱 + 密码 + 租户 slug）；未配置时降级为 `auth.devLogin()` 占位会话
+- Bootstrap：`VITE_API_URL` 已配置时 `GET /v1/users/me`，不再请求 RuoYi `getUserInfo`
 - 组件内：`useSession()`、`useTenant()`（须在 Provider 内）
 
-正式后端就绪后，将 `VITE_API_URL` 指向 `/v1` 网关，并使用 `auth.login()` 替换 `devLogin`。
+本地联调示例：`.env` 设置 `VITE_API_URL=/v1`，`vite.config` 代理至 `http://localhost:8082`；演示账号 `admin@demo.local` / `password` / `demo`（需 `seed-demo-dev.sql`）。
 
 ## 环境变量
 

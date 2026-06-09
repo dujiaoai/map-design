@@ -18,7 +18,8 @@ VALUES (
   'demo',
   'free'
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE
+SET name = EXCLUDED.name, slug = EXCLUDED.slug, plan = EXCLUDED.plan;
 
 -- BCrypt hash for plaintext: password
 -- ($2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG)
@@ -31,7 +32,12 @@ VALUES (
   'Demo Admin',
   'active'
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE
+SET tenant_id = EXCLUDED.tenant_id,
+    email = EXCLUDED.email,
+    password_hash = EXCLUDED.password_hash,
+    display_name = EXCLUDED.display_name,
+    status = EXCLUDED.status;
 
 INSERT INTO sys_user (id, tenant_id, email, password_hash, display_name, status)
 VALUES (
@@ -42,7 +48,12 @@ VALUES (
   'Demo Member',
   'active'
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE
+SET tenant_id = EXCLUDED.tenant_id,
+    email = EXCLUDED.email,
+    password_hash = EXCLUDED.password_hash,
+    display_name = EXCLUDED.display_name,
+    status = EXCLUDED.status;
 
 -- Role IDs from V3__seed_roles.sql
 INSERT INTO sys_user_role (user_id, role_id)

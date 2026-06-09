@@ -13,6 +13,7 @@ import com.yunyan.saasapi.web.dto.auth.SessionDto;
 import com.yunyan.saasapi.web.dto.auth.SessionTenantDto;
 import com.yunyan.saasapi.web.dto.auth.SessionUserDto;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -69,7 +70,7 @@ public class AuthService {
     var user = userAuthRepository
         .findById(principal.userId())
         .orElseThrow(() -> AuthException.unauthorized("User not found"));
-    return toSessionDto(user);
+    return toSessionDto(user, principal.accessTokenExpiresAt());
   }
 
   private LoginResponse buildLoginResponse(AuthenticatedUser user) {
@@ -103,7 +104,7 @@ public class AuthService {
     return request.tenantId().trim();
   }
 
-  private SessionDto toSessionDto(AuthenticatedUser user) {
+  private SessionDto toSessionDto(AuthenticatedUser user, Instant accessTokenExpiresAt) {
     return new SessionDto(
         new SessionUserDto(
             user.id().toString(),
@@ -111,6 +112,6 @@ public class AuthService {
             user.displayName(),
             user.roleCodes()),
         new SessionTenantDto(user.tenantId().toString(), user.tenantName(), user.tenantSlug()),
-        0);
+        accessTokenExpiresAt.toEpochMilli());
   }
 }

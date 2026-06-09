@@ -90,7 +90,7 @@ mvn -f services/pom.xml -pl saas-api test
 | **业务 API 为零** | 地图、专题、机库等无后端 | P3 |
 | **Docker 全栈未含 saas-api** | `deploy/docker-compose` 仅 saas-web + cloud-uav | P2 |
 | **Testcontainers** | 测试用 H2，与生产 PG 行为可能有差异 | P3 |
-| **`SessionDto.expiresAt`** | 硬编码 `0` | P3 |
+| ~~**`SessionDto.expiresAt`**~~ | ✅ 取自 JWT `exp`，毫秒时间戳 | — |
 
 ### 本期明确不做（Later）
 
@@ -141,7 +141,7 @@ flowchart TD
 | A-01 | ~~实现 CORS 配置 Bean~~ ✅ | `CorsConfig` + `CorsProperties` | `java-rest-api` |
 | A-02 | ~~补充 `local-dev.md` services 启动步骤~~ ✅ | [local-dev.md](../runbooks/local-dev.md#saas-api) | `java-spring-boot-scaffold` |
 | A-03 | ~~端到端冒烟~~ ✅ | [saas-api-auth-smoke.md](../runbooks/saas-api-auth-smoke.md) + `pnpm smoke:saas-api` | `webapp-testing` |
-| A-04 | 修复 `SessionDto.expiresAt`（从 JWT TTL 计算） | 小改动 | `java-rest-api` |
+| A-04 | ~~修复 `SessionDto.expiresAt`~~ ✅ | JWT `exp` → 毫秒 epoch | `java-rest-api` |
 
 **验收：**
 
@@ -223,8 +223,7 @@ flowchart TD
 
 1. ~~**A-01 CORS**~~ ✅ 已完成
 2. ~~**A-03 Auth 冒烟**~~ ✅ 已完成
-3. **A-04 `SessionDto.expiresAt`** — 从 JWT TTL 计算
-4. **B-01 `/v1/tenants` + features** — 解锁租户能力门控
+3. **B-01 `/v1/tenants` + features** — 解锁租户能力门控（Sprint A 已完成）
 
 ---
 

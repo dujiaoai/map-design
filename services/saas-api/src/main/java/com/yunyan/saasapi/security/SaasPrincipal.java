@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.security;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -8,7 +9,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public record SaasPrincipal(
-    UUID userId, UUID tenantId, String email, List<String> roleCodes) implements UserDetails {
+    UUID userId, UUID tenantId, String email, List<String> roleCodes, Instant accessTokenExpiresAt)
+    implements UserDetails {
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

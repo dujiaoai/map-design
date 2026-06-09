@@ -39,7 +39,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     TenantContext.set(parsed.tenantId().toString());
 
     var principal = new SaasPrincipal(
-        parsed.userId(), parsed.tenantId(), parsed.userId().toString(), parsed.roleCodes());
+        parsed.userId(),
+        parsed.tenantId(),
+        parsed.userId().toString(),
+        parsed.roleCodes(),
+        parsed.expiresAt());
 
     var authentication = new UsernamePasswordAuthenticationToken(
         principal, null, principal.getAuthorities());

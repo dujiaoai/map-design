@@ -1,6 +1,8 @@
 package com.yunyan.saasapi.web.controller;
 
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.lessThan;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -91,13 +93,18 @@ class AuthControllerTest {
 
     var accessToken = JsonPath.read(loginBody, "$.accessToken");
 
+    var now = System.currentTimeMillis();
+    var maxExpiresAt = now + 16 * 60 * 1000L;
+
     mockMvc
         .perform(
             get("/v1/users/me").header("Authorization", "Bearer " + accessToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.user.email").value("admin@test.local"))
         .andExpect(jsonPath("$.user.roles", hasItem("TENANT_ADMIN")))
-        .andExpect(jsonPath("$.tenant.slug").value("test"));
+        .andExpect(jsonPath("$.tenant.slug").value("test"))
+        .andExpect(jsonPath("$.expiresAt").value(greaterThan(now)))
+        .andExpect(jsonPath("$.expiresAt").value(lessThan(maxExpiresAt)));
   }
 
   @Test

@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 
+import { sessionToNavUserData } from '~/features/account/lib/session-display'
 import { selectUnreadNotificationCount, useNotificationStore } from '~/entities/notification'
-import { toNavUserData, useRuoYiProfile } from '~/entities/ruoyi-user'
 import { auth } from '~/shared/auth/client'
 import { clearAppSession } from '~/shared/session/clear-app-session'
+import { useWorkspaceSession } from '~/shared/session/use-workspace-session'
 
 export function useWorkspaceChrome() {
   const navigate = useNavigate()
-  const { user, isLoading } = useRuoYiProfile()
+  const { session, isLoading } = useWorkspaceSession()
   const [accountOpen, setAccountOpen] = useState(false)
   const [notificationOpen, setNotificationOpen] = useState(false)
   const notificationItems = useNotificationStore((state) => state.items)
@@ -24,7 +25,7 @@ export function useWorkspaceChrome() {
   }
 
   return {
-    user: toNavUserData(user, { loading: isLoading }),
+    user: sessionToNavUserData(session, { loading: isLoading }),
     accountOpen,
     setAccountOpen,
     notificationOpen,

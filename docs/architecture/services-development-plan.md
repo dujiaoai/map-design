@@ -32,7 +32,7 @@
 
 `services/` 是 map-design 的 **SaaS 目标后端**，与前端 `@repo/api-client`（`/v1`、Bearer JWT、标准 HTTP 响应）对接，**不**走 RuoYi envelope。
 
-**Sprint C 进度（2026-06）**：后端 C-01～C-05 ✅；前端 C-06～C-10 ✅（登录、注册、bootstrap、Account UI 走 SaaS）。**C-09 菜单/租户能力过滤暂缓**。剩余 **C-11～C-12**（TeamSwitcher、RuoYi 会话桥接清理）。`services` Auth MVP + 租户 API 已完成；下一步 **C-11+ / Sprint D**，**暂不启动**地图/机库等业务 API。
+**Sprint C 进度（2026-06）**：后端 C-01～C-05 ✅；前端 C-06～C-12 ✅（身份与会话主路径已去 RuoYi）。**C-09 菜单/租户能力过滤暂缓**。`services` Auth MVP + 租户 API 已完成；下一步 **Sprint D 权限与后台**，**暂不启动**地图/机库等业务 API。
 
 ```
 map-design/
@@ -229,15 +229,16 @@ flowchart TD
 | C-08 ✅ | Bootstrap 去 RuoYi | `GET /v1/users/me`；移除 `getUserInfo` / `getMenuRouters` |
 | C-09 ⏸ | 侧栏租户能力过滤（**暂缓**） | `filterNavByTenant` + `features` API；当前侧栏固定 `mock-nav-items` 全量 |
 | C-10 ✅ | Account / 用户信息 UI | `AccountSheet`：`GET/PUT /users/me`、`POST /users/me/password` |
-| C-11 | TeamSwitcher | `GET /v1/tenants`；切换租户 = 重新登录 |
-| C-12 | 清理 RuoYi 会话依赖 | 下线 bootstrap 对 `ruoyi-api`、`ruoyi-profile-store` 的会话路径 |
+| C-11 ✅ | TeamSwitcher | 侧栏 `GET /v1/tenants`；切换租户 = 目标 slug 重新登录 |
+| C-12 ✅ | 清理 RuoYi 会话依赖 | 移除 `ruoyi-profile-store`；顶栏/壳层统一 `useWorkspaceSession` |
 
 **验收：**
 
 - [x] 可注册、登录、刷新、登出（SaaS JWT；`/login`、`/register` + `auth.*`）
 - [x] saas-web bootstrap **不**调用 RuoYi `getInfo` / `getMenuRouters`（C-08）
 - [x] Account UI 读写信/改密走 `/v1/users/me*`（C-10）
-- [ ] 清理 RuoYi profile 桥接（C-12）
+- [x] TeamSwitcher 拉取 `/v1/tenants`；切换租户重新登录（C-11）
+- [x] 清理 RuoYi profile 桥接（C-12）
 - [ ] 侧栏 `filterNavByTenant`（C-09，**暂缓**）
 - [x] `pnpm smoke:saas-api` 通过；`pnpm --filter @repo/saas-web test` 通过
 
@@ -350,7 +351,8 @@ flowchart TD
 | C-06～C-08 ✅ | C | 前端：登录/注册、bootstrap 去 RuoYi |
 | C-09 ⏸ | C | 侧栏 `filterNavByTenant`（暂缓） |
 | C-10 ✅ | C | Account / `users/me` UI |
-| C-11～C-12 | C | TeamSwitcher、RuoYi 会话清理 |
+| C-11 ✅ | C | TeamSwitcher → `GET /v1/tenants` |
+| C-12 ✅ | C | RuoYi 会话清理 |
 | D-01～D-06 | D | 后端：权限表、权限 API、`/v1/admin/*` 租户/用户/成员 |
 | D-07～D-10 | D | 前端：apps/admin、权限门控、Docker 部署 |
 | E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
@@ -358,7 +360,7 @@ flowchart TD
 ### 建议默认顺序（仅供参考，非强制）
 
 1. ~~**C-02～C-08**~~ 身份与会话主路径 ✅（**C-09 暂缓**）  
-2. **C-11～C-12** TeamSwitcher / RuoYi 清理  
+2. **Sprint D** 权限与 `apps/admin`（C-09 filter 仍暂缓）  
 3. **D-01～D-06** 权限与 admin API → **D-07～D-10** Admin 与部署  
 
 你指定后，按编号在对应 Skill（`java-rest-api`、`java-auth-security`、`saas-auth-ruoyi`、`saas-fsd-feature`）下实现即可。

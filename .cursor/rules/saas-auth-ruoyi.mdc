@@ -1,5 +1,5 @@
 ---
-description: saas-web 认证与会话 — C-06～C-10 SaaS 主路径；C-09 菜单 filter 暂缓；C-11+ TeamSwitcher
+description: saas-web 认证与会话 — C-06～C-12 SaaS 主路径；C-09 菜单 filter 暂缓；Sprint D 权限
 globs:
   - apps/web/app/shared/auth/**
   - apps/web/app/shared/session/**
@@ -26,7 +26,8 @@ alwaysApply: false
 - **C-06～C-08 ✅**：登录、注册、bootstrap → `GET /v1/users/me`
 - **C-09 ⏸**：不做 `filterNavByTenant` / 菜单路由权限
 - **C-10 ✅**：Account → `GET/PUT /users/me`、`POST /users/me/password`
-- **C-11～C-12**：TeamSwitcher、RuoYi 清理
+- **C-11 ✅**：TeamSwitcher → `GET /v1/tenants` + 重新登录切租户
+- **C-12 ✅**：`useWorkspaceSession`；已移除 `ruoyi-profile-store`
 
 ## 目标链路
 

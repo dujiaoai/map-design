@@ -3,7 +3,7 @@ import { Button, cn, Input } from '@repo/ui'
 import { Building2Icon, UserIcon } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
 import { auth, SaaSRole } from '~/shared/auth/client'
@@ -62,8 +62,11 @@ export async function clientLoader() {
 
 function SaasLoginForm() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [rememberMe, setRememberMe] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const switchTenantSlug = searchParams.get('tenant')?.trim()
+  const switchTenantReason = searchParams.get('reason')
 
   const {
     register,
@@ -77,15 +80,16 @@ function SaasLoginForm() {
 
   useEffect(() => {
     const saved = loadRememberLogin()
-    if (!saved) return
 
     reset({
-      email: saved.username,
-      password: saved.password,
-      tenantId: saved.tenantId ?? 'demo',
+      email: saved?.username ?? '',
+      password: saved?.password ?? '',
+      tenantId: switchTenantSlug || saved?.tenantId || 'demo',
     })
-    setRememberMe(saved.rememberMe)
-  }, [reset])
+    if (saved) {
+      setRememberMe(saved.rememberMe)
+    }
+  }, [reset, switchTenantSlug])
 
   async function onSubmit(values: SaasLoginFormValues) {
     setSubmitError(null)
@@ -109,6 +113,12 @@ function SaasLoginForm() {
 
   return (
     <form className="login-form-fields" onSubmit={handleSubmit(onSubmit)}>
+      {switchTenantReason === 'switch' ? (
+        <p className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center text-sm text-white/70">
+          请重新登录以切换到租户「{switchTenantSlug || '目标租户'}」
+        </p>
+      ) : null}
+
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 0 } as CSSProperties}>
         <label className="text-sm font-medium text-white/70" htmlFor="login-email">
           邮箱

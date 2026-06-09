@@ -18,7 +18,7 @@ flowchart LR
   Visitor[访客] --> Marketing[apps/marketing]
   Operator[平台运营] --> Admin[apps/admin]
   Web --> SaaSAPI[SaaS_API_v1 — 主路径 C-06～C-08]
-  Web -.-> RuoYi[RuoYi — 桥接遗留 C-12]
+  Web -.-> RuoYi[RuoYi — 非会话遗留类型]
   Admin --> SaaSAPI
   Marketing --> SaaSAPI
   Web --> MapPlugins[map-plugins — 待接]
@@ -43,7 +43,7 @@ flowchart LR
 | 阶段 | 客户端 | 用途 |
 | --- | --- | --- |
 | 主路径 | `@repo/api-client` | 登录、注册、bootstrap、`users/me` |
-| 遗留 | `@repo/ruoyi-api` | `ruoyi-profile-store` 桥接（C-12 清理） |
+| 遗留 | `@repo/ruoyi-api` | 菜单类型等非会话引用（会话路径已清理 C-12） |
 
 ## 安全基线
 
@@ -94,7 +94,8 @@ flowchart LR
 | Sprint C：登录·注册·bootstrap（C-06～C-08） | ✅ 已完成 |
 | Sprint C：侧栏 filterNavByTenant（C-09） | ⏸ 暂缓 |
 | Sprint C：Account（C-10） | ✅ |
-| Sprint C：TeamSwitcher / RuoYi 清理（C-11～C-12） | 待实现 |
+| Sprint C：TeamSwitcher（C-11） | ✅ |
+| Sprint C：RuoYi 会话清理（C-12） | ✅ |
 | Sprint D：权限·后台·apps/admin | 待实现 |
 | Sprint E：地图/机库等业务 API | Later，C/D 不做 |
 | packages（ui/auth/api-client/ruoyi-api） | 已完成 |

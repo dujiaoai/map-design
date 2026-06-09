@@ -1,8 +1,7 @@
 import type { ComponentProps } from 'react'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import { AppSidebar as UiAppSidebar } from '@repo/ui'
-import { MapIcon } from 'lucide-react'
 import { useNavigate } from 'react-router'
 
 import {
@@ -15,27 +14,7 @@ import {
   useActiveNavItemIds,
   useMapWorkspaceStore,
 } from '~/features/map-workspace'
-
-function WorkspaceBrandLogo() {
-  const [useFallback, setUseFallback] = useState(false)
-
-  if (useFallback) {
-    return (
-      <div className="bg-brand-gradient flex size-full items-center justify-center rounded-md">
-        <MapIcon className="size-4 text-primary-foreground" aria-hidden />
-      </div>
-    )
-  }
-
-  return (
-    <img
-      src="/avatars/logo.png"
-      alt=""
-      className="size-full object-contain"
-      onError={() => setUseFallback(true)}
-    />
-  )
-}
+import { TenantLogo, useTeamSwitcher } from '~/features/team-switcher'
 
 export function AppSidebar(props: ComponentProps<typeof UiAppSidebar>) {
   const navigate = useNavigate()
@@ -63,13 +42,22 @@ export function AppSidebar(props: ComponentProps<typeof UiAppSidebar>) {
     [navigate, toggleMapDockModule, toggleMapModule, toggleMapTool, togglePanelTool],
   )
 
+  const { teams, activeTeamId, onTeamChange, showTeamSwitcher } = useTeamSwitcher()
+
   return (
     <UiAppSidebar
       hideFooter
-      brand={{
-        logo: <WorkspaceBrandLogo />,
-        title: '云眼综合服务平台',
-      }}
+      brand={
+        showTeamSwitcher
+          ? undefined
+          : {
+              logo: <TenantLogo />,
+              title: '云眼综合服务平台',
+            }
+      }
+      teams={showTeamSwitcher ? teams : undefined}
+      activeTeamId={activeTeamId}
+      onTeamChange={onTeamChange}
       navMapSections={navMapSections}
       onNavSelect={handleNavSelect}
       {...props}

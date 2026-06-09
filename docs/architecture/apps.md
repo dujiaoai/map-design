@@ -32,7 +32,7 @@
 /settings/*               # feature 已有，路由待注册
 ```
 
-> **Sprint C 进度**：C-06～C-10 ✅（登录、注册、bootstrap、Account → `@repo/api-client`）。**C-09 菜单 filter 暂缓**。剩余 C-11～C-12：TeamSwitcher、RuoYi 清理。  
+> **Sprint C 进度**：C-06～C-12 ✅（身份与会话主路径 → `@repo/api-client`）。**C-09 菜单 filter 暂缓**。下一步 Sprint D。  
 > **不做**：地图/机库等业务 API（Sprint E）。
 
 开发：

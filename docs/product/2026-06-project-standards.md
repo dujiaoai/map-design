@@ -289,7 +289,7 @@ flowchart TB
 | 阶段 | 焦点 | 标准重心 |
 | --- | --- | --- |
 | **现在** | saas-web 地图工作台 + SaaS 会话（C-06～C-08） | M-* / F-* / U-* / A-* P0 |
-| **下一迭代** | C-11 TeamSwitcher、map-plugin-bridge | A-01/A-02 收尾 + P-* |
+| **下一迭代** | Sprint D 权限/admin、map-plugin-bridge | A-01/A-02 收尾 + P-* |
 | **中期** | Sprint D 权限与 Admin | A-04 / A-06 |
 | **远期** | Admin + Marketing scaffold | ADR-0002/0003 扩展 |
 

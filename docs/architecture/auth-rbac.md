@@ -31,12 +31,18 @@
 | Account 读/写/改密 | `AccountSheet` → `GET/PUT /v1/users/me`、`POST /v1/users/me/password` |
 | 资料字段 | 首版仅 `name`（显示名）；邮箱只读 |
 
-### 仍待迁移（C-11～C-12）
+### 已完成（C-11）
 
-| 能力 | 当前 | 目标 |
-| --- | --- | --- |
-| 顶栏用户展示 | 过渡期 `ruoyi-profile-store`（由 Session 映射） | 直接 `useSession()` |
-| TeamSwitcher | 占位 | `GET /v1/tenants`（C-11） |
+| 能力 | 实现 |
+| --- | --- |
+| TeamSwitcher | 侧栏 `GET /v1/tenants`；切换 = 目标 slug 重新登录（记住密码时静默切换） |
+
+### 已完成（C-12）
+
+| 能力 | 实现 |
+| --- | --- |
+| 顶栏/账号用户展示 | `useWorkspaceSession` + `sessionToNavUserData` |
+| 会话桥接 | 已移除 `ruoyi-profile-store`、`menu-queries`、`user-queries` |
 
 ### Session 守卫
 
@@ -60,7 +66,8 @@
 | C-06～C-08 | ✅ | 登录、注册、bootstrap 去 RuoYi |
 | C-09 | ⏸ 暂缓 | 菜单 `filterNavByTenant` / features 门控 |
 | C-10 | ✅ | Account UI → `users/me*` |
-| C-11～C-12 | 待做 | TeamSwitcher、RuoYi 清理 |
+| C-11 | ✅ | TeamSwitcher → `GET /v1/tenants` |
+| C-12 | ✅ | RuoYi 会话桥接清理 |
 
 **Sprint C 不做**：`sys_permission` 细粒度、 `/v1/admin/*`、apps/admin（→ Sprint D）。  
 **Sprint C/D 不做**：地图/机库/专题等业务 API（→ Sprint E）。

@@ -5,6 +5,7 @@ import * as React from "react"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -68,22 +69,24 @@ export function TeamSwitcher({
             <ChevronsUpDownIcon className="text-muted-foreground ml-auto size-4 group-data-[collapsible=icon]:hidden" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="bottom" className="w-56">
-            <DropdownMenuLabel className="text-xs">切换项目</DropdownMenuLabel>
-            {teams.map((team) => (
-              <DropdownMenuItem
-                key={team.id}
-                className="gap-2"
-                onClick={() => selectTeam(team.id)}
-              >
-                <div className="flex size-6 shrink-0 items-center justify-center rounded-md border">
-                  {team.logo}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm">{team.name}</p>
-                  <p className="text-muted-foreground truncate text-xs">{team.plan}</p>
-                </div>
-              </DropdownMenuItem>
-            ))}
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-xs">切换项目</DropdownMenuLabel>
+              {teams.map((team) => (
+                <DropdownMenuItem
+                  key={team.id}
+                  className="gap-2"
+                  onClick={() => selectTeam(team.id)}
+                >
+                  <div className="flex size-6 shrink-0 items-center justify-center rounded-md border">
+                    {team.logo}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm">{team.name}</p>
+                    <p className="text-muted-foreground truncate text-xs">{team.plan}</p>
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem disabled className="gap-2">
               <PlusIcon className="size-4" />

@@ -1,26 +1,25 @@
-import { useQuery } from '@tanstack/react-query'
+import { SaaSRole } from '@repo/auth'
 
-import { userInfoQueryOptions } from '~/shared/queries'
-import { usesSaasSessionBootstrap } from '~/shared/session/fetch-saas-session'
+import { hasAnyPermission, hasPermission } from '../lib/permissions'
+import {
+  sessionHasSaasRole,
+  sessionIsTenantOrPlatformAdmin,
+  sessionPermissionCodes,
+} from '~/shared/session/session-access'
+import { useWorkspaceSession } from '~/shared/session/use-workspace-session'
 
-import { hasAnyPermission, hasPermission, hasRoleKey, isAdmin } from '../lib/permissions'
-import { useRuoYiProfileStore } from '../model/ruoyi-profile-store'
-
+/** @deprecated 命名保留至 Sprint D；请优先 `useWorkspaceSession` + `sessionPermissionCodes` */
 export function useRuoYiProfile() {
-  const store = useRuoYiProfileStore()
-  const query = useQuery({
-    ...userInfoQueryOptions(),
-    enabled: !usesSaasSessionBootstrap() && !store.hydrated,
-  })
+  const { session, isLoading, error } = useWorkspaceSession()
+  const permissions = sessionPermissionCodes(session)
 
   return {
-    user: store.user ?? query.data?.user ?? null,
-    roles: store.roles.length > 0 ? store.roles : (query.data?.roles ?? []),
-    permissions:
-      store.permissions.length > 0 ? store.permissions : (query.data?.permissions ?? []),
-    hydrated: store.hydrated || query.isSuccess,
-    isLoading: query.isPending && !store.hydrated,
-    error: query.error,
+    session,
+    roles: session?.user.roles ?? [],
+    permissions,
+    hydrated: Boolean(session) || !isLoading,
+    isLoading,
+    error,
   }
 }
 
@@ -40,10 +39,16 @@ export function useHasAnyPermission(required: readonly string[]): boolean {
 
 export function useHasRoleKey(roleKey: string): boolean {
   const { roles } = useRuoYiProfile()
-  return hasRoleKey(roles, roleKey)
+  return roles.includes(roleKey)
 }
 
+export function useHasSaasRole(role: SaaSRole): boolean {
+  const { session } = useRuoYiProfile()
+  return sessionHasSaasRole(session, role)
+}
+
+/** @deprecated 请用 `useHasSaasRole` 或 `sessionIsTenantOrPlatformAdmin` */
 export function useIsRuoYiAdmin(): boolean {
-  const { roles } = useRuoYiProfile()
-  return isAdmin(roles)
+  const { session } = useRuoYiProfile()
+  return sessionIsTenantOrPlatformAdmin(session)
 }

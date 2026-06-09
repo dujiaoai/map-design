@@ -65,7 +65,7 @@ pnpm --filter @repo/saas-web dev
 | D | `/v1/admin/*`、apps/admin |
 | E | 业务 API（Later） |
 
-详见 [services-development-plan.md](../architecture/services-development-plan.md) **§十 执行指引**。saas-web 登录/注册/bootstrap/Account 已走 SaaS（C-06～C-10）。
+详见 [services-development-plan.md](../architecture/services-development-plan.md) **§十 执行指引**。saas-web 身份与会话主路径已走 SaaS（C-06～C-12）。
 
 #### 1. 启动依赖（PostgreSQL + Redis）
 

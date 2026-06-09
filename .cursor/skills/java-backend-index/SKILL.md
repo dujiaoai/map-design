@@ -57,7 +57,7 @@ description: >-
 暂缓：C-09 侧栏 filterNavByTenant（菜单权限）
 
 Sprint C 剩余（由你指定编号）：
-  saas-auth-ruoyi → C-11 TeamSwitcher、C-12 RuoYi 清理
+  saas-auth-ruoyi → C-12 RuoYi 清理
 
 Sprint D（权限与后台）：
   java-persistence → sys_permission

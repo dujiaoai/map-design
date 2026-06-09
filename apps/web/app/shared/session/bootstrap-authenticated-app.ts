@@ -1,15 +1,12 @@
 import type { Session } from '@repo/auth'
 
-import { useRuoYiProfileStore } from '~/entities/ruoyi-user'
 import { auth } from '~/shared/auth/instance'
-import { createMockUserInfo, isMockAccessToken } from '~/shared/mock/dev-auth'
+import { isMockAccessToken } from '~/shared/mock/dev-auth'
 
 import { fetchAndPersistSaasSessionOrClear } from './fetch-saas-session'
 
 function bootstrapMockAuthenticatedApp(): Session {
   const session = auth.getSession()
-  const userInfo = createMockUserInfo(session?.user.name ?? 'dev')
-  useRuoYiProfileStore.getState().setProfile(userInfo)
 
   if (!session) {
     throw new Error('Mock session missing after devLogin')

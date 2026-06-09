@@ -4,8 +4,8 @@
 
 | 阶段 | saas-web / admin | 客户端 | 说明 |
 | --- | --- | --- | --- |
-| **当前（C-06～C-10）** | 登录/注册/bootstrap/Account → SaaS | `@repo/api-client` | C-11～C-12 清理 |
-| 遗留 | `ruoyi-profile-store` 桥接 | `@repo/ruoyi-api`（仅非 SaaS 路径） | C-12 清理 |
+| **当前（C-06～C-12）** | 身份与会话主路径 → SaaS | `@repo/api-client` | Sprint D 权限/admin |
+| 遗留 | `build-nav-tree` 等类型引用 | `@repo/ruoyi-api`（非会话路径） | 随业务迁移逐步移除 |
 | **Sprint C** | 身份与会话 | `@repo/api-client` | C-01～C-08 ✅；C-09 暂缓 |
 | **Sprint D** | 权限与后台 | `@repo/api-client` | `/v1/admin/*`、apps/admin |
 | **Sprint E** | 业务工作台 | `@repo/api-client` | 地图、机库等 — **C/D 不做** |

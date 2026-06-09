@@ -34,7 +34,7 @@ shadcn/ui + Base UI 组件库，含 SaaS 侧栏导航复合组件。
 | `NavMain` | 可折叠导航菜单 |
 | `NavUser` | 用户菜单 |
 | `NavNotifications` | 通知入口 |
-| `TeamSwitcher` | 租户切换（UI 就绪，后端待接） |
+| `TeamSwitcher` | 租户切换（C-11：`GET /v1/tenants` + 重新登录） |
 
 ### Vite 消费约定
 
@@ -124,7 +124,7 @@ RuoYi 后端 API 封装，响应用 Zod 校验。
 | --- | --- | --- |
 | 协议 | RuoYi envelope `{ code, msg, data }` | 标准 REST + HTTP status |
 | 校验 | Zod schema per endpoint | 调用方自行解析 |
-| saas-web 会话 | api-client（C-06～C-10 ✅） | 登录、注册、bootstrap、Account `users/me*` |
+| saas-web 会话 | api-client（C-06～C-12 ✅） | 登录、注册、bootstrap、Account、TeamSwitcher、无 RuoYi 桥接 |
 | admin / 权限 | Sprint D → api-client | `/v1/admin/*`、权限码 |
 | 业务 API | Sprint E | 地图、机库等 |
 | 阶段 | 迁移前 RuoYi | C/D 后 saas-web + admin 主用 api-client |

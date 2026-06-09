@@ -124,7 +124,7 @@ RuoYi 后端 API 封装，响应用 Zod 校验。
 | --- | --- | --- |
 | 协议 | RuoYi envelope `{ code, msg, data }` | 标准 REST + HTTP status |
 | 校验 | Zod schema per endpoint | 调用方自行解析 |
-| saas-web 会话 | Sprint C → api-client | 登录、注册、用户信息、bootstrap |
+| saas-web 会话 | api-client（C-06～C-10 ✅） | 登录、注册、bootstrap、Account `users/me*` |
 | admin / 权限 | Sprint D → api-client | `/v1/admin/*`、权限码 |
 | 业务 API | Sprint E | 地图、机库等 |
 | 阶段 | 迁移前 RuoYi | C/D 后 saas-web + admin 主用 api-client |

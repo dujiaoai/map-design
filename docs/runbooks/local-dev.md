@@ -65,7 +65,7 @@ pnpm --filter @repo/saas-web dev
 | D | `/v1/admin/*`、apps/admin |
 | E | 业务 API（Later） |
 
-详见 [services-development-plan.md](../architecture/services-development-plan.md) **§十 执行指引**。迁移完成前 saas-web 可能仍临时走 RuoYi。
+详见 [services-development-plan.md](../architecture/services-development-plan.md) **§十 执行指引**。saas-web 登录/注册/bootstrap/Account 已走 SaaS（C-06～C-10）。
 
 #### 1. 启动依赖（PostgreSQL + Redis）
 
@@ -167,7 +167,7 @@ curl -s http://localhost:8082/v1/tenants \
 pnpm --filter @repo/saas-web dev
 ```
 
-> **说明**：Sprint C 完成后需配置 `VITE_API_URL`，主登录与 bootstrap 走 SaaS + mock-nav。迁移前可用 `/dev/saas-auth-smoke` 联调；完成前工作台可能仍临时走 RuoYi。
+> **说明**：需配置 `VITE_API_URL=/v1`，`/login` 与 `/register` 走 SaaS；bootstrap 为 `GET /users/me`。侧栏为 `mock-nav-items` 全量（C-09 菜单权限过滤暂缓）。联调页：`/dev/saas-auth-smoke`。
 
 #### 6. Auth 端到端冒烟
 

@@ -3,6 +3,7 @@ export {
   invalidateSessionQueries,
   removeSessionQueries,
 } from './invalidate-session-queries'
+export { sessionQueryKeys, sessionQueryOptions, useSessionQuery } from './session-queries'
 export { ruoyi } from './ruoyi-client'
 export {
   userInfoQueryOptions,

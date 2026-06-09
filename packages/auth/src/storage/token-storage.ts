@@ -47,6 +47,10 @@ export function createTokenStorage(prefix: string, storage: StorageLike) {
       this.setTokens(tokens)
     },
 
+    clearRefreshToken() {
+      storage.removeItem(k.refresh)
+    },
+
     clear() {
       storage.removeItem(k.access)
       storage.removeItem(k.refresh)

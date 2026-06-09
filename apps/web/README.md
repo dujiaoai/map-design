@@ -63,7 +63,9 @@ pnpm --filter @repo/saas-web validate      # typecheck + lint + test
 - 受保护路由：`layouts/app-layout.tsx` 调用 `auth.requireAuthenticated(redirect)`
 - `/login`：配置 `VITE_API_URL` 后走 `auth.login()` → `POST /v1/auth/login`（邮箱 + 密码 + 租户 slug）；未配置时降级为 `auth.devLogin()` 占位会话
 - `/register`：`auth.register()` → `POST /v1/auth/register`（邮箱 + 密码 ≥8 位 + 租户 slug + 可选显示名），成功后自动登录进入工作台
-- Bootstrap：`GET /v1/users/me`（真实 token）或 mock 占位；**不再**请求 RuoYi `getUserInfo` / `getMenuRouters`
+- Bootstrap：`GET /v1/users/me`（真实 token）或 mock 占位；**不再**请求 RuoYi `getUserInfo` / `getMenuRouters`（C-08）
+- 侧栏：`mock-nav-items` 全量；**C-09 菜单/租户能力过滤暂缓**
+- Account 抽屉：`GET/PUT /v1/users/me`、`POST /v1/users/me/password`（C-10）
 - 组件内：`useSession()`、`useTenant()`（须在 Provider 内）
 
 本地联调示例：`.env` 设置 `VITE_API_URL=/v1`，`vite.config` 代理至 `http://localhost:8082`；演示账号 `admin@demo.local` / `password` / `demo`（需 `seed-demo-dev.sql`）。

@@ -16,7 +16,8 @@
 
 - **登录 / 注册 / 刷新 / 登出** → `/v1/auth/*`
 - **用户信息** → `GET/PUT /v1/users/me`、`POST /v1/users/me/password`
-- **Bootstrap** → `users/me` + mock-nav + `filterNavByTenant`（**非** RuoYi `getInfo`/`getRouters`）
+- **Bootstrap** → `GET /v1/users/me`（**非** RuoYi `getInfo`/`getRouters`）✅
+- **侧栏** → `mock-nav-items` 全量展示；`filterNavByTenant`（C-09）**暂缓**
 
 **仍不做（Sprint C/D 内）：**
 
@@ -31,7 +32,7 @@
 
 `services/` 是 map-design 的 **SaaS 目标后端**，与前端 `@repo/api-client`（`/v1`、Bearer JWT、标准 HTTP 响应）对接，**不**走 RuoYi envelope。
 
-当前前端登录/注册/bootstrap **已切 SaaS**（C-06～C-08）；Account 等仍部分走 RuoYi，待 C-10～C-12 清理。`services` 处于 **Auth MVP + 租户 API 已完成**；下一步 **C/D 补齐权限、后台管理**，**暂不启动**地图/机库等业务 API。
+**Sprint C 进度（2026-06）**：后端 C-01～C-05 ✅；前端 C-06～C-10 ✅（登录、注册、bootstrap、Account UI 走 SaaS）。**C-09 菜单/租户能力过滤暂缓**。剩余 **C-11～C-12**（TeamSwitcher、RuoYi 会话桥接清理）。`services` Auth MVP + 租户 API 已完成；下一步 **C-11+ / Sprint D**，**暂不启动**地图/机库等业务 API。
 
 ```
 map-design/
@@ -50,8 +51,8 @@ map-design/
 | ---------- | ----- | ------------------------------------------------------------ |
 | 脚手架        | ✅     | Java 21、Spring Boot 3.3.6、Maven 多模块                          |
 | 数据库        | ✅     | Flyway V1–V3：基线表、auth 表、4 角色种子                               |
-| 认证接口       | ✅     | `POST /v1/auth/login`、`/refresh`、`/logout`                   |
-| 用户会话       | ✅     | `GET /v1/users/me`                                           |
+| 认证接口       | ✅     | `POST /v1/auth/login`、`/register`、`/refresh`、`/logout`      |
+| 用户会话       | ✅     | `GET/PUT /v1/users/me`、`POST /v1/users/me/password`         |
 | 安全         | ✅     | JWT access/refresh、Spring Security 6、`JwtAuthFilter`         |
 | RBAC       | ✅     | `PLATFORM_ADMIN` / `TENANT_ADMIN` / `MEMBER` / `VIEWER`      |
 | 多租户（应用层）   | 🟡 部分 | `TenantContext` + MyBatis-Plus 租户拦截（仅 `sys_user`）            |
@@ -66,7 +67,8 @@ map-design/
 
 - `@repo/auth` 的 `loginResponseSchema`（`accessToken`、`refreshToken`、`expiresIn`、`user.name/roles/tenant`）与后端 DTO 一致
 - `apps/web` 已配置 `VITE_API_URL` + vite `/v1` 代理 → `:8082`
-- **登录 / bootstrap**：SaaS `/v1/auth/*` + `GET /v1/users/me`；侧栏仍 mock-nav（C-09 补 `filterNavByTenant`）
+- **登录 / 注册 / bootstrap**：SaaS `/v1/auth/*` + `GET /v1/users/me`（C-06～C-08 ✅）
+- **侧栏**：`mock-nav-items` 静态全量；**C-09 `filterNavByTenant` 暂缓**（不做菜单路由权限）
 
 ### 本地验证命令
 
@@ -100,8 +102,9 @@ mvn -f services/pom.xml -pl saas-api test
 | ~~**CORS**~~                   | ✅ `CorsConfig` + `SecurityConfig.cors()`；`/v1/`** 允许 `saas.cors.allowed-origins` | —   |
 | ~~**租户 API 缺失**~~              | ✅ `/v1/tenants` + `/features`；前端接真实 API 待联调                                      | —   |
 | ~~**PostgreSQL RLS 未做**~~      | ✅ `sys_user` RLS（`V5__rls.sql` + `TenantRlsDataSource`）                           | —   |
-| **工作台会话仍走 RuoYi**           | Sprint C：登录、注册、用户信息、bootstrap 切 SaaS                                      | P2  |
-| **注册 / 用户资料写接口**            | Sprint C：`POST /v1/auth/register`、`PUT /v1/users/me`、改密                         | P2  |
+| ~~**工作台会话仍走 RuoYi**~~       | ✅ C-06～C-08：登录、注册、bootstrap 已切 SaaS                                        | —   |
+| ~~**注册 / 用户资料写接口**~~        | ✅ C-02～C-05 后端 + C-10 Account UI（`users/me*`）                                  | —   |
+| **侧栏租户能力过滤**                 | C-09 **暂缓**；当前 mock-nav 全量，不接 `features` 门控                               | —   |
 | **RBAC / 权限配置 / 后台管理**       | Sprint D：`sys_permission`、角色绑定、`/v1/admin/*`、apps/admin 对接                    | P2  |
 | `**/v1/admin/`** 空壳**          | Security 已有 `PLATFORM_ADMIN` 占位；Controller 与 Admin UI 排 Sprint D                 | P2  |
 | **业务域 API**                    | 地图、机库、专题等 — **Sprint C/D 不做**，待基础能力验收后另开迭代                                    | Later |
@@ -196,7 +199,7 @@ flowchart TD
 **验收：**
 
 - [x] TeamSwitcher 可拉取真实租户列表
-- [x] `filterNavByTenant` 可接 `tenantFeature` API
+- [x] `GET /v1/tenants/{id}/features` API 就绪（前端 `filterNavByTenant` 接法 **C-09 暂缓**）
 - [x] MockMvc 覆盖 tenants + features
 
 ---
@@ -224,17 +227,19 @@ flowchart TD
 | C-06 ✅ | 登录页切 SaaS | `routes/login.tsx` → `/v1/auth/login`；`VITE_API_URL` + refresh/logout；bootstrap 最小 SaaS 分支 |
 | C-07 ✅ | **注册页** | `routes/register.tsx` → `/v1/auth/register`；`auth.register()` 注册后进入工作台 |
 | C-08 ✅ | Bootstrap 去 RuoYi | `GET /v1/users/me`；移除 `getUserInfo` / `getMenuRouters` |
-| C-09 | 侧栏 mock bootstrap | `mock-nav-items` + `filterNavByTenant`（features API） |
-| C-10 | Account / 用户信息 UI | 读写信走 `/v1/users/me*` |
+| C-09 ⏸ | 侧栏租户能力过滤（**暂缓**） | `filterNavByTenant` + `features` API；当前侧栏固定 `mock-nav-items` 全量 |
+| C-10 ✅ | Account / 用户信息 UI | `AccountSheet`：`GET/PUT /users/me`、`POST /users/me/password` |
 | C-11 | TeamSwitcher | `GET /v1/tenants`；切换租户 = 重新登录 |
 | C-12 | 清理 RuoYi 会话依赖 | 下线 bootstrap 对 `ruoyi-api`、`ruoyi-profile-store` 的会话路径 |
 
 **验收：**
 
-- [ ] 可注册、登录、刷新、登出（SaaS JWT）
-- [ ] 可查看与更新当前用户信息、改密
-- [ ] saas-web 主路径**不**调用 RuoYi 登录 / `getInfo` / `getRouters` / profile
-- [ ] `pnpm smoke:saas-api` 与 `pnpm --filter @repo/saas-web validate` 通过
+- [x] 可注册、登录、刷新、登出（SaaS JWT；`/login`、`/register` + `auth.*`）
+- [x] saas-web bootstrap **不**调用 RuoYi `getInfo` / `getMenuRouters`（C-08）
+- [x] Account UI 读写信/改密走 `/v1/users/me*`（C-10）
+- [ ] 清理 RuoYi profile 桥接（C-12）
+- [ ] 侧栏 `filterNavByTenant`（C-09，**暂缓**）
+- [x] `pnpm smoke:saas-api` 通过；`pnpm --filter @repo/saas-web test` 通过
 
 ---
 
@@ -335,22 +340,25 @@ flowchart TD
 
 ## 十、执行指引（由你指定开工项）
 
-文档已对齐：**Sprint C/D = 平台基础；Sprint E = 业务域（Later）**。实现顺序由你指定，可用任务编号点名，例如「先做 C-02 + C-06」或「只做 D 后端」。
+文档已对齐：**Sprint C/D = 平台基础；Sprint E = 业务域（Later）**。**C-01～C-08 已完成；C-09 菜单权限暂缓**。实现顺序由你指定，可用任务编号点名，例如「做 C-10」或「只做 D 后端」。
 
 ### 任务索引（可复制）
 
 | 编号 | Sprint | 简述 |
 | --- | --- | --- |
 | C-01～C-05 | C | 后端：登录补全、**注册**、`users/me` 读写改密 |
-| C-06～C-12 | C | 前端：登录/注册页、bootstrap 去 RuoYi、Account、TeamSwitcher |
+| C-06～C-08 ✅ | C | 前端：登录/注册、bootstrap 去 RuoYi |
+| C-09 ⏸ | C | 侧栏 `filterNavByTenant`（暂缓） |
+| C-10 ✅ | C | Account / `users/me` UI |
+| C-11～C-12 | C | TeamSwitcher、RuoYi 会话清理 |
 | D-01～D-06 | D | 后端：权限表、权限 API、`/v1/admin/*` 租户/用户/成员 |
 | D-07～D-10 | D | 前端：apps/admin、权限门控、Docker 部署 |
 | E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
 
 ### 建议默认顺序（仅供参考，非强制）
 
-1. **C-02** 注册 API → **C-04/C-05** 用户写接口 → **C-06/C-07** 登录/注册页  
-2. **C-08～C-12** bootstrap 与 RuoYi 清理  
+1. ~~**C-02～C-08**~~ 身份与会话主路径 ✅（**C-09 暂缓**）  
+2. **C-11～C-12** TeamSwitcher / RuoYi 清理  
 3. **D-01～D-06** 权限与 admin API → **D-07～D-10** Admin 与部署  
 
 你指定后，按编号在对应 Skill（`java-rest-api`、`java-auth-security`、`saas-auth-ruoyi`、`saas-fsd-feature`）下实现即可。

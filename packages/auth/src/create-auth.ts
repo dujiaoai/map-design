@@ -145,6 +145,11 @@ export function createAuth(options: CreateAuthOptions) {
       store.getState().setTenant(tenant)
     },
 
+    /** 改密后服务端已吊销 refresh，清除本地副本 */
+    clearRefreshToken() {
+      storage.clearRefreshToken()
+    },
+
     store,
     storage,
   }

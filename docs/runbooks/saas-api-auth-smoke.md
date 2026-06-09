@@ -21,7 +21,7 @@ VITE_API_URL=/v1
 VITE_SAAS_API_HOST=http://localhost:8082
 ```
 
-> RuoYi 登录链路**无需修改**；本清单仅验证 SaaS `/v1` Auth 独立可用。
+> 验证 SaaS `/v1` Auth；saas-web 主登录/注册已接本 API（C-06～C-07）。
 
 ---
 
@@ -106,7 +106,7 @@ pnpm --filter @repo/saas-web dev
 2. 按页内步骤依次点击：**SaaS 登录** → **GET /users/me** → **刷新 Token** → 再次 **GET /users/me**
 3. 确认每步状态为成功，且用户邮箱为 `admin@demo.local`
 
-该页面仅在 **开发构建**（`import.meta.env.DEV`）下可用，不替代 `/login` RuoYi 流程。
+该页面仅在 **开发构建**（`import.meta.env.DEV`）下可用；日常请用 `/login`、`/register`。
 
 ---
 

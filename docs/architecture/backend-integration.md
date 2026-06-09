@@ -4,8 +4,9 @@
 
 | 阶段 | saas-web / admin | 客户端 | 说明 |
 | --- | --- | --- | --- |
-| 当前（迁移前） | 临时 RuoYi 会话 | `@repo/ruoyi-api` | 待 Sprint C 移除 |
-| **Sprint C** | 身份与会话 | `@repo/api-client` | 登录、**注册**、用户信息、bootstrap |
+| **当前（C-06～C-10）** | 登录/注册/bootstrap/Account → SaaS | `@repo/api-client` | C-11～C-12 清理 |
+| 遗留 | `ruoyi-profile-store` 桥接 | `@repo/ruoyi-api`（仅非 SaaS 路径） | C-12 清理 |
+| **Sprint C** | 身份与会话 | `@repo/api-client` | C-01～C-08 ✅；C-09 暂缓 |
 | **Sprint D** | 权限与后台 | `@repo/api-client` | `/v1/admin/*`、apps/admin |
 | **Sprint E** | 业务工作台 | `@repo/api-client` | 地图、机库等 — **C/D 不做** |
 
@@ -19,21 +20,21 @@
 | 登录、刷新、登出 | `/v1/auth/login`、`/refresh`、`/logout` | C |
 | 用户信息 | `GET/PUT /v1/users/me`、`POST .../password` | C |
 | 租户、能力 | `/v1/tenants`、`/features` | B（已就绪） |
-| 侧栏导航 | 前端 mock-nav | C（无 `/v1/menus`） |
+| 侧栏导航 | 前端 `mock-nav-items` 全量 | C（无 `/v1/menus`；**C-09 filterNavByTenant 暂缓**） |
 | 权限配置、后台 | `/v1/admin/*` | D |
 | 地图 / 机库 / 专题 | `/v1/layers`、`/v1/uav/*` 等 | **E（Later）** |
 
 App 层：`shared/queries/` + TanStack Query；UI 不直接调 client。
 
-## RuoYi（迁移前 · saas-web 将下线）
+## RuoYi（saas-web 下线进度）
 
-| 方法 | Sprint C/D 后 |
+| 方法 | saas-web 状态 |
 | --- | --- |
-| `login()`、`getCodeImg()` | **下线** |
-| `getUserInfo()`、`getMenuRouters()` | **下线** |
-| profile 系列 | **下线** → `/v1/users/me*` |
+| `login()`、`getCodeImg()` | ✅ 已下线（C-06） |
+| `getUserInfo()`、`getMenuRouters()` | ✅ bootstrap 已下线（C-08） |
+| `users/me*` | ✅ Account UI（C-10） |
 
-`@repo/ruoyi-api` 包保留；saas-web **不再**新增 RuoYi 调用。
+`@repo/ruoyi-api` 包保留；**禁止**新增 RuoYi 会话/bootstrap 调用。
 
 ## 环境
 
@@ -53,7 +54,7 @@ sequenceDiagram
   API->>SaaS: POST /auth/*
   SaaS-->>Login: JWT + user
   Bootstrap->>API: GET /users/me
-  Bootstrap->>Bootstrap: mock-nav + features
+  Bootstrap->>Bootstrap: mock-nav（全量；C-09 features 过滤暂缓）
 ```
 
 ## Sprint D 数据流（概要）
@@ -62,6 +63,14 @@ sequenceDiagram
 - saas-web：`requireRole` / 权限码与 `users/me` 或 JWT claims 一致
 
 ## 菜单与导航
+
+**当前（C-09 暂缓）：**
+
+```
+mock-nav-items + registry → AppSidebar（全量展示）
+```
+
+**规划（C-09 恢复时）：**
 
 ```
 mock-nav-items + registry

@@ -2,6 +2,7 @@ import { getUserInfo, getUserProfile } from '@repo/ruoyi-api'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
 import { ruoyi } from '~/shared/queries/ruoyi-client'
+import { usesSaasSessionBootstrap } from '~/shared/session/fetch-saas-session'
 
 export const userQueryKeys = {
   all: ['user'] as const,
@@ -32,6 +33,6 @@ export function userProfileQueryOptions() {
 export function useUserProfileQuery(enabled = true) {
   return useQuery({
     ...userProfileQueryOptions(),
-    enabled,
+    enabled: enabled && !usesSaasSessionBootstrap(),
   })
 }

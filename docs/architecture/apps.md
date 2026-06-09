@@ -19,8 +19,8 @@
 
 | 路由 | 组件 | 说明 |
 | --- | --- | --- |
-| `/login` | `routes/login.tsx` | 当前 RuoYi；**Sprint C** 切 SaaS |
-| `/register` | 规划 `routes/register.tsx` | **Sprint C** → `POST /v1/auth/register` |
+| `/login` | `routes/login.tsx` | SaaS `POST /v1/auth/login`（C-06 ✅） |
+| `/register` | `routes/register.tsx` | SaaS `POST /v1/auth/register`（C-07 ✅） |
 | `/` | `routes/home.tsx` | 地图工作台首页 |
 
 ### 规划路由（Sprint C 后）
@@ -32,7 +32,7 @@
 /settings/*               # feature 已有，路由待注册
 ```
 
-> **Sprint C**（身份与会话）：登录、**注册**、bootstrap、`users/me`、Account — 均 `@repo/api-client`；**不留** RuoYi。  
+> **Sprint C 进度**：C-06～C-10 ✅（登录、注册、bootstrap、Account → `@repo/api-client`）。**C-09 菜单 filter 暂缓**。剩余 C-11～C-12：TeamSwitcher、RuoYi 清理。  
 > **不做**：地图/机库等业务 API（Sprint E）。
 
 开发：

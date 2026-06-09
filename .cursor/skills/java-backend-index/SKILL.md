@@ -53,10 +53,11 @@ description: >-
 
 ```
 已完成：Sprint A/B（Auth MVP、租户 API、RLS）
+已完成：Sprint C 后端 C-01～C-05 + 前端 C-06～C-08（登录/注册/bootstrap）
+暂缓：C-09 侧栏 filterNavByTenant（菜单权限）
 
-Sprint C（身份与会话）— 由你指定任务编号开工：
-  java-auth-security + java-rest-api → register、users/me 写接口
-  saas-auth-ruoyi → 登录/注册页、bootstrap 去 RuoYi
+Sprint C 剩余（由你指定编号）：
+  saas-auth-ruoyi → C-11 TeamSwitcher、C-12 RuoYi 清理
 
 Sprint D（权限与后台）：
   java-persistence → sys_permission

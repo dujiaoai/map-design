@@ -8,6 +8,8 @@ import {
   type ResetPasswordFormValues,
 } from '~/features/account/model/account-schemas'
 import { useUpdateUserPasswordMutation } from '~/features/account/model/use-account-mutations'
+import { formatPasswordChangeError } from '~/shared/auth/format-account-error'
+import { usesSaasSessionBootstrap } from '~/shared/session/fetch-saas-session'
 import { PasswordInput } from '~/shared/ui/password-input'
 
 function FieldError({ message }: { message?: string }) {
@@ -34,6 +36,7 @@ function FormField({
 }
 
 export function ResetPasswordForm() {
+  const saasAccountEnabled = usesSaasSessionBootstrap()
   const mutation = useUpdateUserPasswordMutation()
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
@@ -58,11 +61,18 @@ export function ResetPasswordForm() {
       newPassword: values.newPassword,
     })
     reset()
-    setSuccessMessage('修改成功')
+    setSuccessMessage('密码已更新；refresh token 已失效，下次请用新密码登录')
   }
 
-  const submitError =
-    mutation.error instanceof Error ? mutation.error.message : mutation.isError ? '修改失败' : null
+  const submitError = mutation.isError ? formatPasswordChangeError(mutation.error) : null
+
+  if (!saasAccountEnabled) {
+    return (
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        开发 mock 模式不支持改密。请配置 <code>VITE_API_URL</code> 并使用 SaaS 账号登录后再试。
+      </p>
+    )
+  }
 
   return (
     <form className="space-y-4" onSubmit={(event) => void handleSubmit(onSubmit)(event)}>

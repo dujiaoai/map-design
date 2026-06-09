@@ -17,8 +17,8 @@ flowchart LR
   User[租户用户] --> Web[apps/web]
   Visitor[访客] --> Marketing[apps/marketing]
   Operator[平台运营] --> Admin[apps/admin]
-  Web --> RuoYi[RuoYi_API — 迁移前临时]
-  Web --> SaaSAPI[SaaS_API_v1 — Sprint C 主路径]
+  Web --> SaaSAPI[SaaS_API_v1 — 主路径 C-06～C-08]
+  Web -.-> RuoYi[RuoYi — 桥接遗留 C-12]
   Admin --> SaaSAPI
   Marketing --> SaaSAPI
   Web --> MapPlugins[map-plugins — 待接]
@@ -31,19 +31,19 @@ flowchart LR
 
 ## 多租户
 
-默认：**共享 DB + Row-Level Security + `tenant_id`**（[ADR-0004](../adr/0004-tenant-isolation-strategy.md) Accepted）。前端 `@repo/auth` 已提供 `TenantProvider`，导航层有 mock 过滤。详见 [multi-tenancy.md](./multi-tenancy.md)；RLS 原理见 [tenant-rls-b05.md](./supplements/tenant-rls-b05.md)。
+默认：**共享 DB + Row-Level Security + `tenant_id`**（[ADR-0004](../adr/0004-tenant-isolation-strategy.md) Accepted）。前端 `@repo/auth` 已提供 `TenantProvider`；侧栏暂为 `mock-nav-items` 全量（**C-09 `filterNavByTenant` 暂缓**）。详见 [multi-tenancy.md](./multi-tenancy.md)；RLS 原理见 [tenant-rls-b05.md](./supplements/tenant-rls-b05.md)。
 
 ## 认证与授权
 
-**当前（迁移前）**：RuoYi 登录 + bootstrap。  
-**路线图**：Sprint C 身份与会话 → Sprint D 权限与后台 → Sprint E 业务域（Later）。详见 [services-development-plan.md](./services-development-plan.md)（含 **§十 执行指引**）。
+**当前**：登录/注册/bootstrap 已走 SaaS（C-06～C-08）；Account 部分仍 RuoYi。  
+**路线图**：C-10～C-12 收尾 → Sprint D 权限与后台 → Sprint E 业务域（Later）。详见 [services-development-plan.md](./services-development-plan.md)（含 **§十 执行指引**）。
 
 ## API 双轨
 
 | 阶段 | 客户端 | 用途 |
 | --- | --- | --- |
-| 当前 | `@repo/ruoyi-api` | 登录、用户、菜单 |
-| 目标 | `@repo/api-client` | SaaS REST `/v1` |
+| 主路径 | `@repo/api-client` | 登录、注册、bootstrap、`users/me` |
+| 遗留 | `@repo/ruoyi-api` | `ruoyi-profile-store` 桥接（C-12 清理） |
 
 ## 安全基线
 
@@ -91,8 +91,10 @@ flowchart LR
 | 模块 | 状态 |
 | --- | --- |
 | saas-web FSD 骨架 + 地图工作台 UI | 已完成 |
-| RuoYi 登录 + bootstrap（临时） | Sprint C 下线 |
-| Sprint C：登录·注册·用户信息 | 待实现，见 plan §五 |
+| Sprint C：登录·注册·bootstrap（C-06～C-08） | ✅ 已完成 |
+| Sprint C：侧栏 filterNavByTenant（C-09） | ⏸ 暂缓 |
+| Sprint C：Account（C-10） | ✅ |
+| Sprint C：TeamSwitcher / RuoYi 清理（C-11～C-12） | 待实现 |
 | Sprint D：权限·后台·apps/admin | 待实现 |
 | Sprint E：地图/机库等业务 API | Later，C/D 不做 |
 | packages（ui/auth/api-client/ruoyi-api） | 已完成 |

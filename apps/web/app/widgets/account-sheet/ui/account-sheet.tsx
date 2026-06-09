@@ -1,3 +1,4 @@
+import { useSession } from '@repo/auth'
 import {
   Avatar,
   AvatarFallback,
@@ -14,14 +15,9 @@ import {
 } from '@repo/ui'
 
 import { ProfileForm, ResetPasswordForm } from '~/features/account'
-import {
-  formatCreateTime,
-  formatDeptLabel,
-  mergeRuoYiUser,
-  toNavUserData,
-  useRuoYiProfile,
-} from '~/entities/ruoyi-user'
-import { useUserProfileQuery } from '~/shared/queries'
+import { formatSessionRoles, sessionToNavUserData } from '~/features/account/lib/session-display'
+import { useSessionQuery } from '~/shared/queries/session-queries'
+import { usesSaasSessionBootstrap } from '~/shared/session/fetch-saas-session'
 
 function ProfileField({ label, value }: { label: string; value: string }) {
   return (
@@ -41,11 +37,13 @@ export function AccountSheet({
   onOpenChange: (open: boolean) => void
   defaultTab?: 'profile' | 'password'
 }) {
-  const profileQuery = useUserProfileQuery(open)
-  const { user: infoUser } = useRuoYiProfile()
-  const profile = profileQuery.data
-  const user = mergeRuoYiUser(profile?.data, infoUser)
-  const navUser = toNavUserData(user, { loading: profileQuery.isPending && !infoUser })
+  const saasAccount = usesSaasSessionBootstrap()
+  const sessionQuery = useSessionQuery(open && saasAccount)
+  const { session: contextSession } = useSession()
+  const session = saasAccount ? (sessionQuery.data ?? contextSession) : contextSession
+  const navUser = sessionToNavUserData(session, {
+    loading: saasAccount && sessionQuery.isPending && !session,
+  })
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction="right">
@@ -65,21 +63,28 @@ export function AccountSheet({
             <p className="text-muted-foreground text-sm">{navUser.email}</p>
           </div>
 
-          {profileQuery.isPending ? (
+          {saasAccount && sessionQuery.isPending && !session ? (
             <p className="text-muted-foreground mb-4 text-sm">加载中…</p>
           ) : null}
 
-          {profileQuery.error ? (
+          {sessionQuery.error ? (
             <p className="text-destructive mb-4 text-sm">账号信息加载失败</p>
           ) : null}
 
-          {user ? (
+          {session ? (
             <>
               <div className="mb-4 rounded-lg border px-4">
-                <ProfileField label="用户账户" value={user.userName} />
-                <ProfileField label="所属部门" value={formatDeptLabel(user.dept, profile?.postGroup)} />
-                <ProfileField label="所属角色" value={profile?.roleGroup?.trim() ?? '-'} />
-                <ProfileField label="创建日期" value={formatCreateTime(user)} />
+                <ProfileField label="用户 ID" value={session.user.id} />
+                <ProfileField label="邮箱" value={session.user.email} />
+                <ProfileField label="角色" value={formatSessionRoles(session.user.roles)} />
+                <ProfileField
+                  label="租户"
+                  value={
+                    session.tenant
+                      ? `${session.tenant.name}${session.tenant.slug ? ` (${session.tenant.slug})` : ''}`
+                      : '-'
+                  }
+                />
               </div>
 
               <Tabs key={defaultTab} defaultValue={defaultTab} className="gap-4">
@@ -89,7 +94,7 @@ export function AccountSheet({
                 </TabsList>
 
                 <TabsContent value="profile" className="rounded-lg border p-4">
-                  <ProfileForm user={user} />
+                  <ProfileForm session={session} />
                 </TabsContent>
 
                 <TabsContent value="password" className="rounded-lg border p-4">

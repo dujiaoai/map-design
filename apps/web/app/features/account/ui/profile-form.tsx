@@ -1,5 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import type { RuoYiUser } from '@repo/ruoyi-api'
+import type { Session } from '@repo/auth'
 import { Button, Input } from '@repo/ui'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
@@ -9,6 +9,7 @@ import {
   type ProfileFormValues,
 } from '~/features/account/model/account-schemas'
 import { useUpdateUserProfileMutation } from '~/features/account/model/use-account-mutations'
+import { formatProfileUpdateError } from '~/shared/auth/format-account-error'
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null
@@ -33,11 +34,7 @@ function FormField({
   )
 }
 
-function resolveSexValue(sex: string | null | undefined): ProfileFormValues['sex'] {
-  return sex === '1' ? '1' : '0'
-}
-
-export function ProfileForm({ user }: { user: RuoYiUser }) {
+export function ProfileForm({ session }: { session: Session }) {
   const mutation = useUpdateUserProfileMutation()
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
@@ -49,56 +46,32 @@ export function ProfileForm({ user }: { user: RuoYiUser }) {
   } = useForm<ProfileFormValues>({
     resolver: standardSchemaResolver(profileFormSchema),
     defaultValues: {
-      nickName: user.nickName ?? '',
-      phonenumber: user.phonenumber ?? '',
-      email: user.email ?? '',
-      sex: resolveSexValue(user.sex),
+      name: session.user.name ?? '',
     },
   })
 
   useEffect(() => {
     reset({
-      nickName: user.nickName ?? '',
-      phonenumber: user.phonenumber ?? '',
-      email: user.email ?? '',
-      sex: resolveSexValue(user.sex),
+      name: session.user.name ?? '',
     })
-  }, [user, reset])
+  }, [session, reset])
 
   async function onSubmit(values: ProfileFormValues) {
     setSuccessMessage(null)
-    await mutation.mutateAsync({ user, values })
+    await mutation.mutateAsync(values)
     setSuccessMessage('修改成功')
   }
 
-  const submitError =
-    mutation.error instanceof Error ? mutation.error.message : mutation.isError ? '保存失败' : null
+  const submitError = mutation.isError ? formatProfileUpdateError(mutation.error) : null
 
   return (
     <form className="space-y-4" onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
-      <FormField label="用户姓名" error={errors.nickName?.message}>
-        <Input maxLength={30} {...register('nickName')} />
+      <FormField label="显示名" error={errors.name?.message}>
+        <Input maxLength={128} {...register('name')} />
       </FormField>
 
-      <FormField label="手机号码" error={errors.phonenumber?.message}>
-        <Input maxLength={11} {...register('phonenumber')} />
-      </FormField>
-
-      <FormField label="邮箱" error={errors.email?.message}>
-        <Input maxLength={50} type="email" {...register('email')} />
-      </FormField>
-
-      <FormField label="性别" error={errors.sex?.message}>
-        <div className="flex gap-4 pt-1">
-          <label className="flex items-center gap-2 text-sm">
-            <input type="radio" value="0" {...register('sex')} />
-            男
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="radio" value="1" {...register('sex')} />
-            女
-          </label>
-        </div>
+      <FormField label="邮箱">
+        <Input readOnly type="email" value={session.user.email} />
       </FormField>
 
       {successMessage ? <p className="text-sm text-green-600">{successMessage}</p> : null}

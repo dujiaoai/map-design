@@ -158,8 +158,8 @@ flowchart TB
 
 | ID | 标准 | 验收标准 |
 | --- | --- | --- |
-| **A-01** | 认证（Sprint C） | 登录 + **注册** + refresh；SaaS JWT；**不留** RuoYi |
-| **A-02** | Bootstrap（Sprint C） | `users/me` + mock-nav；**不留** RuoYi `getInfo`/`getRouters` |
+| **A-01** | 认证（Sprint C） | ✅ C-06～C-07：登录 + **注册** + refresh；SaaS JWT |
+| **A-02** | Bootstrap（Sprint C） | ✅ C-08：`users/me` + mock-nav 全量；C-09 filter **暂缓** |
 | **A-03** | API 客户端 | C/D 新代码仅用 `@repo/api-client` |
 | **A-04** | RBAC（Sprint D） | `sys_permission` + Admin 配置；`requireRole`/权限码 |
 | **A-05** | 多租户（Sprint C） | `TenantProvider` + `/v1/tenants` + `/features` |
@@ -288,9 +288,9 @@ flowchart TB
 
 | 阶段 | 焦点 | 标准重心 |
 | --- | --- | --- |
-| **现在** | saas-web 地图工作台 + RuoYi 过渡 | M-* / F-* / U-* / A-* P0 |
-| **下一迭代** | map-plugin-bridge 真实接入 | P-* Phase C 验收标准 |
-| **中期** | SaaS `/v1` 迁移 | A-03 切换至 api-client |
+| **现在** | saas-web 地图工作台 + SaaS 会话（C-06～C-08） | M-* / F-* / U-* / A-* P0 |
+| **下一迭代** | C-11 TeamSwitcher、map-plugin-bridge | A-01/A-02 收尾 + P-* |
+| **中期** | Sprint D 权限与 Admin | A-04 / A-06 |
 | **远期** | Admin + Marketing scaffold | ADR-0002/0003 扩展 |
 
 硬依赖：真实地图插件依赖父 monorepo `packages-map` 与 MapProvider，不在本仓单独定义引擎 API。

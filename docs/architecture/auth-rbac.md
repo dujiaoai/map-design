@@ -11,37 +11,56 @@
 
 细粒度**权限码**（`sys_permission`）与后台配置见 **Sprint D**；Sprint C 仅用 **角色码**（`SessionDto.user.roles`）。
 
-## 当前实现（迁移前 · 仍临时存在）
+## 当前实现（saas-web · 2026-06）
 
-### 登录
+### 已完成（C-01～C-08）
 
-- **后端**：RuoYi（`@repo/ruoyi-api`）
-- **流程**：验证码 → RSA 加密密码 → `/login` → access token
-- **页面**：`routes/login.tsx`（**无** SaaS 注册页接通）
+| 能力 | 实现 |
+| --- | --- |
+| 注册 | `POST /v1/auth/register` + `routes/register.tsx` |
+| 登录 | `POST /v1/auth/login` + `routes/login.tsx` |
+| 刷新 / 登出 | `/v1/auth/refresh`、`/logout`（`@repo/auth`） |
+| Bootstrap 用户 | `GET /v1/users/me`（**不再** RuoYi `getUserInfo` / `getMenuRouters`） |
+| 侧栏导航 | `mock-nav-items` **全量静态**（C-09 `filterNavByTenant` **暂缓**） |
+| Mock 开发 | `MOCK_ACCESS_TOKEN` + `devLogin` 跳过网络 |
+
+### 已完成（C-10）
+
+| 能力 | 实现 |
+| --- | --- |
+| Account 读/写/改密 | `AccountSheet` → `GET/PUT /v1/users/me`、`POST /v1/users/me/password` |
+| 资料字段 | 首版仅 `name`（显示名）；邮箱只读 |
+
+### 仍待迁移（C-11～C-12）
+
+| 能力 | 当前 | 目标 |
+| --- | --- | --- |
+| 顶栏用户展示 | 过渡期 `ruoyi-profile-store`（由 Session 映射） | 直接 `useSession()` |
+| TeamSwitcher | 占位 | `GET /v1/tenants`（C-11） |
 
 ### Session 守卫
 
 `layouts/app-layout.tsx` 的 `clientLoader`：
 
 1. `auth.requireAuthenticated(redirect)`
-2. `bootstrapAuthenticatedApp()` — RuoYi `getUserInfo` + `getMenuRouters`
+2. `bootstrapAuthenticatedApp()` → mock 或 `GET /v1/users/me`
 3. 失败 → `clearAppSession()` → `/login`
 
-### RBAC
+### RBAC（本期）
 
-- RuoYi 权限经 `entities/ruoyi-user/lib/permissions.ts` 转换
-- **Sprint D 目标**：权限来自 SaaS JWT / `users/me` + `sys_permission`，Admin 可配置
+- JWT / `SessionDto.user.roles`：`PLATFORM_ADMIN` | `TENANT_ADMIN` | `MEMBER` | `VIEWER`
+- 过渡期组件仍可读 `entities/ruoyi-user` 映射后的 `permissions`（admin → `*:*:*`）
+- **Sprint D**：`sys_permission` + Admin 配置 + saas-web 门控
 
-## Sprint C · 身份与会话（不留 RuoYi）
+## Sprint C 任务状态
 
-| 能力 | 迁移前 | Sprint C |
+| 编号 | 状态 | 说明 |
 | --- | --- | --- |
-| 注册 | 无 / Marketing 占位 | `POST /v1/auth/register` + `routes/register.tsx` |
-| 登录 | RuoYi `login()` | `POST /v1/auth/login` |
-| 刷新 / 登出 | — | `/v1/auth/refresh`、`/logout` |
-| 用户信息 | `getUserProfile()` / `getUserInfo()` | `GET/PUT /v1/users/me`、改密 |
-| Bootstrap 菜单 | `getMenuRouters()` | mock-nav + `filterNavByTenant` |
-| RBAC（本期） | RuoYi 权限串 | **角色码** `SessionDto.user.roles` |
+| C-01～C-05 | ✅ | 后端 auth + `users/me` |
+| C-06～C-08 | ✅ | 登录、注册、bootstrap 去 RuoYi |
+| C-09 | ⏸ 暂缓 | 菜单 `filterNavByTenant` / features 门控 |
+| C-10 | ✅ | Account UI → `users/me*` |
+| C-11～C-12 | 待做 | TeamSwitcher、RuoYi 清理 |
 
 **Sprint C 不做**：`sys_permission` 细粒度、 `/v1/admin/*`、apps/admin（→ Sprint D）。  
 **Sprint C/D 不做**：地图/机库/专题等业务 API（→ Sprint E）。
@@ -63,7 +82,7 @@
 - Web / Admin 独立 Cookie 域（`app.` vs `admin.`）
 - 租户：[ADR-0004](../adr/0004-tenant-isolation-strategy.md)
 
-## Session 流（Sprint C 目标）
+## Session 流（当前主路径）
 
 ```mermaid
 sequenceDiagram
@@ -74,7 +93,7 @@ sequenceDiagram
   WebApp->>API: POST /auth/register 或 /auth/login
   API-->>WebApp: tokens + user
   WebApp->>API: GET /users/me
-  WebApp->>WebApp: mock-nav + filterNavByTenant
+  WebApp->>WebApp: mock-nav（全量，无 filterNavByTenant）
   WebApp->>Browser: 进入工作台
 ```
 

@@ -28,6 +28,7 @@ class OpenApiDocsTest {
         .andExpect(content().string(containsString("/v1/auth/login")))
         .andExpect(content().string(containsString("/v1/users/me")))
         .andExpect(content().string(containsString("/v1/tenants")))
+        .andExpect(content().string(containsString("/v1/tenants/{tenantId}/features")))
         .andExpect(content().string(containsString("bearerAuth")));
   }
 

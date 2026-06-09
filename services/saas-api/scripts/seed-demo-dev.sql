@@ -70,6 +70,14 @@ VALUES (
 )
 ON CONFLICT (user_id, role_id) DO NOTHING;
 
+-- Capability codes (align with mock-nav-items tenantFeature)
+DELETE FROM sys_tenant_feature
+WHERE tenant_id = '11111111-1111-1111-1111-111111111101';
+
+INSERT INTO sys_tenant_feature (tenant_id, feature_code) VALUES
+  ('11111111-1111-1111-1111-111111111101', 'custom.highway-alert'),
+  ('11111111-1111-1111-1111-111111111101', 'custom.live-share');
+
 COMMIT;
 
 -- ---------- verify ----------

@@ -22,7 +22,12 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Sql(scripts = {"/sql/auth-test-seed.sql", "/sql/tenants-multi-membership-seed.sql"})
+@Sql(
+    scripts = {
+      "/sql/auth-test-seed.sql",
+      "/sql/tenants-multi-membership-seed.sql",
+      "/sql/tenants-features-seed.sql"
+    })
 class TenantsControllerTest {
 
   @Autowired
@@ -34,6 +39,69 @@ class TenantsControllerTest {
   @Test
   void list_withoutToken_returns401() throws Exception {
     mockMvc.perform(get("/v1/tenants")).andExpect(status().isUnauthorized());
+  }
+
+  private static final String TEST_TENANT_ID = "11111111-1111-1111-1111-111111111101";
+  private static final String SECOND_TENANT_ID = "11111111-1111-1111-1111-111111111102";
+  private static final String ORPHAN_TENANT_ID = "11111111-1111-1111-1111-111111111199";
+  private static final String UNKNOWN_TENANT_ID = "99999999-9999-9999-9999-999999999999";
+
+  @Test
+  void features_withoutToken_returns401() throws Exception {
+    mockMvc
+        .perform(get("/v1/tenants/" + TEST_TENANT_ID + "/features"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void features_withAccessToken_returnsFeatureCodes() throws Exception {
+    var accessToken = loginAsTestAdmin();
+
+    mockMvc
+        .perform(
+            get("/v1/tenants/" + TEST_TENANT_ID + "/features")
+                .header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tenantId").value(TEST_TENANT_ID))
+        .andExpect(jsonPath("$.features", hasSize(2)))
+        .andExpect(jsonPath("$.features", hasItem("custom.highway-alert")))
+        .andExpect(jsonPath("$.features", hasItem("custom.live-share")));
+  }
+
+  @Test
+  void features_forAccessibleSecondTenant_returnsItsFeatures() throws Exception {
+    var accessToken = loginAsTestAdmin();
+
+    mockMvc
+        .perform(
+            get("/v1/tenants/" + SECOND_TENANT_ID + "/features")
+                .header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tenantId").value(SECOND_TENANT_ID))
+        .andExpect(jsonPath("$.features", hasSize(1)))
+        .andExpect(jsonPath("$.features[0]").value("custom.live-share"));
+  }
+
+  @Test
+  void features_forOrphanTenant_returns403() throws Exception {
+    var accessToken = loginAsTestAdmin();
+
+    mockMvc
+        .perform(
+            get("/v1/tenants/" + ORPHAN_TENANT_ID + "/features")
+                .header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void features_forUnknownTenant_returns404() throws Exception {
+    var accessToken = loginAsTestAdmin();
+
+    mockMvc
+        .perform(
+            get("/v1/tenants/" + UNKNOWN_TENANT_ID + "/features")
+                .header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isNotFound());
   }
 
   @Test

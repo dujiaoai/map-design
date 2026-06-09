@@ -3,6 +3,7 @@ package com.yunyan.saasapi.domain;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.yunyan.saasapi.domain.entity.SysTenant;
 import com.yunyan.saasapi.domain.entity.SysUser;
+import com.yunyan.saasapi.domain.mapper.SysTenantFeatureMapper;
 import com.yunyan.saasapi.domain.mapper.SysTenantMapper;
 import com.yunyan.saasapi.domain.mapper.SysUserMapper;
 import java.util.List;
@@ -17,6 +18,7 @@ public class TenantRepository {
 
   private final SysUserMapper sysUserMapper;
   private final SysTenantMapper sysTenantMapper;
+  private final SysTenantFeatureMapper sysTenantFeatureMapper;
 
   public Optional<String> findActiveUserEmail(UUID userId) {
     var user = sysUserMapper.selectById(userId);
@@ -24,6 +26,14 @@ public class TenantRepository {
       return Optional.empty();
     }
     return Optional.of(user.getEmail());
+  }
+
+  public Optional<SysTenant> findById(UUID tenantId) {
+    return Optional.ofNullable(sysTenantMapper.selectById(tenantId));
+  }
+
+  public List<String> findFeatureCodes(UUID tenantId) {
+    return sysTenantFeatureMapper.selectFeatureCodesByTenantId(tenantId);
   }
 
   public List<SysTenant> findAllTenants() {

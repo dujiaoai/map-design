@@ -1,6 +1,7 @@
 -- Extra tenant membership for the same email (multi-tenant TeamSwitcher scenario).
 DELETE FROM sys_user_role WHERE user_id = '22222222-2222-2222-2222-222222222202';
 DELETE FROM sys_user WHERE id = '22222222-2222-2222-2222-222222222202';
+DELETE FROM sys_tenant_feature WHERE tenant_id = '11111111-1111-1111-1111-111111111102';
 DELETE FROM sys_tenant WHERE id = '11111111-1111-1111-1111-111111111102';
 
 INSERT INTO sys_tenant (id, name, slug, plan)

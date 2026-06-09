@@ -1,127 +1,76 @@
 # 后端集成
 
-## 双轨 API 策略
+## 策略总览
 
-当前处于 **RuoYi 过渡阶段**，目标为 SaaS 统一 REST API（`/v1`）。前端同时维护两套客户端：
-
-| 客户端 | 包 | 状态 | 用途 |
+| 阶段 | saas-web / admin | 客户端 | 说明 |
 | --- | --- | --- | --- |
-| **RuoYi** | `@repo/ruoyi-api` | **当前主用** | 登录、验证码、用户信息、菜单路由 |
-| **SaaS REST** | `@repo/api-client` | 已封装，待接通 | 未来 `/v1` 业务 API |
+| 当前（迁移前） | 临时 RuoYi 会话 | `@repo/ruoyi-api` | 待 Sprint C 移除 |
+| **Sprint C** | 身份与会话 | `@repo/api-client` | 登录、**注册**、用户信息、bootstrap |
+| **Sprint D** | 权限与后台 | `@repo/api-client` | `/v1/admin/*`、apps/admin |
+| **Sprint E** | 业务工作台 | `@repo/api-client` | 地图、机库等 — **C/D 不做** |
 
-选用规则：
+详见 [services-development-plan.md](./services-development-plan.md)、[ADR-0005](../adr/0005-ruoyi-transitional-backend.md)。
 
-- 登录、菜单、用户 profile → `@repo/ruoyi-api`
-- 新 SaaS 业务接口 → `@repo/api-client`（后端就绪后）
-- App 层通过 `shared/queries/` 封装 TanStack Query，不直接在 UI 调 client
+## API 选用（Sprint C/D 目标）
 
-详见 [ADR-0005](../adr/0005-ruoyi-transitional-backend.md)。
-
-## RuoYi 请求约定
-
-`@repo/ruoyi-api` 封装 RuoYi 后端 envelope 协议：
-
-```json
-{ "code": 200, "msg": "...", "data": { ... } }
-```
-
-- `code !== 200` 抛出 `RuoYiApiError`
-- 响应体经 Zod schema 校验（`userInfoSchema`、`menuRouteSchema` 等）
-- 401/403 时 App 层调用 `clearAppSession()` 并重定向登录
-
-### 主要 API
-
-| 方法 | 路径 | 说明 |
+| 场景 | 路径 | Sprint |
 | --- | --- | --- |
-| `getCodeImg()` | `/captchaImage` | 验证码图片 + uuid |
-| `login()` | `/login` | RSA 加密密码 + 验证码 |
-| `getUserInfo()` | `/getInfo` | 用户 + 角色 + 权限 |
-| `getMenuRouters()` | `/getRouters` | 动态菜单树 |
-| `getUserProfile()` | `/system/user/profile` | 个人资料 |
-| `updateUserProfile()` | `/system/user/profile` | 更新资料 |
-| `updateUserPassword()` | `/system/user/profile/updatePwd` | 修改密码 |
+| 注册 | `POST /v1/auth/register` | C |
+| 登录、刷新、登出 | `/v1/auth/login`、`/refresh`、`/logout` | C |
+| 用户信息 | `GET/PUT /v1/users/me`、`POST .../password` | C |
+| 租户、能力 | `/v1/tenants`、`/features` | B（已就绪） |
+| 侧栏导航 | 前端 mock-nav | C（无 `/v1/menus`） |
+| 权限配置、后台 | `/v1/admin/*` | D |
+| 地图 / 机库 / 专题 | `/v1/layers`、`/v1/uav/*` 等 | **E（Later）** |
 
-## 代理与 Base URL
+App 层：`shared/queries/` + TanStack Query；UI 不直接调 client。
 
-`apps/web/vite.config.ts` 开发代理：
+## RuoYi（迁移前 · saas-web 将下线）
 
-```ts
-proxy: {
-  '/YunYanApi': {
-    target: env.VITE_APP_BASE_HOST || 'https://www.airace.com.cn',
-    changeOrigin: true,
-  },
-}
-```
+| 方法 | Sprint C/D 后 |
+| --- | --- |
+| `login()`、`getCodeImg()` | **下线** |
+| `getUserInfo()`、`getMenuRouters()` | **下线** |
+| profile 系列 | **下线** → `/v1/users/me*` |
 
-RuoYi client 在 `shared/queries/ruoyi-client.ts` 中创建，base 指向 `/YunYanApi`。
+`@repo/ruoyi-api` 包保留；saas-web **不再**新增 RuoYi 调用。
 
-环境变量见 [../runbooks/local-dev.md](../runbooks/local-dev.md#环境变量)。
+## 环境
 
-## 认证数据流（当前实现）
+- `VITE_API_URL=/v1` → vite 代理 → `saas-api :8082`
+- Sprint C 起工作台主路径**必须**配置上述变量
+
+## Sprint C 数据流
 
 ```mermaid
 sequenceDiagram
-  participant Login as routes/login
-  participant RuoYi as @repo/ruoyi-api
-  participant Auth as @repo/auth
-  participant Layout as app-layout clientLoader
+  participant Login as login/register
+  participant API as api-client
+  participant SaaS as /v1
   participant Bootstrap as bootstrapAuthenticatedApp
-  participant Query as TanStack Query
 
-  Login->>RuoYi: getCodeImg()
-  RuoYi-->>Login: captcha + uuid
-  Login->>RuoYi: login(username, rsaPassword, code, uuid)
-  RuoYi-->>Login: access token
-  Login->>Auth: setSession(token, user stub)
-
-  Layout->>Auth: requireAuthenticated()
-  Layout->>Bootstrap: ensure user + menu
-  Bootstrap->>Query: userInfoQueryOptions()
-  Bootstrap->>Query: menuRoutersQueryOptions()
-  Query->>RuoYi: getUserInfo + getMenuRouters
-  Bootstrap->>Auth: sync user from RuoYi profile
-  Bootstrap->>Bootstrap: useRuoYiProfileStore.setProfile()
+  Login->>API: register 或 login
+  API->>SaaS: POST /auth/*
+  SaaS-->>Login: JWT + user
+  Bootstrap->>API: GET /users/me
+  Bootstrap->>Bootstrap: mock-nav + features
 ```
 
-### 关键模块
+## Sprint D 数据流（概要）
 
-| 模块 | 路径 | 职责 |
-| --- | --- | --- |
-| RuoYi client 工厂 | `shared/queries/ruoyi-client.ts` | 创建 `createRuoYiClient` 实例 |
-| Query 封装 | `shared/queries/user-queries.ts`、`menu-queries.ts` | TanStack Query options |
-| Session 启动 | `shared/session/bootstrap-authenticated-app.ts` | 拉取 user/menu，同步 auth store |
-| Profile store | `entities/ruoyi-user/model/ruoyi-profile-store.ts` | RuoYi 用户详情 Zustand |
-| 菜单转换 | `entities/menu/lib/build-nav-tree.ts` | `MenuRoute[]` → 导航树 |
-| 登出清理 | `shared/session/clear-app-session.ts` | 清 token + query cache |
-
-## SaaS REST 客户端（规划）
-
-`@repo/api-client` 提供通用 REST 封装：
-
-- Bearer Token 自动注入
-- 401 时调用 `authHandlers.refresh()` 重试
-- 抛出 `ApiError` 含 status / body
-
-`apps/web/shared/api/client.ts` 已创建实例，但 `@repo/auth` 的 `refresh()` 需 `apiBaseUrl`，**当前未配置**，token 刷新暂不可用。
-
-目标迁移路径：
-
-1. 后端提供 `/v1/auth/login`、`/v1/auth/refresh`
-2. 配置 `VITE_API_URL`，接通 `createApiClient`
-3. 逐步将 user/menu 查询从 `ruoyi-api` 切换到 SaaS API
-4. 保留 `ruoyi-api` 直至 RuoYi 后端完全下线
+- `PLATFORM_ADMIN` / `TENANT_ADMIN` → `apps/admin` → `/v1/admin/tenants|users|roles|permissions`
+- saas-web：`requireRole` / 权限码与 `users/me` 或 JWT claims 一致
 
 ## 菜单与导航
 
-RuoYi 菜单经以下链路进入 UI：
-
 ```
-getMenuRouters() → MenuRoute[] (Zod)
-  → buildNavTree() (entities/menu)
-  → buildNavMapSections() (entities/navigation)
-  → filterNavByTenant() (MockModuleMeta.tenantFeature)
-  → AppSidebar → map-workspace store
+mock-nav-items + registry
+  → filterNavByTenant(/v1/tenants/{id}/features)
+  → AppSidebar
 ```
 
-当前 `filterNavByTenant` 基于 mock meta，待后端 tenant API 接通后替换。
+不经过 RuoYi `getRouters`；不提供 `/v1/menus`（Sprint C/D）。
+
+## 业务域（Sprint E）
+
+地图图层、机库、专题等 API **不在** [services-development-plan.md](./services-development-plan.md) Sprint C/D 范围内；单独 PRD 后排期。

@@ -57,7 +57,15 @@ pnpm --filter @repo/saas-web dev
 
 ### SaaS API
 
-`services/saas-api` — 本地 Java 后端，端口 **8082**，路径前缀 `/v1`。与 RuoYi **并行**存在：工作台登录默认仍走 RuoYi；SaaS API 用于新能力联调（Auth、后续租户 API 等）。详见 [services-development-plan.md](../architecture/services-development-plan.md)。
+`services/saas-api` — 本地 Java 后端，端口 **8082**，路径前缀 `/v1`。
+
+| Sprint | 联调重点 |
+| --- | --- |
+| C | 登录、**注册**、`users/me`、saas-web 切 SaaS |
+| D | `/v1/admin/*`、apps/admin |
+| E | 业务 API（Later） |
+
+详见 [services-development-plan.md](../architecture/services-development-plan.md) **§十 执行指引**。迁移完成前 saas-web 可能仍临时走 RuoYi。
 
 #### 1. 启动依赖（PostgreSQL + Redis）
 
@@ -84,7 +92,7 @@ docker compose -f services/docker-compose.dev.yml ps
 mvn -f services/pom.xml -pl saas-api spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-- Flyway 在启动时自动执行 `db/migration/V*.sql` 与 PostgreSQL 专用 `db/migration-postgresql/V5__rls.sql`（`sys_user` RLS）
+- Flyway 在启动时自动执行 `db/migration/V*.sql` 与 PostgreSQL 专用 `db/migration-postgresql/V5__rls.sql`（`sys_user` RLS）；原理见 [tenant-rls-b05.md](../architecture/supplements/tenant-rls-b05.md)
 - Refresh token 写入 Redis（dev profile）
 - 健康检查：`http://localhost:8082/actuator/health`
 - **Swagger UI**：`http://localhost:8082/swagger-ui.html`
@@ -159,7 +167,7 @@ curl -s http://localhost:8082/v1/tenants \
 pnpm --filter @repo/saas-web dev
 ```
 
-> **说明**：设置 `VITE_API_URL` 仅接通 `@repo/api-client` / `@repo/auth` 的 SaaS 刷新链路；**不会**自动替换 RuoYi 登录页与菜单 bootstrap。
+> **说明**：Sprint C 完成后需配置 `VITE_API_URL`，主登录与 bootstrap 走 SaaS + mock-nav。迁移前可用 `/dev/saas-auth-smoke` 联调；完成前工作台可能仍临时走 RuoYi。
 
 #### 6. Auth 端到端冒烟
 

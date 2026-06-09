@@ -11,7 +11,7 @@
 | 路由 | React Router 7 | React Router 7 | React Router 7 |
 | 鉴权 | 公开 + 注册 | 租户 session | 平台管理员 MFA |
 | 部署 | 静态 / Edge | 静态 SPA | 内网 / VPN |
-| **状态** | 占位 README | **活跃开发** | 占位 README |
+| **状态** | 占位 README | **活跃开发** | **Sprint D** 脚手架 |
 
 ## Web（`app.example.com`）
 
@@ -19,19 +19,21 @@
 
 | 路由 | 组件 | 说明 |
 | --- | --- | --- |
-| `/login` | `routes/login.tsx` | RuoYi 验证码登录 |
+| `/login` | `routes/login.tsx` | 当前 RuoYi；**Sprint C** 切 SaaS |
+| `/register` | 规划 `routes/register.tsx` | **Sprint C** → `POST /v1/auth/register` |
 | `/` | `routes/home.tsx` | 地图工作台首页 |
 
-### 规划路由
+### 规划路由（Sprint C 后）
 
 ```
-/register, /forgot-password
-/onboarding/*
-/:orgSlug/*
-/settings/*
+/forgot-password          # Later
+/onboarding/*             # Later
+/:orgSlug/*               # Later
+/settings/*               # feature 已有，路由待注册
 ```
 
-> account feature（profile 表单、改密）已实现，settings 路由尚未注册。
+> **Sprint C**（身份与会话）：登录、**注册**、bootstrap、`users/me`、Account — 均 `@repo/api-client`；**不留** RuoYi。  
+> **不做**：地图/机库等业务 API（Sprint E）。
 
 开发：
 
@@ -39,12 +41,24 @@
 pnpm --filter @repo/saas-web dev
 ```
 
-## Admin（`admin.example.com`）
+## Admin（`admin.example.com`）· Sprint D
+
+| 路由 | 说明 |
+| --- | --- |
+| `/login` | SaaS 登录（`PLATFORM_ADMIN`） |
+| `/tenants` | 租户列表 / 创建（`/v1/admin/tenants`） |
+| `/tenants/:id` | 租户详情、成员 |
+| `/users` | 用户列表（`/v1/admin/users`） |
+| `/roles` | 角色与**权限配置** |
 
 ```
-/login
-/tenants, /tenants/:id
-/billing, /audit-logs, /system
+/billing, /audit-logs, /system   # Later
+```
+
+开发：
+
+```bash
+pnpm --filter @repo/saas-admin dev
 ```
 
 **注意**：≠ `apps/yunyan-admin`（若依 Vue 后台）。

@@ -2,7 +2,7 @@
 
 ## 默认策略
 
-**共享数据库 + `tenant_id` 列 +（计划中的）PostgreSQL RLS。**
+**共享数据库 + `tenant_id` 列 + PostgreSQL RLS（`sys_user` 已落地）。**
 
 已定稿：[ADR-0004: 租户隔离策略](../adr/0004-tenant-isolation-strategy.md)（**Accepted**）。
 
@@ -47,6 +47,8 @@
 | `app.bypass_tenant_rls = on` | 受信服务端路径（登录、跨租户成员查询） |
 
 测试 profile（H2）不加载 `migration-postgresql`，`saas.tenant-rls.enabled=false`。
+
+**深入说明（为何做 B-05、双层防护、Bypass 白名单）** → [tenant-rls-b05.md](./supplements/tenant-rls-b05.md)
 
 ## 能力门控
 

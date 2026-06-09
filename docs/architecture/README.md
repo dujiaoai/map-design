@@ -17,8 +17,8 @@ flowchart LR
   User[租户用户] --> Web[apps/web]
   Visitor[访客] --> Marketing[apps/marketing]
   Operator[平台运营] --> Admin[apps/admin]
-  Web --> RuoYi[RuoYi_API — 当前]
-  Web --> SaaSAPI[SaaS_API_v1 — 目标]
+  Web --> RuoYi[RuoYi_API — 迁移前临时]
+  Web --> SaaSAPI[SaaS_API_v1 — Sprint C 主路径]
   Admin --> SaaSAPI
   Marketing --> SaaSAPI
   Web --> MapPlugins[map-plugins — 待接]
@@ -31,12 +31,12 @@ flowchart LR
 
 ## 多租户
 
-默认：**共享 DB + Row-Level Security + `tenant_id`**（[ADR-0004](../adr/0004-tenant-isolation-strategy.md) Accepted）。前端 `@repo/auth` 已提供 `TenantProvider`，导航层有 mock 过滤。详见 [multi-tenancy.md](./multi-tenancy.md)。
+默认：**共享 DB + Row-Level Security + `tenant_id`**（[ADR-0004](../adr/0004-tenant-isolation-strategy.md) Accepted）。前端 `@repo/auth` 已提供 `TenantProvider`，导航层有 mock 过滤。详见 [multi-tenancy.md](./multi-tenancy.md)；RLS 原理见 [tenant-rls-b05.md](./supplements/tenant-rls-b05.md)。
 
 ## 认证与授权
 
-**当前**：RuoYi 登录 + `@repo/auth` Session 管理。  
-**目标**：OAuth2/OIDC + SaaS `/v1` API。详见 [auth-rbac.md](./auth-rbac.md) 与 [backend-integration.md](./backend-integration.md)。
+**当前（迁移前）**：RuoYi 登录 + bootstrap。  
+**路线图**：Sprint C 身份与会话 → Sprint D 权限与后台 → Sprint E 业务域（Later）。详见 [services-development-plan.md](./services-development-plan.md)（含 **§十 执行指引**）。
 
 ## API 双轨
 
@@ -91,10 +91,11 @@ flowchart LR
 | 模块 | 状态 |
 | --- | --- |
 | saas-web FSD 骨架 + 地图工作台 UI | 已完成 |
-| RuoYi 登录 + 菜单 + profile | 已完成 |
+| RuoYi 登录 + bootstrap（临时） | Sprint C 下线 |
+| Sprint C：登录·注册·用户信息 | 待实现，见 plan §五 |
+| Sprint D：权限·后台·apps/admin | 待实现 |
+| Sprint E：地图/机库等业务 API | Later，C/D 不做 |
 | packages（ui/auth/api-client/ruoyi-api） | 已完成 |
-| cloud-uav ESM 远程插件脚手架 | 已完成 |
-| map-plugin-bridge 真实接入 | 待接 MapProvider |
-| SaaS `/v1` API 迁移 | Auth MVP 已完成，见 [services-development-plan.md](./services-development-plan.md) |
-| Marketing / Admin scaffold | 待建 |
+| SaaS `/v1` 后端 | Auth MVP + 租户 API ✅ |
+| map-plugin-bridge 真实接入 | Sprint E 前可并行 UI |
 | settings / :orgSlug 路由 | 规划中（feature 已有，路由未注册） |

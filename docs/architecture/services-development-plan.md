@@ -1,17 +1,29 @@
 # services/ 后端开发计划
 
-> 状态：Living doc · 2026-06-09（更新：菜单 / RuoYi 旧功能不在范围）  
+> 状态：Living doc · 2026-06-09（更新：Sprint C/D 聚焦身份·权限·后台基础，业务域 API 后移）  
 > 关联：[backend-integration.md](./backend-integration.md)、[auth-rbac.md](./auth-rbac.md)、[java-backend-index](../../.cursor/skills/java-backend-index/SKILL.md)
 
 ## 范围说明
 
-**当前 `services/` 计划只覆盖新 SaaS 能力，暂不承接旧系统迁移：**
+**Sprint C / D 范围：平台基础能力，不设计具体业务模块**（地图图层、机库、专题等一律后移）。
 
-- 不做 RuoYi `getRouters` / 动态菜单的 SaaS 替代
-- 不做 `bootstrap-authenticated-app` 从 RuoYi 切到 SaaS 的整链迁移
-- `**/v1/menus` 本期不排期** — 前端侧栏继续用 `mock-nav-items` + 本地 registry；登录仍可走 RuoYi
+| 阶段 | 主题 | 包含 |
+| --- | --- | --- |
+| **Sprint C** | 身份与会话 | 登录、**注册**、用户信息（读/写/改密）、saas-web 切 SaaS 会话 |
+| **Sprint D** | 权限与后台 | 用户权限、权限配置、**`/v1/admin/*` 后台管理**、部署基座 |
 
-后续若需要服务端导航，再单独开 PRD 设计新契约（不必兼容 RuoYi `MenuRoute`）。
+**Sprint C 起 saas-web 不再依赖 RuoYi 会话：**
+
+- **登录 / 注册 / 刷新 / 登出** → `/v1/auth/*`
+- **用户信息** → `GET/PUT /v1/users/me`、`POST /v1/users/me/password`
+- **Bootstrap** → `users/me` + mock-nav + `filterNavByTenant`（**非** RuoYi `getInfo`/`getRouters`）
+
+**仍不做（Sprint C/D 内）：**
+
+- **`/v1/menus`**、RuoYi 动态菜单
+- **业务域 API**：`/v1/layers`、`/v1/uav/*`、地图/机库/专题等（单独 Sprint，待基础盘稳定后）
+
+后续业务模块按产品 PRD 排期，不挤占 C/D 容量。
 
 ---
 
@@ -19,7 +31,7 @@
 
 `services/` 是 map-design 的 **SaaS 目标后端**，与前端 `@repo/api-client`（`/v1`、Bearer JWT、标准 HTTP 响应）对接，**不**走 RuoYi envelope。
 
-当前前端仍以 `@repo/ruoyi-api` 为主；`services` 处于 **Auth MVP 已完成、业务 API 未启动** 阶段。
+当前前端**仍临时**走 RuoYi 登录与 bootstrap。`services` 处于 **Auth MVP + 租户 API 已完成**；下一步 **C/D 补齐注册、权限、后台管理**，**暂不启动**地图/机库等业务 API。
 
 ```
 map-design/
@@ -54,7 +66,7 @@ map-design/
 
 - `@repo/auth` 的 `loginResponseSchema`（`accessToken`、`refreshToken`、`expiresIn`、`user.name/roles/tenant`）与后端 DTO 一致
 - `apps/web` 已配置 `VITE_API_URL` + vite `/v1` 代理 → `:8082`
-- **登录链路尚未切换**：`saas-auth-ruoyi` 仍走 RuoYi `/login`
+- **登录 / bootstrap 待 Sprint C 切换**：当前仍走 RuoYi；目标为 SaaS `/v1/auth/login` + mock-nav bootstrap
 
 ### 本地验证命令
 
@@ -88,9 +100,11 @@ mvn -f services/pom.xml -pl saas-api test
 | ~~**CORS**~~                   | ✅ `CorsConfig` + `SecurityConfig.cors()`；`/v1/`** 允许 `saas.cors.allowed-origins` | —   |
 | ~~**租户 API 缺失**~~              | ✅ `/v1/tenants` + `/features`；前端接真实 API 待联调                                      | —   |
 | ~~**PostgreSQL RLS 未做**~~      | ✅ `sys_user` RLS（`V5__rls.sql` + `TenantRlsDataSource`）                           | —   |
-| **用户 Profile / 改密**            | SaaS 侧尚无 profile 写接口（旧 RuoYi profile 不在迁移范围）                                     | P2  |
-| `**/v1/admin/`** 空壳**          | Security 已配置 `hasRole("PLATFORM_ADMIN")`，无 Controller                            | P2  |
-| **业务 API 为零**                  | 地图、专题、机库等无后端                                                                     | P3  |
+| **工作台会话仍走 RuoYi**           | Sprint C：登录、注册、用户信息、bootstrap 切 SaaS                                      | P2  |
+| **注册 / 用户资料写接口**            | Sprint C：`POST /v1/auth/register`、`PUT /v1/users/me`、改密                         | P2  |
+| **RBAC / 权限配置 / 后台管理**       | Sprint D：`sys_permission`、角色绑定、`/v1/admin/*`、apps/admin 对接                    | P2  |
+| `**/v1/admin/`** 空壳**          | Security 已有 `PLATFORM_ADMIN` 占位；Controller 与 Admin UI 排 Sprint D                 | P2  |
+| **业务域 API**                    | 地图、机库、专题等 — **Sprint C/D 不做**，待基础能力验收后另开迭代                                    | Later |
 | **Docker 全栈未含 saas-api**       | `deploy/docker-compose` 仅 saas-web + cloud-uav                                   | P2  |
 | **Testcontainers**             | 测试用 H2，与生产 PG 行为可能有差异                                                            | P3  |
 | ~~`**SessionDto.expiresAt`**~~ | ✅ 取自 JWT `exp`，毫秒时间戳                                                             | —   |
@@ -99,11 +113,12 @@ mvn -f services/pom.xml -pl saas-api test
 ### 本期明确不做（Later）
 
 
-| 项                      | 说明                                 |
-| ---------------------- | ---------------------------------- |
-| `**/v1/menus**`        | 不替代 RuoYi；导航由前端 mock / registry 承担 |
-| **RuoYi bootstrap 迁移** | 登录、菜单、profile 整链切换不在本期             |
-| **OAuth2/OIDC**        | 远期；当前 Email/Password + JWT 足够      |
+| 项 | 说明 |
+| --- | --- |
+| **`/v1/menus`** | 无 SaaS 菜单 API；侧栏 mock / registry |
+| **地图 / 机库 / 专题等业务 API** | Sprint C/D **不设计**；基础盘（登录·注册·权限·后台）完成后再开 |
+| **OAuth2/OIDC** | 远期；C/D 用 Email/Password + JWT |
+| **邮箱验证 / 邀请注册** | 可做为 Sprint C 拉伸项，非阻塞首版注册 |
 
 
 ---
@@ -113,25 +128,28 @@ mvn -f services/pom.xml -pl saas-api test
 ```mermaid
 flowchart TD
   P0[P0: 可联调基座] --> P1[P1: 租户 API]
-  P1 --> P2[P2: 用户 Profile]
-  P2 --> P3[P3: 业务域 API]
-  P3 --> P4[P4: 部署与可观测性]
+  P1 --> P2[P2: Sprint C 身份与会话]
+  P2 --> P3[P3: Sprint D 权限与后台]
+  P3 --> P4[P4: 业务域 API]
+  P4 --> P5[P5: 部署与可观测性]
 
-  P0 --> CORS[CORS + 本地 runbook]
-  P0 --> E2E[Auth 冒烟 login refresh me]
+  P0 --> CORS[CORS + 冒烟]
+  P1 --> Tenants["/v1/tenants + features"]
 
-  P1 --> Tenants["/v1/tenants"]
-  P1 --> Features[tenantFeature 能力]
+  P2 --> Login[登录 refresh logout]
+  P2 --> Register[注册]
+  P2 --> UserInfo[用户信息 users/me]
+  P2 --> WebSession[saas-web 切 SaaS]
 
-  P2 --> Profile[PUT /users/me 改密]
+  P3 --> RBAC[用户权限 角色]
+  P3 --> PermCfg[权限配置]
+  P3 --> Admin["/v1/admin/* + apps/admin"]
+  P3 --> Deploy[compose 含 saas-api]
 
-  P3 --> Map[地图工作台业务]
-  P3 --> UAV[机库数据]
+  P4 --> Map[地图图层等]
+  P4 --> UAV[机库等]
 
-  P4 --> Docker[compose 含 saas-api]
-  P4 --> OTel[结构化日志 / OTel]
-
-  Later["Later: /v1/menus 等"] -.->|单独 PRD| P3
+  Later["Later: 业务 PRD"] -.-> P4
 ```
 
 
@@ -157,7 +175,7 @@ flowchart TD
 
 - [x] `pnpm smoke:saas-api` 通过（login → me → refresh → me）
 - [x] 独立页 `/dev/saas-auth-smoke`（`VITE_API_URL=/v1`）可验证 `@repo/auth` + `api-client`
-- [x] **不要求**替换现有 RuoYi 登录页
+- [x] A 阶段仅要求冒烟与 `/dev/saas-auth-smoke`；**主登录页切换排 Sprint C**
 
 ---
 
@@ -172,7 +190,7 @@ flowchart TD
 | B-02 | ~~`GET /v1/tenants/{id}/features`~~ ✅                   | `TenantFeaturesResponse` + 成员校验 | 对接 `tenantFeature` 门控 |
 | B-03 | ~~Flyway `V4__tenant_features.sql~~` ✅                  | `sys_tenant_feature` 表          | 与 B-02 一并交付           |
 | B-04 | ~~敲定 [ADR-0004](../adr/0004-tenant-isolation-strategy.md)~~ ✅ | JWT `tenant_id` claim 定稿        | 文档 Accepted           |
-| B-05 | ~~PostgreSQL RLS 策略（`sys_user` 起步）~~ ✅                    | `migration-postgresql/V5__rls.sql` | 测试 H2 不加载           |
+| B-05 | ~~PostgreSQL RLS 策略（`sys_user` 起步）~~ ✅                    | `migration-postgresql/V5__rls.sql` | 补充说明见 [tenant-rls-b05.md](./supplements/tenant-rls-b05.md) |
 
 
 **验收：**
@@ -183,56 +201,99 @@ flowchart TD
 
 ---
 
-### Sprint C · P2 — 用户 Profile（约 3–5 天）
+### Sprint C · P2 — 身份与会话基础（约 1–2 周）
 
-**目标：** SaaS 用户自助能力；与 RuoYi profile **并行存在**，不做迁移切换。
+**目标：** 完成 **登录、注册、用户信息** 与 saas-web 会话切 SaaS；**不涉及**业务域模块与后台权限配置（留 Sprint D）。
 
+**原则：** 先打通「谁能登录、谁能注册、谁能改自己的资料」；侧栏仍 mock-nav。
 
-| #    | 任务                                    | 产出                     |
-| ---- | ------------------------------------- | ---------------------- |
-| C-01 | `PUT /v1/users/me` — 更新 displayName 等 | 用户资料写接口                |
-| C-02 | `POST /v1/users/me/password`          | 改密                     |
-| C-03 | 前端可选：Account Sheet 增加 SaaS profile 入口 | 仅新 API 消费方，不动 RuoYi 链路 |
+#### 后端（saas-api）
 
+| # | 任务 | 产出 |
+| --- | --- | --- |
+| C-01 | 登录（已有，补 OpenAPI/测试） | `POST /v1/auth/login`、`/refresh`、`/logout` |
+| C-02 | **注册** | `POST /v1/auth/register`（email + password + tenant slug；首版可无邮箱验证） |
+| C-03 | **用户信息 · 读** | `GET /v1/users/me`（SessionDto 含 roles、tenant、expiresAt） |
+| C-04 | **用户信息 · 写** | `PUT /v1/users/me`（displayName 等可改字段） |
+| C-05 | **改密** | `POST /v1/users/me/password`（旧密码 + 新密码） |
+
+#### 前端（saas-web）
+
+| # | 任务 | 产出 |
+| --- | --- | --- |
+| C-06 | 登录页切 SaaS | `routes/login.tsx` → `/v1/auth/login`；`VITE_API_URL` + refresh/logout |
+| C-07 | **注册页** | `routes/register.tsx`（或等价入口）→ `/v1/auth/register` |
+| C-08 | Bootstrap 去 RuoYi | `GET /v1/users/me`；移除 `getUserInfo` / `getMenuRouters` |
+| C-09 | 侧栏 mock bootstrap | `mock-nav-items` + `filterNavByTenant`（features API） |
+| C-10 | Account / 用户信息 UI | 读写信走 `/v1/users/me*` |
+| C-11 | TeamSwitcher | `GET /v1/tenants`；切换租户 = 重新登录 |
+| C-12 | 清理 RuoYi 会话依赖 | 下线 bootstrap 对 `ruoyi-api`、`ruoyi-profile-store` 的会话路径 |
 
 **验收：**
 
-- [ ] Bearer token 下可更新 profile / 改密
-- [ ] 现有 RuoYi 登录与菜单行为不变
+- [ ] 可注册、登录、刷新、登出（SaaS JWT）
+- [ ] 可查看与更新当前用户信息、改密
+- [ ] saas-web 主路径**不**调用 RuoYi 登录 / `getInfo` / `getRouters` / profile
+- [ ] `pnpm smoke:saas-api` 与 `pnpm --filter @repo/saas-web validate` 通过
 
 ---
 
-### Sprint D · P3 — 业务域与部署（按产品优先级）
+### Sprint D · P3 — 权限与后台管理基础（约 1–2 周）
 
-与 [产品路线图](../product/roadmap.md) 对齐：
+**目标：** **用户权限、权限配置、平台/租户后台管理** 最小可用；**仍不做**地图、机库、专题等业务 API。
 
+#### 后端（saas-api）
 
-| 业务        | 后端任务                          | 前端依赖                      |
-| --------- | ----------------------------- | ------------------------- |
-| 租户能力门控    | B-02 features API             | `filterNavByTenant` 接真实数据 |
-| 机库 Dock   | `/v1/uav/`* 机库/直播元数据          | uav-workspace             |
-| 地图插件      | `/v1/layers`、`/v1/projects` 等 | Phase C MapProvider       |
-| Admin App | `/v1/admin/tenants` CRUD      | apps/admin scaffold       |
+| # | 任务 | 产出 |
+| --- | --- | --- |
+| D-01 | 权限模型 | Flyway：`sys_permission`、`sys_role_permission`（或等价）；种子基础权限码 |
+| D-02 | **用户权限** | JWT / `users/me` 返回有效权限集；`@PreAuthorize` 与权限码对齐 |
+| D-03 | **权限配置 API** | `PLATFORM_ADMIN`：`GET/PUT /v1/admin/roles/{id}/permissions` 等 |
+| D-04 | 租户管理 | `GET/POST/PATCH /v1/admin/tenants`（列表、创建、启停/计划） |
+| D-05 | 用户管理 | `GET /v1/admin/users`、租户内成员邀请/禁用（最小 CRUD） |
+| D-06 | 租户管理员能力 | `TENANT_ADMIN`：`/v1/admin/tenants/{id}/members` 成员与角色分配 |
 
+#### 前端
 
-**部署：**
+| # | 任务 | 产出 |
+| --- | --- | --- |
+| D-07 | **apps/admin** 脚手架 | 登录（SaaS）、布局、路由；对接 `/v1/admin/*` |
+| D-08 | 后台基础页 | 租户列表、用户列表、角色/权限配置 UI（表格 + 表单） |
+| D-09 | saas-web 权限门控 | `requireRole` / 权限码与 Sprint D API 一致；去掉 RuoYi 权限转换依赖 |
+| D-10 | 部署基座 | `deploy/docker-compose` 含 `saas-api`；Nginx `/v1` 反代；`VITE_API_URL` 注入 |
 
-- [ ] `deploy/docker-compose.yml` 增加 `saas-api` 服务
-- [ ] Nginx 增加 `/v1` 反代
-- [ ] 构建时注入 `VITE_API_URL`
+**验收：**
+
+- [ ] `PLATFORM_ADMIN` 可管理租户、查看用户、配置角色权限
+- [ ] `TENANT_ADMIN` 可管理本租户成员与角色（范围内）
+- [ ] 普通用户权限仅来自 SaaS，不依赖 RuoYi `getInfo` 权限串
+- [ ] Admin 与 saas-api 本地 Docker 栈可联调
+
+---
+
+### Sprint E · Later — 业务域 API（单独排期）
+
+**不在 Sprint C/D 设计或实现。** 待身份、权限、后台基础验收后，按 [产品路线图](../product/roadmap.md) 拆 PRD：
+
+| 域 | 示例 API | 前端 |
+| --- | --- | --- |
+| 地图工作台 | `/v1/layers`、`/v1/projects` | MapProvider / 插件 |
+| 机库 | `/v1/uav/*` | uav-workspace |
+| 其它专题 | 按 PRD | mock-nav 已有入口 |
 
 ---
 
 ## 六、与前端路线图对齐
 
 
-| 前端 roadmap 项        | 后端依赖                          | 建议顺序           |
-| ------------------- | ----------------------------- | -------------- |
-| 租户能力门控              | `/v1/tenants/{id}/features`   | Sprint B       |
-| Phase C MapProvider | 无硬依赖（插件本地）                    | 可并行            |
-| 机库 Dock 真实数据        | `/v1/uav/`*                   | Sprint D       |
-| 侧栏 / 菜单             | **无**（继续 mock-nav + registry） | 不在 services 范围 |
-| SaaS Auth 新接口联调     | Sprint A 完成                   | **当前重点**       |
+| 前端 / 产品项 | 后端依赖 | 建议顺序 |
+| --- | --- | --- |
+| 租户能力门控 | `/v1/tenants/{id}/features` | Sprint B ✅ |
+| 登录 · 注册 · 用户信息 | `/v1/auth/*`、`/v1/users/me*` | **Sprint C** |
+| 权限 · 后台管理 | `/v1/admin/*`、权限表 | **Sprint D** |
+| 侧栏 / 菜单 | mock-nav（无 `/v1/menus`） | Sprint C 前端 |
+| Phase C MapProvider | 插件本地，无硬依赖 | Sprint E 前可并行 UI |
+| 机库 / 地图业务数据 | `/v1/uav/*`、`/v1/layers` 等 | **Sprint E（Later）** |
 
 
 ---
@@ -241,7 +302,8 @@ flowchart TD
 
 1. ~~**A-01 CORS**~~ ✅ 已完成
 2. ~~**A-03 Auth 冒烟**~~ ✅ 已完成
-3. **B-01 `/v1/tenants` + features** — 解锁租户能力门控（Sprint A 已完成）
+3. **Sprint C** — 登录、注册、用户信息 + saas-web 切 SaaS（Sprint B 已完成）
+4. **Sprint D** — 用户权限、权限配置、`/v1/admin/*` + apps/admin（**不做业务域 API**）
 
 ---
 
@@ -260,11 +322,37 @@ flowchart TD
 | 文档 / Skill                                            | 说明                  |
 | ----------------------------------------------------- | ------------------- |
 | [backend-integration.md](./backend-integration.md)    | API 双轨与迁移路径         |
-| [auth-rbac.md](./auth-rbac.md)                        | 角色矩阵与 Session 流     |
+| [auth-rbac.md](./auth-rbac.md)                        | 角色矩阵、Sprint C/D 目标 |
+| [apps.md](./apps.md)                                  | web / admin 路由与 Sprint |
 | [multi-tenancy.md](./multi-tenancy.md)                | 租户隔离策略              |
-| [ADR-0005](../adr/0005-ruoyi-transitional-backend.md) | RuoYi 过渡策略          |
+| [ADR-0005](../adr/0005-ruoyi-transitional-backend.md) | RuoYi 过渡与下线节奏       |
 | `java-backend-index`                                  | Skill 路由与目录约定       |
 | `java-auth-security`                                  | JWT / RBAC 实现清单     |
 | `java-rest-api`                                       | REST 端点与 OpenAPI 规范 |
+| `saas-auth-ruoyi`                                     | saas-web 会话迁移前端清单  |
+
+---
+
+## 十、执行指引（由你指定开工项）
+
+文档已对齐：**Sprint C/D = 平台基础；Sprint E = 业务域（Later）**。实现顺序由你指定，可用任务编号点名，例如「先做 C-02 + C-06」或「只做 D 后端」。
+
+### 任务索引（可复制）
+
+| 编号 | Sprint | 简述 |
+| --- | --- | --- |
+| C-01～C-05 | C | 后端：登录补全、**注册**、`users/me` 读写改密 |
+| C-06～C-12 | C | 前端：登录/注册页、bootstrap 去 RuoYi、Account、TeamSwitcher |
+| D-01～D-06 | D | 后端：权限表、权限 API、`/v1/admin/*` 租户/用户/成员 |
+| D-07～D-10 | D | 前端：apps/admin、权限门控、Docker 部署 |
+| E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
+
+### 建议默认顺序（仅供参考，非强制）
+
+1. **C-02** 注册 API → **C-04/C-05** 用户写接口 → **C-06/C-07** 登录/注册页  
+2. **C-08～C-12** bootstrap 与 RuoYi 清理  
+3. **D-01～D-06** 权限与 admin API → **D-07～D-10** Admin 与部署  
+
+你指定后，按编号在对应 Skill（`java-rest-api`、`java-auth-security`、`saas-auth-ruoyi`、`saas-fsd-feature`）下实现即可。
 
 

@@ -114,8 +114,8 @@ RuoYi 后端 API 封装，响应用 Zod 校验。
 | `createRuoYiClient(options)` | 创建客户端（baseUrl、getToken） |
 | `RuoYiApiError` | code !== 200 时抛出 |
 | `getCodeImg()` / `login()` | 验证码 + 登录 |
-| `getUserInfo()` / `getMenuRouters()` | 用户 + 菜单 |
-| `getUserProfile()` / `updateUserProfile()` / `updateUserPassword()` | 资料管理 |
+| ~~`getUserInfo()` / `getMenuRouters()` / `login()` 等~~ | **Sprint C saas-web 下线** → `@repo/api-client` + mock-nav |
+| ~~`getUserProfile()` / `updateUserProfile()` / `updateUserPassword()`~~ | **Sprint C 下线** → `/v1/users/me*` |
 | `menuRouteSchema` / `userInfoSchema` 等 | Zod schemas + 类型 |
 
 ### 与 api-client 的边界
@@ -124,7 +124,10 @@ RuoYi 后端 API 封装，响应用 Zod 校验。
 | --- | --- | --- |
 | 协议 | RuoYi envelope `{ code, msg, data }` | 标准 REST + HTTP status |
 | 校验 | Zod schema per endpoint | 调用方自行解析 |
-| 阶段 | 当前生产 | 目标未来 |
+| saas-web 会话 | Sprint C → api-client | 登录、注册、用户信息、bootstrap |
+| admin / 权限 | Sprint D → api-client | `/v1/admin/*`、权限码 |
+| 业务 API | Sprint E | 地图、机库等 |
+| 阶段 | 迁移前 RuoYi | C/D 后 saas-web + admin 主用 api-client |
 | Token | 手动 getToken 注入 | authHandlers 自动管理 |
 
 ## 新增 Package 指南

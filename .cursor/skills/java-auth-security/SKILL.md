@@ -8,6 +8,8 @@ description: >-
 
 # 鉴权与安全（JWT + RBAC + 多租户）
 
+> **路线图**：[services-development-plan.md](../../docs/architecture/services-development-plan.md) — **Sprint C** 注册/登录/users/me；**Sprint D** `sys_permission` + `/v1/admin/*`；**Sprint E** 业务 API（本 Skill 不涉及）。开工项由你指定编号（§十）。
+
 ## 目标（对齐 auth-rbac.md）
 
 | 能力 | Platform Admin | Tenant Admin | Member | Viewer |
@@ -45,7 +47,7 @@ public class SecurityConfig {
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
-            .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/refresh").permitAll()
+            .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/register", "/v1/auth/refresh").permitAll()
             .requestMatchers("/v1/admin/**").hasRole("PLATFORM_ADMIN")
             .anyRequest().authenticated())
         .exceptionHandling(e -> e
@@ -109,8 +111,8 @@ sequenceDiagram
 
 **数据库**（Flyway 见 java-persistence）：
 
-- `sys_user`、`sys_role`、`sys_user_role`
-- `sys_permission`（可选细粒度）、`sys_role_permission`
+- `sys_user`、`sys_role`、`sys_user_role` — Sprint A 已有
+- `sys_permission`、`sys_role_permission` — **Sprint D**（C 期仅用角色码）
 
 **运行时**：
 
@@ -151,7 +153,8 @@ public class TenantLineHandler implements TenantLineHandler {
 | --- | --- | --- |
 | 登录路径 | `/login` | `/v1/auth/login` |
 | Token | RuoYi 自定义 | JWT Bearer |
-| 菜单 | `/getRouters` | `/v1/menus` |
+| 菜单 | `/getRouters` | mock-nav（**无** `/v1/menus`） |
+| 注册 | 无 | `POST /v1/auth/register`（**Sprint C**） |
 | 前端包 | `@repo/ruoyi-api` | `@repo/api-client` |
 
 **不要**在 `ruoyi-api` 或 RuoYi 代理上扩展新接口。新功能只走 `services/saas-api`。
@@ -159,7 +162,7 @@ public class TenantLineHandler implements TenantLineHandler {
 ## 工作流检查清单
 
 ```
-- [ ] POST /v1/auth/login、/refresh 免认证且返回 camelCase JSON
+- [ ] POST /v1/auth/login、/register、/refresh 免认证且返回 camelCase JSON
 - [ ] 其它 /v1/** 需 Bearer，401/403 语义正确
 - [ ] JWT 密钥来自环境变量
 - [ ] Refresh 存 Redis，logout 吊销

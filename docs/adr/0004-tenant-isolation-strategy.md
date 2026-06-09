@@ -114,11 +114,13 @@ MyBatis-Plus TenantLineHandler   // 对配置表白名单追加 WHERE tenant_id 
 | 租户列表 / 能力 | `TenantsController`、`TenantService` |
 | 跨租户成员查询 | `SysUserMapper.selectActiveByEmailAcrossTenants` |
 
-PostgreSQL RLS：`sys_user` 已启用（`db/migration-postgresql/V5__rls.sql` + `TenantRlsDataSource`）；其余业务表随 Sprint 扩展。
+PostgreSQL RLS：`sys_user` 已启用（`db/migration-postgresql/V5__rls.sql` + `TenantRlsDataSource`）；其余业务表随 Sprint 扩展。  
+**可读性补充**：[tenant-rls-b05.md](../architecture/supplements/tenant-rls-b05.md)（B-05 作用、双层防护、Bypass 说明）。
 
 ## 参考
 
 - [multi-tenancy.md](../architecture/multi-tenancy.md)
+- [tenant-rls-b05.md](../architecture/supplements/tenant-rls-b05.md) — B-05 RLS 补充材料
 - [services-development-plan.md](../architecture/services-development-plan.md) — Sprint B
 - [auth-rbac.md](../architecture/auth-rbac.md)
 - `JwtService.CLAIM_TENANT_ID` — `services/saas-api`

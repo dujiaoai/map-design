@@ -49,15 +49,23 @@ description: >-
 | 表设计、MyBatis-Plus、Flyway、RLS | [java-persistence](../java-persistence/SKILL.md) | 「建表」「Mapper」「数据库迁移」「tenant_id」 |
 | 单元/集成测试、Testcontainers | [java-backend-testing](../java-backend-testing/SKILL.md) | 「写测试」「MockMvc」「集成测试」 |
 
-## 推荐工作流
+## 推荐工作流（对齐 [services-development-plan.md](../../docs/architecture/services-development-plan.md)）
 
 ```
-1. java-spring-boot-scaffold  → services/saas-api 可启动 + Actuator health
-2. java-persistence           → Flyway 基线表 + 多租户列
-3. java-auth-security         → POST /v1/auth/login、/v1/auth/refresh
-4. java-rest-api              → 业务 Controller + OpenAPI + 统一异常
-5. java-backend-testing       → MockMvc + Testcontainers 冒烟
-6. 前端                       → VITE_API_URL 接通 @repo/api-client（saas-fsd-feature）
+已完成：Sprint A/B（Auth MVP、租户 API、RLS）
+
+Sprint C（身份与会话）— 由你指定任务编号开工：
+  java-auth-security + java-rest-api → register、users/me 写接口
+  saas-auth-ruoyi → 登录/注册页、bootstrap 去 RuoYi
+
+Sprint D（权限与后台）：
+  java-persistence → sys_permission
+  java-rest-api → /v1/admin/*
+  saas-fsd-feature → apps/admin
+
+Sprint E（Later）：业务域 API — C/D 不做
+
+验证：mvn -pl saas-api test、pnpm smoke:saas-api
 ```
 
 ## 目录约定（规划）
@@ -86,7 +94,7 @@ map-design/
 | 场景 | 协作 Skill |
 | --- | --- |
 | 前端接通新 API | `saas-fsd-feature` → `shared/queries/` + `api-client` |
-| 登录迁移（RuoYi → SaaS） | `java-auth-security` + `saas-auth-ruoyi`（仅读目标架构节） |
+| Sprint C/D 会话与后台 | [services-development-plan.md](../../docs/architecture/services-development-plan.md) §十 + `java-auth-security` + `saas-auth-ruoyi` |
 | Docker 全栈部署 | `docker-deploy`（后续扩展 compose 含 saas-api） |
 | PRD / 接口清单 | `pm-write-spec` → `docs/product/` |
 

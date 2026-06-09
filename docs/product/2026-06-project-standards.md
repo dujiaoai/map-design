@@ -158,11 +158,12 @@ flowchart TB
 
 | ID | 标准 | 验收标准 |
 | --- | --- | --- |
-| **A-01** | 当前认证 | RuoYi 登录 + `@repo/auth` Session（`storageKeyPrefix: 'saas-web'`） |
-| **A-02** | Bootstrap | 登录后 `getInfo` + `getRouters`；401/403 → `clearAppSession` → `/login` |
-| **A-03** | API 双轨 | 当前 `@repo/ruoyi-api`；目标 `@repo/api-client` SaaS `/v1`；App 层组装，packages 不交叉依赖 |
-| **A-04** | RBAC | 权限以服务端为准；前端 `requireRole` / `hasRole` 仅 UX |
-| **A-05** | 多租户（前端） | `TenantProvider` + mock `filterNavByTenant`；后端 tenant API 未接通 |
+| **A-01** | 认证（Sprint C） | 登录 + **注册** + refresh；SaaS JWT；**不留** RuoYi |
+| **A-02** | Bootstrap（Sprint C） | `users/me` + mock-nav；**不留** RuoYi `getInfo`/`getRouters` |
+| **A-03** | API 客户端 | C/D 新代码仅用 `@repo/api-client` |
+| **A-04** | RBAC（Sprint D） | `sys_permission` + Admin 配置；`requireRole`/权限码 |
+| **A-05** | 多租户（Sprint C） | `TenantProvider` + `/v1/tenants` + `/features` |
+| **A-06** | 后台（Sprint D） | `apps/admin` + `/v1/admin/*`；**不做**业务域 API |
 
 ### Must-Have（P0）— 地图插件
 
@@ -205,7 +206,7 @@ flowchart TB
 | 0002 | Marketing / Web / Admin 三 App | PRD 须标明目标 App |
 | 0003 | Web/Admin SPA，Marketing 可 SSR | 不假设 SSR 能力 |
 | 0004 | 共享 DB + RLS + `tenant_id`（Accepted） | JWT `tenant_id` claim 已定稿 |
-| 0005 | RuoYi 过渡后端 | 登录/菜单规格以 RuoYi 为准直至迁移 ADR |
+| 0005 | RuoYi 过渡后端 | Sprint C 下线 RuoYi 会话；Sprint D Admin；业务 API → Sprint E |
 | 0006 | Cloud ESM 优于 Module Federation | Cloud UAV 规格写动态 `import()`，不写 MF |
 
 ---

@@ -30,4 +30,8 @@ public class AuthException extends RuntimeException {
   public static AuthException notFound(String message) {
     return new AuthException(HttpStatus.NOT_FOUND, message);
   }
+
+  public static AuthException conflict(String message) {
+    return new AuthException(HttpStatus.CONFLICT, message);
+  }
 }

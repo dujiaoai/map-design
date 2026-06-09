@@ -52,6 +52,22 @@ async function main() {
   if (!healthRes.ok) fail('health', `HTTP ${healthRes.status}`)
   passed.push('health')
 
+  const registerEmail = `smoke-${Date.now()}@demo.local`
+  const register = await api('/auth/register', {
+    method: 'POST',
+    body: {
+      email: registerEmail,
+      password: credentials.password,
+      tenantId: credentials.tenantId,
+      displayName: 'Smoke Register',
+    },
+  })
+  if (!register.ok) fail('register', `HTTP ${register.status} ${JSON.stringify(register.body)}`)
+  if (!register.body?.accessToken || register.body?.user?.roles?.includes('MEMBER') !== true) {
+    fail('register', 'missing tokens or MEMBER role')
+  }
+  passed.push('register')
+
   const login = await api('/auth/login', { method: 'POST', body: credentials })
   if (!login.ok) fail('login', `HTTP ${login.status} ${JSON.stringify(login.body)}`)
   if (!login.body?.accessToken || !login.body?.refreshToken) {

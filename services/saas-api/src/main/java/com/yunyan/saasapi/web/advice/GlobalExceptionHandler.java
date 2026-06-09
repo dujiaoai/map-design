@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(AuthException.class)
   ResponseEntity<ProblemDetail> handleAuth(AuthException ex) {
     var problem = ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());
-    problem.setTitle(ex.getStatus() == HttpStatus.UNAUTHORIZED ? "Unauthorized" : "Bad request");
+    problem.setTitle(titleForAuthStatus(ex.getStatus()));
     problem.setType(java.net.URI.create("https://api.yunyan.com/errors/auth"));
     return ResponseEntity.status(ex.getStatus()).body(problem);
   }
@@ -32,6 +32,16 @@ public class GlobalExceptionHandler {
         .toList();
     problem.setProperty("errors", errors);
     return ResponseEntity.badRequest().body(problem);
+  }
+
+  private static String titleForAuthStatus(HttpStatus status) {
+    return switch (status) {
+      case UNAUTHORIZED -> "Unauthorized";
+      case NOT_FOUND -> "Not Found";
+      case CONFLICT -> "Conflict";
+      case FORBIDDEN -> "Forbidden";
+      default -> "Bad request";
+    };
   }
 
   private Map<String, String> toFieldError(FieldError error) {

@@ -8,6 +8,7 @@ import com.yunyan.saasapi.web.dto.auth.LoginRequest;
 import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.LoginUserDto;
 import com.yunyan.saasapi.web.dto.auth.RefreshRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterRequest;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.security.TenantContext;
 import com.yunyan.saasapi.web.dto.auth.SessionDto;
@@ -19,6 +20,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @Service
@@ -29,6 +31,18 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final RefreshTokenStore refreshTokenStore;
+
+  @Transactional
+  public LoginResponse register(RegisterRequest request) {
+    var tenantSlug = request.tenantId().trim();
+    var user =
+        userAuthRepository.registerMember(
+            request.email().trim(),
+            passwordEncoder.encode(request.password()),
+            request.displayName(),
+            tenantSlug);
+    return buildLoginResponse(user);
+  }
 
   public LoginResponse login(LoginRequest request) {
     var user = userAuthRepository

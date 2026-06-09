@@ -6,6 +6,7 @@ import com.yunyan.saasapi.web.dto.auth.AuthTokensDto;
 import com.yunyan.saasapi.web.dto.auth.LoginRequest;
 import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.RefreshRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,6 +29,28 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
   private final AuthService authService;
+
+  @PostMapping("/register")
+  @Operation(
+      summary = "邮箱密码注册",
+      description =
+          "在已有租户下创建账号并签发 token（首版无邮箱验证）。新用户默认角色为 MEMBER；同一租户内邮箱不可重复。")
+  @ApiResponse(responseCode = "200", description = "注册成功，响应体同登录")
+  @ApiResponse(
+      responseCode = "400",
+      description = "请求体验证失败",
+      content = @Content(mediaType = "application/problem+json"))
+  @ApiResponse(
+      responseCode = "404",
+      description = "租户 slug 不存在",
+      content = @Content(mediaType = "application/problem+json"))
+  @ApiResponse(
+      responseCode = "409",
+      description = "该租户下邮箱已注册",
+      content = @Content(mediaType = "application/problem+json"))
+  LoginResponse register(@Valid @RequestBody RegisterRequest request) {
+    return authService.register(request);
+  }
 
   @PostMapping("/login")
   @Operation(

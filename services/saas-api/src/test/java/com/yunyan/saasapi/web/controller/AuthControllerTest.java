@@ -38,6 +38,62 @@ class AuthControllerTest {
   }
 
   @Test
+  void register_withValidRequest_returnsTokensAndMemberRole() throws Exception {
+    var email = "register-" + System.currentTimeMillis() + "@test.local";
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", email,
+                            "password", "password",
+                            "tenantId", "test",
+                            "displayName", "Registered User"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.accessToken").isNotEmpty())
+        .andExpect(jsonPath("$.refreshToken").isNotEmpty())
+        .andExpect(jsonPath("$.user.email").value(email))
+        .andExpect(jsonPath("$.user.name").value("Registered User"))
+        .andExpect(jsonPath("$.user.roles", hasItem("MEMBER")))
+        .andExpect(jsonPath("$.user.tenant.slug").value("test"));
+  }
+
+  @Test
+  void register_withDuplicateEmail_returns409() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "admin@test.local",
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.title").value("Conflict"));
+  }
+
+  @Test
+  void register_withUnknownTenant_returns404() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "orphan@test.local",
+                            "password", "password",
+                            "tenantId", "no-such-tenant"))))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.detail").value("Tenant not found"));
+  }
+
+  @Test
   void login_withValidCredentials_returnsFlatTokensAndUser() throws Exception {
     mockMvc
         .perform(

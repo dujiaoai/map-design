@@ -9,6 +9,7 @@ import com.yunyan.saasapi.domain.mapper.SysRoleMapper;
 import com.yunyan.saasapi.domain.mapper.SysTenantMapper;
 import com.yunyan.saasapi.domain.mapper.SysUserMapper;
 import com.yunyan.saasapi.domain.mapper.SysUserRoleMapper;
+import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.TenantRlsBypass;
 import java.util.List;
 import java.util.Optional;
@@ -66,6 +67,61 @@ public class UserAuthRepository {
       return Optional.empty();
     }
     return Optional.of(toAuthenticatedUser(users.getFirst(), tenant));
+  }
+
+  public AuthenticatedUser registerMember(
+      String email, String passwordHash, String displayName, String tenantSlug) {
+    return TenantRlsBypass.call(
+        () -> registerMemberWithRlsBypass(email, passwordHash, displayName, tenantSlug));
+  }
+
+  private AuthenticatedUser registerMemberWithRlsBypass(
+      String email, String passwordHash, String displayName, String tenantSlug) {
+    var tenant =
+        sysTenantMapper.selectOne(
+            Wrappers.<SysTenant>lambdaQuery().eq(SysTenant::getSlug, tenantSlug.trim()));
+    if (tenant == null) {
+      throw AuthException.notFound("Tenant not found");
+    }
+
+    var duplicate =
+        sysUserMapper.selectOne(
+            Wrappers.<SysUser>lambdaQuery()
+                .eq(SysUser::getEmail, email)
+                .eq(SysUser::getTenantId, tenant.getId()));
+    if (duplicate != null) {
+      throw AuthException.conflict("Email already registered for this tenant");
+    }
+
+    var memberRole =
+        sysRoleMapper.selectOne(Wrappers.<SysRole>lambdaQuery().eq(SysRole::getCode, "MEMBER"));
+    if (memberRole == null) {
+      throw new IllegalStateException("MEMBER role is not seeded");
+    }
+
+    var user = new SysUser();
+    user.setId(UUID.randomUUID());
+    user.setTenantId(tenant.getId());
+    user.setEmail(email);
+    user.setPasswordHash(passwordHash);
+    user.setDisplayName(resolveDisplayName(email, displayName));
+    user.setStatus("active");
+    sysUserMapper.insert(user);
+
+    var userRole = new SysUserRole();
+    userRole.setUserId(user.getId());
+    userRole.setRoleId(memberRole.getId());
+    sysUserRoleMapper.insert(userRole);
+
+    return toAuthenticatedUser(user, tenant);
+  }
+
+  private static String resolveDisplayName(String email, String displayName) {
+    if (StringUtils.hasText(displayName)) {
+      return displayName.trim();
+    }
+    var at = email.indexOf('@');
+    return at > 0 ? email.substring(0, at) : email;
   }
 
   public Optional<AuthenticatedUser> findById(UUID userId) {

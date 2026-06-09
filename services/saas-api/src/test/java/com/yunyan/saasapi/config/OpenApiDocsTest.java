@@ -25,7 +25,9 @@ class OpenApiDocsTest {
     mockMvc
         .perform(get("/v3/api-docs"))
         .andExpect(status().isOk())
+        .andExpect(content().string(containsString("/v1/auth/register")))
         .andExpect(content().string(containsString("/v1/auth/login")))
+        .andExpect(content().string(containsString("RegisterRequest")))
         .andExpect(content().string(containsString("/v1/auth/refresh")))
         .andExpect(content().string(containsString("/v1/auth/logout")))
         .andExpect(content().string(containsString("LoginRequest")))

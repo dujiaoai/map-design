@@ -31,7 +31,8 @@ public class SecurityConfig {
             .requestMatchers("/actuator/health", "/actuator/info").permitAll()
             .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
             .requestMatchers(HttpMethod.GET, "/v1/ping").permitAll()
-            .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/refresh").permitAll()
+            .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/register", "/v1/auth/refresh")
+                .permitAll()
             .requestMatchers("/v1/admin/**").hasRole("PLATFORM_ADMIN")
             .anyRequest().authenticated())
         .exceptionHandling(ex -> ex

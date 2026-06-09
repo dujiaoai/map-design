@@ -18,6 +18,15 @@ export function createAuthApi(options: AuthApiOptions) {
   }
 
   return {
+    async register(credentials: LoginCredentials): Promise<LoginResponse> {
+      const res = await fetchFn(`${base}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(credentials),
+      })
+      return parseJson(res)
+    },
+
     async login(credentials: LoginCredentials): Promise<LoginResponse> {
       const res = await fetchFn(`${base}/auth/login`, {
         method: 'POST',

@@ -43,7 +43,7 @@ public class OpenApiConfig {
         .servers(List.of(new Server().url("http://localhost:8082").description("本地开发")))
         .tags(
             List.of(
-                new Tag().name("Auth").description("认证：登录、刷新、登出"),
+                new Tag().name("Auth").description("认证：注册、登录、刷新、登出"),
                 new Tag().name("Users").description("当前登录用户与会话"),
                 new Tag().name("Tenants").description("可访问租户列表（TeamSwitcher）"),
                 new Tag().name("System").description("存活探测")))

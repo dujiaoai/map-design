@@ -212,7 +212,7 @@ flowchart TD
 | # | 任务 | 产出 |
 | --- | --- | --- |
 | C-01 | 登录（已有，补 OpenAPI/测试）✅ | `POST /v1/auth/login`、`/refresh`、`/logout` |
-| C-02 | **注册** | `POST /v1/auth/register`（email + password + tenant slug；首版可无邮箱验证） |
+| C-02 | **注册** ✅ | `POST /v1/auth/register`（email + password + tenant slug；首版可无邮箱验证） |
 | C-03 | **用户信息 · 读** | `GET /v1/users/me`（SessionDto 含 roles、tenant、expiresAt） |
 | C-04 | **用户信息 · 写** | `PUT /v1/users/me`（displayName 等可改字段） |
 | C-05 | **改密** | `POST /v1/users/me/password`（旧密码 + 新密码） |

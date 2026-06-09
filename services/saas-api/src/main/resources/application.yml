@@ -42,3 +42,10 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+    persist-authorization: true
+    display-request-duration: true
+    tags-sorter: alpha
+    operations-sorter: method
+    try-it-out-enabled: true
+  show-actuator: false
+  packages-to-scan: com.yunyan.saasapi.web.controller

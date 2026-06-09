@@ -1,6 +1,7 @@
 package com.yunyan.saasapi.web.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class PingController {
 
   @GetMapping("/ping")
-  @Operation(summary = "服务存活探测")
+  @Operation(summary = "服务存活探测", description = "无需认证，供本地与网关探活。")
+  @ApiResponse(responseCode = "200", description = "服务正常")
   public Map<String, String> ping() {
     return Map.of(
         "status", "ok",

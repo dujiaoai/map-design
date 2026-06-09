@@ -157,7 +157,7 @@ flowchart TD
 
 | # | 任务 | 产出 | 说明 |
 | --- | --- | --- | --- |
-| B-01 | `GET /v1/tenants` | 当前用户可访问租户列表 | TeamSwitcher 数据源 |
+| B-01 | ~~`GET /v1/tenants`~~ ✅ | `TenantsController` + 同邮箱多租户成员 | TeamSwitcher 数据源 |
 | B-02 | `GET /v1/tenants/{id}/features` | 租户能力码列表 | 对接 `tenantFeature` 门控 |
 | B-03 | Flyway `V4__tenant_features.sql` | 租户计划 / 能力表 + 种子 | 与 roadmap「租户能力门控」对齐 |
 | B-04 | 敲定 [ADR-0004](../adr/0004-tenant-isolation-strategy.md) | JWT `tenant_id` claim 定稿 | 文档 Accepted |

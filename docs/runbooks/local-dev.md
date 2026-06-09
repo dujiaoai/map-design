@@ -87,7 +87,12 @@ mvn -f services/pom.xml -pl saas-api spring-boot:run -Dspring-boot.run.profiles=
 - Flyway 在启动时自动执行 `db/migration/V*.sql`
 - Refresh token 写入 Redis（dev profile）
 - 健康检查：`http://localhost:8082/actuator/health`
-- OpenAPI：`http://localhost:8082/swagger-ui.html`
+- **Swagger UI**：`http://localhost:8082/swagger-ui.html`
+  1. 展开 **Auth** → `POST /v1/auth/login`，用演示账号 Try it out
+  2. 复制响应中的 `accessToken`
+  3. 点击右上角 **Authorize**，填入 token（或 `Bearer <token>`）
+  4. 调试 **Users**、**Tenants** 等受保护接口（Authorize 状态会持久化到刷新页面）
+- OpenAPI JSON：`http://localhost:8082/v3/api-docs`
 
 #### 3. 导入演示数据（首次或重置后）
 
@@ -132,6 +137,10 @@ curl -s -X POST http://localhost:8082/v1/auth/login \
 
 # 将上一步返回的 accessToken 代入
 curl -s http://localhost:8082/v1/users/me \
+  -H "Authorization: Bearer <accessToken>"
+
+# 可访问租户列表
+curl -s http://localhost:8082/v1/tenants \
   -H "Authorization: Bearer <accessToken>"
 ```
 

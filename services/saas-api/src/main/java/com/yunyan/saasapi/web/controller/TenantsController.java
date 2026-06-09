@@ -1,8 +1,8 @@
 package com.yunyan.saasapi.web.controller;
 
-import com.yunyan.saasapi.application.auth.AuthService;
+import com.yunyan.saasapi.application.tenant.TenantService;
 import com.yunyan.saasapi.security.SaasPrincipal;
-import com.yunyan.saasapi.web.dto.auth.SessionDto;
+import com.yunyan.saasapi.web.dto.tenant.TenantListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -15,24 +15,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1/users")
+@RequestMapping("/v1/tenants")
 @RequiredArgsConstructor
-@Tag(name = "Users")
+@Tag(name = "Tenants")
 @SecurityRequirement(name = "bearerAuth")
-public class UsersController {
+public class TenantsController {
 
-  private final AuthService authService;
+  private final TenantService tenantService;
 
-  @GetMapping("/me")
+  @GetMapping
   @Operation(
-      summary = "获取当前登录用户与会话信息",
-      description = "`expiresAt` 为 access token 过期时间（毫秒 epoch），取自 JWT `exp`。")
-  @ApiResponse(responseCode = "200", description = "当前会话")
+      summary = "列出当前用户可访问的租户",
+      description = "按登录邮箱汇总各租户成员身份；`current=true` 对应当前 JWT 租户。PLATFORM_ADMIN 可见全部租户。")
+  @ApiResponse(responseCode = "200", description = "租户列表")
   @ApiResponse(
       responseCode = "401",
-      description = "未认证或 token 无效",
+      description = "未认证",
       content = @Content(mediaType = "application/problem+json"))
-  public SessionDto me(@AuthenticationPrincipal SaasPrincipal principal) {
-    return authService.getCurrentSession(principal);
+  public TenantListResponse list(@AuthenticationPrincipal SaasPrincipal principal) {
+    return tenantService.listAccessible(principal);
   }
 }

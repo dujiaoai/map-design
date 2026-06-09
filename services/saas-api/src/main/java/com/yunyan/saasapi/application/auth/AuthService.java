@@ -9,6 +9,7 @@ import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.LoginUserDto;
 import com.yunyan.saasapi.web.dto.auth.RefreshRequest;
 import com.yunyan.saasapi.security.SaasPrincipal;
+import com.yunyan.saasapi.security.TenantContext;
 import com.yunyan.saasapi.web.dto.auth.SessionDto;
 import com.yunyan.saasapi.web.dto.auth.SessionTenantDto;
 import com.yunyan.saasapi.web.dto.auth.SessionUserDto;
@@ -51,9 +52,11 @@ public class AuthService {
       throw AuthException.unauthorized("Refresh token revoked or expired");
     }
 
-    var user = userAuthRepository
-        .findById(parsed.userId())
-        .orElseThrow(() -> AuthException.unauthorized("User not found"));
+    var user = TenantContext.withTenant(
+        parsed.tenantId().toString(),
+        () -> userAuthRepository
+            .findById(parsed.userId())
+            .orElseThrow(() -> AuthException.unauthorized("User not found")));
 
     refreshTokenStore.revoke(parsed.userId(), parsed.jti());
     return issueTokens(user);

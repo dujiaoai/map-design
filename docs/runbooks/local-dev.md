@@ -84,7 +84,7 @@ docker compose -f services/docker-compose.dev.yml ps
 mvn -f services/pom.xml -pl saas-api spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-- Flyway 在启动时自动执行 `db/migration/V*.sql`
+- Flyway 在启动时自动执行 `db/migration/V*.sql` 与 PostgreSQL 专用 `db/migration-postgresql/V5__rls.sql`（`sys_user` RLS）
 - Refresh token 写入 Redis（dev profile）
 - 健康检查：`http://localhost:8082/actuator/health`
 - **Swagger UI**：`http://localhost:8082/swagger-ui.html`

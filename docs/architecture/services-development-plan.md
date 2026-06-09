@@ -9,7 +9,7 @@
 
 - 不做 RuoYi `getRouters` / 动态菜单的 SaaS 替代
 - 不做 `bootstrap-authenticated-app` 从 RuoYi 切到 SaaS 的整链迁移
-- **`/v1/menus` 本期不排期** — 前端侧栏继续用 `mock-nav-items` + 本地 registry；登录仍可走 RuoYi
+- `**/v1/menus` 本期不排期** — 前端侧栏继续用 `mock-nav-items` + 本地 registry；登录仍可走 RuoYi
 
 后续若需要服务端导航，再单独开 PRD 设计新契约（不必兼容 RuoYi `MenuRoute`）。
 
@@ -33,20 +33,22 @@ map-design/
 
 ## 二、已完成能力（Phase 0 · Auth MVP）
 
-| 维度 | 状态 | 说明 |
-| --- | --- | --- |
-| 脚手架 | ✅ | Java 21、Spring Boot 3.3.6、Maven 多模块 |
-| 数据库 | ✅ | Flyway V1–V3：基线表、auth 表、4 角色种子 |
-| 认证接口 | ✅ | `POST /v1/auth/login`、`/refresh`、`/logout` |
-| 用户会话 | ✅ | `GET /v1/users/me` |
-| 安全 | ✅ | JWT access/refresh、Spring Security 6、`JwtAuthFilter` |
-| RBAC | ✅ | `PLATFORM_ADMIN` / `TENANT_ADMIN` / `MEMBER` / `VIEWER` |
-| 多租户（应用层） | 🟡 部分 | ADR-0004 Accepted；`TenantContext` + JWT `tenant_id` + 租户 API |
-| Refresh 存储 | ✅ | dev 用 Redis，test 用 InMemory |
-| 错误体 | ✅ | RFC 7807 `ProblemDetail` |
-| OpenAPI | ✅ | SpringDoc 已配置 |
-| 测试 | ✅ | `mvn -pl saas-api test` 全部通过（H2 + MockMvc） |
-| 开发种子 | ✅ | `scripts/seed-demo-dev.sql`（`admin@demo.local` / `password`） |
+
+| 维度         | 状态    | 说明                                                           |
+| ---------- | ----- | ------------------------------------------------------------ |
+| 脚手架        | ✅     | Java 21、Spring Boot 3.3.6、Maven 多模块                          |
+| 数据库        | ✅     | Flyway V1–V3：基线表、auth 表、4 角色种子                               |
+| 认证接口       | ✅     | `POST /v1/auth/login`、`/refresh`、`/logout`                   |
+| 用户会话       | ✅     | `GET /v1/users/me`                                           |
+| 安全         | ✅     | JWT access/refresh、Spring Security 6、`JwtAuthFilter`         |
+| RBAC       | ✅     | `PLATFORM_ADMIN` / `TENANT_ADMIN` / `MEMBER` / `VIEWER`      |
+| 多租户（应用层）   | 🟡 部分 | `TenantContext` + MyBatis-Plus 租户拦截（仅 `sys_user`）            |
+| Refresh 存储 | ✅     | dev 用 Redis，test 用 InMemory                                  |
+| 错误体        | ✅     | RFC 7807 `ProblemDetail`                                     |
+| OpenAPI    | ✅     | SpringDoc 已配置                                                |
+| 测试         | ✅     | `mvn -pl saas-api test` 全部通过（H2 + MockMvc）                   |
+| 开发种子       | ✅     | `scripts/seed-demo-dev.sql`（`admin@demo.local` / `password`） |
+
 
 ### 与前端契约对齐
 
@@ -80,25 +82,29 @@ mvn -f services/pom.xml -pl saas-api test
 
 ## 三、缺口与风险
 
-| 缺口 | 影响 | 优先级 |
-| --- | --- | --- |
-| ~~**CORS**~~ | ✅ `CorsConfig` + `SecurityConfig.cors()`；`/v1/**` 允许 `saas.cors.allowed-origins` | — |
-| **租户 API 缺失** | TeamSwitcher、`tenantFeature` 门控仍靠 mock | P1 |
-| **PostgreSQL RLS 未做** | ADR-0004 已 Accepted；纵深防御待 B-05 `V5__rls.sql` | P1 |
-| **用户 Profile / 改密** | SaaS 侧尚无 profile 写接口（旧 RuoYi profile 不在迁移范围） | P2 |
-| **`/v1/admin/**` 空壳** | Security 已配置 `hasRole("PLATFORM_ADMIN")`，无 Controller | P2 |
-| **业务 API 为零** | 地图、专题、机库等无后端 | P3 |
-| **Docker 全栈未含 saas-api** | `deploy/docker-compose` 仅 saas-web + cloud-uav | P2 |
-| **Testcontainers** | 测试用 H2，与生产 PG 行为可能有差异 | P3 |
-| ~~**`SessionDto.expiresAt`**~~ | ✅ 取自 JWT `exp`，毫秒时间戳 | — |
+
+| 缺口                             | 影响                                                                               | 优先级 |
+| ------------------------------ | -------------------------------------------------------------------------------- | --- |
+| ~~**CORS**~~                   | ✅ `CorsConfig` + `SecurityConfig.cors()`；`/v1/`** 允许 `saas.cors.allowed-origins` | —   |
+| ~~**租户 API 缺失**~~              | ✅ `/v1/tenants` + `/features`；前端接真实 API 待联调                                      | —   |
+| ~~**PostgreSQL RLS 未做**~~      | ✅ `sys_user` RLS（`V5__rls.sql` + `TenantRlsDataSource`）                           | —   |
+| **用户 Profile / 改密**            | SaaS 侧尚无 profile 写接口（旧 RuoYi profile 不在迁移范围）                                     | P2  |
+| `**/v1/admin/`** 空壳**          | Security 已配置 `hasRole("PLATFORM_ADMIN")`，无 Controller                            | P2  |
+| **业务 API 为零**                  | 地图、专题、机库等无后端                                                                     | P3  |
+| **Docker 全栈未含 saas-api**       | `deploy/docker-compose` 仅 saas-web + cloud-uav                                   | P2  |
+| **Testcontainers**             | 测试用 H2，与生产 PG 行为可能有差异                                                            | P3  |
+| ~~`**SessionDto.expiresAt`**~~ | ✅ 取自 JWT `exp`，毫秒时间戳                                                             | —   |
+
 
 ### 本期明确不做（Later）
 
-| 项 | 说明 |
-| --- | --- |
-| **`/v1/menus`** | 不替代 RuoYi；导航由前端 mock / registry 承担 |
-| **RuoYi bootstrap 迁移** | 登录、菜单、profile 整链切换不在本期 |
-| **OAuth2/OIDC** | 远期；当前 Email/Password + JWT 足够 |
+
+| 项                      | 说明                                 |
+| ---------------------- | ---------------------------------- |
+| `**/v1/menus**`        | 不替代 RuoYi；导航由前端 mock / registry 承担 |
+| **RuoYi bootstrap 迁移** | 登录、菜单、profile 整链切换不在本期             |
+| **OAuth2/OIDC**        | 远期；当前 Email/Password + JWT 足够      |
+
 
 ---
 
@@ -128,6 +134,8 @@ flowchart TD
   Later["Later: /v1/menus 等"] -.->|单独 PRD| P3
 ```
 
+
+
 ---
 
 ## 五、迭代任务清单
@@ -136,12 +144,14 @@ flowchart TD
 
 **目标：** 前端配置 `VITE_API_URL` 后，能完成 SaaS 登录 + refresh + `/users/me`。
 
-| # | 任务 | 产出 | Skill |
-| --- | --- | --- | --- |
-| A-01 | ~~实现 CORS 配置 Bean~~ ✅ | `CorsConfig` + `CorsProperties` | `java-rest-api` |
-| A-02 | ~~补充 `local-dev.md` services 启动步骤~~ ✅ | [local-dev.md](../runbooks/local-dev.md#saas-api) | `java-spring-boot-scaffold` |
-| A-03 | ~~端到端冒烟~~ ✅ | [saas-api-auth-smoke.md](../runbooks/saas-api-auth-smoke.md) + `pnpm smoke:saas-api` | `webapp-testing` |
-| A-04 | ~~修复 `SessionDto.expiresAt`~~ ✅ | JWT `exp` → 毫秒 epoch | `java-rest-api` |
+
+| #    | 任务                                    | 产出                                                                                   | Skill                       |
+| ---- | ------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------- |
+| A-01 | ~~实现 CORS 配置 Bean~~ ✅                 | `CorsConfig` + `CorsProperties`                                                      | `java-rest-api`             |
+| A-02 | ~~补充 `local-dev.md` services 启动步骤~~ ✅ | [local-dev.md](../runbooks/local-dev.md#saas-api)                                    | `java-spring-boot-scaffold` |
+| A-03 | ~~端到端冒烟~~ ✅                           | [saas-api-auth-smoke.md](../runbooks/saas-api-auth-smoke.md) + `pnpm smoke:saas-api` | `webapp-testing`            |
+| A-04 | ~~修复 `SessionDto.expiresAt~~` ✅       | JWT `exp` → 毫秒 epoch                                                                 | `java-rest-api`             |
+
 
 **验收：**
 
@@ -155,18 +165,20 @@ flowchart TD
 
 **目标：** 为新功能提供租户上下文与能力门控；导航仍由前端 mock 承担。
 
-| # | 任务 | 产出 | 说明 |
-| --- | --- | --- | --- |
-| B-01 | ~~`GET /v1/tenants`~~ ✅ | `TenantsController` + 同邮箱多租户成员 | TeamSwitcher 数据源 |
-| B-02 | ~~`GET /v1/tenants/{id}/features`~~ ✅ | `TenantFeaturesResponse` + 成员校验 | 对接 `tenantFeature` 门控 |
-| B-03 | ~~Flyway `V4__tenant_features.sql`~~ ✅ | `sys_tenant_feature` 表 | 与 B-02 一并交付 |
-| B-04 | ~~敲定 [ADR-0004](../adr/0004-tenant-isolation-strategy.md)~~ ✅ | JWT `tenant_id` claim + 传播链路定稿 | 文档 Accepted |
-| B-05 | PostgreSQL RLS 策略（`sys_user` 起步） | Flyway `V5__rls.sql` | 可选与本 Sprint 并行 |
+
+| #    | 任务                                                      | 产出                              | 说明                    |
+| ---- | ------------------------------------------------------- | ------------------------------- | --------------------- |
+| B-01 | ~~`GET /v1/tenants`~~ ✅                                 | `TenantsController` + 同邮箱多租户成员  | TeamSwitcher 数据源      |
+| B-02 | ~~`GET /v1/tenants/{id}/features`~~ ✅                   | `TenantFeaturesResponse` + 成员校验 | 对接 `tenantFeature` 门控 |
+| B-03 | ~~Flyway `V4__tenant_features.sql~~` ✅                  | `sys_tenant_feature` 表          | 与 B-02 一并交付           |
+| B-04 | ~~敲定 [ADR-0004](../adr/0004-tenant-isolation-strategy.md)~~ ✅ | JWT `tenant_id` claim 定稿        | 文档 Accepted           |
+| B-05 | ~~PostgreSQL RLS 策略（`sys_user` 起步）~~ ✅                    | `migration-postgresql/V5__rls.sql` | 测试 H2 不加载           |
+
 
 **验收：**
 
-- [ ] TeamSwitcher 可拉取真实租户列表
-- [ ] `filterNavByTenant` 可接 `tenantFeature` API
+- [x] TeamSwitcher 可拉取真实租户列表
+- [x] `filterNavByTenant` 可接 `tenantFeature` API
 - [x] MockMvc 覆盖 tenants + features
 
 ---
@@ -175,11 +187,13 @@ flowchart TD
 
 **目标：** SaaS 用户自助能力；与 RuoYi profile **并行存在**，不做迁移切换。
 
-| # | 任务 | 产出 |
-| --- | --- | --- |
-| C-01 | `PUT /v1/users/me` — 更新 displayName 等 | 用户资料写接口 |
-| C-02 | `POST /v1/users/me/password` | 改密 |
+
+| #    | 任务                                    | 产出                     |
+| ---- | ------------------------------------- | ---------------------- |
+| C-01 | `PUT /v1/users/me` — 更新 displayName 等 | 用户资料写接口                |
+| C-02 | `POST /v1/users/me/password`          | 改密                     |
 | C-03 | 前端可选：Account Sheet 增加 SaaS profile 入口 | 仅新 API 消费方，不动 RuoYi 链路 |
+
 
 **验收：**
 
@@ -192,12 +206,14 @@ flowchart TD
 
 与 [产品路线图](../product/roadmap.md) 对齐：
 
-| 业务 | 后端任务 | 前端依赖 |
-| --- | --- | --- |
-| 租户能力门控 | B-02 features API | `filterNavByTenant` 接真实数据 |
-| 机库 Dock | `/v1/uav/*` 机库/直播元数据 | uav-workspace |
-| 地图插件 | `/v1/layers`、`/v1/projects` 等 | Phase C MapProvider |
-| Admin App | `/v1/admin/tenants` CRUD | apps/admin scaffold |
+
+| 业务        | 后端任务                          | 前端依赖                      |
+| --------- | ----------------------------- | ------------------------- |
+| 租户能力门控    | B-02 features API             | `filterNavByTenant` 接真实数据 |
+| 机库 Dock   | `/v1/uav/`* 机库/直播元数据          | uav-workspace             |
+| 地图插件      | `/v1/layers`、`/v1/projects` 等 | Phase C MapProvider       |
+| Admin App | `/v1/admin/tenants` CRUD      | apps/admin scaffold       |
+
 
 **部署：**
 
@@ -209,13 +225,15 @@ flowchart TD
 
 ## 六、与前端路线图对齐
 
-| 前端 roadmap 项 | 后端依赖 | 建议顺序 |
-| --- | --- | --- |
-| 租户能力门控 | `/v1/tenants/{id}/features` | Sprint B |
-| Phase C MapProvider | 无硬依赖（插件本地） | 可并行 |
-| 机库 Dock 真实数据 | `/v1/uav/*` | Sprint D |
-| 侧栏 / 菜单 | **无**（继续 mock-nav + registry） | 不在 services 范围 |
-| SaaS Auth 新接口联调 | Sprint A 完成 | **当前重点** |
+
+| 前端 roadmap 项        | 后端依赖                          | 建议顺序           |
+| ------------------- | ----------------------------- | -------------- |
+| 租户能力门控              | `/v1/tenants/{id}/features`   | Sprint B       |
+| Phase C MapProvider | 无硬依赖（插件本地）                    | 可并行            |
+| 机库 Dock 真实数据        | `/v1/uav/`*                   | Sprint D       |
+| 侧栏 / 菜单             | **无**（继续 mock-nav + registry） | 不在 services 范围 |
+| SaaS Auth 新接口联调     | Sprint A 完成                   | **当前重点**       |
+
 
 ---
 
@@ -238,12 +256,15 @@ flowchart TD
 
 ## 九、参考
 
-| 文档 / Skill | 说明 |
-| --- | --- |
-| [backend-integration.md](./backend-integration.md) | API 双轨与迁移路径 |
-| [auth-rbac.md](./auth-rbac.md) | 角色矩阵与 Session 流 |
-| [multi-tenancy.md](./multi-tenancy.md) | 租户隔离策略 |
-| [ADR-0005](../adr/0005-ruoyi-transitional-backend.md) | RuoYi 过渡策略 |
-| `java-backend-index` | Skill 路由与目录约定 |
-| `java-auth-security` | JWT / RBAC 实现清单 |
-| `java-rest-api` | REST 端点与 OpenAPI 规范 |
+
+| 文档 / Skill                                            | 说明                  |
+| ----------------------------------------------------- | ------------------- |
+| [backend-integration.md](./backend-integration.md)    | API 双轨与迁移路径         |
+| [auth-rbac.md](./auth-rbac.md)                        | 角色矩阵与 Session 流     |
+| [multi-tenancy.md](./multi-tenancy.md)                | 租户隔离策略              |
+| [ADR-0005](../adr/0005-ruoyi-transitional-backend.md) | RuoYi 过渡策略          |
+| `java-backend-index`                                  | Skill 路由与目录约定       |
+| `java-auth-security`                                  | JWT / RBAC 实现清单     |
+| `java-rest-api`                                       | REST 端点与 OpenAPI 规范 |
+
+

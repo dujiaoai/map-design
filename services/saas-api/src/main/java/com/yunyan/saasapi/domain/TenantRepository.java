@@ -6,6 +6,7 @@ import com.yunyan.saasapi.domain.entity.SysUser;
 import com.yunyan.saasapi.domain.mapper.SysTenantFeatureMapper;
 import com.yunyan.saasapi.domain.mapper.SysTenantMapper;
 import com.yunyan.saasapi.domain.mapper.SysUserMapper;
+import com.yunyan.saasapi.security.TenantRlsBypass;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,6 +43,10 @@ public class TenantRepository {
   }
 
   public List<SysTenant> findTenantsByUserEmail(String email) {
+    return TenantRlsBypass.call(() -> findTenantsByUserEmailWithRlsBypass(email));
+  }
+
+  private List<SysTenant> findTenantsByUserEmailWithRlsBypass(String email) {
     var users = sysUserMapper.selectActiveByEmailAcrossTenants(email);
     if (users.isEmpty()) {
       return List.of();

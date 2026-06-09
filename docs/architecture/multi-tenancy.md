@@ -39,6 +39,15 @@
 应用层：`SaasTenantLineHandler` 对 `sys_user` 等表白名单自动追加 `tenant_id` 条件。  
 跨租户查询须 `@InterceptorIgnore(tenantLine = "true")` 并做成员/角色校验。
 
+数据库层（PostgreSQL dev）：`sys_user` 已启用 **RLS**（`V5__rls.sql`）。连接借出前由 `TenantRlsDataSource` 设置：
+
+| 会话变量 | 含义 |
+| --- | --- |
+| `app.tenant_id` | 当前 JWT 租户 UUID |
+| `app.bypass_tenant_rls = on` | 受信服务端路径（登录、跨租户成员查询） |
+
+测试 profile（H2）不加载 `migration-postgresql`，`saas.tenant-rls.enabled=false`。
+
 ## 能力门控
 
 `GET /v1/tenants/{id}/features` 返回 `sys_tenant_feature.feature_code` 列表，对齐前端 `MockModuleMeta.tenantFeature`（如 `custom.highway-alert`）。

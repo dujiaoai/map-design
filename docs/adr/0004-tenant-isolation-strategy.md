@@ -114,7 +114,7 @@ MyBatis-Plus TenantLineHandler   // 对配置表白名单追加 WHERE tenant_id 
 | 租户列表 / 能力 | `TenantsController`、`TenantService` |
 | 跨租户成员查询 | `SysUserMapper.selectActiveByEmailAcrossTenants` |
 
-PostgreSQL RLS：**未启用**（见 B-05 / `V5__rls.sql`）。
+PostgreSQL RLS：`sys_user` 已启用（`db/migration-postgresql/V5__rls.sql` + `TenantRlsDataSource`）；其余业务表随 Sprint 扩展。
 
 ## 参考
 

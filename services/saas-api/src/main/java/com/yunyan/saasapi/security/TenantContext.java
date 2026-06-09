@@ -30,4 +30,22 @@ public final class TenantContext {
     set(tenantId);
     return TenantContext::clear;
   }
+
+  public static <T> T withTenant(String tenantId, java.util.function.Supplier<T> action) {
+    set(tenantId);
+    try {
+      return action.get();
+    } finally {
+      clear();
+    }
+  }
+
+  public static void withTenant(String tenantId, Runnable action) {
+    withTenant(
+        tenantId,
+        () -> {
+          action.run();
+          return null;
+        });
+  }
 }

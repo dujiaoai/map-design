@@ -139,7 +139,7 @@ flowchart TD
 | # | 任务 | 产出 | Skill |
 | --- | --- | --- | --- |
 | A-01 | ~~实现 CORS 配置 Bean~~ ✅ | `CorsConfig` + `CorsProperties` | `java-rest-api` |
-| A-02 | 补充 `docs/runbooks/local-dev.md` 中 services 启动步骤 | compose up → flyway → seed → curl 验证 | `java-spring-boot-scaffold` |
+| A-02 | ~~补充 `local-dev.md` services 启动步骤~~ ✅ | [local-dev.md](../runbooks/local-dev.md#saas-api) | `java-spring-boot-scaffold` |
 | A-03 | 端到端冒烟：`.env` 设 `VITE_API_URL=/v1`，用 demo 账号登录 | 联调 checklist | `webapp-testing` |
 | A-04 | 修复 `SessionDto.expiresAt`（从 JWT TTL 计算） | 小改动 | `java-rest-api` |
 

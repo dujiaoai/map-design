@@ -2,11 +2,14 @@
 
 ## 前置条件
 
-| 工具 | 版本 |
-| --- | --- |
-| Node.js | ≥ 20.19.0 |
-| pnpm | ≥ 9.14.0 |
-| Turbo | 2.9.16（根 devDependency，随 `pnpm install` 安装） |
+| 工具 | 版本 | 用途 |
+| --- | --- | --- |
+| Node.js | ≥ 20.19.0 | 前端 monorepo |
+| pnpm | ≥ 9.14.0 | 前端 monorepo |
+| Turbo | 2.9.16（根 devDependency，随 `pnpm install` 安装） | 任务编排 |
+| **JDK** | **21** | `services/saas-api` |
+| **Maven** | 3.9+ | `services/saas-api` |
+| **Docker** | 近期版本 | PostgreSQL + Redis（本地 SaaS API） |
 
 ## 安装
 
@@ -27,6 +30,8 @@ cp .env.example .env
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
 | `VITE_APP_BASE_HOST` | `https://www.airace.com.cn` | RuoYi API 代理目标（vite proxy `/YunYanApi`） |
+| `VITE_API_URL` | （未设置） | SaaS `/v1` 基址；见下方 [SaaS API](#saas-api) |
+| `VITE_SAAS_API_HOST` | `http://localhost:8082` | vite 将 `/v1` 代理到该地址（仅 `VITE_API_URL=/v1` 时需要） |
 
 `.env` 文件放在**仓库根目录**。`apps/web/vite.config.ts` 通过 `loadEnv(mode, repoRoot, '')` 加载。
 
@@ -49,6 +54,119 @@ pnpm --filter @repo/saas-web dev
 | 端口 | 5175 |
 | 路由 | `/login`、`/`（地图工作台） |
 | API 代理 | `http://localhost:5175/YunYanApi` → `VITE_APP_BASE_HOST` |
+
+### SaaS API
+
+`services/saas-api` — 本地 Java 后端，端口 **8082**，路径前缀 `/v1`。与 RuoYi **并行**存在：工作台登录默认仍走 RuoYi；SaaS API 用于新能力联调（Auth、后续租户 API 等）。详见 [services-development-plan.md](../architecture/services-development-plan.md)。
+
+#### 1. 启动依赖（PostgreSQL + Redis）
+
+在**仓库根目录**执行：
+
+```bash
+docker compose -f services/docker-compose.dev.yml up -d
+```
+
+| 服务 | 端口 | 凭据 |
+| --- | --- | --- |
+| PostgreSQL 16 | 5432 | DB `saas` / 用户 `saas` / 密码 `saas` |
+| Redis 7 | 6379 | 无密码 |
+
+检查容器状态：
+
+```bash
+docker compose -f services/docker-compose.dev.yml ps
+```
+
+#### 2. 启动 API
+
+```bash
+mvn -f services/pom.xml -pl saas-api spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+- Flyway 在启动时自动执行 `db/migration/V*.sql`
+- Refresh token 写入 Redis（dev profile）
+- 健康检查：`http://localhost:8082/actuator/health`
+- OpenAPI：`http://localhost:8082/swagger-ui.html`
+
+#### 3. 导入演示数据（首次或重置后）
+
+演示账号（租户 slug `demo`）：
+
+| 邮箱 | 密码 | 角色 |
+| --- | --- | --- |
+| `admin@demo.local` | `password` | TENANT_ADMIN |
+| `member@demo.local` | `password` | MEMBER |
+
+**Bash / Git Bash：**
+
+```bash
+docker compose -f services/docker-compose.dev.yml exec -T postgres \
+  psql -U saas -d saas < services/saas-api/scripts/seed-demo-dev.sql
+```
+
+**PowerShell：**
+
+```powershell
+Get-Content services/saas-api/scripts/seed-demo-dev.sql -Raw |
+  docker compose -f services/docker-compose.dev.yml exec -T postgres psql -U saas -d saas
+```
+
+验证种子：
+
+```bash
+docker compose -f services/docker-compose.dev.yml exec postgres \
+  psql -U saas -d saas -c "SELECT t.slug, u.email, r.code FROM sys_tenant t JOIN sys_user u ON u.tenant_id = t.id LEFT JOIN sys_user_role ur ON ur.user_id = u.id LEFT JOIN sys_role r ON r.id = ur.role_id WHERE t.slug = 'demo';"
+```
+
+#### 4. curl 冒烟（不依赖前端）
+
+```bash
+# 健康检查
+curl -s http://localhost:8082/actuator/health
+
+# 登录
+curl -s -X POST http://localhost:8082/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@demo.local","password":"password","tenantId":"demo"}'
+
+# 将上一步返回的 accessToken 代入
+curl -s http://localhost:8082/v1/users/me \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+#### 5. 与 saas-web 联调（可选）
+
+`.env` 中二选一：
+
+| `VITE_API_URL` | 行为 |
+| --- | --- |
+| `http://localhost:8082` | 浏览器直连 Java；依赖 CORS（已配置允许 `http://localhost:5175`） |
+| `/v1` | 同源请求，由 vite 代理到 `VITE_SAAS_API_HOST`（默认 `http://localhost:8082`） |
+
+```bash
+# 终端 1：SaaS API（见上文）
+# 终端 2：前端
+pnpm --filter @repo/saas-web dev
+```
+
+> **说明**：设置 `VITE_API_URL` 仅接通 `@repo/api-client` / `@repo/auth` 的 SaaS 刷新链路；**不会**自动替换 RuoYi 登录页与菜单 bootstrap。
+
+#### 6. 运行测试
+
+```bash
+mvn -f services/pom.xml -pl saas-api test
+```
+
+#### 停止依赖
+
+```bash
+docker compose -f services/docker-compose.dev.yml down
+# 保留数据卷：省略 -v
+# 清空 PG 数据：docker compose -f services/docker-compose.dev.yml down -v
+```
+
+---
 
 ### 机库云插件
 
@@ -107,11 +225,31 @@ pnpm --filter @repo/saas-web test:watch # Vitest watch
 git config --global --add safe.directory D:/path/to/map-design
 ```
 
-### 登录 401 / 验证码失败
+### 登录 401 / 验证码失败（RuoYi）
 
 - 确认 `VITE_APP_BASE_HOST` 指向可访问的 RuoYi 后端
 - 检查浏览器 Network 中 `/YunYanApi/captchaImage` 响应
 - 密码经 RSA 加密（`jsencrypt`），需后端公钥匹配
+
+### SaaS API 启动失败
+
+| 现象 | 处理 |
+| --- | --- |
+| `Connection refused` 5432 / 6379 | 先执行 `docker compose -f services/docker-compose.dev.yml up -d` |
+| Flyway 迁移失败 | 检查 PG 是否已有冲突 schema；必要时 `down -v` 后重来 |
+| 登录 401 `Invalid email or password` | 确认已执行 `seed-demo-dev.sql`，且 `tenantId` 为 `demo` |
+| 前端跨域错误 | 确认 `saas.cors.allowed-origins` 含 `http://localhost:5175`；或改用 `VITE_API_URL=/v1` 走代理 |
+| `RedisConnectionFailure` | Redis 容器未启动；dev profile 依赖 Redis 存 refresh token |
+
+### 端口 8082 被占用
+
+```bash
+# Windows PowerShell
+Get-NetTCPConnection -LocalPort 8082 -ErrorAction SilentlyContinue
+
+# 或换端口启动（临时）
+mvn -f services/pom.xml -pl saas-api spring-boot:run -Dspring-boot.run.profiles=dev -Dspring-boot.run.arguments=--server.port=8083
+```
 
 ### Cloud UAV 联调 CSS/JS 404
 

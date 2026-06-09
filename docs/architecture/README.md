@@ -79,6 +79,7 @@ flowchart LR
 | [frontend.md](./frontend.md) | 前端规范、FSD |
 | [packages.md](./packages.md) | 共享 packages API |
 | [backend-integration.md](./backend-integration.md) | RuoYi / SaaS API 集成 |
+| [services-development-plan.md](./services-development-plan.md) | `services/` 后端开发计划与迭代任务 |
 | [map-workspace-ui.md](./map-workspace-ui.md) | 地图工作台 UI 载体 |
 | [map-plugin-integration.md](./map-plugin-integration.md) | 地图插件桥接 |
 | [map-plugins-catalog.md](./map-plugins-catalog.md) | 地图插件 Skill 能力目录（52 个） |
@@ -94,6 +95,6 @@ flowchart LR
 | packages（ui/auth/api-client/ruoyi-api） | 已完成 |
 | cloud-uav ESM 远程插件脚手架 | 已完成 |
 | map-plugin-bridge 真实接入 | 待接 MapProvider |
-| SaaS `/v1` API 迁移 | 规划中 |
+| SaaS `/v1` API 迁移 | Auth MVP 已完成，见 [services-development-plan.md](./services-development-plan.md) |
 | Marketing / Admin scaffold | 待建 |
 | settings / :orgSlug 路由 | 规划中（feature 已有，路由未注册） |

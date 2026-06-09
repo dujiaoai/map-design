@@ -34,7 +34,8 @@ saas:
     access-ttl: PT15M
     refresh-ttl: P7D
   cors:
-    allowed-origins: http://localhost:5175
+    allowed-origins:
+      - http://localhost:5175
 
 springdoc:
   api-docs:

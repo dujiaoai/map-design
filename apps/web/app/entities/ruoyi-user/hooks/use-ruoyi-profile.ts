@@ -1,11 +1,17 @@
-import { useUserInfoQuery } from '~/shared/queries'
+import { useQuery } from '@tanstack/react-query'
+
+import { userInfoQueryOptions } from '~/shared/queries'
+import { usesSaasSessionBootstrap } from '~/shared/session/fetch-saas-session'
 
 import { hasAnyPermission, hasPermission, hasRoleKey, isAdmin } from '../lib/permissions'
 import { useRuoYiProfileStore } from '../model/ruoyi-profile-store'
 
 export function useRuoYiProfile() {
   const store = useRuoYiProfileStore()
-  const query = useUserInfoQuery()
+  const query = useQuery({
+    ...userInfoQueryOptions(),
+    enabled: !usesSaasSessionBootstrap() && !store.hydrated,
+  })
 
   return {
     user: store.user ?? query.data?.user ?? null,

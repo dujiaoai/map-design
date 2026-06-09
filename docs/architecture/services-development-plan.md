@@ -31,7 +31,7 @@
 
 `services/` 是 map-design 的 **SaaS 目标后端**，与前端 `@repo/api-client`（`/v1`、Bearer JWT、标准 HTTP 响应）对接，**不**走 RuoYi envelope。
 
-当前前端**仍临时**走 RuoYi 登录与 bootstrap。`services` 处于 **Auth MVP + 租户 API 已完成**；下一步 **C/D 补齐注册、权限、后台管理**，**暂不启动**地图/机库等业务 API。
+当前前端登录/注册/bootstrap **已切 SaaS**（C-06～C-08）；Account 等仍部分走 RuoYi，待 C-10～C-12 清理。`services` 处于 **Auth MVP + 租户 API 已完成**；下一步 **C/D 补齐权限、后台管理**，**暂不启动**地图/机库等业务 API。
 
 ```
 map-design/
@@ -66,7 +66,7 @@ map-design/
 
 - `@repo/auth` 的 `loginResponseSchema`（`accessToken`、`refreshToken`、`expiresIn`、`user.name/roles/tenant`）与后端 DTO 一致
 - `apps/web` 已配置 `VITE_API_URL` + vite `/v1` 代理 → `:8082`
-- **登录 / bootstrap 待 Sprint C 切换**：当前仍走 RuoYi；目标为 SaaS `/v1/auth/login` + mock-nav bootstrap
+- **登录 / bootstrap**：SaaS `/v1/auth/*` + `GET /v1/users/me`；侧栏仍 mock-nav（C-09 补 `filterNavByTenant`）
 
 ### 本地验证命令
 
@@ -223,7 +223,7 @@ flowchart TD
 | --- | --- | --- |
 | C-06 ✅ | 登录页切 SaaS | `routes/login.tsx` → `/v1/auth/login`；`VITE_API_URL` + refresh/logout；bootstrap 最小 SaaS 分支 |
 | C-07 ✅ | **注册页** | `routes/register.tsx` → `/v1/auth/register`；`auth.register()` 注册后进入工作台 |
-| C-08 | Bootstrap 去 RuoYi | `GET /v1/users/me`；移除 `getUserInfo` / `getMenuRouters` |
+| C-08 ✅ | Bootstrap 去 RuoYi | `GET /v1/users/me`；移除 `getUserInfo` / `getMenuRouters` |
 | C-09 | 侧栏 mock bootstrap | `mock-nav-items` + `filterNavByTenant`（features API） |
 | C-10 | Account / 用户信息 UI | 读写信走 `/v1/users/me*` |
 | C-11 | TeamSwitcher | `GET /v1/tenants`；切换租户 = 重新登录 |

@@ -34,7 +34,7 @@
 
 **Sprint C 进度（2026-06）**：后端 C-01～C-05 ✅；前端 C-06～C-12 ✅（身份与会话主路径已去 RuoYi）。**C-09 菜单/租户能力过滤暂缓**。
 
-**Sprint D 进度**：**D-01 ✅**（`sys_permission` + `sys_role_permission` + 种子）；**D-02 ✅**（JWT / `users/me` 返回 permissions + `@PreAuthorize`）；D-03～D-10 待做。**暂不启动**地图/机库等业务 API。
+**Sprint D 进度**：**D-01 ✅**（`sys_permission` + `sys_role_permission` + 种子）；**D-02 ✅**（JWT / `users/me` 返回 permissions + `@PreAuthorize`）；**D-03 ✅**（`/v1/admin/roles*`、`/v1/admin/permissions`）；D-04～D-10 待做。**暂不启动**地图/机库等业务 API。
 
 ```
 map-design/
@@ -107,7 +107,7 @@ mvn -f services/pom.xml -pl saas-api test
 | ~~**工作台会话仍走 RuoYi**~~       | ✅ C-06～C-08：登录、注册、bootstrap 已切 SaaS                                        | —   |
 | ~~**注册 / 用户资料写接口**~~        | ✅ C-02～C-05 后端 + C-10 Account UI（`users/me*`）                                  | —   |
 | **侧栏租户能力过滤**                 | C-09 **暂缓**；当前 mock-nav 全量，不接 `features` 门控                               | —   |
-| **RBAC / 权限配置 / 后台管理**       | D-01 ✅ 权限表 + 种子；**D-02 ✅** JWT/`users/me` permissions；D-03～D-10：`/v1/admin/*`、apps/admin | P2  |
+| **RBAC / 权限配置 / 后台管理**       | D-01～D-03 ✅；D-04～D-10：`/v1/admin/*` 租户/用户、apps/admin | P2  |
 | `**/v1/admin/`** 空壳**          | Security 已有 `PLATFORM_ADMIN` 占位；Controller 与 Admin UI 排 Sprint D                 | P2  |
 | **业务域 API**                    | 地图、机库、专题等 — **Sprint C/D 不做**，待基础能力验收后另开迭代                                    | Later |
 | **Docker 全栈未含 saas-api**       | `deploy/docker-compose` 仅 saas-web + cloud-uav                                   | P2  |
@@ -256,7 +256,7 @@ flowchart TD
 | --- | --- | --- |
 | D-01 ✅ | 权限模型 | `V6__permissions.sql`：`sys_permission`、`sys_role_permission`；11 个种子权限码 + 角色绑定 |
 | D-02 ✅ | **用户权限** | JWT `permissions` claim；`users/me` / login 返回 `user.permissions`；`SaasPrincipal` + `@PreAuthorize`；`/v1/admin/**` 按 platform 权限码门控 |
-| D-03 | **权限配置 API** | `PLATFORM_ADMIN`：`GET/PUT /v1/admin/roles/{id}/permissions` 等 |
+| D-03 ✅ | **权限配置 API** | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions`（全量替换 + scope 校验） |
 | D-04 | 租户管理 | `GET/POST/PATCH /v1/admin/tenants`（列表、创建、启停/计划） |
 | D-05 | 用户管理 | `GET /v1/admin/users`、租户内成员邀请/禁用（最小 CRUD） |
 | D-06 | 租户管理员能力 | `TENANT_ADMIN`：`/v1/admin/tenants/{id}/members` 成员与角色分配 |
@@ -357,7 +357,8 @@ flowchart TD
 | C-12 ✅ | C | RuoYi 会话清理 |
 | D-01 ✅ | D | 后端：权限表 + 种子 |
 | D-02 ✅ | D | 后端：JWT / `users/me` permissions + `@PreAuthorize` |
-| D-03～D-06 | D | 后端：权限 API、`/v1/admin/*` 租户/用户/成员 |
+| D-03 ✅ | D | 后端：权限配置 API（roles / permissions） |
+| D-04～D-06 | D | 后端：租户/用户/成员 admin API |
 | D-07～D-10 | D | 前端：apps/admin、权限门控、Docker 部署 |
 | E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
 

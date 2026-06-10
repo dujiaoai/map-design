@@ -101,12 +101,21 @@
 | 运行时鉴权 | `SaasPrincipal` authorities = `ROLE_*` + 权限码；`@PreAuthorize("hasAuthority('admin:tenants:read')")` |
 | Admin 门控 | `/v1/admin/**` 需任一 platform 权限；`GET /v1/admin/ping` 冒烟端点 |
 
-### 待做（D-03～D-10）
+### 已完成（D-03）
+
+| 能力 | 实现 |
+| --- | --- |
+| 角色列表 | `GET /v1/admin/roles`（`admin:roles:read`） |
+| 权限目录 | `GET /v1/admin/permissions` |
+| 角色权限读 | `GET /v1/admin/roles/{id}/permissions` |
+| 角色权限写 | `PUT /v1/admin/roles/{id}/permissions`（全量替换；按角色 scope 校验） |
+
+### 待做（D-04～D-10）
 
 | 能力 | 产出 |
 | --- | --- |
 | ~~用户权限~~ | ✅ D-02：JWT / `users/me` permissions；`@PreAuthorize` |
-| 权限配置 | `GET/PUT /v1/admin/roles/{id}/permissions` 等 |
+| ~~权限配置~~ | ✅ D-03：`GET/PUT /v1/admin/roles/{id}/permissions` 等 |
 | 后台管理 | `/v1/admin/tenants`、`/users`、租户成员与角色 |
 | Admin App | `apps/admin` 脚手架 + 基础 CRUD 页 |
 | saas-web 门控 | `requireRole` / 权限码对齐 SaaS，去掉 RuoYi 转换 |

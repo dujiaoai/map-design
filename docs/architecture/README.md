@@ -97,7 +97,9 @@ flowchart LR
 | Sprint C：TeamSwitcher（C-11） | ✅ |
 | Sprint C：RuoYi 会话清理（C-12） | ✅ |
 | Sprint D：权限模型（D-01） | ✅ |
-| Sprint D：权限 API·admin·部署（D-02～D-10） | 待实现 |
+| Sprint D：用户 permissions（D-02） | ✅ |
+| Sprint D：权限配置 API（D-03） | ✅ |
+| Sprint D：租户/用户 admin·部署（D-04～D-10） | 待实现 |
 | Sprint E：地图/机库等业务 API | Later，C/D 不做 |
 | packages（ui/auth/api-client/ruoyi-api） | 已完成 |
 | SaaS `/v1` 后端 | Auth MVP + 租户 API ✅ |

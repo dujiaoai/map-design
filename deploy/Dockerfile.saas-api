@@ -1,4 +1,9 @@
-FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+# 使用已缓存的 node:20-alpine，避免额外拉取 Docker Hub 的 maven/temurin 镜像（国内网络常见失败点）
+FROM node:20-alpine AS builder
+
+RUN apk add --no-cache maven openjdk21
+
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk
 
 WORKDIR /app
 
@@ -8,11 +13,11 @@ COPY services/saas-api/src services/saas-api/src
 
 RUN mvn -f services/pom.xml -pl saas-api package -DskipTests -q
 
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM node:20-alpine AS runtime
+
+RUN apk add --no-cache openjdk21-jre-headless wget
 
 WORKDIR /app
-
-RUN apk add --no-cache wget
 
 COPY --from=builder /app/services/saas-api/target/saas-api-*.jar /app/app.jar
 

@@ -142,7 +142,8 @@ location /YunYanApi {
 | --- | --- |
 | cloud-uav build 报 `@/components/ui/*` 找不到 | vite alias 是否把 ui 的 `@/` 指到 `packages/ui/src` |
 | `/YunYanApi/*` 404 | `saas-web.conf.template` 是否保留前缀转发 |
-| Docker Hub 超时 | 先 `docker pull node:20-alpine nginx:1.27-alpine` |
+| Docker Hub 拉取 maven/temurin 超时 | `Dockerfile.saas-api` 已改用本地缓存的 `node:20-alpine` + Alpine OpenJDK/Maven |
+| `/v1/ping` smoke 401 | Spring Security 仅放行 GET；smoke 对 API 用 GET 而非 HEAD |
 | 容器 unhealthy | `docker compose logs saas-web` / `cloud-uav` |
 
 ## 与本地 dev 的关系

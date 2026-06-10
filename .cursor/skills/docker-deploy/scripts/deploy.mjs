@@ -39,13 +39,22 @@ function run(cmd, args, opts = {}) {
   }
 }
 
-function curlHead(url) {
-  const args =
-    process.platform === 'win32'
-      ? ['-sI', url]
-      : ['-sI', url]
+function curlCheck(url, { method = 'HEAD' } = {}) {
   const bin = process.platform === 'win32' ? 'curl.exe' : 'curl'
-  const result = spawnSync(bin, args, { encoding: 'utf8', shell: false })
+  if (method === 'GET') {
+    const nullDev = process.platform === 'win32' ? 'NUL' : '/dev/null'
+    const result = spawnSync(bin, ['-sS', '-o', nullDev, '-w', '%{http_code}', url], {
+      encoding: 'utf8',
+      shell: false,
+    })
+    const status = Number(result.stdout?.trim() || 0)
+    return {
+      ok: result.status === 0 && status > 0,
+      status,
+      firstLine: status ? `HTTP/1.1 ${status}` : 'request failed',
+    }
+  }
+  const result = spawnSync(bin, ['-sI', url], { encoding: 'utf8', shell: false })
   const firstLine = (result.stdout || '').split('\n')[0] || ''
   const statusMatch = firstLine.match(/HTTP\/[\d.]+ (\d+)/)
   return {
@@ -106,15 +115,15 @@ switch (command) {
     const uavPort = env.CLOUD_UAV_PORT || '8081'
     const checks = [
       { name: 'saas-web SPA', url: `http://localhost:${webPort}/` },
-      { name: 'SaaS /v1 proxy', url: `http://localhost:${webPort}/v1/ping` },
+      { name: 'SaaS /v1 proxy', url: `http://localhost:${webPort}/v1/ping`, method: 'GET' },
       { name: 'saas-api health', url: `http://localhost:${apiPort}/actuator/health` },
       { name: 'saas-admin SPA', url: `http://localhost:${adminPort}/` },
       { name: 'RuoYi proxy', url: `http://localhost:${webPort}/YunYanApi/captchaImage` },
       { name: 'cloud-uav registry', url: `http://localhost:${uavPort}/yunyan-cloud-uav/assets/registry.js` },
     ]
     let failed = 0
-    for (const { name, url } of checks) {
-      const res = curlHead(url)
+    for (const { name, url, method } of checks) {
+      const res = curlCheck(url, { method })
       const pass = res.ok && res.status >= 200 && res.status < 400
       console.log(`${pass ? '✓' : '✗'} ${name}: ${res.firstLine || 'request failed'}`)
       if (!pass) failed++

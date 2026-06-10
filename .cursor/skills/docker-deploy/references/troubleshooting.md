@@ -22,7 +22,7 @@ location /YunYanApi {
 }
 ```
 
-验证：对比 `curl https://www.airace.com.cn/YunYanApi/captchaImage` 与 `curl http://localhost:8080/YunYanApi/captchaImage` 状态码一致。
+验证：对比 `curl https://www.airace.com.cn/YunYanApi/captchaImage` 与 `curl http://localhost:8084/YunYanApi/captchaImage` 状态码一致。
 
 ---
 

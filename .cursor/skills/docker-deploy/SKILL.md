@@ -19,7 +19,7 @@ compatibility: Docker Desktop (Linux engine), pnpm monorepo at repo root, deploy
 | --- | --- | --- | --- |
 | `postgres` + `redis` | 官方镜像 | 内部 | saas-api 依赖 |
 | `saas-api` | `map-design/saas-api` | 8082 | Spring Boot `/v1` |
-| `saas-web` | `map-design/saas-web` | 8080 | SPA + `/v1`、`/YunYanApi` 反代 |
+| `saas-web` | `map-design/saas-web` | 8084 | SPA + `/v1`、`/YunYanApi` 反代 |
 | `saas-admin` | `map-design/saas-admin` | 8083 | 运营后台 SPA + `/v1` 反代 |
 | `cloud-uav` | `map-design/cloud-uav` | 8081 | `/yunyan-cloud-uav/assets/*.js` |
 | `gateway`（可选 profile） | nginx | 9080 | 同域聚合 |
@@ -70,7 +70,7 @@ docker version
 | 变量 | 默认 | 说明 |
 | --- | --- | --- |
 | `RUOYI_API_UPSTREAM` | `https://www.airace.com.cn` | RuoYi 根地址（不含路径） |
-| `SAAS_WEB_PORT` | `8080` | Web 映射端口 |
+| `SAAS_WEB_PORT` | `8084` | Web 映射端口 |
 | `SAAS_ADMIN_PORT` | `8083` | Admin 映射端口 |
 | `SAAS_API_PORT` | `8082` | API 映射端口（调试） |
 | `CLOUD_UAV_PORT` | `8081` | UAV 映射端口 |
@@ -103,7 +103,7 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 
 ### 4. 用户验证
 
-- 浏览器打开 `http://localhost:8080/`（或 `.env` 中端口）
+- 浏览器打开 `http://localhost:8084/`（或 `.env` 中端口）
 - 登录页可加载；Network 中 `/YunYanApi/*` 非浏览器直连外域
 
 ## 修改 deploy 时的约束
@@ -151,7 +151,7 @@ location /YunYanApi {
 | 场景 | 命令 |
 | --- | --- |
 | 日常开发 | `pnpm dev`（:5175，Vite 热更新） |
-| 验收生产构建 | Docker `saas-web` :8080 |
+| 验收生产构建 | Docker `saas-web` :8084 |
 | 验收 UAV 静态包 | Docker `cloud-uav` :8081 |
 
 不要在容器内跑 `pnpm dev`。

@@ -109,7 +109,7 @@ switch (command) {
     break
   }
   case 'smoke': {
-    const webPort = env.SAAS_WEB_PORT || '8080'
+    const webPort = env.SAAS_WEB_PORT || '8084'
     const adminPort = env.SAAS_ADMIN_PORT || '8083'
     const apiPort = env.SAAS_API_PORT || '8082'
     const uavPort = env.CLOUD_UAV_PORT || '8081'

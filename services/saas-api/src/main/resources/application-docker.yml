@@ -16,6 +16,6 @@ saas:
     secret: ${SAAS_JWT_SECRET:docker-only-change-me-use-32chars-min!!}
   cors:
     allowed-origins:
-      - http://localhost:8080
+      - http://localhost:8084
       - http://localhost:8083
       - http://localhost:9080

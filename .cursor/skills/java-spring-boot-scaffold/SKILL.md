@@ -132,7 +132,7 @@ saas:
     refresh-ttl: P7D
 ```
 
-**端口 8082**：避免与 `docker-deploy` 的 saas-web :8080 冲突。前端 dev 代理：
+**端口 8082**：避免与 `docker-deploy` 的 saas-web :8084 冲突。前端 dev 代理：
 
 ```ts
 // apps/web/vite.config.ts — 规划项

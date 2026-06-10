@@ -60,7 +60,7 @@ services:
         BUILD_MODE: ${BUILD_MODE:-production}
     image: map-design/saas-web:${TAG:-latest}
     ports:
-      - '${SAAS_WEB_PORT:-8080}:80'
+      - '${SAAS_WEB_PORT:-8084}:80'
     environment:
       RUOYI_API_UPSTREAM: ${RUOYI_API_UPSTREAM:-https://www.airace.com.cn}
       SAAS_API_UPSTREAM: http://saas-api:8082

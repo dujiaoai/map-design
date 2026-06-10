@@ -199,7 +199,7 @@ docker compose up -d --build
 
 | 访问 | URL |
 | --- | --- |
-| Web 工作台 | http://localhost:8080 |
+| Web 工作台 | http://localhost:8084 |
 | 运营后台 | http://localhost:8083 |
 | SaaS API（直连调试） | http://localhost:8082/actuator/health |
 | Cloud UAV registry | http://localhost:8081/yunyan-cloud-uav/assets/registry.js |
@@ -210,8 +210,8 @@ docker compose up -d --build
 ```bash
 node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 # 或
-curl -I http://localhost:8080/v1/ping
-curl -I http://localhost:8080/
+curl -I http://localhost:8084/v1/ping
+curl -I http://localhost:8084/
 curl -I http://localhost:8083/
 ```
 

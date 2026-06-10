@@ -108,7 +108,7 @@ mvn -f services/pom.xml -pl saas-api spring-boot:run -Dspring-boot.run.profiles=
 
 | 邮箱 | 密码 | 角色 |
 | --- | --- | --- |
-| `admin@demo.local` | `password` | TENANT_ADMIN |
+| `admin@demo.local` | `password` | TENANT_ADMIN + PLATFORM_ADMIN（含 `/v1/admin/*`） |
 | `member@demo.local` | `password` | MEMBER |
 
 **Bash / Git Bash：**

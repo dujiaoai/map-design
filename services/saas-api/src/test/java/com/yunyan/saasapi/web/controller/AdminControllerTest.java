@@ -32,27 +32,37 @@ class AdminControllerTest {
   ObjectMapper objectMapper;
 
   @Test
-  void adminPing_withoutToken_returns401() throws Exception {
-    mockMvc.perform(get("/v1/admin/ping")).andExpect(status().isUnauthorized());
+  void adminPing_withoutToken_returnsOkAndUnauthenticated() throws Exception {
+    mockMvc
+        .perform(get("/v1/admin/ping"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("ok"))
+        .andExpect(jsonPath("$.authenticated").value(false))
+        .andExpect(jsonPath("$.platformAdmin").value(false));
   }
 
   @Test
-  void adminPing_withTenantAdmin_returns403() throws Exception {
+  void adminPing_withTenantAdmin_returnsOkWithoutPlatformAdmin() throws Exception {
     var accessToken = loginAccessToken("admin@test.local");
 
     mockMvc
         .perform(get("/v1/admin/ping").header("Authorization", "Bearer " + accessToken))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("ok"))
+        .andExpect(jsonPath("$.authenticated").value(true))
+        .andExpect(jsonPath("$.platformAdmin").value(false));
   }
 
   @Test
-  void adminPing_withPlatformAdmin_returns200() throws Exception {
+  void adminPing_withPlatformAdmin_returnsOkAndPlatformAdmin() throws Exception {
     var accessToken = loginAccessToken("platform@test.local");
 
     mockMvc
         .perform(get("/v1/admin/ping").header("Authorization", "Bearer " + accessToken))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("ok"));
+        .andExpect(jsonPath("$.status").value("ok"))
+        .andExpect(jsonPath("$.authenticated").value(true))
+        .andExpect(jsonPath("$.platformAdmin").value(true));
   }
 
   @Test

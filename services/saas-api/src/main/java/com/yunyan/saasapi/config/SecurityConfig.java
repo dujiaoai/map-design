@@ -34,8 +34,15 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/v1/ping").permitAll()
             .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/register", "/v1/auth/refresh")
                 .permitAll()
+            .requestMatchers(HttpMethod.GET, "/v1/admin/ping").permitAll()
             .requestMatchers("/v1/admin/**")
-                .hasAnyAuthority(PermissionCodes.PLATFORM_ADMIN_AUTHORITIES)
+                .hasAnyAuthority(
+                    PermissionCodes.ADMIN_TENANTS_READ,
+                    PermissionCodes.ADMIN_TENANTS_WRITE,
+                    PermissionCodes.ADMIN_USERS_READ,
+                    PermissionCodes.ADMIN_USERS_WRITE,
+                    PermissionCodes.ADMIN_ROLES_READ,
+                    PermissionCodes.ADMIN_ROLES_WRITE)
             .anyRequest().authenticated())
         .exceptionHandling(ex -> ex
             .authenticationEntryPoint((req, res, e) -> res.sendError(401))

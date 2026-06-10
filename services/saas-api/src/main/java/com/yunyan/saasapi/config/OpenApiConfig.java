@@ -38,7 +38,7 @@ public class OpenApiConfig {
                     4. access 过期时 `POST /v1/auth/refresh` 轮换 token 对
                     5. 登出 `POST /v1/auth/logout`（Bearer accessToken）吊销 refresh
 
-                    演示账号（需先执行 seed-demo-dev.sql）：`admin@demo.local` / `password` / tenant `demo`
+                    演示账号（需先执行 seed-demo-dev.sql）：`admin@demo.local` / `password` / tenant `demo`（含 platform 权限，可测 `/v1/admin/*`）
                     """))
         .servers(List.of(new Server().url("http://localhost:8082").description("本地开发")))
         .tags(
@@ -46,6 +46,7 @@ public class OpenApiConfig {
                 new Tag().name("Auth").description("认证：注册、登录、刷新、登出"),
                 new Tag().name("Users").description("当前登录用户与会话"),
                 new Tag().name("Tenants").description("可访问租户列表（TeamSwitcher）"),
+                new Tag().name("Admin").description("平台后台：角色与权限配置（需 platform 权限 + Bearer token）"),
                 new Tag().name("System").description("存活探测")))
         .components(new Components().addSecuritySchemes("bearerAuth", bearer));
   }

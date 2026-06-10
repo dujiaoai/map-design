@@ -99,7 +99,7 @@
 | JWT | access/refresh 含 `permissions` claim |
 | 会话 API | `GET /v1/users/me`、login 响应 `user.permissions[]` |
 | 运行时鉴权 | `SaasPrincipal` authorities = `ROLE_*` + 权限码；`@PreAuthorize("hasAuthority('admin:tenants:read')")` |
-| Admin 门控 | `/v1/admin/**` 需任一 platform 权限；`GET /v1/admin/ping` 冒烟端点 |
+| Admin 门控 | `/v1/admin/**` 需 platform 权限；`GET /v1/admin/ping` 匿名可达并返回 `platformAdmin` 自检 |
 
 ### 已完成（D-03）
 

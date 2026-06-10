@@ -5,7 +5,7 @@
 --   docker exec -i services-postgres-1 psql -U saas -d saas < services/saas-api/scripts/seed-demo-dev.sql
 --
 -- Demo credentials (for future /v1/auth/login):
---   admin@demo.local / password
+--   admin@demo.local / password  — TENANT_ADMIN + PLATFORM_ADMIN（工作台 + /v1/admin/* 联调）
 --   member@demo.local / password
 
 BEGIN;
@@ -60,6 +60,13 @@ INSERT INTO sys_user_role (user_id, role_id)
 VALUES (
   '22222222-2222-2222-2222-222222222201',
   '00000000-0000-0000-0000-000000000002'  -- TENANT_ADMIN
+)
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
+INSERT INTO sys_user_role (user_id, role_id)
+VALUES (
+  '22222222-2222-2222-2222-222222222201',
+  '00000000-0000-0000-0000-000000000001'  -- PLATFORM_ADMIN（/v1/admin/* 联调）
 )
 ON CONFLICT (user_id, role_id) DO NOTHING;
 

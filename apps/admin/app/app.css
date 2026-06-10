@@ -24,3 +24,18 @@
   mask-image: radial-gradient(circle at 20% 0%, black, transparent 72%);
   opacity: 0.35;
 }
+
+.admin-data-table th,
+.admin-data-table td {
+  white-space: nowrap;
+}
+
+.admin-data-table td:first-child,
+.admin-data-table th:first-child {
+  padding-left: 1.25rem;
+}
+
+.admin-data-table td:last-child,
+.admin-data-table th:last-child {
+  padding-right: 1.25rem;
+}

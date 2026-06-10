@@ -32,9 +32,10 @@ pnpm --filter @repo/saas-admin dev
 | --- | --- |
 | `/login` | SaaS 登录 |
 | `/` | 概览（admin ping 自检） |
-| `/tenants` | 租户列表预览 |
-| `/users` | 用户列表预览 |
-| `/roles` | 角色列表预览 |
+| `/tenants` | 租户列表与编辑 |
+| `/users` | 用户列表、邀请与编辑 |
+| `/members` | 本租户成员管理（TENANT_ADMIN） |
+| `/roles` | 角色权限配置 |
 | `/403` | 无运营权限 |
 
-完整 CRUD 表格 → Sprint **D-08**。
+Sprint **D-09** 起：saas-web 权限门控与部署。

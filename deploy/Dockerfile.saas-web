@@ -20,8 +20,7 @@ COPY packages packages
 
 # 构建时 env（VITE_* 在 compile 阶段注入）
 ARG BUILD_MODE=production
-COPY .env.example .env.production
-# 若存在 .env.airace 且 BUILD_MODE=airace，可在 CI 中 COPY 覆盖
+COPY deploy/env/saas-web.production .env.production
 
 RUN if [ "$BUILD_MODE" = "airace" ]; then \
       pnpm --filter @repo/saas-web build:airace; \
@@ -38,6 +37,7 @@ COPY deploy/nginx/saas-web.conf.template /etc/nginx/templates/default.conf.templ
 COPY --from=builder /app/apps/web/build/client /usr/share/nginx/html
 
 ENV RUOYI_API_UPSTREAM=https://www.airace.com.cn
+ENV SAAS_API_UPSTREAM=http://saas-api:8082
 
 EXPOSE 80
 

@@ -1,0 +1,26 @@
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+
+WORKDIR /app
+
+COPY services/pom.xml services/pom.xml
+COPY services/saas-api/pom.xml services/saas-api/pom.xml
+COPY services/saas-api/src services/saas-api/src
+
+RUN mvn -f services/pom.xml -pl saas-api package -DskipTests -q
+
+FROM eclipse-temurin:21-jre-alpine AS runtime
+
+WORKDIR /app
+
+RUN apk add --no-cache wget
+
+COPY --from=builder /app/services/saas-api/target/saas-api-*.jar /app/app.jar
+
+ENV SPRING_PROFILES_ACTIVE=docker
+
+EXPOSE 8082
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=90s --retries=5 \
+  CMD wget -q --spider http://127.0.0.1:8082/actuator/health || exit 1
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

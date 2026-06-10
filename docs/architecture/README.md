@@ -105,7 +105,7 @@ flowchart LR
 | Sprint D：apps/admin 脚手架（D-07） | ✅ |
 | Sprint D：Admin CRUD 页（D-08） | ✅ |
 | Sprint D：saas-web 权限门控（D-09） | ✅ |
-| Sprint D：Docker 部署（D-10） | 待实现 |
+| Sprint D：Docker 全栈部署（D-10） | ✅ |
 | Sprint E：地图/机库等业务 API | Later，C/D 不做 |
 | packages（ui/auth/api-client/ruoyi-api） | 已完成 |
 | SaaS `/v1` 后端 | Auth MVP + 租户 API ✅ |

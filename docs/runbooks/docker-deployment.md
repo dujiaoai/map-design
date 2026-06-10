@@ -12,7 +12,7 @@
 | 类型 | pnpm workspace 前端 monorepo |
 | Node | ≥ 20.19.0 |
 | 包管理 | pnpm 9.15.0 |
-| 后端依赖 | **RuoYi API**（过渡阶段，无本仓库内后端服务） |
+| 后端依赖 | **saas-api**（`:8082` `/v1`）+ **RuoYi API**（过渡，`/YunYanApi` 反代） |
 | 渲染模式 | Web 为 React Router 7 **纯 SPA**（`ssr: false`） |
 
 ### 1.2 可部署单元
@@ -20,9 +20,10 @@
 | 单元 | 包名 | 构建命令 | 产物目录 | 当前状态 |
 | --- | --- | --- | --- | --- |
 | **租户 Web 工作台** | `@repo/saas-web` | `pnpm --filter @repo/saas-web build` | `apps/web/build/client/` | **主交付物** |
+| **运营后台** | `@repo/saas-admin` | `pnpm --filter @repo/saas-admin build` | `apps/admin/build/client/` | Sprint D ✅ |
+| **SaaS API** | `services/saas-api` | `mvn -pl saas-api package` | JAR → Docker | Sprint D ✅ |
 | **机库云插件** | `@repo/cloud-uav` | `pnpm --filter @repo/cloud-uav build` | `cloud/uav/dist/` | 供 Vue 宿主加载 |
 | Marketing | `@repo/saas-marketing` | — | — | 仅占位 README |
-| Admin | `@repo/saas-admin` | — | — | 仅占位 README |
 
 共享 packages（`ui`、`auth`、`api-client`、`ruoyi-api`）为库代码，**不单独部署**，随 App 构建打入静态 bundle。
 
@@ -32,31 +33,40 @@
 flowchart TB
   subgraph browser [浏览器]
     WebSPA[saas-web SPA]
+    AdminSPA[saas-admin SPA]
     VueHost[yunyan-web 宿主 可选]
   end
 
-  subgraph docker_front [Docker 前端层]
+  subgraph docker_stack [Docker compose]
     NginxWeb[Nginx: saas-web]
+    NginxAdmin[Nginx: saas-admin]
     NginxUAV[Nginx: cloud-uav]
+    SaaSAPI[saas-api :8082]
+    PG[(postgres)]
+    Redis[(redis)]
   end
 
-  subgraph external [外部服务 不在本仓库]
+  subgraph external [外部服务]
     RuoYi[RuoYi 后端 API]
-    SaaSAPI[SaaS /v1 API 规划中]
   end
 
   WebSPA --> NginxWeb
+  AdminSPA --> NginxAdmin
   VueHost --> NginxUAV
-  NginxWeb -->|"/YunYanApi/*" 反向代理| RuoYi
-  WebSPA -.->|规划 VITE_API_URL| SaaSAPI
+  NginxWeb -->|"/v1/*"| SaaSAPI
+  NginxAdmin -->|"/v1/*"| SaaSAPI
+  NginxWeb -->|"/YunYanApi/*"| RuoYi
+  SaaSAPI --> PG
+  SaaSAPI --> Redis
   NginxUAV -->|同源 Cookie| RuoYi
 ```
 
 **关键结论：**
 
-1. 本仓库**无 Node 运行时服务**，生产环境只需 **Nginx 托管静态资源 + API 反向代理**。
-2. 开发时 Vite 将 `/YunYanApi` 代理到 `VITE_APP_BASE_HOST`；**生产必须在 Nginx 层复现该代理**，因为前端默认请求同源 `/YunYanApi`（见 `apps/web/app/shared/queries/ruoyi-client.ts`）。
-3. `cloud-uav` 为 ESM 远程模块，base 固定 `/yunyan-cloud-uav/`，通常由 **Vue 宿主**（父 monorepo `yunyan-web`）通过网关加载；也可独立容器部署供 CDN/网关挂载。
+1. **D-10** 起 compose 含 `postgres`、`redis`、`saas-api`、`saas-web`、`saas-admin`、`cloud-uav`。
+2. 前端构建注入 `VITE_API_URL=/v1`；Nginx 同源反代至 `saas-api:8082`。
+3. RuoYi 仍通过 `/YunYanApi` 反代（过渡）；生产必须在 Nginx 层复现 Vite dev proxy。
+4. `cloud-uav` 为 ESM 远程模块，base 固定 `/yunyan-cloud-uav/`，通常由 **Vue 宿主**加载；也可独立容器部署。
 
 ---
 
@@ -127,7 +137,7 @@ docker build -f deploy/Dockerfile.cloud-uav \
 
 | 变量 | 必填 | 说明 |
 | --- | --- | --- |
-| `VITE_API_URL` | 否 | 默认 `/YunYanApi`（同源，由 Nginx 代理）。若后端与前端跨域且支持 CORS，可设为绝对 URL |
+| `VITE_API_URL` | Docker 生产 | 设为 `/v1`（`deploy/env/*.production`）；Nginx 反代 saas-api |
 | `VITE_APP_URL` | 否 | 前端自身 URL（OAuth 回调等，规划中） |
 | `VITE_MAP_ENGINE_READY` | 否 | 设为 `true` 时跳过 map-plugin-bridge 开发桩 |
 
@@ -137,7 +147,8 @@ docker build -f deploy/Dockerfile.cloud-uav \
 
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
-| `RUOYI_API_UPSTREAM` | `https://www.airace.com.cn` | `/YunYanApi` 反代目标（**不含**路径后缀） |
+| `RUOYI_API_UPSTREAM` | `https://www.airace.com.cn` | saas-web `/YunYanApi` 反代目标（**不含**路径后缀） |
+| `SAAS_API_UPSTREAM` | `http://saas-api:8082` | saas-web / saas-admin `/v1` 反代目标（compose 内网） |
 
 Cloud UAV 静态服务无运行时 env。
 
@@ -189,16 +200,26 @@ docker compose up -d --build
 | 访问 | URL |
 | --- | --- |
 | Web 工作台 | http://localhost:8080 |
+| 运营后台 | http://localhost:8083 |
+| SaaS API（直连调试） | http://localhost:8082/actuator/health |
 | Cloud UAV registry | http://localhost:8081/yunyan-cloud-uav/assets/registry.js |
 | 统一网关（可选 profile） | http://localhost:9080 |
 
 验证：
 
 ```bash
+node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
+# 或
+curl -I http://localhost:8080/v1/ping
 curl -I http://localhost:8080/
-curl -I http://localhost:8080/YunYanApi/captchaImage
-curl -I http://localhost:8081/yunyan-cloud-uav/assets/registry.js
+curl -I http://localhost:8083/
 ```
+
+首次启动后 `saas-api-seed` 会执行 `seed-demo-dev.sql`。演示账号：
+
+| 应用 | URL | 账号 |
+| --- | --- | --- |
+| Web / Admin | 见上表 | `admin@demo.local` / `password` / 租户 `demo` |
 
 ---
 

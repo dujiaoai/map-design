@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/saas
+    username: saas
+    password: saas
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+server:
+  port: 8082
+
+saas:
+  jwt:
+    secret: ${SAAS_JWT_SECRET:docker-only-change-me-use-32chars-min!!}
+  cors:
+    allowed-origins:
+      - http://localhost:8080
+      - http://localhost:8083
+      - http://localhost:9080

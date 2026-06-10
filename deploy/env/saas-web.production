@@ -1,0 +1,2 @@
+# Docker 构建注入：同源 /v1 由 Nginx 反代 saas-api
+VITE_API_URL=/v1

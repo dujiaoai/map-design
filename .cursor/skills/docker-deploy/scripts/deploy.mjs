@@ -83,7 +83,7 @@ switch (command) {
     break
   }
   case 'rebuild': {
-    run('docker', composeArgs(['build', '--no-cache', 'saas-web', 'cloud-uav']))
+    run('docker', composeArgs(['build', '--no-cache', 'saas-api', 'saas-web', 'saas-admin', 'cloud-uav']))
     run('docker', composeArgs(['up', '-d']))
     break
   }
@@ -101,9 +101,14 @@ switch (command) {
   }
   case 'smoke': {
     const webPort = env.SAAS_WEB_PORT || '8080'
+    const adminPort = env.SAAS_ADMIN_PORT || '8083'
+    const apiPort = env.SAAS_API_PORT || '8082'
     const uavPort = env.CLOUD_UAV_PORT || '8081'
     const checks = [
       { name: 'saas-web SPA', url: `http://localhost:${webPort}/` },
+      { name: 'SaaS /v1 proxy', url: `http://localhost:${webPort}/v1/ping` },
+      { name: 'saas-api health', url: `http://localhost:${apiPort}/actuator/health` },
+      { name: 'saas-admin SPA', url: `http://localhost:${adminPort}/` },
       { name: 'RuoYi proxy', url: `http://localhost:${webPort}/YunYanApi/captchaImage` },
       { name: 'cloud-uav registry', url: `http://localhost:${uavPort}/yunyan-cloud-uav/assets/registry.js` },
     ]

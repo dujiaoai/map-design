@@ -17,9 +17,12 @@ compatibility: Docker Desktop (Linux engine), pnpm monorepo at repo root, deploy
 
 | 服务 | 镜像 | 默认端口 | 产物 |
 | --- | --- | --- | --- |
-| `saas-web` | `map-design/saas-web` | 8080 | SPA + `/YunYanApi` 反代 RuoYi |
+| `postgres` + `redis` | 官方镜像 | 内部 | saas-api 依赖 |
+| `saas-api` | `map-design/saas-api` | 8082 | Spring Boot `/v1` |
+| `saas-web` | `map-design/saas-web` | 8080 | SPA + `/v1`、`/YunYanApi` 反代 |
+| `saas-admin` | `map-design/saas-admin` | 8083 | 运营后台 SPA + `/v1` 反代 |
 | `cloud-uav` | `map-design/cloud-uav` | 8081 | `/yunyan-cloud-uav/assets/*.js` |
-| `gateway`（可选 profile） | nginx | 9080 | 同域聚合两服务 |
+| `gateway`（可选 profile） | nginx | 9080 | 同域聚合 |
 
 配置文件：`deploy/`（Dockerfile、nginx、compose）。完整方案见 [docs/runbooks/docker-deployment.md](../../docs/runbooks/docker-deployment.md)。
 
@@ -41,7 +44,7 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs up
 | `down` | 停止并移除容器 |
 | `ps` | 查看状态 |
 | `logs` | 跟踪日志 |
-| `rebuild` | 无缓存重建 saas-web + cloud-uav |
+| `rebuild` | 无缓存重建 saas-api、saas-web、saas-admin、cloud-uav |
 
 ## Agent 标准工作流
 
@@ -68,6 +71,8 @@ docker version
 | --- | --- | --- |
 | `RUOYI_API_UPSTREAM` | `https://www.airace.com.cn` | RuoYi 根地址（不含路径） |
 | `SAAS_WEB_PORT` | `8080` | Web 映射端口 |
+| `SAAS_ADMIN_PORT` | `8083` | Admin 映射端口 |
+| `SAAS_API_PORT` | `8082` | API 映射端口（调试） |
 | `CLOUD_UAV_PORT` | `8081` | UAV 映射端口 |
 | `BUILD_MODE` | `production` | `airace` 时用 build:airace |
 
@@ -90,6 +95,9 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 | 检查 | URL | 期望 |
 | --- | --- | --- |
 | SPA 首页 | `http://localhost:{SAAS_WEB_PORT}/` | HTTP 200 |
+| SaaS 反代 | `http://localhost:{SAAS_WEB_PORT}/v1/ping` | HTTP 200 |
+| API 健康 | `http://localhost:{SAAS_API_PORT}/actuator/health` | HTTP 200 |
+| Admin SPA | `http://localhost:{SAAS_ADMIN_PORT}/` | HTTP 200 |
 | API 反代 | `http://localhost:{SAAS_WEB_PORT}/YunYanApi/captchaImage` | HTTP 200（body 与直连 upstream 一致） |
 | UAV registry | `http://localhost:{CLOUD_UAV_PORT}/yunyan-cloud-uav/assets/registry.js` | HTTP 200 |
 

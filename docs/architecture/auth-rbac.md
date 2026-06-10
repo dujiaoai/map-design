@@ -139,11 +139,15 @@
 | 角色分配 | `PUT /v1/admin/tenants/{id}/members/{userId}/roles`（全量替换） |
 | 租户隔离 | `TENANT_ADMIN` 仅可操作 JWT 当前租户；Security 门控含 `admin:members:*` |
 
-### 待做（D-10）
+### 已完成（D-10）
 
-| 能力 | 产出 |
+| 能力 | 实现 |
 | --- | --- |
-| Docker 部署 | `deploy/docker-compose` 含 `saas-api`；Nginx `/v1` 反代 |
+| Docker 全栈 | `deploy/docker-compose`：postgres、redis、saas-api、saas-web、saas-admin |
+| Nginx `/v1` | 前端同源反代 → `saas-api:8082` |
+| 构建注入 | `VITE_API_URL=/v1`（`deploy/env/*.production`） |
+
+## 目标架构（远期）
 
 - OAuth2/OIDC（C/D 用 Email/Password + JWT）
 - Web / Admin 独立 Cookie 域（`app.` vs `admin.`）

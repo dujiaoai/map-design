@@ -42,6 +42,14 @@ public class TenantRepository {
         Wrappers.<SysTenant>lambdaQuery().orderByAsc(SysTenant::getName));
   }
 
+  public List<SysTenant> findByIds(List<UUID> tenantIds) {
+    if (tenantIds.isEmpty()) {
+      return List.of();
+    }
+    return sysTenantMapper.selectList(
+        Wrappers.<SysTenant>lambdaQuery().in(SysTenant::getId, tenantIds));
+  }
+
   public Optional<SysTenant> findBySlug(String slug) {
     return Optional.ofNullable(
         sysTenantMapper.selectOne(Wrappers.<SysTenant>lambdaQuery().eq(SysTenant::getSlug, slug)));

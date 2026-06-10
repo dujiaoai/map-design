@@ -119,14 +119,24 @@
 | 更新租户 | `PATCH /v1/admin/tenants/{id}`（name、plan、status） |
 | 启停 | `status`: `active` / `suspended`；停用租户无法登录 |
 
-### 待做（D-05～D-10）
+### 已完成（D-05）
+
+| 能力 | 实现 |
+| --- | --- |
+| 用户列表 | `GET /v1/admin/users`（`admin:users:read`；可选 `tenantId` 过滤） |
+| 邀请成员 | `POST /v1/admin/users`（tenantId、email、password；默认角色 `MEMBER`） |
+| 更新用户 | `PATCH /v1/admin/users/{id}`（displayName、status） |
+| 禁用 | `status`: `active` / `disabled`；禁用后无法登录 |
+
+### 待做（D-06～D-10）
 
 | 能力 | 产出 |
 | --- | --- |
 | ~~用户权限~~ | ✅ D-02：JWT / `users/me` permissions；`@PreAuthorize` |
 | ~~权限配置~~ | ✅ D-03：`GET/PUT /v1/admin/roles/{id}/permissions` 等 |
 | ~~租户管理~~ | ✅ D-04：`GET/POST/PATCH /v1/admin/tenants` |
-| 后台管理 | `/v1/admin/users`、租户成员与角色 |
+| ~~用户管理~~ | ✅ D-05：`GET/POST/PATCH /v1/admin/users` |
+| 租户成员 | D-06：`TENANT_ADMIN` 管理 `/v1/admin/tenants/{id}/members` |
 | Admin App | `apps/admin` 脚手架 + 基础 CRUD 页 |
 | saas-web 门控 | `requireRole` / 权限码对齐 SaaS，去掉 RuoYi 转换 |
 

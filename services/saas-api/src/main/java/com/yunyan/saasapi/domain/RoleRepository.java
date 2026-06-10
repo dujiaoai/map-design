@@ -23,4 +23,9 @@ public class RoleRepository {
   public Optional<SysRole> findById(UUID roleId) {
     return Optional.ofNullable(sysRoleMapper.selectById(roleId));
   }
+
+  public Optional<SysRole> findByCode(String code) {
+    return Optional.ofNullable(
+        sysRoleMapper.selectOne(Wrappers.<SysRole>lambdaQuery().eq(SysRole::getCode, code)));
+  }
 }

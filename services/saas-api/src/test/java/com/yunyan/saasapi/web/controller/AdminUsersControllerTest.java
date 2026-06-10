@@ -1,0 +1,179 @@
+package com.yunyan.saasapi.web.controller;
+
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.web.servlet.MockMvc;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Sql(scripts = {"/sql/auth-test-seed.sql", "/sql/reset-role-permissions.sql"})
+class AdminUsersControllerTest {
+
+  private static final UUID TEST_TENANT_ID =
+      UUID.fromString("11111111-1111-1111-1111-111111111101");
+  private static final UUID TENANT_ADMIN_USER_ID =
+      UUID.fromString("22222222-2222-2222-2222-222222222201");
+
+  @Autowired MockMvc mockMvc;
+
+  @Autowired ObjectMapper objectMapper;
+
+  @Test
+  void listUsers_withoutToken_returns401() throws Exception {
+    mockMvc.perform(get("/v1/admin/users")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void listUsers_withTenantAdmin_returns403() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/users")
+                .header("Authorization", "Bearer " + loginAccessToken("admin@test.local")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void listUsers_withPlatformAdmin_returnsSeededUsers() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/users")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.users", hasSize(2)))
+        .andExpect(jsonPath("$.users[*].email", hasItem("admin@test.local")))
+        .andExpect(jsonPath("$.users[*].roles", hasItem(java.util.List.of("TENANT_ADMIN"))));
+  }
+
+  @Test
+  void listUsers_withTenantFilter_returnsTenantMembers() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/users")
+                .param("tenantId", TEST_TENANT_ID.toString())
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.users", hasSize(2)))
+        .andExpect(jsonPath("$.users[*].tenantSlug", hasItem("test")));
+  }
+
+  @Test
+  void inviteUser_withPlatformAdmin_returns201() throws Exception {
+    var email = "invited-" + System.currentTimeMillis() + "@test.local";
+
+    mockMvc
+        .perform(
+            post("/v1/admin/users")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "tenantId",
+                            TEST_TENANT_ID.toString(),
+                            "email",
+                            email,
+                            "password",
+                            "password123",
+                            "roleCode",
+                            "MEMBER"))))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.email").value(email))
+        .andExpect(jsonPath("$.status").value("active"))
+        .andExpect(jsonPath("$.roles[0]").value("MEMBER"));
+  }
+
+  @Test
+  void inviteUser_duplicateEmail_returns409() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/admin/users")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "tenantId",
+                            TEST_TENANT_ID.toString(),
+                            "email",
+                            "admin@test.local",
+                            "password",
+                            "password123"))))
+        .andExpect(status().isConflict());
+  }
+
+  @Test
+  void patchUser_disableBlocksLogin() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            patch("/v1/admin/users/" + TENANT_ADMIN_USER_ID)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("status", "disabled"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("disabled"));
+
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "admin@test.local",
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void patchUser_emptyBody_returns400() throws Exception {
+    mockMvc
+        .perform(
+            patch("/v1/admin/users/" + TENANT_ADMIN_USER_ID)
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+        .andExpect(status().isBadRequest());
+  }
+
+  private String loginAccessToken(String email) throws Exception {
+    return JsonPath.read(loginBody(email), "$.accessToken");
+  }
+
+  private String loginBody(String email) throws Exception {
+    return mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", email,
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+  }
+}

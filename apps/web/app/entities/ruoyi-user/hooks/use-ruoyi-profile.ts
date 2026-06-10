@@ -1,4 +1,7 @@
 import {
+  useCanAccessWorkspace,
+  useCanReadMap,
+  useCanWriteMap,
   useHasAnyPermission,
   useHasPermission,
   useHasSaasRole,
@@ -8,6 +11,9 @@ import {
 } from '~/shared/session/use-session-access'
 
 export {
+  useCanAccessWorkspace,
+  useCanReadMap,
+  useCanWriteMap,
   useHasAnyPermission,
   useHasPermission,
   useHasSaasRole,

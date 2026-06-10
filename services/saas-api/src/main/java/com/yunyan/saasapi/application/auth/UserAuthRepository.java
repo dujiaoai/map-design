@@ -47,7 +47,7 @@ public class UserAuthRepository {
     if (StringUtils.hasText(tenantSlug)) {
       var tenant = sysTenantMapper.selectOne(
           Wrappers.<SysTenant>lambdaQuery().eq(SysTenant::getSlug, tenantSlug));
-      if (tenant == null) {
+      if (tenant == null || !isTenantActive(tenant)) {
         return Optional.empty();
       }
       user = users.stream()
@@ -65,7 +65,7 @@ public class UserAuthRepository {
     }
 
     var tenant = sysTenantMapper.selectById(users.getFirst().getTenantId());
-    if (tenant == null) {
+    if (tenant == null || !isTenantActive(tenant)) {
       return Optional.empty();
     }
     return Optional.of(toAuthenticatedUser(users.getFirst(), tenant));
@@ -84,6 +84,9 @@ public class UserAuthRepository {
             Wrappers.<SysTenant>lambdaQuery().eq(SysTenant::getSlug, tenantSlug.trim()));
     if (tenant == null) {
       throw AuthException.notFound("Tenant not found");
+    }
+    if (!isTenantActive(tenant)) {
+      throw AuthException.forbidden("Tenant is suspended");
     }
 
     var duplicate =
@@ -124,6 +127,10 @@ public class UserAuthRepository {
     }
     var at = email.indexOf('@');
     return at > 0 ? email.substring(0, at) : email;
+  }
+
+  private static boolean isTenantActive(SysTenant tenant) {
+    return tenant.getStatus() == null || "active".equals(tenant.getStatus());
   }
 
   public void updatePasswordHash(UUID userId, String passwordHash) {

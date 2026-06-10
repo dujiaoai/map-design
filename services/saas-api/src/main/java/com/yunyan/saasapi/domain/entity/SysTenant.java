@@ -17,5 +17,7 @@ public class SysTenant {
   private String name;
   private String slug;
   private String plan;
+  /** active | suspended */
+  private String status;
   private Instant createdAt;
 }

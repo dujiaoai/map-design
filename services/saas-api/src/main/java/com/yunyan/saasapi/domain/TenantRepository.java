@@ -42,6 +42,19 @@ public class TenantRepository {
         Wrappers.<SysTenant>lambdaQuery().orderByAsc(SysTenant::getName));
   }
 
+  public Optional<SysTenant> findBySlug(String slug) {
+    return Optional.ofNullable(
+        sysTenantMapper.selectOne(Wrappers.<SysTenant>lambdaQuery().eq(SysTenant::getSlug, slug)));
+  }
+
+  public void insert(SysTenant tenant) {
+    sysTenantMapper.insert(tenant);
+  }
+
+  public void update(SysTenant tenant) {
+    sysTenantMapper.updateById(tenant);
+  }
+
   public List<SysTenant> findTenantsByUserEmail(String email) {
     return TenantRlsBypass.call(() -> findTenantsByUserEmailWithRlsBypass(email));
   }

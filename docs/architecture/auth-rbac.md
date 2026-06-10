@@ -110,13 +110,23 @@
 | 角色权限读 | `GET /v1/admin/roles/{id}/permissions` |
 | 角色权限写 | `PUT /v1/admin/roles/{id}/permissions`（全量替换；按角色 scope 校验） |
 
-### 待做（D-04～D-10）
+### 已完成（D-04）
+
+| 能力 | 实现 |
+| --- | --- |
+| 租户列表 | `GET /v1/admin/tenants`（`admin:tenants:read`） |
+| 创建租户 | `POST /v1/admin/tenants`（name、slug、plan） |
+| 更新租户 | `PATCH /v1/admin/tenants/{id}`（name、plan、status） |
+| 启停 | `status`: `active` / `suspended`；停用租户无法登录 |
+
+### 待做（D-05～D-10）
 
 | 能力 | 产出 |
 | --- | --- |
 | ~~用户权限~~ | ✅ D-02：JWT / `users/me` permissions；`@PreAuthorize` |
 | ~~权限配置~~ | ✅ D-03：`GET/PUT /v1/admin/roles/{id}/permissions` 等 |
-| 后台管理 | `/v1/admin/tenants`、`/users`、租户成员与角色 |
+| ~~租户管理~~ | ✅ D-04：`GET/POST/PATCH /v1/admin/tenants` |
+| 后台管理 | `/v1/admin/users`、租户成员与角色 |
 | Admin App | `apps/admin` 脚手架 + 基础 CRUD 页 |
 | saas-web 门控 | `requireRole` / 权限码对齐 SaaS，去掉 RuoYi 转换 |
 

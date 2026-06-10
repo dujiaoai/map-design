@@ -28,6 +28,7 @@ V1__baseline.sql
 V2__auth_tables.sql
 V3__seed_roles.sql
 V6__permissions.sql
+V7__tenant_status.sql
 ```
 
 规则：

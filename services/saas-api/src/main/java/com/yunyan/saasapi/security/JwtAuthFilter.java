@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.security;
 
+import com.yunyan.saasapi.application.permission.PermissionResolver;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,9 +18,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
+  private final PermissionResolver permissionResolver;
 
-  public JwtAuthFilter(JwtService jwtService) {
+  public JwtAuthFilter(JwtService jwtService, PermissionResolver permissionResolver) {
     this.jwtService = jwtService;
+    this.permissionResolver = permissionResolver;
   }
 
   @Override
@@ -39,11 +42,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       var parsed = jwtService.parseAccessToken(token);
       TenantContext.set(parsed.tenantId().toString());
 
+      var permissionCodes = resolvePermissionCodes(parsed.permissionCodes(), parsed.roleCodes());
       var principal = new SaasPrincipal(
           parsed.userId(),
           parsed.tenantId(),
           parsed.userId().toString(),
           parsed.roleCodes(),
+          permissionCodes,
           parsed.expiresAt());
 
       var authentication = new UsernamePasswordAuthenticationToken(
@@ -53,6 +58,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     } catch (AuthException ignored) {
       // 无效/过期/非 access token — 视为未认证，由 Security 返回 401
     }
+  }
+
+  private java.util.List<String> resolvePermissionCodes(
+      java.util.List<String> tokenPermissions, java.util.List<String> roleCodes) {
+    if (tokenPermissions != null && !tokenPermissions.isEmpty()) {
+      return tokenPermissions;
+    }
+    return permissionResolver.resolveByRoleCodes(roleCodes);
   }
 
   private java.util.Optional<String> resolveBearerToken(HttpServletRequest request) {

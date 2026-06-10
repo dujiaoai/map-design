@@ -11,4 +11,5 @@ public record AuthenticatedUser(
     String email,
     String displayName,
     String passwordHash,
-    List<String> roleCodes) {}
+    List<String> roleCodes,
+    List<String> permissionCodes) {}

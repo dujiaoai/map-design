@@ -17,6 +17,8 @@ export const sessionUserSchema = z.object({
   roles: z.array(
     z.enum([SaaSRole.PLATFORM_ADMIN, SaaSRole.TENANT_ADMIN, SaaSRole.MEMBER, SaaSRole.VIEWER]),
   ),
+  /** Sprint D-02+：角色并集的有效权限码 */
+  permissions: z.array(z.string()).optional(),
 })
 
 export const sessionTenantSchema = z.object({

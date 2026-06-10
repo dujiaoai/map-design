@@ -131,6 +131,7 @@ class AuthControllerLoginTest {
             "admin@test.local",
             "Test Admin",
             List.of("TENANT_ADMIN"),
+            List.of("workspace:use"),
             new SessionTenantDto(
                 "11111111-1111-1111-1111-111111111101", "Test Tenant", "test")));
   }

@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.config;
 
+import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,7 +34,8 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/v1/ping").permitAll()
             .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/register", "/v1/auth/refresh")
                 .permitAll()
-            .requestMatchers("/v1/admin/**").hasRole("PLATFORM_ADMIN")
+            .requestMatchers("/v1/admin/**")
+                .hasAnyAuthority(PermissionCodes.PLATFORM_ADMIN_AUTHORITIES)
             .anyRequest().authenticated())
         .exceptionHandling(ex -> ex
             .authenticationEntryPoint((req, res, e) -> res.sendError(401))

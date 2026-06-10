@@ -29,3 +29,19 @@ VALUES (
   '22222222-2222-2222-2222-222222222201',
   '00000000-0000-0000-0000-000000000002'
 );
+
+INSERT INTO sys_user (id, tenant_id, email, password_hash, display_name, status)
+VALUES (
+  '22222222-2222-2222-2222-222222222203',
+  '11111111-1111-1111-1111-111111111101',
+  'platform@test.local',
+  '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG',
+  'Platform Admin',
+  'active'
+);
+
+INSERT INTO sys_user_role (user_id, role_id)
+VALUES (
+  '22222222-2222-2222-2222-222222222203',
+  '00000000-0000-0000-0000-000000000001'
+);

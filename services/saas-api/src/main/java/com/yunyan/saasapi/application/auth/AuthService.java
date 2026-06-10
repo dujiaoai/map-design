@@ -129,6 +129,7 @@ public class AuthService {
         user.email(),
         user.displayName(),
         user.roleCodes(),
+        user.permissionCodes(),
         new SessionTenantDto(user.tenantId().toString(), user.tenantName(), user.tenantSlug()));
     return new LoginResponse(
         tokens.accessToken(), tokens.refreshToken(), tokens.expiresIn(), loginUser);
@@ -159,7 +160,8 @@ public class AuthService {
             user.id().toString(),
             user.email(),
             user.displayName(),
-            user.roleCodes()),
+            user.roleCodes(),
+            user.permissionCodes()),
         new SessionTenantDto(user.tenantId().toString(), user.tenantName(), user.tenantSlug()),
         accessTokenExpiresAt.toEpochMilli());
   }

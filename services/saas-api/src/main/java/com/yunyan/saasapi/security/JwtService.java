@@ -19,6 +19,7 @@ public class JwtService {
 
   public static final String CLAIM_TENANT_ID = "tenant_id";
   public static final String CLAIM_ROLES = "roles";
+  public static final String CLAIM_PERMISSIONS = "permissions";
   public static final String CLAIM_TOKEN_TYPE = "typ";
   public static final String TYPE_ACCESS = "access";
   public static final String TYPE_REFRESH = "refresh";
@@ -38,6 +39,7 @@ public class JwtService {
         .subject(user.id().toString())
         .claim(CLAIM_TENANT_ID, user.tenantId().toString())
         .claim(CLAIM_ROLES, user.roleCodes())
+        .claim(CLAIM_PERMISSIONS, user.permissionCodes())
         .claim(CLAIM_TOKEN_TYPE, TYPE_ACCESS)
         .issuedAt(Date.from(Instant.now()))
         .expiration(Date.from(expiresAt))
@@ -55,6 +57,7 @@ public class JwtService {
         .id(jti)
         .claim(CLAIM_TENANT_ID, user.tenantId().toString())
         .claim(CLAIM_ROLES, user.roleCodes())
+        .claim(CLAIM_PERMISSIONS, user.permissionCodes())
         .claim(CLAIM_TOKEN_TYPE, TYPE_REFRESH)
         .issuedAt(Date.from(Instant.now()))
         .expiration(Date.from(expiresAt))
@@ -86,6 +89,7 @@ public class JwtService {
         UUID.fromString(claims.getSubject()),
         UUID.fromString(claims.get(CLAIM_TENANT_ID, String.class)),
         readRoles(claims),
+        readPermissions(claims),
         jti,
         claims.getExpiration().toInstant());
   }
@@ -95,7 +99,17 @@ public class JwtService {
         UUID.fromString(claims.getSubject()),
         UUID.fromString(claims.get(CLAIM_TENANT_ID, String.class)),
         readRoles(claims),
+        readPermissions(claims),
         claims.getExpiration().toInstant());
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<String> readPermissions(Claims claims) {
+    var permissions = claims.get(CLAIM_PERMISSIONS);
+    if (permissions instanceof List<?> list) {
+      return list.stream().map(Object::toString).sorted().toList();
+    }
+    return List.of();
   }
 
   @SuppressWarnings("unchecked")
@@ -130,8 +144,14 @@ public class JwtService {
     }
   }
 
-  public record ParsedAccessToken(UUID userId, UUID tenantId, List<String> roleCodes, Instant expiresAt) {}
+  public record ParsedAccessToken(
+      UUID userId, UUID tenantId, List<String> roleCodes, List<String> permissionCodes, Instant expiresAt) {}
 
   public record ParsedRefreshToken(
-      UUID userId, UUID tenantId, List<String> roleCodes, String jti, Instant expiresAt) {}
+      UUID userId,
+      UUID tenantId,
+      List<String> roleCodes,
+      List<String> permissionCodes,
+      String jti,
+      Instant expiresAt) {}
 }

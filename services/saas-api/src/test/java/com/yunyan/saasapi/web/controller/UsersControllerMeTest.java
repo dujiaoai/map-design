@@ -80,6 +80,7 @@ class UsersControllerMeTest {
             UUID.fromString("11111111-1111-1111-1111-111111111101"),
             "admin@test.local",
             List.of("TENANT_ADMIN"),
+            List.of("workspace:use"),
             Instant.ofEpochMilli(1_710_000_900_000L));
     SecurityContextHolder.getContext()
         .setAuthentication(
@@ -92,7 +93,8 @@ class UsersControllerMeTest {
             "22222222-2222-2222-2222-222222222201",
             "admin@test.local",
             "Test Admin",
-            List.of("TENANT_ADMIN")),
+            List.of("TENANT_ADMIN"),
+            List.of("workspace:use")),
         new SessionTenantDto(
             "11111111-1111-1111-1111-111111111101", "Test Tenant", "test"),
         1_710_000_900_000L);

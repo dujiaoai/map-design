@@ -59,6 +59,9 @@ class UsersControllerTest {
         .andExpect(jsonPath("$.user.email").value("admin@test.local"))
         .andExpect(jsonPath("$.user.name").value("Test Admin"))
         .andExpect(jsonPath("$.user.roles", hasItem("TENANT_ADMIN")))
+        .andExpect(jsonPath("$.user.permissions", hasItem("workspace:use")))
+        .andExpect(jsonPath("$.user.permissions", hasItem("admin:members:read")))
+        .andExpect(jsonPath("$.user.permissions", hasItem("workspace:map:write")))
         .andExpect(jsonPath("$.tenant.id").value("11111111-1111-1111-1111-111111111101"))
         .andExpect(jsonPath("$.tenant.name").value("Test Tenant"))
         .andExpect(jsonPath("$.tenant.slug").value("test"))
@@ -232,6 +235,8 @@ class UsersControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.user.email").value(email))
         .andExpect(jsonPath("$.user.roles", hasItem("MEMBER")))
+        .andExpect(jsonPath("$.user.permissions", hasItem("workspace:use")))
+        .andExpect(jsonPath("$.user.permissions", hasItem("workspace:map:write")))
         .andExpect(jsonPath("$.tenant.slug").value("test"))
         .andExpect(jsonPath("$.expiresAt").isNumber());
   }

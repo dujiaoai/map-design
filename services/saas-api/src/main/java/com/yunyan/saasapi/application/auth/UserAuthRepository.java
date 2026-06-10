@@ -9,6 +9,7 @@ import com.yunyan.saasapi.domain.mapper.SysRoleMapper;
 import com.yunyan.saasapi.domain.mapper.SysTenantMapper;
 import com.yunyan.saasapi.domain.mapper.SysUserMapper;
 import com.yunyan.saasapi.domain.mapper.SysUserRoleMapper;
+import com.yunyan.saasapi.application.permission.PermissionResolver;
 import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.TenantRlsBypass;
 import java.util.List;
@@ -26,6 +27,7 @@ public class UserAuthRepository {
   private final SysTenantMapper sysTenantMapper;
   private final SysUserRoleMapper sysUserRoleMapper;
   private final SysRoleMapper sysRoleMapper;
+  private final PermissionResolver permissionResolver;
 
   public Optional<AuthenticatedUser> findForLogin(String email, String tenantSlug) {
     return TenantRlsBypass.call(() -> findForLoginWithRlsBypass(email, tenantSlug));
@@ -179,6 +181,7 @@ public class UserAuthRepository {
         user.getEmail(),
         user.getDisplayName(),
         user.getPasswordHash(),
-        roleCodes);
+        roleCodes,
+        permissionResolver.resolveByRoleCodes(roleCodes));
   }
 }

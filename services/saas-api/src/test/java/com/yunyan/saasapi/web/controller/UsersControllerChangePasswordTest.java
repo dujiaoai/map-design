@@ -111,6 +111,7 @@ class UsersControllerChangePasswordTest {
             UUID.fromString("11111111-1111-1111-1111-111111111101"),
             "admin@test.local",
             List.of("TENANT_ADMIN"),
+            List.of("workspace:use"),
             Instant.ofEpochMilli(1_710_000_900_000L));
     SecurityContextHolder.getContext()
         .setAuthentication(

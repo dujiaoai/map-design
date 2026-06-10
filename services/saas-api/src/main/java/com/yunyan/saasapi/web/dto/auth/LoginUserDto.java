@@ -13,4 +13,8 @@ public record LoginUserDto(
             example = "[\"TENANT_ADMIN\"]",
             allowableValues = {"PLATFORM_ADMIN", "TENANT_ADMIN", "MEMBER", "VIEWER"})
         List<String> roles,
+    @Schema(
+            description = "有效权限码（角色并集）",
+            example = "[\"workspace:use\", \"workspace:map:read\"]")
+        List<String> permissions,
     SessionTenantDto tenant) {}

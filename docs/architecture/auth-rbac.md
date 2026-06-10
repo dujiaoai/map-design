@@ -74,10 +74,38 @@
 
 ## Sprint D · 权限与后台
 
+### 已完成（D-01）
+
+| 表 | 说明 |
+| --- | --- |
+| `sys_permission` | 权限码目录（`code` 唯一；`scope`: platform / tenant / workspace） |
+| `sys_role_permission` | 角色 ↔ 权限多对多 |
+
+种子权限码（节选）：`admin:tenants:*`、`admin:users:*`、`admin:roles:*`、`admin:members:*`、`workspace:*`。  
+`PermissionRepository` + `PermissionCodes`（Java 常量）供 D-02+ 使用。
+
+| 角色 | 默认权限范围 |
+| --- | --- |
+| PLATFORM_ADMIN | 全部 `platform` 权限 |
+| TENANT_ADMIN | `tenant` + `workspace` |
+| MEMBER | `workspace:use`、`workspace:map:read/write` |
+| VIEWER | `workspace:use`、`workspace:map:read` |
+
+### 已完成（D-02）
+
+| 能力 | 实现 |
+| --- | --- |
+| 权限解析 | `PermissionResolver`：角色码 → `sys_role_permission` 并集 |
+| JWT | access/refresh 含 `permissions` claim |
+| 会话 API | `GET /v1/users/me`、login 响应 `user.permissions[]` |
+| 运行时鉴权 | `SaasPrincipal` authorities = `ROLE_*` + 权限码；`@PreAuthorize("hasAuthority('admin:tenants:read')")` |
+| Admin 门控 | `/v1/admin/**` 需任一 platform 权限；`GET /v1/admin/ping` 冒烟端点 |
+
+### 待做（D-03～D-10）
+
 | 能力 | 产出 |
 | --- | --- |
-| 权限模型 | `sys_permission`、`sys_role_permission` + 种子 |
-| 用户权限 | JWT / `users/me` 返回 permissions；`@PreAuthorize` |
+| ~~用户权限~~ | ✅ D-02：JWT / `users/me` permissions；`@PreAuthorize` |
 | 权限配置 | `GET/PUT /v1/admin/roles/{id}/permissions` 等 |
 | 后台管理 | `/v1/admin/tenants`、`/users`、租户成员与角色 |
 | Admin App | `apps/admin` 脚手架 + 基础 CRUD 页 |

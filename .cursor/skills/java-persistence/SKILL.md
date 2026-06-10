@@ -26,7 +26,8 @@ description: >-
 ```
 V1__baseline.sql
 V2__auth_tables.sql
-V3__tenant_core.sql
+V3__seed_roles.sql
+V6__permissions.sql
 ```
 
 规则：

@@ -147,7 +147,7 @@
 | ~~租户管理~~ | ✅ D-04：`GET/POST/PATCH /v1/admin/tenants` |
 | ~~用户管理~~ | ✅ D-05：`GET/POST/PATCH /v1/admin/users` |
 | ~~租户成员~~ | ✅ D-06：`/v1/admin/tenants/{id}/members` |
-| Admin App | `apps/admin` 脚手架 + 基础 CRUD 页 |
+| Admin App | ✅ D-07：`apps/admin` 脚手架 + 路由联调 |
 | saas-web 门控 | `requireRole` / 权限码对齐 SaaS，去掉 RuoYi 转换 |
 
 ## 目标架构（远期）

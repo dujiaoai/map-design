@@ -1,0 +1,51 @@
+{
+  "name": "@repo/saas-admin",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "SaaS 平台运营后台（React Router 7 SPA）",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "react-router dev",
+    "build": "react-router build",
+    "preview": "vite preview --outDir build/client",
+    "typecheck": "react-router typegen && tsc --noEmit",
+    "lint": "pnpm --filter @repo/saas check",
+    "validate": "pnpm run typecheck && pnpm run test",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.0.1",
+    "@react-router/node": "7.16.0",
+    "@repo/api-client": "workspace:*",
+    "@repo/auth": "workspace:*",
+    "@repo/ui": "workspace:*",
+    "@tanstack/react-query": "^5.62.0",
+    "isbot": "5.1.36",
+    "lucide-react": "0.469.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "react-hook-form": "^7.54.2",
+    "react-router": "7.16.0",
+    "zod": "catalog:",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@react-router/dev": "7.16.0",
+    "@tailwindcss/vite": "4.3.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/node": "catalog:",
+    "@types/react": "19.2.6",
+    "@types/react-dom": "19.2.3",
+    "jsdom": "^26.0.0",
+    "tailwindcss": "4.3.0",
+    "tw-animate-css": "^1.4.0",
+    "typescript": "catalog:",
+    "vite": "8.0.13",
+    "vitest": "^3.0.5"
+  }
+}

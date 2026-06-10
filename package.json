@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "pnpm --filter @repo/saas-web dev",
     "dev:web": "pnpm --filter @repo/saas-web dev",
+    "dev:admin": "pnpm --filter @repo/saas-admin dev",
     "dev:web:airace": "pnpm --filter @repo/saas-web dev:airace",
     "dev:uav": "pnpm --filter @repo/cloud-uav dev",
     "build": "node scripts/turbo-run.mjs run build",

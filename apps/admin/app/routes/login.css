@@ -1,0 +1,97 @@
+.admin-login-page {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #0a0e14;
+  color: #e8edf5;
+}
+
+.admin-login-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 0%, color-mix(in oklab, var(--brand) 22%, transparent), transparent 58%),
+    radial-gradient(circle at 90% 80%, rgba(255, 160, 60, 0.08), transparent 45%),
+    linear-gradient(160deg, #0a0e14 0%, #111822 45%, #0d1219 100%);
+}
+
+.admin-login-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(48, 148, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(48, 148, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: linear-gradient(to bottom, black, transparent 90%);
+}
+
+.admin-login-card {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 2rem, 420px);
+  padding: 2rem 2rem 1.75rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 17, 24, 0.82);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  animation: admin-login-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes admin-login-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-login-kicker {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(48, 148, 255, 0.85);
+}
+
+.admin-login-title {
+  font-family: 'Syne', 'Noto Sans SC', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 0.35rem;
+}
+
+.admin-login-field {
+  animation: admin-login-rise 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--field-i, 0) * 70ms + 120ms);
+}
+
+.admin-login-input {
+  height: 2.75rem;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  padding-inline: 0.85rem 0.85rem;
+  color: #f3f6fb;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.admin-login-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.admin-login-input:focus-visible {
+  outline: none;
+  border-color: color-mix(in oklab, var(--brand) 70%, white);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand) 25%, transparent);
+}

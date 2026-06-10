@@ -38,6 +38,8 @@ saas:
   cors:
     allowed-origins:
       - http://localhost:5175
+      - http://localhost:5181
+      - http://localhost:5182
 
 springdoc:
   api-docs:

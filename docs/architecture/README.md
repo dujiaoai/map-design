@@ -102,7 +102,8 @@ flowchart LR
 | Sprint D：租户 admin API（D-04） | ✅ |
 | Sprint D：用户 admin API（D-05） | ✅ |
 | Sprint D：租户成员 admin API（D-06） | ✅ |
-| Sprint D：apps/admin·部署（D-07～D-10） | 待实现 |
+| Sprint D：apps/admin 脚手架（D-07） | ✅ |
+| Sprint D：Admin CRUD·部署（D-08～D-10） | 待实现 |
 | Sprint E：地图/机库等业务 API | Later，C/D 不做 |
 | packages（ui/auth/api-client/ruoyi-api） | 已完成 |
 | SaaS `/v1` 后端 | Auth MVP + 租户 API ✅ |

@@ -104,7 +104,7 @@ function useNavMenuInteraction(isActive?: boolean) {
   }, [commandCenterFx, isActive])
 
   const handleSelect = React.useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>, onSelect: () => void) => {
+    (event: React.MouseEvent<HTMLElement>, onSelect: () => void) => {
       if (commandCenterFx) {
         const rect = event.currentTarget.getBoundingClientRect()
         setRip({

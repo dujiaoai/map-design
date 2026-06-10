@@ -263,7 +263,7 @@ git config --global --add safe.directory D:/path/to/map-design
 | `Connection refused` 5432 / 6379 | 先执行 `docker compose -f services/docker-compose.dev.yml up -d` |
 | Flyway 迁移失败 | 检查 PG 是否已有冲突 schema；必要时 `down -v` 后重来 |
 | 登录 401 `Invalid email or password` | 确认已执行 `seed-demo-dev.sql`，且 `tenantId` 为 `demo` |
-| 前端跨域错误 | 确认 `saas.cors.allowed-origins` 含 `http://localhost:5175`；或改用 `VITE_API_URL=/v1` 走代理 |
+| 前端跨域错误 | 确认 `saas.cors.allowed-origins` 含前端 dev 端口（saas-web `5175`、admin `5181`/`5182`）；admin 若因端口占用落到 5182，须同步加入 CORS |
 | `RedisConnectionFailure` | Redis 容器未启动；dev profile 依赖 Redis 存 refresh token |
 
 ### 端口 8082 被占用

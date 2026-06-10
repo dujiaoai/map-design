@@ -1,0 +1,26 @@
+@import "../../../packages/ui/src/styles/globals.css";
+
+@source "./**/*.{ts,tsx}";
+@source "../../../packages/ui/src/**/*.{ts,tsx}";
+
+@layer base {
+  body {
+    @apply antialiased;
+  }
+}
+
+.admin-display {
+  font-family: 'Syne', 'Noto Sans SC', system-ui, sans-serif;
+}
+
+.admin-shell-grid {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--primary) 6%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(circle at 20% 0%, black, transparent 72%);
+  opacity: 0.35;
+}

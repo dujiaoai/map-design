@@ -3,6 +3,13 @@ export { type AuthClient, type CreateAuthOptions, createAuth } from './src/creat
 export { SessionProvider, useIsAuthenticated, useSession } from './src/react/session-context'
 export { TenantProvider, useTenant } from './src/react/tenant-provider'
 export { hasAnyRole, hasRole, requireAuthenticated, requireRole } from './src/session/roles'
+export {
+  hasAnyPermission,
+  hasPermission,
+  requirePermission,
+} from './src/session/permissions'
+export { PermissionCodes, type PermissionCode, ROLE_DEFAULT_PERMISSIONS } from './src/permission-codes'
+export { resolvePermissionsForRoles } from './src/session/resolve-role-permissions'
 export { createTokenStorage, type TokenStorage } from './src/storage/token-storage'
 export { authTokensToTokenPair, loginResponseToSession } from './src/map-auth-response'
 export {

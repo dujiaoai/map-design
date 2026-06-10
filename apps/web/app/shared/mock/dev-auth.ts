@@ -28,6 +28,6 @@ export function createMockUserInfo(username: string): UserInfo {
       email: name.includes('@') ? name : `${name}@yunyan.local`,
     },
     roles: ['common'],
-    permissions: ['*:*:*'],
+    permissions: [],
   }
 }

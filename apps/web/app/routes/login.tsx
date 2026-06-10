@@ -6,6 +6,8 @@ import { useForm } from 'react-hook-form'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
+import { resolvePermissionsForRoles } from '@repo/auth'
+
 import { auth, SaaSRole } from '~/shared/auth/client'
 import { formatLoginError } from '~/shared/auth/format-login-error'
 import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
@@ -254,6 +256,7 @@ function DevLoginForm() {
           email: resolveUserEmail(username),
           name: username,
           roles: [SaaSRole.MEMBER],
+          permissions: resolvePermissionsForRoles([SaaSRole.MEMBER]),
         },
         tenant: null,
       },

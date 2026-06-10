@@ -1,13 +1,30 @@
-import { SaaSRole, type Session } from '@repo/auth'
+import {
+  hasAnyPermission,
+  hasPermission,
+  PermissionCodes,
+  SaaSRole,
+  type Session,
+} from '@repo/auth'
 
-/** 过渡期权限码：Sprint D 后改为 `users/me` 返回的细粒度权限 */
+export { PermissionCodes }
+
+/** 会话有效权限码（来自 SaaS `users/me` / login，精确匹配） */
 export function sessionPermissionCodes(session: Session | null | undefined): string[] {
-  if (!session) return []
+  return session?.user.permissions ?? []
+}
 
-  const isAdmin = session.user.roles.some(
-    (role) => role === SaaSRole.PLATFORM_ADMIN || role === SaaSRole.TENANT_ADMIN,
-  )
-  return isAdmin ? ['*:*:*'] : []
+export function sessionHasPermission(
+  session: Session | null | undefined,
+  code: string,
+): boolean {
+  return hasPermission(sessionPermissionCodes(session), code)
+}
+
+export function sessionHasAnyPermission(
+  session: Session | null | undefined,
+  codes: readonly string[],
+): boolean {
+  return hasAnyPermission(sessionPermissionCodes(session), codes)
 }
 
 export function sessionHasSaasRole(
@@ -22,4 +39,19 @@ export function sessionIsTenantOrPlatformAdmin(session: Session | null | undefin
     sessionHasSaasRole(session, SaaSRole.PLATFORM_ADMIN) ||
     sessionHasSaasRole(session, SaaSRole.TENANT_ADMIN)
   )
+}
+
+export function sessionCanAccessWorkspace(session: Session | null | undefined): boolean {
+  return sessionHasPermission(session, PermissionCodes.WORKSPACE_USE)
+}
+
+export function sessionCanWriteMap(session: Session | null | undefined): boolean {
+  return sessionHasPermission(session, PermissionCodes.WORKSPACE_MAP_WRITE)
+}
+
+export function sessionCanReadMap(session: Session | null | undefined): boolean {
+  return sessionHasAnyPermission(session, [
+    PermissionCodes.WORKSPACE_MAP_READ,
+    PermissionCodes.WORKSPACE_MAP_WRITE,
+  ])
 }

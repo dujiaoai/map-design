@@ -1,6 +1,7 @@
 import { createAuthApi } from './auth-api'
 import { authTokensToTokenPair, loginResponseToSession } from './map-auth-response'
 import { requireAuthenticated, requireRole } from './session/roles'
+import { requirePermission } from './session/permissions'
 import { createSessionStore } from './session/session-store'
 import { createTokenStorage } from './storage/token-storage'
 import type {
@@ -139,6 +140,14 @@ export function createAuth(options: CreateAuthOptions) {
 
     requireRole(session: Session | null, allowed: SaaSRole | SaaSRole[], redirect: RedirectFn) {
       return requireRole(session, allowed, redirect)
+    },
+
+    requirePermission(
+      session: Session | null,
+      required: string | readonly string[],
+      redirect: RedirectFn,
+    ) {
+      return requirePermission(session, required, redirect)
     },
 
     setTenant(tenant: SessionTenant | null) {

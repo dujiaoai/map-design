@@ -1,54 +1,35 @@
-import { SaaSRole } from '@repo/auth'
-
-import { hasAnyPermission, hasPermission } from '../lib/permissions'
 import {
-  sessionHasSaasRole,
-  sessionIsTenantOrPlatformAdmin,
-  sessionPermissionCodes,
-} from '~/shared/session/session-access'
-import { useWorkspaceSession } from '~/shared/session/use-workspace-session'
+  useHasAnyPermission,
+  useHasPermission,
+  useHasSaasRole,
+  useIsTenantOrPlatformAdmin,
+  useLegacySessionProfile,
+  useSessionPermissions,
+} from '~/shared/session/use-session-access'
 
-/** @deprecated 命名保留至 Sprint D；请优先 `useWorkspaceSession` + `sessionPermissionCodes` */
-export function useRuoYiProfile() {
-  const { session, isLoading, error } = useWorkspaceSession()
-  const permissions = sessionPermissionCodes(session)
-
-  return {
-    session,
-    roles: session?.user.roles ?? [],
-    permissions,
-    hydrated: Boolean(session) || !isLoading,
-    isLoading,
-    error,
-  }
+export {
+  useHasAnyPermission,
+  useHasPermission,
+  useHasSaasRole,
+  useIsTenantOrPlatformAdmin,
+  useSessionPermissions,
 }
 
+/** @deprecated 请用 `useSessionPermissions` */
+export { useLegacySessionProfile as useRuoYiProfile } from '~/shared/session/use-session-access'
+
+/** @deprecated 请用 `useSessionPermissions` */
 export function useRuoYiPermissions() {
-  return useRuoYiProfile().permissions
+  return useLegacySessionProfile().permissions
 }
 
-export function useHasPermission(required: string): boolean {
-  const permissions = useRuoYiPermissions()
-  return hasPermission(permissions, required)
-}
-
-export function useHasAnyPermission(required: readonly string[]): boolean {
-  const permissions = useRuoYiPermissions()
-  return hasAnyPermission(permissions, required)
-}
-
-export function useHasRoleKey(roleKey: string): boolean {
-  const { roles } = useRuoYiProfile()
-  return roles.includes(roleKey)
-}
-
-export function useHasSaasRole(role: SaaSRole): boolean {
-  const { session } = useRuoYiProfile()
-  return sessionHasSaasRole(session, role)
-}
-
-/** @deprecated 请用 `useHasSaasRole` 或 `sessionIsTenantOrPlatformAdmin` */
+/** @deprecated 请用 `useHasSaasRole` 或 `useIsTenantOrPlatformAdmin` */
 export function useIsRuoYiAdmin(): boolean {
-  const { session } = useRuoYiProfile()
-  return sessionIsTenantOrPlatformAdmin(session)
+  return useIsTenantOrPlatformAdmin()
+}
+
+/** @deprecated RuoYi role key；请用 `useHasSaasRole` */
+export function useHasRoleKey(roleKey: string): boolean {
+  const { roles } = useLegacySessionProfile()
+  return roles.includes(roleKey)
 }

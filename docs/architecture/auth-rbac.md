@@ -55,8 +55,9 @@
 ### RBAC（本期）
 
 - JWT / `SessionDto.user.roles`：`PLATFORM_ADMIN` | `TENANT_ADMIN` | `MEMBER` | `VIEWER`
-- 过渡期组件仍可读 `entities/ruoyi-user` 映射后的 `permissions`（admin → `*:*:*`）
-- **Sprint D**：`sys_permission` + Admin 配置 + saas-web 门控
+- **`user.permissions[]`**：来自 `GET /v1/users/me` / login，精确匹配（如 `workspace:use`）
+- 工作台入口：`app-layout` `requirePermission(workspace:use)`；无权限 → `/403`
+- **C-09 仍暂缓**：侧栏 `filterNavByTenant` / features 门控
 
 ## Sprint C 任务状态
 
@@ -138,19 +139,11 @@
 | 角色分配 | `PUT /v1/admin/tenants/{id}/members/{userId}/roles`（全量替换） |
 | 租户隔离 | `TENANT_ADMIN` 仅可操作 JWT 当前租户；Security 门控含 `admin:members:*` |
 
-### 待做（D-07～D-10）
+### 待做（D-10）
 
 | 能力 | 产出 |
 | --- | --- |
-| ~~用户权限~~ | ✅ D-02：JWT / `users/me` permissions；`@PreAuthorize` |
-| ~~权限配置~~ | ✅ D-03：`GET/PUT /v1/admin/roles/{id}/permissions` 等 |
-| ~~租户管理~~ | ✅ D-04：`GET/POST/PATCH /v1/admin/tenants` |
-| ~~用户管理~~ | ✅ D-05：`GET/POST/PATCH /v1/admin/users` |
-| ~~租户成员~~ | ✅ D-06：`/v1/admin/tenants/{id}/members` |
-| Admin App | ✅ D-07～D-08：`apps/admin` 脚手架 + CRUD 页 |
-| saas-web 门控 | `requireRole` / 权限码对齐 SaaS，去掉 RuoYi 转换 |
-
-## 目标架构（远期）
+| Docker 部署 | `deploy/docker-compose` 含 `saas-api`；Nginx `/v1` 反代 |
 
 - OAuth2/OIDC（C/D 用 Email/Password + JWT）
 - Web / Admin 独立 Cookie 域（`app.` vs `admin.`）

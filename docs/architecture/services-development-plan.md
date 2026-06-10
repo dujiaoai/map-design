@@ -34,7 +34,7 @@
 
 **Sprint C 进度（2026-06）**：后端 C-01～C-05 ✅；前端 C-06～C-12 ✅（身份与会话主路径已去 RuoYi）。**C-09 菜单/租户能力过滤暂缓**。
 
-**Sprint D 进度**：**D-01 ✅** … **D-07 ✅** apps/admin 脚手架；**D-08 ✅** Admin CRUD 页；D-09～D-10 待做。**暂不启动**地图/机库等业务 API。
+**Sprint D 进度**：**D-01 ✅** … **D-08 ✅** Admin CRUD 页；**D-09 ✅** saas-web 权限门控；D-10 待做。**暂不启动**地图/机库等业务 API。
 
 ```
 map-design/
@@ -107,7 +107,7 @@ mvn -f services/pom.xml -pl saas-api test
 | ~~**工作台会话仍走 RuoYi**~~       | ✅ C-06～C-08：登录、注册、bootstrap 已切 SaaS                                        | —   |
 | ~~**注册 / 用户资料写接口**~~        | ✅ C-02～C-05 后端 + C-10 Account UI（`users/me*`）                                  | —   |
 | **侧栏租户能力过滤**                 | C-09 **暂缓**；当前 mock-nav 全量，不接 `features` 门控                               | —   |
-| **RBAC / 权限配置 / 后台管理**       | D-01～D-08 ✅；D-09～D-10：权限门控、部署 | P2  |
+| **RBAC / 权限配置 / 后台管理**       | D-01～D-09 ✅；D-10：Docker 部署 | P2  |
 | `**/v1/admin/`** 空壳**          | Security 已有 `PLATFORM_ADMIN` 占位；Controller 与 Admin UI 排 Sprint D                 | P2  |
 | **业务域 API**                    | 地图、机库、专题等 — **Sprint C/D 不做**，待基础能力验收后另开迭代                                    | Later |
 | **Docker 全栈未含 saas-api**       | `deploy/docker-compose` 仅 saas-web + cloud-uav                                   | P2  |
@@ -267,7 +267,7 @@ flowchart TD
 | --- | --- | --- |
 | D-07 ✅ | **apps/admin** 脚手架 | 登录（SaaS）、布局、路由；对接 `/v1/admin/*` |
 | D-08 ✅ | 后台基础页 | 租户列表、用户列表、角色/权限配置 UI（表格 + 表单） |
-| D-09 | saas-web 权限门控 | `requireRole` / 权限码与 Sprint D API 一致；去掉 RuoYi 权限转换依赖 |
+| D-09 ✅ | saas-web 权限门控 | `requireRole` / 权限码与 Sprint D API 一致；去掉 RuoYi 权限转换依赖 |
 | D-10 | 部署基座 | `deploy/docker-compose` 含 `saas-api`；Nginx `/v1` 反代；`VITE_API_URL` 注入 |
 
 **验收：**
@@ -363,7 +363,8 @@ flowchart TD
 | D-06 ✅ | D | 后端：租户成员 admin API |
 | D-07 ✅ | D | 前端：apps/admin 脚手架 |
 | D-08 ✅ | D | 前端：Admin CRUD 页 |
-| D-09～D-10 | D | 前端：权限门控、Docker 部署 |
+| D-09 ✅ | D | 前端：saas-web 权限门控 |
+| D-10 | D | 前端：Docker 部署 |
 | E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
 
 ### 建议默认顺序（仅供参考，非强制）

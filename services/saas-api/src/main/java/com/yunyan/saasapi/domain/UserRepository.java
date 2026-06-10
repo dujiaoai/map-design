@@ -85,4 +85,18 @@ public class UserRepository {
           sysUserRoleMapper.insert(userRole);
         });
   }
+
+  public void replaceUserRoles(UUID userId, List<UUID> roleIds) {
+    TenantRlsBypass.run(
+        () -> {
+          sysUserRoleMapper.delete(
+              Wrappers.<SysUserRole>lambdaQuery().eq(SysUserRole::getUserId, userId));
+          for (UUID roleId : roleIds) {
+            var userRole = new SysUserRole();
+            userRole.setUserId(userId);
+            userRole.setRoleId(roleId);
+            sysUserRoleMapper.insert(userRole);
+          }
+        });
+  }
 }

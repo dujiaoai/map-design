@@ -99,7 +99,7 @@
 | JWT | access/refresh 含 `permissions` claim |
 | 会话 API | `GET /v1/users/me`、login 响应 `user.permissions[]` |
 | 运行时鉴权 | `SaasPrincipal` authorities = `ROLE_*` + 权限码；`@PreAuthorize("hasAuthority('admin:tenants:read')")` |
-| Admin 门控 | `/v1/admin/**` 需 platform 权限；`GET /v1/admin/ping` 匿名可达并返回 `platformAdmin` 自检 |
+| Admin 门控 | `/v1/admin/**` 需 platform 或 `admin:members:*` 权限；`GET /v1/admin/ping` 匿名可达 |
 
 ### 已完成（D-03）
 
@@ -128,7 +128,17 @@
 | 更新用户 | `PATCH /v1/admin/users/{id}`（displayName、status） |
 | 禁用 | `status`: `active` / `disabled`；禁用后无法登录 |
 
-### 待做（D-06～D-10）
+### 已完成（D-06）
+
+| 能力 | 实现 |
+| --- | --- |
+| 成员列表 | `GET /v1/admin/tenants/{id}/members`（`admin:members:read`） |
+| 邀请成员 | `POST /v1/admin/tenants/{id}/members` |
+| 更新成员 | `PATCH /v1/admin/tenants/{id}/members/{userId}` |
+| 角色分配 | `PUT /v1/admin/tenants/{id}/members/{userId}/roles`（全量替换） |
+| 租户隔离 | `TENANT_ADMIN` 仅可操作 JWT 当前租户；Security 门控含 `admin:members:*` |
+
+### 待做（D-07～D-10）
 
 | 能力 | 产出 |
 | --- | --- |
@@ -136,7 +146,7 @@
 | ~~权限配置~~ | ✅ D-03：`GET/PUT /v1/admin/roles/{id}/permissions` 等 |
 | ~~租户管理~~ | ✅ D-04：`GET/POST/PATCH /v1/admin/tenants` |
 | ~~用户管理~~ | ✅ D-05：`GET/POST/PATCH /v1/admin/users` |
-| 租户成员 | D-06：`TENANT_ADMIN` 管理 `/v1/admin/tenants/{id}/members` |
+| ~~租户成员~~ | ✅ D-06：`/v1/admin/tenants/{id}/members` |
 | Admin App | `apps/admin` 脚手架 + 基础 CRUD 页 |
 | saas-web 门控 | `requireRole` / 权限码对齐 SaaS，去掉 RuoYi 转换 |
 

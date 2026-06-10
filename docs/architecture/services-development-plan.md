@@ -34,7 +34,7 @@
 
 **Sprint C 进度（2026-06）**：后端 C-01～C-05 ✅；前端 C-06～C-12 ✅（身份与会话主路径已去 RuoYi）。**C-09 菜单/租户能力过滤暂缓**。
 
-**Sprint D 进度**：**D-01 ✅** 权限表；**D-02 ✅** JWT permissions；**D-03 ✅** 角色权限配置；**D-04 ✅** 租户 admin API；**D-05 ✅** 用户 admin API；D-06～D-10 待做。**暂不启动**地图/机库等业务 API。
+**Sprint D 进度**：**D-01 ✅** … **D-05 ✅** 用户 admin API；**D-06 ✅** 租户成员 admin API；D-07～D-10 待做。**暂不启动**地图/机库等业务 API。
 
 ```
 map-design/
@@ -107,7 +107,7 @@ mvn -f services/pom.xml -pl saas-api test
 | ~~**工作台会话仍走 RuoYi**~~       | ✅ C-06～C-08：登录、注册、bootstrap 已切 SaaS                                        | —   |
 | ~~**注册 / 用户资料写接口**~~        | ✅ C-02～C-05 后端 + C-10 Account UI（`users/me*`）                                  | —   |
 | **侧栏租户能力过滤**                 | C-09 **暂缓**；当前 mock-nav 全量，不接 `features` 门控                               | —   |
-| **RBAC / 权限配置 / 后台管理**       | D-01～D-05 ✅；D-06～D-10：成员 admin、apps/admin | P2  |
+| **RBAC / 权限配置 / 后台管理**       | D-01～D-06 ✅；D-07～D-10：apps/admin、部署 | P2  |
 | `**/v1/admin/`** 空壳**          | Security 已有 `PLATFORM_ADMIN` 占位；Controller 与 Admin UI 排 Sprint D                 | P2  |
 | **业务域 API**                    | 地图、机库、专题等 — **Sprint C/D 不做**，待基础能力验收后另开迭代                                    | Later |
 | **Docker 全栈未含 saas-api**       | `deploy/docker-compose` 仅 saas-web + cloud-uav                                   | P2  |
@@ -259,7 +259,7 @@ flowchart TD
 | D-03 ✅ | **权限配置 API** | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions`（全量替换 + scope 校验） |
 | D-04 ✅ | 租户管理 | `GET/POST/PATCH /v1/admin/tenants`；`V7__tenant_status.sql`（active/suspended）；停用后禁止登录 |
 | D-05 ✅ | 用户管理 | `GET/POST/PATCH /v1/admin/users`；邀请成员、禁用账号（active/disabled） |
-| D-06 | 租户管理员能力 | `TENANT_ADMIN`：`/v1/admin/tenants/{id}/members` 成员与角色分配 |
+| D-06 ✅ | 租户管理员能力 | `TENANT_ADMIN`：`/v1/admin/tenants/{id}/members` 成员与角色分配 |
 
 #### 前端
 
@@ -360,7 +360,7 @@ flowchart TD
 | D-03 ✅ | D | 后端：权限配置 API（roles / permissions） |
 | D-04 ✅ | D | 后端：租户管理 admin API |
 | D-05 ✅ | D | 后端：用户管理 admin API |
-| D-06 | D | 后端：租户成员 admin API |
+| D-06 ✅ | D | 后端：租户成员 admin API |
 | D-07～D-10 | D | 前端：apps/admin、权限门控、Docker 部署 |
 | E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
 

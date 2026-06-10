@@ -25,5 +25,23 @@ public final class PermissionCodes {
     ADMIN_ROLES_WRITE
   };
 
+  /** Tenant-scoped permissions for `/v1/admin/**` member routes (D-06). */
+  public static final String[] TENANT_MEMBER_ADMIN_AUTHORITIES = {
+    ADMIN_MEMBERS_READ,
+    ADMIN_MEMBERS_WRITE
+  };
+
+  /** Any authority that may enter `/v1/admin/**` (except permitAll ping). */
+  public static final String[] ADMIN_GATE_AUTHORITIES = {
+    ADMIN_TENANTS_READ,
+    ADMIN_TENANTS_WRITE,
+    ADMIN_USERS_READ,
+    ADMIN_USERS_WRITE,
+    ADMIN_ROLES_READ,
+    ADMIN_ROLES_WRITE,
+    ADMIN_MEMBERS_READ,
+    ADMIN_MEMBERS_WRITE
+  };
+
   private PermissionCodes() {}
 }

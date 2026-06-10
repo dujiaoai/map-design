@@ -36,13 +36,7 @@ public class SecurityConfig {
                 .permitAll()
             .requestMatchers(HttpMethod.GET, "/v1/admin/ping").permitAll()
             .requestMatchers("/v1/admin/**")
-                .hasAnyAuthority(
-                    PermissionCodes.ADMIN_TENANTS_READ,
-                    PermissionCodes.ADMIN_TENANTS_WRITE,
-                    PermissionCodes.ADMIN_USERS_READ,
-                    PermissionCodes.ADMIN_USERS_WRITE,
-                    PermissionCodes.ADMIN_ROLES_READ,
-                    PermissionCodes.ADMIN_ROLES_WRITE)
+                .hasAnyAuthority(PermissionCodes.ADMIN_GATE_AUTHORITIES)
             .anyRequest().authenticated())
         .exceptionHandling(ex -> ex
             .authenticationEntryPoint((req, res, e) -> res.sendError(401))

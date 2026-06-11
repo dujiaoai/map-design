@@ -195,13 +195,16 @@ function NavMainCollapsibleItem({
   onSelectItem: (id: string) => void
 }) {
   const commandCenterFx = useCommandCenterNavFxEnabled()
-  const [open, setOpen] = React.useState(Boolean(item.isActive))
+  const [open, setOpen] = usePersistedSectionOpen(
+    `nav-group-${item.id}`,
+    Boolean(item.isActive),
+  )
 
   React.useEffect(() => {
     if (item.isActive) {
       setOpen(true)
     }
-  }, [item.isActive])
+  }, [item.isActive, setOpen])
 
   return (
     <Collapsible

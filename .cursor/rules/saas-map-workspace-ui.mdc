@@ -39,6 +39,8 @@ alwaysApply: false
 
 **侧栏模块**：`map-module` / `map-dock-module` 全局互斥，左栏 `MapContextPanel` 单层外壳；切换菜单项关闭上一模块。
 
+**`home.tsx` 画布层（自底向上）**：Atmosphere → ContextMenu → Placeholder → QuickToolbar → **MapControls** → MockMapToolHost → MapToolDrawerPanel → MapNativeModuleHost → MapContextPanelEdge。新 map-chrome 与 `MapControls` 同级；Provider 外：`AccountSheet` / `NotificationSheet` / `WorkspaceCommandPalette`。详见架构 doc §页面挂载顺序。
+
 ## 禁止
 
 - 地图工具 L4 条带改用 Vaul Drawer

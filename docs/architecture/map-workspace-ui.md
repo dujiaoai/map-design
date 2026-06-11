@@ -140,21 +140,75 @@ Store：`apps/web/app/features/map-workspace/model/workspace-store.ts`
 
 ## 页面挂载顺序
 
-`apps/web/app/routes/home.tsx`：
+权威实现：`apps/web/app/routes/home.tsx`。Agent 改首页时**只改编排**，不在 route 内写 store 分支或菜单分发逻辑。
+
+### 整页结构
 
 ```
-MapContextPanel       ← 侧栏模块唯一左列（全局互斥，单层 ContextPanelShell）
-  workspace-canvas
-    MapPlaceholder
-    MapQuickToolbar   ← 方案 C：高频 map-tool 快捷入口
-    MockMapToolHost   ← movable-panel / anchor / panel
-    MapToolDrawerPanel← drawer (L4)
-    MapNativeModuleHost ← display 模块（不与左列并行）
-    MapContextPanelEdge ← 左列模块收起后的唯一展开条
-MapStatusBar
+workspace-page
+├── SidebarProvider
+│   ├── MapWorkspaceUrlSync / MapToolLifecycleSync / MapWorkspaceKeyboardSync  ← 无 UI，挂载即生效
+│   ├── AppSidebar
+│   └── SidebarInset (workspace-inset)
+│       ├── MapWorkspaceHeader          ← 顶栏（面包屑、命令入口、通知/账号）
+│       ├── workspace-main
+│       │   ├── MapContextPanel         ← 左列：map-module / map-dock-module（全局互斥）
+│       │   └── workspace-canvas        ← 见下「画布层」
+│       └── MapStatusBar                ← 底栏坐标/比例尺等
+├── AccountSheet                        ← Vaul，SidebarProvider 外
+├── NotificationSheet                   ← Vaul，SidebarProvider 外
+└── WorkspaceCommandPalette             ← 全局命令面板（Cmd/Ctrl+K）
 ```
 
-页级 Vaul：`AccountSheet`、`NotificationSheet`（在 `SidebarProvider` 外）。
+### 画布层（`workspace-canvas` 内，自底向上）
+
+DOM 顺序即叠层参考；新增 chrome 优先插在 **QuickToolbar 与 MockMapToolHost 之间**（与 `MapControls` 同级），勿插在 ToolHost 与 Drawer 之间以免遮挡工具浮层。
+
+| 顺序 | 组件 | 职责 | store / 数据 |
+| --- | --- | --- | --- |
+| 1 | `WorkspaceMapAtmosphere` | 指挥舱背景（网格/光晕），工具激活时可 `subdued` | 读 `useMapEngineReady`、是否有 active 工具 |
+| 2 | `MapCanvasContextMenu` | 画布右键菜单壳 | 本地 / 后续接地图引擎 |
+| 3 | `MapPlaceholder` | 地图引擎占位 / 未来 MapProvider 挂载点 | — |
+| 4 | `MapQuickToolbar` | 方案 C：高频 `map-tool` 快捷入口 | 经 `createNavSelectHandler` |
+| 5 | `MapControls` | map-chrome：指北针、缩放、图例/图层 wing | 局部 mock + `useMapControlsInset` |
+| 6 | `MockMapToolHost` | `movable-panel` / `anchor` / 并行 `panel` | `activeMapTool` / `activePanelTools` |
+| 7 | `MapToolDrawerPanel` | L4 右侧条带（`presentation: drawer`） | `activeDrawerTool` |
+| 8 | `MapNativeModuleHost` | `display` 类模块（右条/右下，不与左列并行） | 侧栏模块 + `usesLeftContextPanel` 分流 |
+| 9 | `MapContextPanelEdge` | 左列模块收起后的**唯一**左缘展开条 | 与 `MapContextPanel` 互斥，无堆叠 |
+
+`MapContextPanel` 与 `workspace-canvas` 在 `workspace-main` 内**并列**（flex 行），不在 canvas 内部。
+
+### 同步组件（无 UI）
+
+| 组件 | 路径 | 作用 |
+| --- | --- | --- |
+| `MapWorkspaceUrlSync` | `features/map-workspace/` | URL ↔ store 深链 |
+| `MapToolLifecycleSync` | `features/map-workspace/` | 地图工具与 bridge 生命周期 |
+| `MapWorkspaceKeyboardSync` | `features/map-workspace/` | 全局快捷键（含命令面板） |
+
+须放在 `SidebarProvider` 内、与侧栏/主内容同级，保证路由切换时仍挂载。
+
+### 页级浮层（`SidebarProvider` 外）
+
+| 组件 | 实现 | 用途 |
+| --- | --- | --- |
+| `AccountSheet` | Vaul Drawer + 遮罩 | 账号资料 |
+| `NotificationSheet` | Vaul Drawer + 遮罩 | 通知列表 |
+| `WorkspaceCommandPalette` | 自定义 / cmdk | 顶栏搜索、快捷导航 |
+
+**不要**将地图 L4 条带（`MapToolDrawerPanel`）改为 Vaul；**不要**把机库/业务模块做成模态 Dialog 挡地图。
+
+### Agent 新增组件指引
+
+| 类型 | 建议挂载位 |
+| --- | --- |
+| 新高频 `map-tool` | 侧栏 mock + `quick-toolbar-catalog`；不必改 `home.tsx` |
+| 新 map-chrome（罗盘、比例尺类） | `MapControls` 同级或扩展现有 `widgets/map-controls` |
+| 新画布浮层工具 | 扩展 `MockMapToolHost` / `MapToolDrawerPanel`，勿在 `home.tsx` 新写 store |
+| 新左列业务/机库模块 | `MapContextPanel` 内嵌 Dock，勿新增第二个左列壳 |
+| 新全局 Sheet | `SidebarProvider` 外，与 `AccountSheet` 并列 |
+
+样式：工作台页级 CSS 见 `apps/web/app/routes/home.css`；主题固定深色（`html.dark`），见 Skill **`saas-theme-mode`**。
 
 ## 快捷工具条（方案 C）
 
@@ -199,6 +253,11 @@ MapStatusBar
 | 地图 L4 条带 | `apps/web/app/widgets/map-import-drawer/` |
 | 上下文面板 | `apps/web/app/widgets/map-context-panel/` |
 | 原生模块载体 | `apps/web/app/widgets/map-native-module-host/` |
+| 地图 chrome 控件 | `apps/web/app/widgets/map-controls/`（指北针、缩放、图例/图层 wing） |
+| 顶栏与工作台 chrome | `apps/web/app/widgets/map-workspace-header/`、`widgets/workspace-chrome/` |
+| 命令面板 | `apps/web/app/widgets/workspace-command-palette/` |
+| 画布大气/壳 | `apps/web/app/widgets/workspace-shell/`（`WorkspaceMapAtmosphere`） |
+| 首页编排 | `apps/web/app/routes/home.tsx`、`home.css` |
 | 载体分流 | `apps/web/app/entities/navigation/lib/uses-left-context-panel.ts` |
 | 侧栏模块展开条 | `apps/web/app/widgets/map-context-panel/ui/map-context-panel-edge.tsx` |
 | 机库 Dock 内容 | `apps/web/app/widgets/map-dock-panel/` |

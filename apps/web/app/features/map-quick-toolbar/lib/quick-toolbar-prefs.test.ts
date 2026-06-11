@@ -7,7 +7,7 @@ import {
   orderQuickToolbarIds,
   sanitizeQuickToolbarIds,
 } from './quick-toolbar-catalog'
-import { loadQuickToolbarCollapsed, loadQuickToolbarIds, resetQuickToolbarIds, saveQuickToolbarCollapsed, saveQuickToolbarIds } from './quick-toolbar-prefs'
+import { loadQuickToolbarCollapsed, loadQuickToolbarIds, loadQuickToolbarLayout, resetQuickToolbarIds, saveQuickToolbarCollapsed, saveQuickToolbarIds, saveQuickToolbarLayout } from './quick-toolbar-prefs'
 
 describe('quick-toolbar prefs', () => {
   beforeEach(() => {
@@ -113,5 +113,13 @@ describe('quick-toolbar prefs', () => {
     expect(loadQuickToolbarCollapsed()).toBe(false)
     saveQuickToolbarCollapsed(true)
     expect(loadQuickToolbarCollapsed()).toBe(true)
+  })
+
+  it('persists layout orientation', () => {
+    expect(loadQuickToolbarLayout()).toBe('horizontal')
+    saveQuickToolbarLayout('vertical')
+    expect(loadQuickToolbarLayout()).toBe('vertical')
+    saveQuickToolbarLayout('horizontal')
+    expect(loadQuickToolbarLayout()).toBe('horizontal')
   })
 })

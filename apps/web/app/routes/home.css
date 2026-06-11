@@ -186,6 +186,11 @@ html.dark .workspace-page .workspace-context-panel {
   max-width: 100%;
 }
 
+.workspace-map-toolbar--vertical {
+  width: auto;
+  max-width: none;
+}
+
 .workspace-map-toolbar-tool--dragging {
   transition: none !important;
   z-index: 30;

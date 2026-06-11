@@ -72,6 +72,21 @@ export function saveQuickToolbarCollapsed(collapsed: boolean): void {
   localStorage.setItem(COLLAPSED_STORAGE_KEY, collapsed ? '1' : '0')
 }
 
+const LAYOUT_STORAGE_KEY = 'map-quick-toolbar-layout'
+
+export type QuickToolbarLayout = 'horizontal' | 'vertical'
+
+export function loadQuickToolbarLayout(): QuickToolbarLayout {
+  if (typeof window === 'undefined') return 'horizontal'
+  const raw = localStorage.getItem(LAYOUT_STORAGE_KEY)
+  return raw === 'vertical' ? 'vertical' : 'horizontal'
+}
+
+export function saveQuickToolbarLayout(layout: QuickToolbarLayout): void {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(LAYOUT_STORAGE_KEY, layout)
+}
+
 const STORAGE_KEY = 'map-workspace-quick-toolbar'
 
 export function loadQuickToolbarIds(): string[] {

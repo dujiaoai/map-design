@@ -9,6 +9,7 @@ export function QuickToolbarSortableTool({
   icon: Icon,
   active,
   disabled,
+  tooltipSide = 'bottom',
   onSelect,
 }: {
   navItemId: string
@@ -16,6 +17,7 @@ export function QuickToolbarSortableTool({
   icon: LucideIcon
   active: boolean
   disabled: boolean
+  tooltipSide?: 'top' | 'right' | 'bottom' | 'left'
   onSelect: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -54,7 +56,7 @@ export function QuickToolbarSortableTool({
           </button>
         }
       />
-      <TooltipContent side="bottom">{label}</TooltipContent>
+      <TooltipContent side={tooltipSide}>{label}</TooltipContent>
     </Tooltip>
   )
 }

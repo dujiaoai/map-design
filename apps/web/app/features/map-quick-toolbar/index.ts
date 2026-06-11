@@ -18,13 +18,16 @@ export {
   hasSeenQuickToolbarOnboarding,
   loadQuickToolbarCollapsed,
   loadQuickToolbarIds,
+  loadQuickToolbarLayout,
   loadQuickToolbarPosition,
   markQuickToolbarOnboardingSeen,
   resetQuickToolbarIds,
   resetQuickToolbarPosition,
   saveQuickToolbarCollapsed,
   saveQuickToolbarIds,
+  saveQuickToolbarLayout,
   saveQuickToolbarPosition,
+  type QuickToolbarLayout,
   type QuickToolbarPosition,
 } from './lib/quick-toolbar-prefs'
 export { useQuickToolbarPrefs } from './model/use-quick-toolbar-prefs'

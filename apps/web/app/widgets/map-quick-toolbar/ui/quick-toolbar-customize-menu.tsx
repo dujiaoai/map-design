@@ -19,6 +19,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@repo/ui'
@@ -26,6 +28,8 @@ import {
   GripVerticalIcon,
   Minimize2Icon,
   MapPinIcon,
+  PanelLeftIcon,
+  PanelTopIcon,
   RotateCcwIcon,
   Settings2Icon,
   XIcon,
@@ -39,6 +43,7 @@ import {
   orderQuickToolbarIds,
   resolveQuickToolDef,
   type QuickToolDef,
+  type QuickToolbarLayout,
 } from '~/features/map-quick-toolbar'
 import { WORKSPACE_CHROME_ICON_TONE_CLASS } from '~/shared/lib/workspace-chrome-styles'
 
@@ -117,6 +122,8 @@ export function QuickToolbarCustomizeMenu({
   menuOpen,
   onMenuOpenChange,
   menuAlignOffset,
+  layout,
+  onLayoutChange,
   selectedIds,
   catalog,
   toggleTool,
@@ -130,6 +137,8 @@ export function QuickToolbarCustomizeMenu({
   menuOpen: boolean
   onMenuOpenChange: (open: boolean) => void
   menuAlignOffset: number
+  layout: QuickToolbarLayout
+  onLayoutChange: (layout: QuickToolbarLayout) => void
   selectedIds: string[]
   catalog: QuickToolDef[]
   toggleTool: (navItemId: string, enabled: boolean) => void
@@ -265,6 +274,27 @@ export function QuickToolbarCustomizeMenu({
         </div>
 
         <div className="border-border shrink-0 border-t dark:border-white/8">
+          <p className="text-muted-foreground px-2 pt-2 pb-1 text-[10px] font-medium tracking-wide uppercase">
+            显示方向
+          </p>
+          <DropdownMenuRadioGroup
+            value={layout}
+            onValueChange={(value) => {
+              if (value === 'horizontal' || value === 'vertical') {
+                onLayoutChange(value)
+              }
+            }}
+          >
+            <DropdownMenuRadioItem value="horizontal" className="gap-2">
+              <PanelTopIcon className="size-3.5 shrink-0 opacity-70" aria-hidden />
+              横向排列
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="vertical" className="gap-2">
+              <PanelLeftIcon className="size-3.5 shrink-0 opacity-70" aria-hidden />
+              纵向排列
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+          <DropdownMenuSeparator className="my-1" />
           <DropdownMenuItem onClick={onCollapseToolbar}>
             <Minimize2Icon />
             收起为浮标

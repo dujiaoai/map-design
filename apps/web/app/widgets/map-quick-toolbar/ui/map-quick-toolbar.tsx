@@ -2,6 +2,7 @@ import { DndContext, useDraggable } from '@dnd-kit/core'
 import {
   horizontalListSortingStrategy,
   SortableContext,
+  verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Button, cn, Tooltip, TooltipContent, TooltipTrigger } from '@repo/ui'
@@ -37,7 +38,7 @@ import { QuickToolbarSortableTool } from './quick-toolbar-sortable-tool'
  * 地图画布快捷工具条（@dnd-kit：拖动手柄定位 + sortable 排序 + 对齐吸附）
  */
 export function MapQuickToolbar({ className }: { className?: string }) {
-  const { selectedIds, collapsed, setCollapsed, catalog, toggleTool, reorderTools, restoreDefaults, minTools } =
+  const { selectedIds, collapsed, setCollapsed, layout, setLayout, catalog, toggleTool, reorderTools, restoreDefaults, minTools } =
     useQuickToolbarPrefs()
 
   const containerRef = useRef<HTMLElement | null>(null)
@@ -46,7 +47,7 @@ export function MapQuickToolbar({ className }: { className?: string }) {
   const [canvasWidth, setCanvasWidth] = useState(0)
   const [showOnboarding, setShowOnboarding] = useState(false)
 
-  const layoutKey = `${collapsed ? 'collapsed' : 'expanded'}|${selectedIds.join('|')}|${canvasWidth}`
+  const layoutKey = `${collapsed ? 'collapsed' : 'expanded'}|${layout}|${selectedIds.join('|')}|${canvasWidth}`
 
   const surface = useWorkspaceSurfaceDnd({
     dragId: QUICK_TOOLBAR_DRAG_ID,
@@ -91,6 +92,11 @@ export function MapQuickToolbar({ className }: { className?: string }) {
     setToolbarReadySignal((value) => value + 1)
   }
 
+  function handleLayoutChange(nextLayout: typeof layout) {
+    setLayout(nextLayout)
+    setToolbarReadySignal((value) => value + 1)
+  }
+
   return (
     <DndContext
       sensors={surface.sensors}
@@ -115,6 +121,8 @@ export function MapQuickToolbar({ className }: { className?: string }) {
         canvasWidth={canvasWidth}
         collapsed={collapsed}
         onCollapse={handleCollapse}
+        layout={layout}
+        onLayoutChange={handleLayoutChange}
         selectedIds={selectedIds}
         catalog={catalog}
         toggleTool={toggleTool}
@@ -147,6 +155,8 @@ function MapQuickToolbarDraggable({
   canvasWidth,
   collapsed,
   onCollapse,
+  layout,
+  onLayoutChange,
   selectedIds,
   catalog,
   toggleTool,
@@ -171,6 +181,8 @@ function MapQuickToolbarDraggable({
   canvasWidth: number
   collapsed: boolean
   onCollapse: (collapsed: boolean) => void
+  layout: 'horizontal' | 'vertical'
+  onLayoutChange: (layout: 'horizontal' | 'vertical') => void
   selectedIds: string[]
   catalog: ReturnType<typeof useQuickToolbarPrefs>['catalog']
   toggleTool: ReturnType<typeof useQuickToolbarPrefs>['toggleTool']
@@ -219,7 +231,7 @@ function MapQuickToolbarDraggable({
     })
     observer.observe(toolbar)
     return () => observer.disconnect()
-  }, [canvasWidth, collapsed, onToolbarLayoutChange, position.x, selectedIds.length, toolbarRef])
+  }, [canvasWidth, collapsed, layout, onToolbarLayoutChange, position.x, selectedIds.length, toolbarRef])
 
   const toolbarMaxWidth =
     canvasWidth > 0
@@ -288,6 +300,9 @@ function MapQuickToolbarDraggable({
 
   const toolbarDragging = isDragging || isToolbarNodeDragging
   const sortableDisabled = toolbarDragging || menuOpen
+  const isVertical = layout === 'vertical'
+  const sortableStrategy = isVertical ? verticalListSortingStrategy : horizontalListSortingStrategy
+  const tooltipSide = isVertical ? 'right' : 'bottom'
 
   const dragHandle = (
     <Tooltip>
@@ -307,7 +322,7 @@ function MapQuickToolbarDraggable({
           </button>
         }
       />
-      <TooltipContent side="bottom">拖动工具条（靠近边缘/中线自动对齐）</TooltipContent>
+      <TooltipContent side={tooltipSide}>拖动工具条（靠近边缘/中线自动对齐）</TooltipContent>
     </Tooltip>
   )
 
@@ -327,14 +342,19 @@ function MapQuickToolbarDraggable({
           'workspace-map-toolbar cc-glass-panel pointer-events-auto absolute z-20 touch-none',
           collapsed
             ? 'workspace-map-toolbar--collapsed flex items-center gap-0.5 rounded-full p-1'
-            : 'workspace-map-toolbar--expanded flex flex-wrap items-center gap-x-0.5 gap-y-1 rounded-lg p-1',
+            : cn(
+                'workspace-map-toolbar--expanded rounded-lg p-1',
+                isVertical
+                  ? 'workspace-map-toolbar--vertical flex flex-col items-stretch gap-y-0.5'
+                  : 'workspace-map-toolbar--horizontal flex flex-wrap items-center gap-x-0.5 gap-y-1',
+              ),
           toolbarDragging && 'workspace-surface-dragging workspace-map-toolbar--dragging shadow-[0_12px_40px_rgba(0,0,0,0.35)]',
           className,
         )}
         style={{
           left: Math.max(0, position.x),
           top: Math.max(0, position.y),
-          maxWidth: toolbarMaxWidth,
+          maxWidth: isVertical ? undefined : toolbarMaxWidth,
           transform: toolbarTransform ? CSS.Translate.toString(toolbarTransform) : undefined,
         }}
         {...toolbarAttributes}
@@ -378,13 +398,16 @@ function MapQuickToolbarDraggable({
           <>
             {dragHandle}
 
-        <SortableContext items={orderedSelectedIds} strategy={horizontalListSortingStrategy}>
+        <SortableContext items={orderedSelectedIds} strategy={sortableStrategy}>
           {groupedTools.map((section, sectionIndex) => (
             <div
               key={section.group}
               className={cn(
-                'flex flex-wrap items-center gap-0.5',
-                sectionIndex > 0 && 'workspace-map-toolbar-group border-border ml-0.5 border-l pl-0.5 dark:border-white/8',
+                isVertical ? 'flex flex-col items-stretch gap-0.5' : 'flex flex-wrap items-center gap-0.5',
+                sectionIndex > 0 &&
+                  (isVertical
+                    ? 'workspace-map-toolbar-group border-border mt-0.5 border-t pt-0.5 dark:border-white/8'
+                    : 'workspace-map-toolbar-group border-border ml-0.5 border-l pl-0.5 dark:border-white/8'),
               )}
             >
               {section.items.map(({ navItemId, label, icon }) => (
@@ -395,6 +418,7 @@ function MapQuickToolbarDraggable({
                   icon={icon}
                   active={activeNavItemIds.includes(navItemId)}
                   disabled={sortableDisabled}
+                  tooltipSide={tooltipSide}
                   onSelect={() => handleNavSelect(navItemId)}
                 />
               ))}
@@ -402,7 +426,14 @@ function MapQuickToolbarDraggable({
           ))}
         </SortableContext>
 
-        <div className="workspace-map-toolbar-actions border-border ml-0.5 flex shrink-0 items-center gap-0.5 border-l pl-0.5 dark:border-white/8">
+        <div
+          className={cn(
+            'workspace-map-toolbar-actions border-border flex shrink-0 gap-0.5 dark:border-white/8',
+            isVertical
+              ? 'mt-0.5 flex-col items-stretch border-t pt-0.5'
+              : 'ml-0.5 items-center border-l pl-0.5',
+          )}
+        >
 
         <Tooltip>
           <TooltipTrigger
@@ -421,7 +452,7 @@ function MapQuickToolbarDraggable({
               </button>
             }
           />
-          <TooltipContent side="bottom">收起为浮标</TooltipContent>
+          <TooltipContent side={tooltipSide}>收起为浮标</TooltipContent>
         </Tooltip>
 
         <div className="relative shrink-0">
@@ -430,6 +461,8 @@ function MapQuickToolbarDraggable({
             menuOpen={menuOpen}
             onMenuOpenChange={handleMenuOpenChange}
             menuAlignOffset={menuAlignOffset}
+            layout={layout}
+            onLayoutChange={onLayoutChange}
             selectedIds={selectedIds}
             catalog={catalog}
             toggleTool={toggleTool}

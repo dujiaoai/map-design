@@ -98,7 +98,7 @@ flowchart TB
 
 - **As a** 前端工程师，**I want** 明确的 FSD 分层与依赖方向，**so that** 新增 feature 不会引入循环依赖或违反 Public API 导出。
 - **As a** 前端工程师，**I want** 地图工作台 UI 载体与 bridge 契约文档，**so that** 侧栏、Dock、浮层改动不会混用 Vaul 与 L4 条带。
-- **As a** 前端工程师，**I want** shadcn 唯一实例与主题 token 规则，**so that** 浅色/深色模式表现一致。
+- **As a** 前端工程师，**I want** shadcn 唯一实例与主题 token 规则，**so that** 深色模式表现一致。
 
 ### 设计 / QA
 

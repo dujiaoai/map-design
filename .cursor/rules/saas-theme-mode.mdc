@@ -1,11 +1,12 @@
 ---
-description: 浅色/深色主题 — 语义 token、dark: 写法、禁止硬编码单色
+description: 深色主题 — 语义 token、dark: 写法、禁止硬编码单色
 globs:
   - apps/web/app/widgets/**/*
   - apps/web/app/features/**/ui/**
   - apps/web/app/routes/**/*.css
   - apps/web/app/shared/styles/**
   - apps/web/app/shared/lib/workspace-chrome-styles.ts
+  - apps/admin/app/**/*
   - packages/ui/src/**/*
   - cloud/uav/src/**/*
 alwaysApply: false
@@ -17,22 +18,22 @@ Skill：`.cursor/skills/saas-theme-mode/`。Token：`packages/ui/src/styles/glob
 
 ## 机制
 
-- 主题 = `html.dark` class（`ThemeProvider`，默认 dark，存储 `yunyan-theme`）
-- **禁止**单独用 `prefers-color-scheme` 或第二套 theme state
+- 产品 **仅深色**：固定 `html.dark`（`ThemeProvider` + `themeInitScript`）
+- **禁止**浅色切换、`prefers-color-scheme` 或第二套 theme state
 
 ## 写法顺序
 
 1. 语义：`bg-background` `text-foreground` `border-border` `text-muted-foreground` `bg-accent`
 2. 品牌：`text-brand-light` `text-brand-deep` `bg-primary/10`
 3. 不足时：`dark:text-white/85` `dark:border-white/10` `dark:bg-white/5`
-4. 工作台大块浅色：`home.css` 里 `html:not(.dark) .workspace-page …`
+4. 工作台大块：`home.css` 里 `html.dark .workspace-page …`
 
 顶栏/工具条图标：复用 `WORKSPACE_CHROME_ICON_BUTTON_CLASS`。
 
 ## 禁止
 
 - 裸 `#3094ff` / `#fff` / `#07111f` 无 token 对应
-- 仅 `text-white` 且无浅色语义
+- 恢复 `ThemeToggle` 或浅色模式
 - 在组件里直接 toggle `document.documentElement.classList`
 
-新组件改完须在两种模式下目视检查（顶栏 ThemeToggle）。
+新组件改完须在深色下目视检查侧栏、顶栏、浮层。

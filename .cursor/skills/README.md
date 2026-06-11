@@ -12,7 +12,7 @@
 | `saas-fsd-feature` | FSD 分层、新增 feature、monorepo 边界 |
 | `repo-ui-package` | `@repo/ui` shadcn 组件与设计 token |
 | `cloud-uav-esm-plugin` | `cloud/uav` ESM 远程模块 |
-| `saas-theme-mode` | 浅色/深色主题、语义 token、dark: 写法 |
+| `saas-theme-mode` | 深色主题、语义 token、dark: 写法 |
 | `git-commit` | 根据 git diff 生成 Conventional Commit 信息 |
 | `docker-deploy` | `deploy/` Docker 构建、compose 启动、冒烟测试 |
 | **`saas-product`** | **PM 编排入口（PRD / 路线图 / 研究 handoff）** |
@@ -88,7 +88,7 @@
 - `/saas-auth-ruoyi 新增受保护 settings 路由`
 - `/repo-ui-package 添加 dialog 组件`
 - `/cloud-uav-esm-plugin 新增 dock 模块`
-- `/saas-theme-mode 新组件要支持浅色深色`
+- `/saas-theme-mode 新组件深色样式`
 - `/git-commit 根据改动生成 commit 信息`
 - `/saas-fsd-feature 新增 account settings 路由`
 - `/frontend-design 优化登录页视觉`
@@ -123,7 +123,7 @@ java-backend-index ──► java-spring-boot-scaffold ──► java-persistenc
 | `saas-map-plugin-integration.mdc` | bridge、registry、lifecycle-sync、workspace-url |
 | `saas-auth-ruoyi.mdc` | 登录、session、queries、account、ruoyi-api |
 | `saas-repo-ui-package.mdc` | shadcn 优先、`packages/ui` 与 app UI 实现 |
-| `saas-theme-mode.mdc` | 组件/UI/CSS 浅色深色主题 |
+| `saas-theme-mode.mdc` | 组件/UI/CSS 深色主题 |
 | `cloud-uav-esm-plugin.mdc` | `cloud/uav/**` |
 | `java-backend.mdc` | `services/**`、Java 源码、pom.xml、Flyway |
 

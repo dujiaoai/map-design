@@ -6,7 +6,7 @@
 - 样式：Tailwind CSS v4，全局样式见 `packages/ui/src/styles/globals.css`
 - 语言：UI 固定中文，不含 i18n
 - 设计系统：品牌主色 `--brand: #3094ff`（见 `packages/ui/src/styles/globals.css`），登录页与全站 `primary` / 侧栏一致
-- 主题：默认深色，`ThemeProvider` + `html.dark`；新组件须支持浅色/深色 — Skill **`saas-theme-mode`**
+- 主题：固定深色，`ThemeProvider` + `html.dark` — Skill **`saas-theme-mode`**
 
 ## 开发
 
@@ -20,4 +20,4 @@ pnpm dev   # http://localhost:5175
 - `map-workspace-ui` — 地图工作台 UI 载体
 - `map-plugin-integration` — 地图插件 bridge
 - `repo-ui-package` — 组件库与 shadcn
-- `saas-theme-mode` — 浅色/深色主题与语义 token
+- `saas-theme-mode` — 深色主题与语义 token

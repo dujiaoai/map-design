@@ -1,33 +1,20 @@
 export const THEME_STORAGE_KEY = 'yunyan-theme'
 
-export type ThemeMode = 'light' | 'dark'
+/** 产品仅支持深色模式 */
+export type ThemeMode = 'dark'
 
-export function getStoredTheme(): ThemeMode | null {
-  if (typeof window === 'undefined') {
-    return null
-  }
+export function applyDarkTheme() {
+  if (typeof document === 'undefined') return
+  document.documentElement.classList.add('dark')
+}
+
+export function persistDarkTheme() {
   try {
-    const value = localStorage.getItem(THEME_STORAGE_KEY)
-    return value === 'light' || value === 'dark' ? value : null
+    localStorage.setItem(THEME_STORAGE_KEY, 'dark')
   } catch {
-    return null
+    // ignore
   }
 }
 
-export function storeTheme(theme: ThemeMode) {
-  try {
-    localStorage.setItem(THEME_STORAGE_KEY, theme)
-  } catch {
-    /* quota / privacy mode */
-  }
-}
-
-export function applyTheme(theme: ThemeMode) {
-  if (typeof document === 'undefined') {
-    return
-  }
-  document.documentElement.classList.toggle('dark', theme === 'dark')
-}
-
-/** 内联脚本：首屏渲染前恢复主题，避免闪烁 */
-export const themeInitScript = `(function(){try{var k=${JSON.stringify(THEME_STORAGE_KEY)},t=localStorage.getItem(k);if(t==='light'){document.documentElement.classList.remove('dark')}else{document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}})()`
+/** root.tsx 内联：首屏即 dark，避免闪烁 */
+export const themeInitScript = `(function(){try{document.documentElement.classList.add('dark');localStorage.setItem(${JSON.stringify(THEME_STORAGE_KEY)},'dark')}catch(e){document.documentElement.classList.add('dark')}})()`

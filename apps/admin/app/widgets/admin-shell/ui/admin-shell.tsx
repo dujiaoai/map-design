@@ -1,9 +1,8 @@
 import { useSession } from '@repo/auth'
 import { Button, cn } from '@repo/ui'
-import { LogOutIcon, MoonIcon, SunIcon } from 'lucide-react'
+import { LogOutIcon } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router'
 
-import { useTheme } from '~/features/theme'
 import { hasAnyPermissionCodes } from '~/shared/auth/admin-access'
 import { auth } from '~/shared/auth/client'
 
@@ -12,7 +11,6 @@ import { adminNavItems } from '../lib/nav-items'
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const session = useSession()
   const navigate = useNavigate()
-  const { theme, toggleTheme } = useTheme()
   const permissions = session?.user.permissions ?? []
   const navItems = adminNavItems.filter((item) =>
     hasAnyPermissionCodes(permissions, item.permissions),
@@ -59,16 +57,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
 
-          <div className="space-y-2 border-t border-border/50 p-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start gap-2"
-              onClick={toggleTheme}
-            >
-              {theme === 'dark' ? <SunIcon className="size-4" /> : <MoonIcon className="size-4" />}
-              {theme === 'dark' ? '浅色模式' : '深色模式'}
-            </Button>
+          <div className="border-t border-border/50 p-3">
             <Button
               variant="ghost"
               size="sm"

@@ -1,6 +1,5 @@
 @import '../shared/styles/command-center.css';
 @import '../shared/styles/command-center-overlays.css';
-@import '../shared/styles/workspace-light.css';
 
 html:has(.workspace-page),
 body:has(.workspace-page) {

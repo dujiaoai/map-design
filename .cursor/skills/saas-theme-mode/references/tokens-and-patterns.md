@@ -8,7 +8,7 @@
 | --- | --- |
 | `--brand` | 主色 `#3094ff` → Tailwind `bg-primary` / `text-brand` |
 | `--brand-light` | 强调、激活态文字 |
-| `--brand-deep` | 浅色模式深品牌字 |
+| `--brand-deep` | 深色下品牌强调字 |
 | `--brand-soft` | 暗色模式柔和品牌字 |
 | `--brand-muted` / `--brand-glow` | 光晕、选中背景 |
 
@@ -21,7 +21,7 @@
 | `--surface-elevated` | 登录输入框等抬升表面 |
 | `--text-on-dark` | 暗色主文字 |
 
-### 语义 Token（`:root` = 浅色，`.dark` = 深色）
+### 语义 Token（`.dark` 生效）
 
 | Tailwind | 含义 |
 | --- | --- |
@@ -71,16 +71,14 @@ import { WORKSPACE_CHROME_ICON_BUTTON_CLASS } from '~/shared/lib/workspace-chrom
 'border-primary bg-primary/10 text-brand-light'
 ```
 
-## 页面级浅色（工作台）
+## 页面级（工作台暗色）
 
-`home.css` 使用 **`html:not(.dark) .workspace-page`** 覆盖指挥舱默认暗色布局。
+`home.css` 使用 **`html.dark .workspace-page`** 定义指挥舱布局与 HUD。
 
 新增工作台大块 UI 时：
 
-1. 默认样式可继续用 `--surface-deep` / `--text-on-dark`（与 dark 一致）
-2. 在 `home.css` 增加对应 `html:not(.dark) …` 规则（背景、边框、HUD、status-bar 等已有示例）
-
-不要只在组件里写浅色样式而遗漏 dark 默认。
+1. 默认用 `--surface-deep` / `--text-on-dark`
+2. 在 `home.css` 增加对应 `html.dark …` 规则（背景、边框、HUD、status-bar 等已有示例）
 
 ## `@repo/ui` 全局暗色增强
 

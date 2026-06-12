@@ -5,6 +5,10 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 
 import { fetchAdminTenants, fetchAdminUsers, type AdminUserSummary } from '~/shared/api/admin-api'
+import {
+  useAdminTableFilterState,
+  useFilteredAdminRows,
+} from '~/shared/hooks/use-admin-table-filter'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import {
@@ -16,6 +20,7 @@ import {
   AdminTableRow,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
 
 import { EditUserSheet } from './edit-user-sheet'
@@ -45,6 +50,15 @@ export function UsersAdminPage() {
     const tenant = tenantsQuery.data?.tenants.find((item) => item.id === tenantFilterId)
     return tenant ? `${tenant.name} (${tenant.slug})` : tenantFilterId
   }, [tenantFilterId, tenantsQuery.data?.tenants])
+
+  const filter = useAdminTableFilterState()
+  const userSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName', 'tenantSlug']
+  const filteredUsers = useFilteredAdminRows(
+    usersQuery.data?.users,
+    filter,
+    userSearchKeys,
+    'status',
+  )
 
   return (
     <div className="space-y-6">
@@ -84,6 +98,19 @@ export function UsersAdminPage() {
         </Select>
       </div>
 
+      <AdminTableToolbar
+        search={filter.search}
+        onSearchChange={filter.setSearch}
+        searchPlaceholder="搜索邮箱或显示名…"
+        status={filter.status}
+        onStatusChange={filter.setStatus}
+        statusOptions={[
+          { value: 'all', label: '全部状态' },
+          { value: 'active', label: 'active' },
+          { value: 'disabled', label: 'disabled' },
+        ]}
+      />
+
       <AdminPanel>
         {usersQuery.isLoading ? (
           <AdminEmptyState message="加载中…" />
@@ -91,6 +118,8 @@ export function UsersAdminPage() {
           <AdminEmptyState message="加载失败，请刷新重试" />
         ) : !usersQuery.data?.users.length ? (
           <AdminEmptyState message="暂无用户" />
+        ) : !filteredUsers.length ? (
+          <AdminEmptyState message="无匹配用户" />
         ) : (
           <AdminDataTable>
             <AdminTableHead>
@@ -107,7 +136,7 @@ export function UsersAdminPage() {
               </tr>
             </AdminTableHead>
             <AdminTableBody>
-              {usersQuery.data.users.map((user) => (
+              {filteredUsers.map((user) => (
                 <AdminTableRow key={user.id}>
                   <AdminTableCell>{user.email}</AdminTableCell>
                   <AdminTableCell>{user.displayName}</AdminTableCell>

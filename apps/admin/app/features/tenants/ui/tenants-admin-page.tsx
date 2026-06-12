@@ -5,6 +5,10 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 
 import { fetchAdminTenants, type AdminTenantSummary } from '~/shared/api/admin-api'
+import {
+  useAdminTableFilterState,
+  useFilteredAdminRows,
+} from '~/shared/hooks/use-admin-table-filter'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import {
@@ -16,6 +20,7 @@ import {
   AdminTableRow,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
 
 import { CreateTenantSheet } from './create-tenant-sheet'
@@ -30,6 +35,14 @@ export function TenantsAdminPage() {
   const [editingTenant, setEditingTenant] = useState<AdminTenantSummary | null>(null)
 
   const query = useQuery({ queryKey: adminQueryKeys.tenants, queryFn: fetchAdminTenants })
+  const filter = useAdminTableFilterState()
+  const tenantSearchKeys: (keyof AdminTenantSummary)[] = ['name', 'slug', 'plan']
+  const filteredTenants = useFilteredAdminRows(
+    query.data?.tenants,
+    filter,
+    tenantSearchKeys,
+    'status',
+  )
 
   return (
     <div className="space-y-6">
@@ -43,6 +56,19 @@ export function TenantsAdminPage() {
         }
       />
 
+      <AdminTableToolbar
+        search={filter.search}
+        onSearchChange={filter.setSearch}
+        searchPlaceholder="搜索名称或 slug…"
+        status={filter.status}
+        onStatusChange={filter.setStatus}
+        statusOptions={[
+          { value: 'all', label: '全部状态' },
+          { value: 'active', label: 'active' },
+          { value: 'suspended', label: 'suspended' },
+        ]}
+      />
+
       <AdminPanel>
         {query.isLoading ? (
           <AdminEmptyState message="加载中…" />
@@ -50,6 +76,8 @@ export function TenantsAdminPage() {
           <AdminEmptyState message="加载失败，请刷新重试" />
         ) : !query.data?.tenants.length ? (
           <AdminEmptyState message="暂无租户" />
+        ) : !filteredTenants.length ? (
+          <AdminEmptyState message="无匹配租户" />
         ) : (
           <AdminDataTable>
             <AdminTableHead>
@@ -63,7 +91,7 @@ export function TenantsAdminPage() {
               </tr>
             </AdminTableHead>
             <AdminTableBody>
-              {query.data.tenants.map((tenant) => (
+              {filteredTenants.map((tenant) => (
                 <AdminTableRow key={tenant.id}>
                   <AdminTableCell>{tenant.name}</AdminTableCell>
                   <AdminTableCell mono>{tenant.slug}</AdminTableCell>

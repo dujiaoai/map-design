@@ -42,6 +42,21 @@ public class TenantRepository {
         Wrappers.<SysTenant>lambdaQuery().orderByAsc(SysTenant::getName));
   }
 
+  public long countTenants() {
+    return sysTenantMapper.selectCount(null);
+  }
+
+  public long countActiveTenants() {
+    return sysTenantMapper.selectCount(
+        Wrappers.<SysTenant>lambdaQuery()
+            .and(
+                wrapper ->
+                    wrapper
+                        .eq(SysTenant::getStatus, "active")
+                        .or()
+                        .isNull(SysTenant::getStatus)));
+  }
+
   public List<SysTenant> findByIds(List<UUID> tenantIds) {
     if (tenantIds.isEmpty()) {
       return List.of();

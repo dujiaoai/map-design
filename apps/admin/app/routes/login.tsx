@@ -7,6 +7,7 @@ import { redirect, useNavigate } from 'react-router'
 import { z } from 'zod'
 
 import { auth } from '~/shared/auth/client'
+import { getAdminHomePath } from '~/shared/auth/admin-access'
 import { formatLoginError } from '~/shared/auth/format-login-error'
 import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
 import { PasswordInput } from '~/shared/ui/password-input'
@@ -41,7 +42,7 @@ export function links() {
 export async function clientLoader() {
   auth.hydrateSession()
   if (auth.isAuthenticated()) {
-    throw redirect('/')
+    throw redirect(getAdminHomePath(auth.getSession()))
   }
   return null
 }
@@ -73,7 +74,7 @@ export default function LoginRoute() {
         password: values.password,
         tenantId: values.tenantId.trim(),
       })
-      void navigate('/', { replace: true })
+      void navigate(getAdminHomePath(auth.getSession()), { replace: true })
     } catch (error) {
       setSubmitError(formatLoginError(error))
     }

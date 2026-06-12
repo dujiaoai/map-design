@@ -4,6 +4,10 @@ import { PencilIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { fetchTenantMembers, type AdminUserSummary } from '~/shared/api/admin-api'
+import {
+  useAdminTableFilterState,
+  useFilteredAdminRows,
+} from '~/shared/hooks/use-admin-table-filter'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import {
@@ -15,6 +19,7 @@ import {
   AdminTableRow,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
 
 import { EditMemberSheet } from './edit-member-sheet'
@@ -33,6 +38,14 @@ export function MembersAdminPage({ tenantId }: { tenantId: string }) {
   })
 
   const tenantName = session?.tenant?.name ?? '当前租户'
+  const filter = useAdminTableFilterState()
+  const memberSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName']
+  const filteredMembers = useFilteredAdminRows(
+    membersQuery.data?.members,
+    filter,
+    memberSearchKeys,
+    'status',
+  )
 
   return (
     <div className="space-y-6">
@@ -46,6 +59,19 @@ export function MembersAdminPage({ tenantId }: { tenantId: string }) {
         }
       />
 
+      <AdminTableToolbar
+        search={filter.search}
+        onSearchChange={filter.setSearch}
+        searchPlaceholder="搜索邮箱或显示名…"
+        status={filter.status}
+        onStatusChange={filter.setStatus}
+        statusOptions={[
+          { value: 'all', label: '全部状态' },
+          { value: 'active', label: 'active' },
+          { value: 'disabled', label: 'disabled' },
+        ]}
+      />
+
       <AdminPanel>
         {membersQuery.isLoading ? (
           <AdminEmptyState message="加载中…" />
@@ -53,6 +79,8 @@ export function MembersAdminPage({ tenantId }: { tenantId: string }) {
           <AdminEmptyState message="加载失败，请确认租户权限后重试" />
         ) : !membersQuery.data?.members.length ? (
           <AdminEmptyState message="暂无成员" />
+        ) : !filteredMembers.length ? (
+          <AdminEmptyState message="无匹配成员" />
         ) : (
           <AdminDataTable>
             <AdminTableHead>
@@ -68,7 +96,7 @@ export function MembersAdminPage({ tenantId }: { tenantId: string }) {
               </tr>
             </AdminTableHead>
             <AdminTableBody>
-              {membersQuery.data.members.map((member) => (
+              {filteredMembers.map((member) => (
                 <AdminTableRow key={member.id}>
                   <AdminTableCell>{member.email}</AdminTableCell>
                   <AdminTableCell>{member.displayName}</AdminTableCell>

@@ -1,4 +1,5 @@
 export const adminQueryKeys = {
+  stats: ['admin', 'stats'] as const,
   tenants: ['admin', 'tenants'] as const,
   users: (tenantId?: string) => ['admin', 'users', tenantId ?? 'all'] as const,
   roles: ['admin', 'roles'] as const,

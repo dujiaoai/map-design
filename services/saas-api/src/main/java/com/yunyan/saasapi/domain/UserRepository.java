@@ -26,6 +26,10 @@ public class UserRepository {
     return TenantRlsBypass.call(() -> findAllUsersWithRlsBypass(tenantId));
   }
 
+  public long countUsers() {
+    return TenantRlsBypass.call(() -> sysUserMapper.selectCount(null));
+  }
+
   private List<SysUser> findAllUsersWithRlsBypass(Optional<UUID> tenantId) {
     var query =
         Wrappers.<SysUser>lambdaQuery()

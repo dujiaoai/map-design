@@ -14,7 +14,7 @@ export const adminNavItems: AdminNavItem[] = [
     to: '/',
     label: '概览',
     icon: LayoutDashboardIcon,
-    permissions: [],
+    permissions: ['admin:tenants:read', 'admin:users:read', 'admin:roles:read'],
   },
   {
     to: '/tenants',

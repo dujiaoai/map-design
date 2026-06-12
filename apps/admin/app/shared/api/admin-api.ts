@@ -10,6 +10,16 @@ export function fetchAdminPing() {
   return api.get<AdminPingResponse>('/admin/ping')
 }
 
+export interface AdminStatsResponse {
+  tenantCount: number
+  userCount: number
+  activeTenantCount: number
+}
+
+export function fetchAdminStats() {
+  return api.get<AdminStatsResponse>('/admin/stats')
+}
+
 export interface AdminTenantSummary {
   id: string
   name: string

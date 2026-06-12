@@ -66,6 +66,32 @@ class AdminControllerTest {
   }
 
   @Test
+  void adminStats_withoutToken_returnsUnauthorized() throws Exception {
+    mockMvc.perform(get("/v1/admin/stats")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void adminStats_withTenantAdmin_returnsForbidden() throws Exception {
+    var accessToken = loginAccessToken("admin@test.local");
+
+    mockMvc
+        .perform(get("/v1/admin/stats").header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void adminStats_withPlatformAdmin_returnsCounts() throws Exception {
+    var accessToken = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(get("/v1/admin/stats").header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tenantCount").isNumber())
+        .andExpect(jsonPath("$.userCount").isNumber())
+        .andExpect(jsonPath("$.activeTenantCount").isNumber());
+  }
+
+  @Test
   void login_withPlatformAdmin_returnsPlatformPermissions() throws Exception {
     var loginBody = loginBody("platform@test.local");
 

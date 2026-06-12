@@ -24,14 +24,21 @@ pnpm install
 pnpm --filter @repo/saas-admin dev
 ```
 
-浏览器打开 http://localhost:5181/login ，使用 `admin@demo.local` / `password` / 租户 `demo`。
+浏览器打开 http://localhost:5181/login（需先执行 `seed-demo-dev.sql`）。
+
+| 角色 | 邮箱 | 密码 | 租户 slug |
+| --- | --- | --- | --- |
+| 平台运营 | `admin@demo.local` | `password` | `demo` |
+| 租户管理员 | `tenantadmin@demo.local` | `password` | `demo` |
+
+租户管理员登录后默认进入 `/members`；平台运营进入 `/` 概览（`GET /v1/admin/stats`）。
 
 ## 路由
 
 | 路径 | 说明 |
 | --- | --- |
 | `/login` | SaaS 登录 |
-| `/` | 概览（admin ping 自检） |
+| `/` | 运营概览（统计 + ping 自检；需 `admin:tenants:read` 等） |
 | `/tenants` | 租户列表与编辑 |
 | `/users` | 用户列表、邀请与编辑 |
 | `/members` | 本租户成员管理（TENANT_ADMIN） |

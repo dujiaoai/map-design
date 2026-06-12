@@ -46,12 +46,14 @@ class AdminTenantMembersControllerTest {
   }
 
   @Test
-  void listMembers_withPlatformAdminOnly_returns403() throws Exception {
+  void listMembers_withPlatformAdmin_crossTenant_returnsMembers() throws Exception {
     mockMvc
         .perform(
-            get("/v1/admin/tenants/" + TEST_TENANT_ID + "/members")
+            get("/v1/admin/tenants/" + OTHER_TENANT_ID + "/members")
                 .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.members", hasSize(1)))
+        .andExpect(jsonPath("$.members[*].email", hasItem("other@test.local")));
   }
 
   @Test

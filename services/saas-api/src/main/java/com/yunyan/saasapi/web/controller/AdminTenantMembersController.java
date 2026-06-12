@@ -34,11 +34,20 @@ import org.springframework.web.bind.annotation.RestController;
 @SecurityRequirement(name = "bearerAuth")
 public class AdminTenantMembersController {
 
+  private static final String PLATFORM_ADMIN_AUTHORITY = "ROLE_PLATFORM_ADMIN";
+
   private final TenantMemberAdminService tenantMemberAdminService;
 
   @GetMapping
-  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_MEMBERS_READ + "')")
-  @Operation(summary = "列出租户成员", description = "TENANT_ADMIN 仅可访问 JWT 当前租户")
+  @PreAuthorize(
+      "hasAuthority('"
+          + PermissionCodes.ADMIN_MEMBERS_READ
+          + "') or hasAuthority('"
+          + PLATFORM_ADMIN_AUTHORITY
+          + "')")
+  @Operation(
+      summary = "列出租户成员",
+      description = "TENANT_ADMIN 仅可访问 JWT 当前租户；PLATFORM_ADMIN 可跨租户")
   public TenantMemberListResponse listMembers(
       @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
     return tenantMemberAdminService.listMembers(principal, tenantId);
@@ -46,7 +55,12 @@ public class AdminTenantMembersController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_MEMBERS_WRITE + "')")
+  @PreAuthorize(
+      "hasAuthority('"
+          + PermissionCodes.ADMIN_MEMBERS_WRITE
+          + "') or hasAuthority('"
+          + PLATFORM_ADMIN_AUTHORITY
+          + "')")
   @Operation(summary = "邀请租户成员")
   public AdminUserDto inviteMember(
       @AuthenticationPrincipal SaasPrincipal principal,
@@ -56,7 +70,12 @@ public class AdminTenantMembersController {
   }
 
   @PatchMapping("/{userId}")
-  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_MEMBERS_WRITE + "')")
+  @PreAuthorize(
+      "hasAuthority('"
+          + PermissionCodes.ADMIN_MEMBERS_WRITE
+          + "') or hasAuthority('"
+          + PLATFORM_ADMIN_AUTHORITY
+          + "')")
   @Operation(summary = "更新租户成员", description = "可修改 displayName、status（active/disabled）")
   public AdminUserDto patchMember(
       @AuthenticationPrincipal SaasPrincipal principal,
@@ -67,7 +86,12 @@ public class AdminTenantMembersController {
   }
 
   @PutMapping("/{userId}/roles")
-  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_MEMBERS_WRITE + "')")
+  @PreAuthorize(
+      "hasAuthority('"
+          + PermissionCodes.ADMIN_MEMBERS_WRITE
+          + "') or hasAuthority('"
+          + PLATFORM_ADMIN_AUTHORITY
+          + "')")
   @Operation(summary = "更新成员角色", description = "全量替换；仅 TENANT_ADMIN / MEMBER / VIEWER")
   public AdminUserDto updateMemberRoles(
       @AuthenticationPrincipal SaasPrincipal principal,

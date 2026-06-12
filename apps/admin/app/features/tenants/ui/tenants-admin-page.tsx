@@ -1,6 +1,6 @@
 import { Button } from '@repo/ui'
 import { useQuery } from '@tanstack/react-query'
-import { PencilIcon, UsersIcon } from 'lucide-react'
+import { EyeIcon, PencilIcon, UsersIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 
@@ -104,6 +104,15 @@ export function TenantsAdminPage() {
                   </AdminTableCell>
                   <AdminTableCell className="text-right">
                     <div className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        nativeButton={false}
+                        render={<Link to={`/tenants/${tenant.id}`} />}
+                      >
+                        <EyeIcon className="size-3.5" />
+                        详情
+                      </Button>
                       {canReadUsers ? (
                         <Button
                           variant="ghost"

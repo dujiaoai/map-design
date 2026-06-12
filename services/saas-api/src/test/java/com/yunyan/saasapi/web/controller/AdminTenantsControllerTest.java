@@ -118,6 +118,27 @@ class AdminTenantsControllerTest {
   }
 
   @Test
+  void getTenant_withPlatformAdmin_returnsTenant() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID)
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.slug").value("test"))
+        .andExpect(jsonPath("$.status").value("active"));
+  }
+
+  @Test
+  void getTenant_unknownId_returns404() throws Exception {
+    var unknownId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + unknownId)
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
   void patchTenant_emptyBody_returns400() throws Exception {
     mockMvc
         .perform(

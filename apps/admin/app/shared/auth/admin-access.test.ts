@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { SaaSRole } from '@repo/auth'
 
 import {
+  canAccessAdminMembers,
   canAccessAdminOverview,
   getAdminHomePath,
   hasAdminAccess,
   hasAnyPermissionCodes,
+  resolveMembersTenantId,
 } from './admin-access'
 
 describe('hasAdminAccess', () => {
@@ -86,6 +88,46 @@ describe('getAdminHomePath', () => {
         tenant: { id: 't', name: 'Demo', slug: 'demo' },
       }),
     ).toBe('/members')
+  })
+})
+
+describe('canAccessAdminMembers', () => {
+  it('allows platform admin without members permission', () => {
+    expect(
+      canAccessAdminMembers({
+        user: { id: '1', email: 'a@t.local', roles: [SaaSRole.PLATFORM_ADMIN], permissions: [] },
+        tenant: { id: 't1', name: 'Demo', slug: 'demo' },
+      }),
+    ).toBe(true)
+  })
+})
+
+describe('resolveMembersTenantId', () => {
+  const platformSession = {
+    user: { id: '1', email: 'a@t.local', roles: [SaaSRole.PLATFORM_ADMIN], permissions: [] },
+    tenant: { id: 't1', name: 'Demo', slug: 'demo' },
+  }
+
+  const tenantAdminSession = {
+    user: {
+      id: '2',
+      email: 'b@t.local',
+      roles: [SaaSRole.TENANT_ADMIN],
+      permissions: ['admin:members:read'],
+    },
+    tenant: { id: 't1', name: 'Demo', slug: 'demo' },
+  }
+
+  it('lets platform admin use query tenantId', () => {
+    expect(resolveMembersTenantId(platformSession, 't2')).toBe('t2')
+  })
+
+  it('blocks tenant admin from other tenant', () => {
+    expect(resolveMembersTenantId(tenantAdminSession, 't2')).toBeNull()
+  })
+
+  it('defaults to session tenant', () => {
+    expect(resolveMembersTenantId(tenantAdminSession, null)).toBe('t1')
   })
 })
 

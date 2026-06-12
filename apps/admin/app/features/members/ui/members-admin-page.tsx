@@ -25,9 +25,17 @@ import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badg
 import { EditMemberSheet } from './edit-member-sheet'
 import { InviteMemberSheet } from './invite-member-sheet'
 
-export function MembersAdminPage({ tenantId }: { tenantId: string }) {
+export function MembersAdminPage({
+  tenantId,
+  tenantName,
+  embedded = false,
+}: {
+  tenantId: string
+  tenantName?: string
+  embedded?: boolean
+}) {
   const { can, session } = useAdminPermissions()
-  const canWrite = can('admin:members:write')
+  const canWrite = can('admin:members:write') || can('admin:tenants:write')
 
   const [inviteOpen, setInviteOpen] = useState(false)
   const [editingMember, setEditingMember] = useState<AdminUserSummary | null>(null)
@@ -37,7 +45,7 @@ export function MembersAdminPage({ tenantId }: { tenantId: string }) {
     queryFn: () => fetchTenantMembers(tenantId),
   })
 
-  const tenantName = session?.tenant?.name ?? '当前租户'
+  const resolvedTenantName = tenantName ?? session?.tenant?.name ?? '当前租户'
   const filter = useAdminTableFilterState()
   const memberSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName']
   const filteredMembers = useFilteredAdminRows(
@@ -47,17 +55,23 @@ export function MembersAdminPage({ tenantId }: { tenantId: string }) {
     'status',
   )
 
-  return (
-    <div className="space-y-6">
-      <AdminPageHeader
-        title="租户成员"
-        description={`${tenantName} · 管理本租户成员与角色分配。`}
-        actions={
-          canWrite ? (
-            <Button onClick={() => setInviteOpen(true)}>邀请成员</Button>
-          ) : null
-        }
-      />
+  const content = (
+    <>
+      {!embedded ? (
+        <AdminPageHeader
+          title="租户成员"
+          description={`${resolvedTenantName} · 管理本租户成员与角色分配。`}
+          actions={
+            canWrite ? (
+              <Button onClick={() => setInviteOpen(true)}>邀请成员</Button>
+            ) : null
+          }
+        />
+      ) : canWrite ? (
+        <div className="flex justify-end">
+          <Button onClick={() => setInviteOpen(true)}>邀请成员</Button>
+        </div>
+      ) : null}
 
       <AdminTableToolbar
         search={filter.search}
@@ -139,6 +153,12 @@ export function MembersAdminPage({ tenantId }: { tenantId: string }) {
           if (!open) setEditingMember(null)
         }}
       />
-    </div>
+    </>
   )
+
+  if (embedded) {
+    return <div className="space-y-4">{content}</div>
+  }
+
+  return <div className="space-y-6">{content}</div>
 }

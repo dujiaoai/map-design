@@ -29,6 +29,14 @@ public class TenantAdminService {
     return new AdminTenantListResponse(tenants);
   }
 
+  public AdminTenantDto getTenant(UUID tenantId) {
+    var tenant =
+        tenantRepository
+            .findById(tenantId)
+            .orElseThrow(() -> AuthException.notFound("Tenant not found"));
+    return toDto(tenant);
+  }
+
   @Transactional
   public AdminTenantDto createTenant(CreateTenantRequest request) {
     var slug = normalizeSlug(request.slug());

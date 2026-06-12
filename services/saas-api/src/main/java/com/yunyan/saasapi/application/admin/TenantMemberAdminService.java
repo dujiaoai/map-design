@@ -8,6 +8,7 @@ import com.yunyan.saasapi.domain.entity.SysTenant;
 import com.yunyan.saasapi.domain.entity.SysUser;
 import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.SaasPrincipal;
+import com.yunyan.saasapi.security.TenantContext;
 import com.yunyan.saasapi.web.dto.admin.AdminUserDto;
 import com.yunyan.saasapi.web.dto.admin.InviteTenantMemberRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchUserRequest;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class TenantMemberAdminService {
 
+  private static final String PLATFORM_ADMIN = "PLATFORM_ADMIN";
   private static final String STATUS_ACTIVE = "active";
   private static final String DEFAULT_ROLE = "MEMBER";
   private static final Set<String> ASSIGNABLE_ROLE_CODES =
@@ -41,90 +44,128 @@ public class TenantMemberAdminService {
 
   public TenantMemberListResponse listMembers(SaasPrincipal principal, UUID tenantId) {
     ensureOwnTenant(principal, tenantId);
-    var tenant = requireTenant(tenantId);
-    var users = userRepository.findAllUsers(Optional.of(tenantId));
-    var members = users.stream().map(user -> toDto(user, tenant)).toList();
-    return new TenantMemberListResponse(members);
+    return withTargetTenant(
+        tenantId,
+        () -> {
+          var tenant = requireTenant(tenantId);
+          var users = userRepository.findAllUsers(Optional.of(tenantId));
+          var members = users.stream().map(user -> toDto(user, tenant)).toList();
+          return new TenantMemberListResponse(members);
+        });
   }
 
   @Transactional
   public AdminUserDto inviteMember(
       SaasPrincipal principal, UUID tenantId, InviteTenantMemberRequest request) {
     ensureOwnTenant(principal, tenantId);
-    var tenant = requireActiveTenant(tenantId);
-    var email = request.email().trim().toLowerCase();
+    return withTargetTenant(
+        tenantId,
+        () -> {
+          var tenant = requireActiveTenant(tenantId);
+          var email = request.email().trim().toLowerCase();
 
-    if (userRepository.findByTenantIdAndEmail(tenant.getId(), email).isPresent()) {
-      throw AuthException.conflict("Email already registered for this tenant");
-    }
+          if (userRepository.findByTenantIdAndEmail(tenant.getId(), email).isPresent()) {
+            throw AuthException.conflict("Email already registered for this tenant");
+          }
 
-    var role =
-        roleRepository
-            .findByCode(resolveRoleCode(request.roleCode()))
-            .orElseThrow(() -> new IllegalStateException("Role is not seeded"));
-    validateAssignableRole(role.getCode());
+          var role =
+              roleRepository
+                  .findByCode(resolveRoleCode(request.roleCode()))
+                  .orElseThrow(() -> new IllegalStateException("Role is not seeded"));
+          validateAssignableRole(role.getCode());
 
-    var user = new SysUser();
-    user.setId(UUID.randomUUID());
-    user.setTenantId(tenant.getId());
-    user.setEmail(email);
-    user.setPasswordHash(passwordEncoder.encode(request.password()));
-    user.setDisplayName(resolveDisplayName(email, request.displayName()));
-    user.setStatus(STATUS_ACTIVE);
-    user.setCreatedAt(Instant.now());
-    userRepository.insert(user);
-    userRepository.insertUserRole(user.getId(), role.getId());
+          var user = new SysUser();
+          user.setId(UUID.randomUUID());
+          user.setTenantId(tenant.getId());
+          user.setEmail(email);
+          user.setPasswordHash(passwordEncoder.encode(request.password()));
+          user.setDisplayName(resolveDisplayName(email, request.displayName()));
+          user.setStatus(STATUS_ACTIVE);
+          user.setCreatedAt(Instant.now());
+          userRepository.insert(user);
+          userRepository.insertUserRole(user.getId(), role.getId());
 
-    return toDto(user, tenant);
+          return toDto(user, tenant);
+        });
   }
 
   @Transactional
   public AdminUserDto patchMember(
       SaasPrincipal principal, UUID tenantId, UUID userId, PatchUserRequest request) {
     ensureOwnTenant(principal, tenantId);
-    requireActiveTenant(tenantId);
+    return withTargetTenant(
+        tenantId,
+        () -> {
+          requireActiveTenant(tenantId);
 
-    if (!hasPatchFields(request)) {
-      throw AuthException.badRequest("At least one of displayName or status is required");
-    }
+          if (!hasPatchFields(request)) {
+            throw AuthException.badRequest("At least one of displayName or status is required");
+          }
 
-    var user = requireMemberInTenant(tenantId, userId);
+          var user = requireMemberInTenant(tenantId, userId);
 
-    if (StringUtils.hasText(request.displayName())) {
-      user.setDisplayName(request.displayName().trim());
-    }
-    if (StringUtils.hasText(request.status())) {
-      user.setStatus(request.status().trim());
-    }
+          if (StringUtils.hasText(request.displayName())) {
+            user.setDisplayName(request.displayName().trim());
+          }
+          if (StringUtils.hasText(request.status())) {
+            user.setStatus(request.status().trim());
+          }
 
-    userRepository.update(user);
-    var tenant = requireTenant(tenantId);
-    return toDto(user, tenant);
+          userRepository.update(user);
+          var tenant = requireTenant(tenantId);
+          return toDto(user, tenant);
+        });
   }
 
   @Transactional
   public AdminUserDto updateMemberRoles(
       SaasPrincipal principal, UUID tenantId, UUID userId, UpdateMemberRolesRequest request) {
     ensureOwnTenant(principal, tenantId);
-    requireActiveTenant(tenantId);
-    requireMemberInTenant(tenantId, userId);
+    return withTargetTenant(
+        tenantId,
+        () -> {
+          requireActiveTenant(tenantId);
+          requireMemberInTenant(tenantId, userId);
 
-    var roles = resolveAssignableRoles(normalizeRoleCodes(request.roleCodes()));
-    userRepository.replaceUserRoles(userId, roles.stream().map(SysRole::getId).toList());
+          var roles = resolveAssignableRoles(normalizeRoleCodes(request.roleCodes()));
+          userRepository.replaceUserRoles(userId, roles.stream().map(SysRole::getId).toList());
 
-    var user = requireMemberInTenant(tenantId, userId);
-    var tenant = requireTenant(tenantId);
-    return toDto(user, tenant);
+          var user = requireMemberInTenant(tenantId, userId);
+          var tenant = requireTenant(tenantId);
+          return toDto(user, tenant);
+        });
+  }
+
+  private static <T> T withTargetTenant(UUID tenantId, Supplier<T> action) {
+    var previous = TenantContext.get();
+    TenantContext.set(tenantId.toString());
+    try {
+      return action.get();
+    } finally {
+      if (previous == null || previous.isBlank()) {
+        TenantContext.clear();
+      } else {
+        TenantContext.set(previous);
+      }
+    }
   }
 
   private void ensureOwnTenant(SaasPrincipal principal, UUID tenantId) {
     if (principal == null) {
       throw AuthException.unauthorized("Not authenticated");
     }
+    if (isPlatformAdmin(principal)) {
+      requireTenant(tenantId);
+      return;
+    }
     if (!principal.tenantId().equals(tenantId)) {
       throw AuthException.forbidden("Tenant access denied");
     }
     requireTenant(tenantId);
+  }
+
+  private static boolean isPlatformAdmin(SaasPrincipal principal) {
+    return principal.roleCodes().contains(PLATFORM_ADMIN);
   }
 
   private SysUser requireMemberInTenant(UUID tenantId, UUID userId) {

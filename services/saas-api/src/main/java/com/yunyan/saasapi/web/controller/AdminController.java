@@ -1,6 +1,8 @@
 package com.yunyan.saasapi.web.controller;
 
 import com.yunyan.saasapi.application.admin.AdminStatsService;
+import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
+import com.yunyan.saasapi.web.dto.admin.FeatureCatalogResponse;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminStatsResponse;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
   private final AdminStatsService adminStatsService;
+  private final TenantFeatureAdminService tenantFeatureAdminService;
 
   @GetMapping("/ping")
   @Operation(
@@ -54,5 +57,13 @@ public class AdminController {
   @Operation(summary = "运营概览统计", description = "租户总数、用户总数、活跃租户数")
   public AdminStatsResponse stats() {
     return adminStatsService.getStats();
+  }
+
+  @GetMapping("/feature-catalog")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(summary = "租户能力码目录", description = "可开通模块能力列表，与 saas-web tenantFeature 对齐")
+  public FeatureCatalogResponse featureCatalog() {
+    return tenantFeatureAdminService.getCatalog();
   }
 }

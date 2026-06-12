@@ -37,6 +37,13 @@ public class TenantRepository {
     return sysTenantFeatureMapper.selectFeatureCodesByTenantId(tenantId);
   }
 
+  public void replaceFeatureCodes(UUID tenantId, List<String> featureCodes) {
+    sysTenantFeatureMapper.deleteByTenantId(tenantId);
+    for (String featureCode : featureCodes) {
+      sysTenantFeatureMapper.insert(tenantId, featureCode);
+    }
+  }
+
   public List<SysTenant> findAllTenants() {
     return sysTenantMapper.selectList(
         Wrappers.<SysTenant>lambdaQuery().orderByAsc(SysTenant::getName));

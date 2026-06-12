@@ -37,6 +37,10 @@ export function fetchAdminTenants() {
   return api.get<AdminTenantListResponse>('/admin/tenants')
 }
 
+export function fetchAdminTenant(tenantId: string) {
+  return api.get<AdminTenantSummary>(`/admin/tenants/${tenantId}`)
+}
+
 export interface CreateTenantPayload {
   name: string
   slug: string
@@ -55,6 +59,35 @@ export interface PatchTenantPayload {
 
 export function patchAdminTenant(tenantId: string, payload: PatchTenantPayload) {
   return api.patch<AdminTenantSummary>(`/admin/tenants/${tenantId}`, payload)
+}
+
+export interface FeatureCatalogEntry {
+  code: string
+  name: string
+  description: string
+}
+
+export interface FeatureCatalogResponse {
+  features: FeatureCatalogEntry[]
+}
+
+export function fetchFeatureCatalog() {
+  return api.get<FeatureCatalogResponse>('/admin/feature-catalog')
+}
+
+export interface AdminTenantFeaturesResponse {
+  tenantId: string
+  featureCodes: string[]
+}
+
+export function fetchTenantFeatures(tenantId: string) {
+  return api.get<AdminTenantFeaturesResponse>(`/admin/tenants/${tenantId}/features`)
+}
+
+export function updateTenantFeatures(tenantId: string, featureCodes: string[]) {
+  return api.put<AdminTenantFeaturesResponse>(`/admin/tenants/${tenantId}/features`, {
+    featureCodes,
+  })
 }
 
 export interface AdminUserSummary {

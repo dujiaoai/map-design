@@ -1,8 +1,8 @@
 import { redirect } from 'react-router'
 
 import { MembersAdminPage } from '~/features/members/ui/members-admin-page'
+import { canAccessAdminMembers, resolveMembersTenantId } from '~/shared/auth/admin-access'
 import { auth } from '~/shared/auth/client'
-import { requireAdminPermissions } from '~/shared/auth/require-admin-permissions'
 
 import type { Route } from './+types/members'
 
@@ -10,10 +10,17 @@ export function meta(_args: Route.MetaArgs) {
   return [{ title: '成员 · 云眼运营后台' }]
 }
 
-export async function clientLoader(_args: Route.ClientLoaderArgs) {
-  requireAdminPermissions(['admin:members:read'])
+export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   auth.hydrateSession()
-  const tenantId = auth.getSession()?.tenant?.id
+  const session = auth.getSession()
+  if (!canAccessAdminMembers(session)) {
+    throw redirect('/403')
+  }
+
+  const tenantId = resolveMembersTenantId(
+    session,
+    new URL(request.url).searchParams.get('tenantId'),
+  )
   if (!tenantId) {
     throw redirect('/403')
   }

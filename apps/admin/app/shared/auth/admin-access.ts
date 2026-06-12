@@ -52,3 +52,30 @@ export function canAccessAdminOverview(session: Session | null): boolean {
 export function getAdminHomePath(session: Session | null): string {
   return canAccessAdminOverview(session) ? '/' : '/members'
 }
+
+export function isPlatformAdmin(session: Session | null): boolean {
+  return session?.user.roles.includes(SaaSRole.PLATFORM_ADMIN) ?? false
+}
+
+/** 成员管理：平台运营或具备 admin:members:read */
+export function canAccessAdminMembers(session: Session | null): boolean {
+  if (!session) return false
+  if (isPlatformAdmin(session)) return true
+  return hasAnyPermission(session, ['admin:members:read'])
+}
+
+/** 解析成员页目标租户：平台可读 ?tenantId=，租户管理员仅本租户 */
+export function resolveMembersTenantId(
+  session: Session | null,
+  tenantIdFromQuery: string | null,
+): string | null {
+  if (!session) return null
+
+  if (tenantIdFromQuery) {
+    if (isPlatformAdmin(session)) return tenantIdFromQuery
+    if (session.tenant?.id === tenantIdFromQuery) return tenantIdFromQuery
+    return null
+  }
+
+  return session.tenant?.id ?? null
+}

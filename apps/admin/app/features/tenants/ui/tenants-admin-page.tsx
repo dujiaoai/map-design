@@ -17,6 +17,7 @@ import {
   AdminTableRow,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
@@ -91,7 +92,7 @@ export function TenantsAdminPage() {
 
       <AdminPanel className="p-0">
         {query.isLoading ? (
-          <AdminEmptyState message="加载中…" />
+          <AdminTableSkeleton columns={6} showPagination />
         ) : query.isError ? (
           <AdminEmptyState message="加载失败，请刷新重试" />
         ) : !query.data?.tenants.length ? (

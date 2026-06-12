@@ -10,6 +10,7 @@ import { canAccessAdminMembers } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminDetailSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
 
 import { EditTenantSheet } from './edit-tenant-sheet'
@@ -31,7 +32,7 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
   const tenant = tenantQuery.data
 
   if (tenantQuery.isLoading) {
-    return <AdminEmptyState message="加载租户详情…" />
+    return <AdminDetailSkeleton />
   }
 
   if (tenantQuery.isError || !tenant) {

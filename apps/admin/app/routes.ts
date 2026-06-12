@@ -12,4 +12,5 @@ export default [
     route('account', 'routes/account.tsx'),
   ]),
   route('403', 'routes/forbidden.tsx'),
+  route('*', 'routes/not-found.tsx'),
 ] satisfies RouteConfig

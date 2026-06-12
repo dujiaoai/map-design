@@ -170,6 +170,15 @@ class AdminTenantsControllerTest {
   }
 
   @Test
+  void getTenant_withTenantAdmin_returns403() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID)
+                .header("Authorization", "Bearer " + loginAccessToken("admin@test.local")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
   void getTenant_unknownId_returns404() throws Exception {
     var unknownId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     mockMvc

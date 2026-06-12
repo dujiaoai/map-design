@@ -2,6 +2,7 @@ import {
   Button,
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
@@ -43,15 +44,17 @@ export function AdminTeamSwitcher({
         <ChevronsUpDownIcon className="size-4 shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
-        <DropdownMenuLabel className="text-xs">切换租户</DropdownMenuLabel>
-        {teams.map((team) => (
-          <DropdownMenuItem key={team.id} onClick={() => onTeamChange(team.id)}>
-            <div className="min-w-0">
-              <p className="truncate text-sm">{team.name}</p>
-              <p className="truncate text-xs text-muted-foreground">{team.slug}</p>
-            </div>
-          </DropdownMenuItem>
-        ))}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-xs">切换租户</DropdownMenuLabel>
+          {teams.map((team) => (
+            <DropdownMenuItem key={team.id} onClick={() => onTeamChange(team.id)}>
+              <div className="min-w-0">
+                <p className="truncate text-sm">{team.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{team.slug}</p>
+              </div>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )

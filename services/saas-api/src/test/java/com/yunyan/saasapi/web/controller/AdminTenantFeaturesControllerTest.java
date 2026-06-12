@@ -41,6 +41,18 @@ class AdminTenantFeaturesControllerTest {
   @Autowired ObjectMapper objectMapper;
 
   @Test
+  void featureCatalog_withoutToken_returns401() throws Exception {
+    mockMvc.perform(get("/v1/admin/feature-catalog")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void getTenantFeatures_withoutToken_returns401() throws Exception {
+    mockMvc
+        .perform(get("/v1/admin/tenants/" + TEST_TENANT_ID + "/features"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
   void featureCatalog_withPlatformAdmin_returnsCatalog() throws Exception {
     mockMvc
         .perform(

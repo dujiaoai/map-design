@@ -1,14 +1,11 @@
 import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
-import { useQuery } from '@tanstack/react-query'
 import { PencilIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 
 import { fetchAdminTenants, fetchAdminUsers, type AdminUserSummary } from '~/shared/api/admin-api'
-import {
-  useAdminTableFilterState,
-  useFilteredAdminRows,
-} from '~/shared/hooks/use-admin-table-filter'
+import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
+import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import {
@@ -20,6 +17,7 @@ import {
   AdminTableRow,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
 
@@ -34,15 +32,18 @@ export function UsersAdminPage() {
 
   const [inviteOpen, setInviteOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<AdminUserSummary | null>(null)
+  const [statusFilter, setStatusFilter] = useState('all')
 
-  const tenantsQuery = useQuery({
-    queryKey: adminQueryKeys.tenants,
-    queryFn: fetchAdminTenants,
+  const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
+
+  const tenantsQuery = useAdminPagedQuery({
+    queryKey: adminQueryKeys.tenantsAll,
+    queryFn: () => fetchAdminTenants(),
   })
 
-  const usersQuery = useQuery({
-    queryKey: adminQueryKeys.users(tenantFilterId),
-    queryFn: () => fetchAdminUsers(tenantFilterId),
+  const usersQuery = useAdminPagedQuery({
+    queryKey: adminQueryKeys.users(tenantFilterId, queryParams),
+    queryFn: () => fetchAdminUsers(tenantFilterId, queryParams),
   })
 
   const tenantLabel = useMemo(() => {
@@ -51,14 +52,19 @@ export function UsersAdminPage() {
     return tenant ? `${tenant.name} (${tenant.slug})` : tenantFilterId
   }, [tenantFilterId, tenantsQuery.data?.tenants])
 
-  const filter = useAdminTableFilterState()
   const userSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName', 'tenantSlug']
-  const filteredUsers = useFilteredAdminRows(
-    usersQuery.data?.users,
-    filter,
-    userSearchKeys,
-    'status',
+  const filteredUsers = useMemo(
+    () =>
+      filterAdminTableRows(usersQuery.data?.users, {
+        search: '',
+        searchKeys: userSearchKeys,
+        status: statusFilter,
+        statusKey: 'status',
+      }),
+    [usersQuery.data?.users, statusFilter],
   )
+
+  const total = usersQuery.data?.total ?? usersQuery.data?.users.length ?? 0
 
   return (
     <div className="space-y-6">
@@ -77,6 +83,7 @@ export function UsersAdminPage() {
         <Select
           value={tenantFilterId ?? 'all'}
           onValueChange={(value) => {
+            setPage(1)
             if (!value || value === 'all') {
               setSearchParams({})
               return
@@ -99,11 +106,11 @@ export function UsersAdminPage() {
       </div>
 
       <AdminTableToolbar
-        search={filter.search}
-        onSearchChange={filter.setSearch}
-        searchPlaceholder="搜索邮箱或显示名…"
-        status={filter.status}
-        onStatusChange={filter.setStatus}
+        search={searchInput}
+        onSearchChange={setSearchInput}
+        searchPlaceholder="搜索邮箱、显示名或租户 slug…"
+        status={statusFilter}
+        onStatusChange={setStatusFilter}
         statusOptions={[
           { value: 'all', label: '全部状态' },
           { value: 'active', label: 'active' },
@@ -111,7 +118,7 @@ export function UsersAdminPage() {
         ]}
       />
 
-      <AdminPanel>
+      <AdminPanel className="p-0">
         {usersQuery.isLoading ? (
           <AdminEmptyState message="加载中…" />
         ) : usersQuery.isError ? (
@@ -121,53 +128,61 @@ export function UsersAdminPage() {
         ) : !filteredUsers.length ? (
           <AdminEmptyState message="无匹配用户" />
         ) : (
-          <AdminDataTable>
-            <AdminTableHead>
-              <tr>
-                <AdminTableHeaderCell>邮箱</AdminTableHeaderCell>
-                <AdminTableHeaderCell>显示名</AdminTableHeaderCell>
-                <AdminTableHeaderCell>租户</AdminTableHeaderCell>
-                <AdminTableHeaderCell>角色</AdminTableHeaderCell>
-                <AdminTableHeaderCell>状态</AdminTableHeaderCell>
-                <AdminTableHeaderCell>创建时间</AdminTableHeaderCell>
-                {canWrite ? (
-                  <AdminTableHeaderCell className="text-right">操作</AdminTableHeaderCell>
-                ) : null}
-              </tr>
-            </AdminTableHead>
-            <AdminTableBody>
-              {filteredUsers.map((user) => (
-                <AdminTableRow key={user.id}>
-                  <AdminTableCell>{user.email}</AdminTableCell>
-                  <AdminTableCell>{user.displayName}</AdminTableCell>
-                  <AdminTableCell mono>{user.tenantSlug}</AdminTableCell>
-                  <AdminTableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {user.roles.map((role) => (
-                        <Badge key={role} variant="outline" className="font-mono text-[10px]">
-                          {role}
-                        </Badge>
-                      ))}
-                    </div>
-                  </AdminTableCell>
-                  <AdminTableCell>
-                    <AdminStatusBadge status={user.status} />
-                  </AdminTableCell>
-                  <AdminTableCell className="text-muted-foreground">
-                    {formatAdminDate(user.createdAt)}
-                  </AdminTableCell>
+          <>
+            <AdminDataTable>
+              <AdminTableHead>
+                <tr>
+                  <AdminTableHeaderCell>邮箱</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>显示名</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>租户</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>角色</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>状态</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>创建时间</AdminTableHeaderCell>
                   {canWrite ? (
-                    <AdminTableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setEditingUser(user)}>
-                        <PencilIcon className="size-3.5" />
-                        编辑
-                      </Button>
-                    </AdminTableCell>
+                    <AdminTableHeaderCell className="text-right">操作</AdminTableHeaderCell>
                   ) : null}
-                </AdminTableRow>
-              ))}
-            </AdminTableBody>
-          </AdminDataTable>
+                </tr>
+              </AdminTableHead>
+              <AdminTableBody>
+                {filteredUsers.map((user) => (
+                  <AdminTableRow key={user.id}>
+                    <AdminTableCell>{user.email}</AdminTableCell>
+                    <AdminTableCell>{user.displayName}</AdminTableCell>
+                    <AdminTableCell mono>{user.tenantSlug}</AdminTableCell>
+                    <AdminTableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {user.roles.map((role) => (
+                          <Badge key={role} variant="outline" className="font-mono text-[10px]">
+                            {role}
+                          </Badge>
+                        ))}
+                      </div>
+                    </AdminTableCell>
+                    <AdminTableCell>
+                      <AdminStatusBadge status={user.status} />
+                    </AdminTableCell>
+                    <AdminTableCell className="text-muted-foreground">
+                      {formatAdminDate(user.createdAt)}
+                    </AdminTableCell>
+                    {canWrite ? (
+                      <AdminTableCell className="text-right">
+                        <Button variant="ghost" size="sm" onClick={() => setEditingUser(user)}>
+                          <PencilIcon className="size-3.5" />
+                          编辑
+                        </Button>
+                      </AdminTableCell>
+                    ) : null}
+                  </AdminTableRow>
+                ))}
+              </AdminTableBody>
+            </AdminDataTable>
+            <AdminTablePagination
+              page={page}
+              pageSize={queryParams.size}
+              total={total}
+              onPageChange={setPage}
+            />
+          </>
         )}
       </AdminPanel>
 

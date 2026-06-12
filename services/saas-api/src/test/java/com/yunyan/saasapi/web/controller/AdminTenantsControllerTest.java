@@ -1,6 +1,7 @@
 package com.yunyan.saasapi.web.controller;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -115,6 +116,46 @@ class AdminTenantsControllerTest {
                             "password", "password",
                             "tenantId", "test"))))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void listTenants_withPagination_returnsPageMeta() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+    for (int i = 0; i < 3; i++) {
+      var slug = "page-tenant-" + i + "-" + System.currentTimeMillis();
+      mockMvc
+          .perform(
+              post("/v1/admin/tenants")
+                  .header("Authorization", "Bearer " + token)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      objectMapper.writeValueAsString(
+                          Map.of("name", "Page Tenant " + i, "slug", slug))))
+          .andExpect(status().isCreated());
+    }
+
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants")
+                .param("page", "1")
+                .param("size", "2")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tenants", hasSize(2)))
+        .andExpect(jsonPath("$.total").value(org.hamcrest.Matchers.greaterThanOrEqualTo(5)))
+        .andExpect(jsonPath("$.page").value(1))
+        .andExpect(jsonPath("$.size").value(2));
+  }
+
+  @Test
+  void listTenants_withSearch_filtersBySlug() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants")
+                .param("q", "test")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tenants[*].slug", hasItem("test")));
   }
 
   @Test

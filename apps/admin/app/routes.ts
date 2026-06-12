@@ -9,6 +9,7 @@ export default [
     route('users', 'routes/users.tsx'),
     route('members', 'routes/members.tsx'),
     route('roles', 'routes/roles.tsx'),
+    route('account', 'routes/account.tsx'),
   ]),
   route('403', 'routes/forbidden.tsx'),
 ] satisfies RouteConfig

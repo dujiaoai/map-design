@@ -9,7 +9,7 @@
   "description": "SaaS 产品线 workspace（Biome lint/format）",
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "dev": "pnpm --filter @repo/saas-web dev",
+    "dev": "turbo run dev --filter=@repo/saas-web --filter=@repo/saas-admin",
     "dev:web": "pnpm --filter @repo/saas-web dev",
     "dev:admin": "pnpm --filter @repo/saas-admin dev",
     "dev:web:airace": "pnpm --filter @repo/saas-web dev:airace",

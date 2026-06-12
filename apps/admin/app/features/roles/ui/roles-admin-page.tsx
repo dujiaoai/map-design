@@ -69,6 +69,15 @@ export function RolesAdminPage() {
     return groups
   }, [availablePermissions])
 
+  const savedCodes = useMemo(
+    () => [...(rolePermissionsQuery.data?.permissions.map((item) => item.code) ?? [])].sort(),
+    [rolePermissionsQuery.data?.permissions],
+  )
+  const isDirty = useMemo(() => {
+    const current = [...selectedCodes].sort()
+    return current.join('|') !== savedCodes.join('|')
+  }, [savedCodes, selectedCodes])
+
   const mutation = useMutation({
     mutationFn: (codes: string[]) => updateRolePermissions(selectedRole!.id, codes),
     onSuccess: async () => {
@@ -79,6 +88,13 @@ export function RolesAdminPage() {
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
+
+  function selectRole(role: AdminRoleSummary) {
+    if (isDirty && selectedRole && !window.confirm('当前角色权限未保存，确定切换？')) {
+      return
+    }
+    setSelectedRole(role)
+  }
 
   function togglePermission(code: string) {
     setSelectedCodes((current) =>
@@ -117,7 +133,7 @@ export function RolesAdminPage() {
                         ? 'bg-primary/12 text-primary'
                         : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                     )}
-                    onClick={() => setSelectedRole(role)}
+                    onClick={() => selectRole(role)}
                   >
                     <span className="font-mono">{role.code}</span>
                   </button>
@@ -139,6 +155,7 @@ export function RolesAdminPage() {
                   <p className="admin-display text-lg font-semibold">{selectedRole.code}</p>
                   <p className="text-sm text-muted-foreground">
                     已选 {selectedCodes.length} 项权限
+                    {isDirty ? ' · 有未保存更改' : ''}
                   </p>
                 </div>
                 {canWrite ? (

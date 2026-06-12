@@ -23,10 +23,14 @@ public class TenantAdminService {
 
   private final TenantRepository tenantRepository;
 
-  public AdminTenantListResponse listTenants() {
-    var tenants =
-        tenantRepository.findAllTenants().stream().map(TenantAdminService::toDto).toList();
-    return new AdminTenantListResponse(tenants);
+  public AdminTenantListResponse listTenants(AdminListParams params) {
+    var result = tenantRepository.findTenants(params);
+    var tenants = result.items().stream().map(TenantAdminService::toDto).toList();
+    if (params.isPaginated()) {
+      return AdminTenantListResponse.paged(
+          tenants, result.total(), params.resolvePage(), params.resolveSize());
+    }
+    return AdminTenantListResponse.unpaged(tenants);
   }
 
   public AdminTenantDto getTenant(UUID tenantId) {

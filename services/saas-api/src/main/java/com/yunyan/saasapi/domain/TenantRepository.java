@@ -1,6 +1,8 @@
 package com.yunyan.saasapi.domain;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yunyan.saasapi.application.admin.AdminListParams;
 import com.yunyan.saasapi.domain.entity.SysTenant;
 import com.yunyan.saasapi.domain.entity.SysUser;
 import com.yunyan.saasapi.domain.mapper.SysTenantFeatureMapper;
@@ -12,6 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 @Repository
 @RequiredArgsConstructor
@@ -45,8 +48,48 @@ public class TenantRepository {
   }
 
   public List<SysTenant> findAllTenants() {
-    return sysTenantMapper.selectList(
-        Wrappers.<SysTenant>lambdaQuery().orderByAsc(SysTenant::getName));
+    return findTenants(new AdminListParams(null, null, null)).items();
+  }
+
+  public AdminPagedResult<SysTenant> findTenants(AdminListParams params) {
+    var wrapper =
+        Wrappers.<SysTenant>lambdaQuery().orderByAsc(SysTenant::getName).orderByAsc(SysTenant::getId);
+    var query = params.normalizedQuery();
+    if (StringUtils.hasText(query)) {
+      wrapper.and(
+          w ->
+              w.like(SysTenant::getName, query)
+                  .or()
+                  .like(SysTenant::getSlug, query)
+                  .or()
+                  .like(SysTenant::getPlan, query));
+    }
+
+    if (params.isPaginated()) {
+      var page =
+          sysTenantMapper.selectPage(
+              new Page<>(params.resolvePage(), params.resolveSize()), wrapper);
+      return new AdminPagedResult<>(page.getRecords(), page.getTotal());
+    }
+
+    var tenants = sysTenantMapper.selectList(wrapper);
+    return new AdminPagedResult<>(tenants, tenants.size());
+  }
+
+  public List<UUID> findIdsBySearch(String q) {
+    if (!StringUtils.hasText(q)) {
+      return List.of();
+    }
+    var query = q.trim();
+    return sysTenantMapper
+        .selectList(
+            Wrappers.<SysTenant>lambdaQuery()
+                .like(SysTenant::getName, query)
+                .or()
+                .like(SysTenant::getSlug, query))
+        .stream()
+        .map(SysTenant::getId)
+        .toList();
   }
 
   public long countTenants() {

@@ -8,6 +8,7 @@ import { z } from 'zod'
 
 import { auth } from '~/shared/auth/client'
 import { getAdminHomePath } from '~/shared/auth/admin-access'
+import { saveRememberLogin } from '~/shared/lib/remember-login'
 import { formatLoginError } from '~/shared/auth/format-login-error'
 import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
 import { PasswordInput } from '~/shared/ui/password-input'
@@ -69,11 +70,14 @@ export default function LoginRoute() {
 
     setSubmitError(null)
     try {
+      const email = values.email.trim()
+      const tenantId = values.tenantId.trim()
       await auth.login({
-        email: values.email.trim(),
+        email,
         password: values.password,
-        tenantId: values.tenantId.trim(),
+        tenantId,
       })
+      saveRememberLogin(email, values.password, tenantId)
       void navigate(getAdminHomePath(auth.getSession()), { replace: true })
     } catch (error) {
       setSubmitError(formatLoginError(error))

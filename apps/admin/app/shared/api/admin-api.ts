@@ -1,3 +1,5 @@
+import { sessionSchema, type Session } from '@repo/auth'
+
 import { api } from './client'
 
 export interface AdminPingResponse {
@@ -29,12 +31,30 @@ export interface AdminTenantSummary {
   createdAt: number
 }
 
-export interface AdminTenantListResponse {
-  tenants: AdminTenantSummary[]
+export interface AdminListQuery {
+  q?: string
+  page?: number
+  size?: number
 }
 
-export function fetchAdminTenants() {
-  return api.get<AdminTenantListResponse>('/admin/tenants')
+export interface AdminTenantListResponse {
+  tenants: AdminTenantSummary[]
+  total?: number
+  page?: number
+  size?: number
+}
+
+function buildAdminListQuery(params?: AdminListQuery) {
+  const search = new URLSearchParams()
+  if (params?.q) search.set('q', params.q)
+  if (params?.page != null) search.set('page', String(params.page))
+  if (params?.size != null) search.set('size', String(params.size))
+  const query = search.toString()
+  return query ? `?${query}` : ''
+}
+
+export function fetchAdminTenants(params?: AdminListQuery) {
+  return api.get<AdminTenantListResponse>(`/admin/tenants${buildAdminListQuery(params)}`)
 }
 
 export function fetchAdminTenant(tenantId: string) {
@@ -104,11 +124,19 @@ export interface AdminUserSummary {
 
 export interface AdminUserListResponse {
   users: AdminUserSummary[]
+  total?: number
+  page?: number
+  size?: number
 }
 
-export function fetchAdminUsers(tenantId?: string) {
-  const query = tenantId ? `?tenantId=${encodeURIComponent(tenantId)}` : ''
-  return api.get<AdminUserListResponse>(`/admin/users${query}`)
+export function fetchAdminUsers(tenantId?: string, params?: AdminListQuery) {
+  const search = new URLSearchParams()
+  if (tenantId) search.set('tenantId', tenantId)
+  if (params?.q) search.set('q', params.q)
+  if (params?.page != null) search.set('page', String(params.page))
+  if (params?.size != null) search.set('size', String(params.size))
+  const query = search.toString()
+  return api.get<AdminUserListResponse>(`/admin/users${query ? `?${query}` : ''}`)
 }
 
 export interface InviteUserPayload {
@@ -212,4 +240,29 @@ export function updateTenantMemberRoles(
   return api.put<AdminUserSummary>(`/admin/tenants/${tenantId}/members/${userId}/roles`, {
     roleCodes,
   })
+}
+
+export interface SessionTenantSummary {
+  id: string
+  name: string
+  slug: string
+  plan: string
+  current: boolean
+}
+
+export interface SessionTenantListResponse {
+  items: SessionTenantSummary[]
+}
+
+export function fetchSessionTenants() {
+  return api.get<SessionTenantListResponse>('/tenants')
+}
+
+export async function updateAccountProfile(name: string) {
+  const session = sessionSchema.parse(await api.put<Session>('/users/me', { name }))
+  return session
+}
+
+export function updateAccountPassword(oldPassword: string, newPassword: string) {
+  return api.post('/users/me/password', { oldPassword, newPassword })
 }

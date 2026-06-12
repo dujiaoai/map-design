@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.web.controller;
 
+import com.yunyan.saasapi.application.admin.AdminListParams;
 import com.yunyan.saasapi.application.admin.TenantAdminService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,9 +41,14 @@ public class AdminTenantsController {
 
   @GetMapping
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
-  @Operation(summary = "列出全部租户")
-  public AdminTenantListResponse listTenants() {
-    return tenantAdminService.listTenants();
+  @Operation(
+      summary = "列出全部租户",
+      description = "可选 q/page/size 分页搜索；无分页参数时返回全量（向后兼容）")
+  public AdminTenantListResponse listTenants(
+      @RequestParam(required = false) String q,
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size) {
+    return tenantAdminService.listTenants(new AdminListParams(q, page, size));
   }
 
   @GetMapping("/{tenantId}")

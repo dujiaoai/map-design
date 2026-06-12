@@ -15,6 +15,7 @@ import {
   SheetTitle,
 } from '@repo/ui'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -43,6 +44,7 @@ export function InviteMemberSheet({
   onOpenChange: (open: boolean) => void
 }) {
   const queryClient = useQueryClient()
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const {
     register,
     handleSubmit,
@@ -65,15 +67,25 @@ export function InviteMemberSheet({
         displayName: values.displayName?.trim() || undefined,
         roleCode: values.roleCode,
       }),
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.members(tenantId) })
       reset()
-      onOpenChange(false)
+      setSuccessMessage(`已邀请 ${variables.email}`)
+      window.setTimeout(() => {
+        setSuccessMessage(null)
+        onOpenChange(false)
+      }, 1200)
     },
   })
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) setSuccessMessage(null)
+        onOpenChange(next)
+      }}
+    >
       <SheetContent className="w-full sm:max-w-md">
         <SheetHeader>
           <SheetTitle className="admin-display text-lg">邀请成员</SheetTitle>
@@ -110,6 +122,9 @@ export function InviteMemberSheet({
               </SelectContent>
             </Select>
           </AdminField>
+          {successMessage ? (
+            <p className="text-sm text-primary">{successMessage}</p>
+          ) : null}
           <AdminFormError message={mutation.isError ? formatAdminApiError(mutation.error) : null} />
           <SheetFooter className="px-0">
             <Button type="submit" disabled={isSubmitting || mutation.isPending}>

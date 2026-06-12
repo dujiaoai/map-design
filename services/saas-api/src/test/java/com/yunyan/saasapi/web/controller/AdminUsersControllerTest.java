@@ -75,6 +75,33 @@ class AdminUsersControllerTest {
   }
 
   @Test
+  void listUsers_withPagination_returnsPageMeta() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/users")
+                .param("page", "1")
+                .param("size", "1")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.users", hasSize(1)))
+        .andExpect(jsonPath("$.total").value(2))
+        .andExpect(jsonPath("$.page").value(1))
+        .andExpect(jsonPath("$.size").value(1));
+  }
+
+  @Test
+  void listUsers_withSearch_filtersByEmail() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/users")
+                .param("q", "platform")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.users", hasSize(1)))
+        .andExpect(jsonPath("$.users[0].email").value("platform@test.local"));
+  }
+
+  @Test
   void inviteUser_withPlatformAdmin_returns201() throws Exception {
     var email = "invited-" + System.currentTimeMillis() + "@test.local";
 

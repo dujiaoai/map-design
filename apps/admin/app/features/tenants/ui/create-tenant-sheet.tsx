@@ -51,7 +51,7 @@ export function CreateTenantSheet({
   const mutation = useMutation({
     mutationFn: createAdminTenant,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: adminQueryKeys.tenants })
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] })
       reset()
       onOpenChange(false)
     },

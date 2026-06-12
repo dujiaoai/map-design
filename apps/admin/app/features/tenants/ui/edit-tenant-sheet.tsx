@@ -72,7 +72,7 @@ export function EditTenantSheet({
         status: values.status,
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: adminQueryKeys.tenants })
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] })
       if (tenant) {
         await queryClient.invalidateQueries({ queryKey: adminQueryKeys.tenant(tenant.id) })
       }

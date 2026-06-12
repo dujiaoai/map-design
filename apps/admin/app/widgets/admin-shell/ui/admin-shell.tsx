@@ -3,7 +3,9 @@ import { Button, cn } from '@repo/ui'
 import { LogOutIcon } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router'
 
-import { hasAnyPermissionCodes } from '~/shared/auth/admin-access'
+import { AdminTeamSwitcher } from '~/features/team-switcher/ui/admin-team-switcher'
+import { useAdminTeamSwitcher } from '~/features/team-switcher/model/use-admin-team-switcher'
+import { hasAdminAccess, hasAnyPermissionCodes } from '~/shared/auth/admin-access'
 import { auth } from '~/shared/auth/client'
 
 import { adminNavItems } from '../lib/nav-items'
@@ -12,9 +14,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const session = useSession()
   const navigate = useNavigate()
   const permissions = session?.user.permissions ?? []
-  const navItems = adminNavItems.filter((item) =>
-    hasAnyPermissionCodes(permissions, item.permissions),
-  )
+  const navItems = adminNavItems.filter((item) => {
+    if (item.to === '/account') return hasAdminAccess(session)
+    return hasAnyPermissionCodes(permissions, item.permissions)
+  })
+  const { teams, activeTeamId, showTeamSwitcher, onTeamChange } = useAdminTeamSwitcher()
 
   async function handleLogout() {
     await auth.logout()
@@ -31,9 +35,19 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               YunYan Ops
             </p>
             <h1 className="admin-display mt-1 text-xl font-semibold tracking-tight">运营控制台</h1>
-            <p className="mt-2 truncate text-xs text-muted-foreground">
-              {session?.tenant?.name ?? '—'} · {session?.user.email}
-            </p>
+            {showTeamSwitcher ? (
+              <div className="mt-3">
+                <AdminTeamSwitcher
+                  teams={teams}
+                  activeTeamId={activeTeamId}
+                  onTeamChange={(tenantId) => void onTeamChange(tenantId)}
+                />
+              </div>
+            ) : (
+              <p className="mt-2 truncate text-xs text-muted-foreground">
+                {session?.tenant?.name ?? '—'} · {session?.user.email}
+              </p>
+            )}
           </div>
 
           <nav className="flex flex-1 flex-col gap-1 p-3">

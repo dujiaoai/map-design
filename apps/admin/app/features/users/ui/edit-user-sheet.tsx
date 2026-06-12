@@ -71,7 +71,7 @@ export function EditUserSheet({
         status: values.status,
       }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: adminQueryKeys.users(tenantFilterId) })
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
       onOpenChange(false)
     },
   })

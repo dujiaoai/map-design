@@ -1,5 +1,12 @@
 import type { LucideIcon } from 'lucide-react'
-import { Building2Icon, LayoutDashboardIcon, ShieldIcon, UserRoundCogIcon, UsersIcon } from 'lucide-react'
+import {
+  Building2Icon,
+  LayoutDashboardIcon,
+  SettingsIcon,
+  ShieldIcon,
+  UserRoundCogIcon,
+  UsersIcon,
+} from 'lucide-react'
 
 export interface AdminNavItem {
   to: string
@@ -39,5 +46,11 @@ export const adminNavItems: AdminNavItem[] = [
     label: '角色',
     icon: ShieldIcon,
     permissions: ['admin:roles:read'],
+  },
+  {
+    to: '/account',
+    label: '账号',
+    icon: SettingsIcon,
+    permissions: [],
   },
 ]

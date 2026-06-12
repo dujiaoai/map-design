@@ -1,6 +1,8 @@
 package com.yunyan.saasapi.domain;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yunyan.saasapi.application.admin.AdminListParams;
 import com.yunyan.saasapi.domain.entity.SysRole;
 import com.yunyan.saasapi.domain.entity.SysUser;
 import com.yunyan.saasapi.domain.entity.SysUserRole;
@@ -13,6 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 @Repository
 @RequiredArgsConstructor
@@ -23,20 +26,47 @@ public class UserRepository {
   private final SysRoleMapper sysRoleMapper;
 
   public List<SysUser> findAllUsers(Optional<UUID> tenantId) {
-    return TenantRlsBypass.call(() -> findAllUsersWithRlsBypass(tenantId));
+    return findUsersForAdmin(tenantId, new AdminListParams(null, null, null), List.of()).items();
+  }
+
+  public AdminPagedResult<SysUser> findUsersForAdmin(
+      Optional<UUID> tenantId, AdminListParams params, List<UUID> tenantIdsFromSearch) {
+    return TenantRlsBypass.call(
+        () -> findUsersForAdminWithRlsBypass(tenantId, params, tenantIdsFromSearch));
   }
 
   public long countUsers() {
     return TenantRlsBypass.call(() -> sysUserMapper.selectCount(null));
   }
 
-  private List<SysUser> findAllUsersWithRlsBypass(Optional<UUID> tenantId) {
-    var query =
+  private AdminPagedResult<SysUser> findUsersForAdminWithRlsBypass(
+      Optional<UUID> tenantId, AdminListParams params, List<UUID> tenantIdsFromSearch) {
+    var wrapper =
         Wrappers.<SysUser>lambdaQuery()
             .orderByAsc(SysUser::getTenantId)
             .orderByAsc(SysUser::getEmail);
-    tenantId.ifPresent(id -> query.eq(SysUser::getTenantId, id));
-    return sysUserMapper.selectList(query);
+    tenantId.ifPresent(id -> wrapper.eq(SysUser::getTenantId, id));
+
+    var query = params.normalizedQuery();
+    if (StringUtils.hasText(query)) {
+      wrapper.and(
+          w -> {
+            w.like(SysUser::getEmail, query).or().like(SysUser::getDisplayName, query);
+            if (!tenantIdsFromSearch.isEmpty()) {
+              w.or().in(SysUser::getTenantId, tenantIdsFromSearch);
+            }
+          });
+    }
+
+    if (params.isPaginated()) {
+      var page =
+          sysUserMapper.selectPage(
+              new Page<>(params.resolvePage(), params.resolveSize()), wrapper);
+      return new AdminPagedResult<>(page.getRecords(), page.getTotal());
+    }
+
+    var users = sysUserMapper.selectList(wrapper);
+    return new AdminPagedResult<>(users, users.size());
   }
 
   public Optional<SysUser> findById(UUID userId) {

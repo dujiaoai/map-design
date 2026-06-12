@@ -11,6 +11,7 @@ import com.yunyan.saasapi.web.dto.admin.AdminUserListResponse;
 import com.yunyan.saasapi.web.dto.admin.InviteUserRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchUserRequest;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,17 +35,25 @@ public class UserAdminService {
   private final RoleRepository roleRepository;
   private final PasswordEncoder passwordEncoder;
 
-  public AdminUserListResponse listUsers(Optional<UUID> tenantId) {
+  public AdminUserListResponse listUsers(Optional<UUID> tenantId, AdminListParams params) {
     tenantId.ifPresent(this::requireTenant);
 
-    var users = userRepository.findAllUsers(tenantId);
-    var tenantsById = loadTenantsById(users);
+    var tenantIdsFromSearch =
+        params.normalizedQuery() == null
+            ? List.<UUID>of()
+            : tenantRepository.findIdsBySearch(params.normalizedQuery());
+    var result = userRepository.findUsersForAdmin(tenantId, params, tenantIdsFromSearch);
+    var tenantsById = loadTenantsById(result.items());
 
     var dtos =
-        users.stream()
+        result.items().stream()
             .map(user -> toDto(user, tenantsById.get(user.getTenantId())))
             .toList();
-    return new AdminUserListResponse(dtos);
+    if (params.isPaginated()) {
+      return AdminUserListResponse.paged(
+          dtos, result.total(), params.resolvePage(), params.resolveSize());
+    }
+    return AdminUserListResponse.unpaged(dtos);
   }
 
   @Transactional

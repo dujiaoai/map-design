@@ -15,6 +15,7 @@ import {
   SheetTitle,
 } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -44,9 +45,10 @@ export function InviteUserSheet({
   defaultTenantId?: string
 }) {
   const queryClient = useQueryClient()
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const tenantsQuery = useQuery({
-    queryKey: adminQueryKeys.tenants,
-    queryFn: fetchAdminTenants,
+    queryKey: adminQueryKeys.tenantsAll,
+    queryFn: () => fetchAdminTenants(),
     enabled: open,
   })
 
@@ -73,7 +75,7 @@ export function InviteUserSheet({
 
   const mutation = useMutation({
     mutationFn: inviteAdminUser,
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
       reset({
         tenantId: defaultTenantId ?? '',
@@ -82,7 +84,11 @@ export function InviteUserSheet({
         displayName: '',
         roleCode: 'MEMBER',
       })
-      onOpenChange(false)
+      setSuccessMessage(`已邀请 ${variables.email}`)
+      window.setTimeout(() => {
+        setSuccessMessage(null)
+        onOpenChange(false)
+      }, 1200)
     },
   })
 
@@ -100,6 +106,7 @@ export function InviteUserSheet({
     <Sheet
       open={open}
       onOpenChange={(next) => {
+        if (!next) setSuccessMessage(null)
         if (next && defaultTenantId) setValue('tenantId', defaultTenantId)
         onOpenChange(next)
       }}
@@ -157,6 +164,9 @@ export function InviteUserSheet({
               </SelectContent>
             </Select>
           </AdminField>
+          {successMessage ? (
+            <p className="text-sm text-primary">{successMessage}</p>
+          ) : null}
           <AdminFormError message={mutation.isError ? formatAdminApiError(mutation.error) : null} />
           <SheetFooter className="px-0">
             <Button type="submit" disabled={isSubmitting || mutation.isPending}>

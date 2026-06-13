@@ -6,6 +6,20 @@ WHERE user_id IN (
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01'
   )
 );
+DELETE FROM sys_email_verification_token
+WHERE user_id IN (
+  SELECT id FROM sys_user WHERE tenant_id IN (
+    '11111111-1111-1111-1111-111111111101',
+    '99999999-9999-9999-9999-999999999901',
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01'
+  )
+);
+DELETE FROM sys_email_outbox
+WHERE tenant_id IN (
+  '11111111-1111-1111-1111-111111111101',
+  '99999999-9999-9999-9999-999999999901',
+  'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01'
+);
 DELETE FROM sys_user WHERE tenant_id IN (
   '11111111-1111-1111-1111-111111111101',
   '99999999-9999-9999-9999-999999999901',

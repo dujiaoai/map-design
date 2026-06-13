@@ -19,7 +19,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { type AdminUserSummary, patchAdminUser } from '~/shared/api/admin-api'
+import { type AdminUserSummary, patchAdminUser, resendAdminUserInvite } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
@@ -64,6 +64,8 @@ export function EditUserSheet({
     })
   }, [user, reset])
 
+  const isInvited = user?.status === 'invited'
+
   const mutation = useMutation({
     mutationFn: (values: FormValues) =>
       patchAdminUser(user!.id, {
@@ -73,6 +75,13 @@ export function EditUserSheet({
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
       onOpenChange(false)
+    },
+  })
+
+  const resendMutation = useMutation({
+    mutationFn: () => resendAdminUserInvite(user!.id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
     },
   })
 
@@ -94,20 +103,44 @@ export function EditUserSheet({
             <Input id="edit-user-name" {...register('displayName')} />
           </AdminField>
           <AdminField label="状态">
-            <Select
-              value={status}
-              onValueChange={(value) => setValue('status', value as FormValues['status'])}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">正常</SelectItem>
-                <SelectItem value="disabled">已禁用</SelectItem>
-              </SelectContent>
-            </Select>
+            {isInvited ? (
+              <p className="text-sm text-muted-foreground">待接受邀请（用户设密后自动变为正常）</p>
+            ) : (
+              <Select
+                value={status}
+                onValueChange={(value) => setValue('status', value as FormValues['status'])}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">正常</SelectItem>
+                  <SelectItem value="disabled">已禁用</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </AdminField>
-          <AdminFormError message={mutation.isError ? formatAdminApiError(mutation.error) : null} />
+          {isInvited ? (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={resendMutation.isPending}
+              onClick={() => resendMutation.mutate()}
+            >
+              {resendMutation.isPending ? '发送中…' : '重发设密邮件'}
+            </Button>
+          ) : null}
+          <AdminFormError
+            message={
+              mutation.isError
+                ? formatAdminApiError(mutation.error)
+                : resendMutation.isError
+                  ? formatAdminApiError(resendMutation.error)
+                  : resendMutation.isSuccess
+                    ? '已重新发送设密邮件'
+                    : null
+            }
+          />
           <SheetFooter className="px-0">
             <Button type="submit" disabled={!user || isSubmitting || mutation.isPending}>
               {mutation.isPending ? '保存中…' : '保存更改'}

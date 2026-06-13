@@ -14,6 +14,12 @@ spring:
 saas:
   tenant-rls:
     enabled: false
+  mail:
+    enabled: false
+  app:
+    web-base-url: http://localhost:5175
+  invite:
+    token-pepper: test-invite-pepper-with-32-bytes!!
   jwt:
     issuer: yunyan-saas-test
     secret: test-jwt-secret-with-at-least-32-bytes!!

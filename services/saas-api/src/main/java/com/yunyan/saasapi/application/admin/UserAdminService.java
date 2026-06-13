@@ -1,7 +1,7 @@
 package com.yunyan.saasapi.application.admin;
 
 import com.yunyan.saasapi.application.auth.UserSessionRevoker;
-import com.yunyan.saasapi.domain.RoleRepository;
+import com.yunyan.saasapi.application.email.UserInviteService;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.UserRepository;
 import com.yunyan.saasapi.domain.entity.SysTenant;
@@ -19,7 +19,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -29,13 +28,11 @@ import org.springframework.util.StringUtils;
 public class UserAdminService {
 
   private static final String STATUS_ACTIVE = "active";
-  private static final String DEFAULT_ROLE = "MEMBER";
 
   private final UserRepository userRepository;
   private final TenantRepository tenantRepository;
-  private final RoleRepository roleRepository;
-  private final PasswordEncoder passwordEncoder;
   private final UserSessionRevoker userSessionRevoker;
+  private final UserInviteService userInviteService;
 
   public AdminUserListResponse listUsers(Optional<UUID> tenantId, AdminListParams params) {
     tenantId.ifPresent(this::requireTenant);
@@ -61,29 +58,27 @@ public class UserAdminService {
   @Transactional
   public AdminUserDto inviteUser(InviteUserRequest request) {
     var tenant = requireActiveTenant(request.tenantId());
+    userInviteService.createInvitedUserAndSendEmail(
+        tenant, request.email(), request.displayName(), request.roleCode());
     var email = request.email().trim().toLowerCase();
+    var user =
+        userRepository
+            .findByTenantIdAndEmail(tenant.getId(), email)
+            .orElseThrow(() -> new IllegalStateException("Invited user not found"));
+    return toDto(user, tenant);
+  }
 
-    if (userRepository.findByTenantIdAndEmail(tenant.getId(), email).isPresent()) {
-      throw AuthException.conflict("Email already registered for this tenant");
-    }
-
-    var roleCode = resolveRoleCode(request.roleCode());
-    var role =
-        roleRepository
-            .findByCode(roleCode)
-            .orElseThrow(() -> new IllegalStateException("Role is not seeded: " + roleCode));
-
-    var user = new SysUser();
-    user.setId(UUID.randomUUID());
-    user.setTenantId(tenant.getId());
-    user.setEmail(email);
-    user.setPasswordHash(passwordEncoder.encode(request.password()));
-    user.setDisplayName(resolveDisplayName(email, request.displayName()));
-    user.setStatus(STATUS_ACTIVE);
-    user.setCreatedAt(Instant.now());
-    userRepository.insert(user);
-    userRepository.insertUserRole(user.getId(), role.getId());
-
+  @Transactional
+  public AdminUserDto resendInviteEmail(UUID userId) {
+    var user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> AuthException.notFound("User not found"));
+    var tenant =
+        tenantRepository
+            .findById(user.getTenantId())
+            .orElseThrow(() -> AuthException.notFound("Tenant not found"));
+    userInviteService.resendInviteEmail(tenant, user);
     return toDto(user, tenant);
   }
 
@@ -143,21 +138,6 @@ public class UserAdminService {
 
   private static boolean hasPatchFields(PatchUserRequest request) {
     return StringUtils.hasText(request.displayName()) || StringUtils.hasText(request.status());
-  }
-
-  private static String resolveRoleCode(String roleCode) {
-    if (!StringUtils.hasText(roleCode)) {
-      return DEFAULT_ROLE;
-    }
-    return roleCode.trim();
-  }
-
-  private static String resolveDisplayName(String email, String displayName) {
-    if (StringUtils.hasText(displayName)) {
-      return displayName.trim();
-    }
-    var at = email.indexOf('@');
-    return at > 0 ? email.substring(0, at) : email;
   }
 
   private static boolean isTenantActive(SysTenant tenant) {

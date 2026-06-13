@@ -1,5 +1,4 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import { authPasswordFieldSchema } from '@repo/auth'
 import {
   Button,
   Input,
@@ -24,12 +23,10 @@ import { fetchAdminTenants, inviteAdminUser } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
-import { PasswordInput } from '~/shared/ui/password-input'
 
 const schema = z.object({
   tenantId: z.string().min(1, '请选择租户'),
   email: z.string().min(1, '请输入邮箱').email('邮箱格式不正确'),
-  password: authPasswordFieldSchema(),
   displayName: z.string().max(128).optional(),
   roleCode: z.enum(['TENANT_ADMIN', 'MEMBER', 'VIEWER']),
 })
@@ -65,7 +62,6 @@ export function InviteUserSheet({
     defaultValues: {
       tenantId: defaultTenantId ?? '',
       email: '',
-      password: '',
       displayName: '',
       roleCode: 'MEMBER',
     },
@@ -81,11 +77,10 @@ export function InviteUserSheet({
       reset({
         tenantId: defaultTenantId ?? '',
         email: '',
-        password: '',
         displayName: '',
         roleCode: 'MEMBER',
       })
-      setSuccessMessage(`已邀请 ${variables.email}`)
+      setSuccessMessage(`已向 ${variables.email} 发送设密邮件`)
       window.setTimeout(() => {
         setSuccessMessage(null)
         onOpenChange(false)
@@ -97,7 +92,6 @@ export function InviteUserSheet({
     mutation.mutate({
       tenantId: values.tenantId,
       email: values.email.trim(),
-      password: values.password,
       displayName: values.displayName?.trim() || undefined,
       roleCode: values.roleCode,
     })
@@ -115,7 +109,9 @@ export function InviteUserSheet({
       <SheetContent className="w-full sm:max-w-md">
         <SheetHeader>
           <SheetTitle className="admin-display text-lg">邀请用户</SheetTitle>
-          <SheetDescription>在指定租户下创建账号并分配角色。</SheetDescription>
+          <SheetDescription>
+            在指定租户下创建账号并发送设密邮件，用户通过邮件链接设置密码后激活。
+          </SheetDescription>
         </SheetHeader>
 
         <form className="flex flex-1 flex-col gap-4 px-4" onSubmit={handleSubmit(onSubmit)}>
@@ -141,9 +137,6 @@ export function InviteUserSheet({
           </AdminField>
           <AdminField label="邮箱" htmlFor="invite-email" error={errors.email?.message}>
             <Input id="invite-email" autoComplete="off" {...register('email')} />
-          </AdminField>
-          <AdminField label="密码" htmlFor="invite-password" error={errors.password?.message}>
-            <PasswordInput id="invite-password" autoComplete="new-password" {...register('password')} />
           </AdminField>
           <AdminField label="显示名" htmlFor="invite-display" error={errors.displayName?.message}>
             <Input id="invite-display" {...register('displayName')} />
@@ -171,7 +164,7 @@ export function InviteUserSheet({
           <AdminFormError message={mutation.isError ? formatAdminApiError(mutation.error) : null} />
           <SheetFooter className="px-0">
             <Button type="submit" disabled={isSubmitting || mutation.isPending}>
-              {mutation.isPending ? '邀请中…' : '发送邀请'}
+              {mutation.isPending ? '发送中…' : '发送设密邮件'}
             </Button>
           </SheetFooter>
         </form>

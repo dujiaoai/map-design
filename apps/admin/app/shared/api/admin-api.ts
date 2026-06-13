@@ -35,7 +35,7 @@ export interface AdminListQuery {
   q?: string
   page?: number
   size?: number
-  status?: 'active' | 'disabled'
+  status?: 'active' | 'disabled' | 'invited'
 }
 
 export interface AdminTenantListResponse {
@@ -146,13 +146,16 @@ export function fetchAdminUsers(tenantId?: string, params?: AdminListQuery) {
 export interface InviteUserPayload {
   tenantId: string
   email: string
-  password: string
   displayName?: string
   roleCode?: 'TENANT_ADMIN' | 'MEMBER' | 'VIEWER'
 }
 
 export function inviteAdminUser(payload: InviteUserPayload) {
   return api.post<AdminUserSummary>('/admin/users', payload)
+}
+
+export function resendAdminUserInvite(userId: string) {
+  return api.post<AdminUserSummary>(`/admin/users/${userId}/resend-invite`)
 }
 
 export interface PatchUserPayload {
@@ -219,13 +222,16 @@ export function fetchTenantMembers(tenantId: string) {
 
 export interface InviteTenantMemberPayload {
   email: string
-  password: string
   displayName?: string
   roleCode?: 'TENANT_ADMIN' | 'MEMBER' | 'VIEWER'
 }
 
 export function inviteTenantMember(tenantId: string, payload: InviteTenantMemberPayload) {
   return api.post<AdminUserSummary>(`/admin/tenants/${tenantId}/members`, payload)
+}
+
+export function resendTenantMemberInvite(tenantId: string, userId: string) {
+  return api.post<AdminUserSummary>(`/admin/tenants/${tenantId}/members/${userId}/resend-invite`)
 }
 
 export function patchTenantMember(

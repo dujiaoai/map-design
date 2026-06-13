@@ -97,6 +97,15 @@ public class UserAuthRepository {
       return LoginLookupResult.accountDisabled(toAuthenticatedUser(disabledUser, tenant));
     }
 
+    var invitedUser = sysUserMapper.selectOne(
+        Wrappers.<SysUser>lambdaQuery()
+            .eq(SysUser::getEmail, email)
+            .eq(SysUser::getTenantId, tenant.getId())
+            .eq(SysUser::getStatus, "invited"));
+    if (invitedUser != null) {
+      return LoginLookupResult.invitePending(toAuthenticatedUser(invitedUser, tenant));
+    }
+
     return LoginLookupResult.notFound();
   }
 

@@ -2,6 +2,7 @@ package com.yunyan.saasapi.web.controller;
 
 import com.yunyan.saasapi.application.auth.AuthService;
 import com.yunyan.saasapi.security.SaasPrincipal;
+import com.yunyan.saasapi.web.dto.auth.AcceptInviteRequest;
 import com.yunyan.saasapi.web.dto.auth.AuthTokensDto;
 import com.yunyan.saasapi.web.dto.auth.LoginRequest;
 import com.yunyan.saasapi.web.dto.auth.LoginResponse;
@@ -63,6 +64,14 @@ public class AuthController {
       content = @Content(mediaType = "application/problem+json"))
   LoginResponse login(@Valid @RequestBody LoginRequest request) {
     return authService.login(request);
+  }
+
+  @PostMapping("/accept-invite")
+  @Operation(
+      summary = "接受邀请并设置密码",
+      description = "使用邮件中的 token 设置密码并激活账号，响应体同登录。")
+  LoginResponse acceptInvite(@Valid @RequestBody AcceptInviteRequest request) {
+    return authService.acceptInvite(request);
   }
 
   @PostMapping("/refresh")

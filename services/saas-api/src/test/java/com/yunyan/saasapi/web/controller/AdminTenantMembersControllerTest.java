@@ -63,8 +63,9 @@ class AdminTenantMembersControllerTest {
             get("/v1/admin/tenants/" + TEST_TENANT_ID + "/members")
                 .header("Authorization", "Bearer " + loginAccessToken("admin@test.local")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.members", hasSize(2)))
-        .andExpect(jsonPath("$.members[*].email", hasItem("admin@test.local")));
+        .andExpect(jsonPath("$.members", hasSize(3)))
+        .andExpect(jsonPath("$.members[*].email", hasItem("admin@test.local")))
+        .andExpect(jsonPath("$.members[*].email", hasItem("disabled@test.local")));
   }
 
   @Test
@@ -89,10 +90,10 @@ class AdminTenantMembersControllerTest {
                     objectMapper.writeValueAsString(
                         Map.of(
                             "email", email,
-                            "password", "password123",
                             "roleCode", "MEMBER"))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.email").value(email))
+        .andExpect(jsonPath("$.status").value("invited"))
         .andExpect(jsonPath("$.roles[0]").value("MEMBER"));
   }
 
@@ -109,7 +110,6 @@ class AdminTenantMembersControllerTest {
                         objectMapper.writeValueAsString(
                             Map.of(
                                 "email", email,
-                                "password", "password123",
                                 "roleCode", "MEMBER"))))
             .andExpect(status().isCreated())
             .andReturn()
@@ -140,7 +140,6 @@ class AdminTenantMembersControllerTest {
                         objectMapper.writeValueAsString(
                             Map.of(
                                 "email", email,
-                                "password", "password123",
                                 "roleCode", "MEMBER"))))
             .andExpect(status().isCreated())
             .andReturn()
@@ -172,7 +171,6 @@ class AdminTenantMembersControllerTest {
                         objectMapper.writeValueAsString(
                             Map.of(
                                 "email", email,
-                                "password", "password123",
                                 "roleCode", "MEMBER"))))
             .andExpect(status().isCreated())
             .andReturn()

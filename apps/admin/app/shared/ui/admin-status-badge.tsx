@@ -2,12 +2,14 @@ import { Badge, cn } from '@repo/ui'
 
 const STATUS_LABELS: Record<string, string> = {
   active: '正常',
+  invited: '待接受',
   suspended: '已停用',
   disabled: '已禁用',
 }
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   active: 'default',
+  invited: 'outline',
   suspended: 'destructive',
   disabled: 'secondary',
 }

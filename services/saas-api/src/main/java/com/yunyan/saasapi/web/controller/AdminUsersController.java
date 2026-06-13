@@ -58,6 +58,14 @@ public class AdminUsersController {
     return userAdminService.inviteUser(request);
   }
 
+  @PostMapping("/{userId}/resend-invite")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_USERS_WRITE + "')")
+  @Operation(summary = "重发邀请邮件", description = "仅 status=invited 的用户可重发设密链接")
+  public AdminUserDto resendInvite(
+      @PathVariable UUID userId) {
+    return userAdminService.resendInviteEmail(userId);
+  }
+
   @PatchMapping("/{userId}")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_USERS_WRITE + "')")
   @Operation(summary = "更新用户", description = "可修改 displayName、status（active/disabled）")

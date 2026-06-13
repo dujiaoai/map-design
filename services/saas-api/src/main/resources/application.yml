@@ -3,6 +3,12 @@ spring:
     name: saas-api
   profiles:
     active: dev
+  mail:
+    host: ${SPRING_MAIL_HOST:localhost}
+    port: ${SPRING_MAIL_PORT:1025}
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
   datasource:
     url: jdbc:postgresql://localhost:5432/saas
     username: saas
@@ -30,6 +36,14 @@ management:
 saas:
   tenant-rls:
     enabled: true
+  mail:
+    enabled: ${SAAS_MAIL_ENABLED:true}
+    from: ${SAAS_MAIL_FROM:noreply@yunyan.local}
+  app:
+    web-base-url: ${SAAS_WEB_BASE_URL:http://localhost:5175}
+  invite:
+    token-ttl: PT48H
+    token-pepper: ${SAAS_INVITE_TOKEN_PEPPER:dev-invite-pepper-change-me!!}
   jwt:
     issuer: yunyan-saas
     secret: ${SAAS_JWT_SECRET:dev-only-change-me-use-32chars-minimum!!}

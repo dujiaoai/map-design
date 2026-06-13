@@ -91,6 +91,14 @@ export function createAuth(options: CreateAuthOptions) {
       return session
     },
 
+    async acceptInvite(body: { token: string; password: string }): Promise<Session> {
+      if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用接受邀请接口')
+      const response = loginResponseSchema.parse(await authApi.acceptInvite(body))
+      const session = loginResponseToSession(response)
+      persist(session, authTokensToTokenPair(response))
+      return session
+    },
+
     async logout(): Promise<void> {
       const token = storage.getAccessToken()
       if (token && authApi) {

@@ -69,6 +69,21 @@ public class AdminTenantMembersController {
     return tenantMemberAdminService.inviteMember(principal, tenantId, request);
   }
 
+  @PostMapping("/{userId}/resend-invite")
+  @PreAuthorize(
+      "hasAuthority('"
+          + PermissionCodes.ADMIN_MEMBERS_WRITE
+          + "') or hasAuthority('"
+          + PLATFORM_ADMIN_AUTHORITY
+          + "')")
+  @Operation(summary = "重发成员邀请邮件")
+  public AdminUserDto resendInviteMember(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @PathVariable UUID userId) {
+    return tenantMemberAdminService.resendInviteMember(principal, tenantId, userId);
+  }
+
   @PatchMapping("/{userId}")
   @PreAuthorize(
       "hasAuthority('"

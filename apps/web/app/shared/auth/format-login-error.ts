@@ -9,6 +9,7 @@ export function formatLoginError(error: unknown): string {
     detailLocalizations: {
       'Tenant is suspended': '该租户已停用，请联系管理员',
       'Account is disabled': '账号已禁用，请联系管理员',
+      'Invite pending, check your email to set a password': '邀请待接受，请查收邮件设置密码',
     },
     unconfiguredMessage: '未配置 VITE_API_URL，无法连接登录服务',
     fallbackMessage: '登录失败，请检查账号信息后重试',

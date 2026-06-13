@@ -14,6 +14,11 @@ import com.yunyan.saasapi.security.TenantContext;
 import com.yunyan.saasapi.web.dto.auth.SessionDto;
 import com.yunyan.saasapi.web.dto.auth.SessionTenantDto;
 import com.yunyan.saasapi.web.dto.auth.SessionUserDto;
+import com.yunyan.saasapi.application.email.EmailTokenHasher;
+import com.yunyan.saasapi.application.email.UserInviteService;
+import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
+import com.yunyan.saasapi.domain.UserRepository;
+import com.yunyan.saasapi.web.dto.auth.AcceptInviteRequest;
 import com.yunyan.saasapi.web.dto.auth.ChangePasswordRequest;
 import com.yunyan.saasapi.web.dto.auth.UpdateUserRequest;
 import java.time.Duration;
@@ -30,9 +35,12 @@ import org.springframework.util.StringUtils;
 public class AuthService {
 
   private final UserAuthRepository userAuthRepository;
+  private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final RefreshTokenStore refreshTokenStore;
+  private final EmailTokenHasher emailTokenHasher;
+  private final EmailVerificationTokenRepository emailVerificationTokenRepository;
 
   @Transactional
   public LoginResponse register(RegisterRequest request) {
@@ -58,6 +66,8 @@ public class AuthService {
         }
         throw AuthException.forbidden("Account is disabled");
       }
+      case INVITE_PENDING ->
+          throw AuthException.forbidden("Invite pending, check your email to set a password");
       case FOUND -> {
         if (!passwordEncoder.matches(request.password(), lookup.user().passwordHash())) {
           throw AuthException.unauthorized("Invalid email or password");
@@ -130,6 +140,35 @@ public class AuthService {
         .findById(principal.userId())
         .orElseThrow(() -> AuthException.unauthorized("User not found"));
     return toSessionDto(user, principal.accessTokenExpiresAt());
+  }
+
+  @Transactional
+  public LoginResponse acceptInvite(AcceptInviteRequest request) {
+    var hash = emailTokenHasher.hash(request.token().trim());
+    var token =
+        emailVerificationTokenRepository
+            .findActiveInviteByHash(hash)
+            .orElseThrow(() -> AuthException.badRequest("Invalid or expired invite link"));
+
+    var user =
+        userRepository
+            .findById(token.getUserId())
+            .orElseThrow(() -> AuthException.badRequest("Invalid or expired invite link"));
+    if (!UserInviteService.STATUS_INVITED.equals(user.getStatus())) {
+      throw AuthException.badRequest("Invite already accepted");
+    }
+
+    user.setPasswordHash(passwordEncoder.encode(request.password()));
+    user.setStatus("active");
+    userRepository.update(user);
+    emailVerificationTokenRepository.consume(token.getId());
+
+    var authUser =
+        userAuthRepository
+            .findById(user.getId())
+            .orElseThrow(() -> new IllegalStateException("User not found after invite accept"));
+    userAuthRepository.touchLastLoginAt(user.getId());
+    return buildLoginResponse(authUser);
   }
 
   private LoginResponse buildLoginResponse(AuthenticatedUser user) {

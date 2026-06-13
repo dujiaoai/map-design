@@ -110,6 +110,15 @@ export function createAuthApi(options: AuthApiOptions) {
         },
       })
     },
+
+    async acceptInvite(body: { token: string; password: string }): Promise<LoginResponse> {
+      const res = await fetchFn(`${base}/auth/accept-invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body),
+      })
+      return parseJson(res)
+    },
   }
 }
 

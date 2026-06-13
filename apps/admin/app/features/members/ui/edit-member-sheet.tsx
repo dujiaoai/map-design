@@ -23,6 +23,7 @@ import { z } from 'zod'
 import {
   type AdminUserSummary,
   patchTenantMember,
+  resendTenantMemberInvite,
   updateTenantMemberRoles,
 } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
@@ -77,6 +78,8 @@ export function EditMemberSheet({
     })
   }, [member, reset])
 
+  const isInvited = member?.status === 'invited'
+
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
       await patchTenantMember(tenantId, member!.id, {
@@ -88,6 +91,13 @@ export function EditMemberSheet({
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.members(tenantId) })
       onOpenChange(false)
+    },
+  })
+
+  const resendMutation = useMutation({
+    mutationFn: () => resendTenantMemberInvite(tenantId, member!.id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: adminQueryKeys.members(tenantId) })
     },
   })
 
@@ -110,19 +120,33 @@ export function EditMemberSheet({
             <Input id="edit-member-name" {...register('displayName')} />
           </AdminField>
           <AdminField label="状态">
-            <Select
-              value={status}
-              onValueChange={(value) => setValue('status', value as FormValues['status'])}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">正常</SelectItem>
-                <SelectItem value="disabled">已禁用</SelectItem>
-              </SelectContent>
-            </Select>
+            {isInvited ? (
+              <p className="text-sm text-muted-foreground">待接受邀请（用户设密后自动变为正常）</p>
+            ) : (
+              <Select
+                value={status}
+                onValueChange={(value) => setValue('status', value as FormValues['status'])}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">正常</SelectItem>
+                  <SelectItem value="disabled">已禁用</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </AdminField>
+          {isInvited ? (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={resendMutation.isPending}
+              onClick={() => resendMutation.mutate()}
+            >
+              {resendMutation.isPending ? '发送中…' : '重发设密邮件'}
+            </Button>
+          ) : null}
           <AdminField label="角色">
             <Select
               value={roleCode}
@@ -147,7 +171,17 @@ export function EditMemberSheet({
               含 PLATFORM_ADMIN，角色编辑可能受限
             </Badge>
           ) : null}
-          <AdminFormError message={mutation.isError ? formatAdminApiError(mutation.error) : null} />
+          <AdminFormError
+            message={
+              mutation.isError
+                ? formatAdminApiError(mutation.error)
+                : resendMutation.isError
+                  ? formatAdminApiError(resendMutation.error)
+                  : resendMutation.isSuccess
+                    ? '已重新发送设密邮件'
+                    : null
+            }
+          />
           <SheetFooter className="px-0">
             <Button type="submit" disabled={!member || isSubmitting || mutation.isPending}>
               {mutation.isPending ? '保存中…' : '保存更改'}

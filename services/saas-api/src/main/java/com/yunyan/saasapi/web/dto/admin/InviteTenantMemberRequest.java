@@ -6,10 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-@Schema(description = "邀请租户成员")
+@Schema(description = "邀请租户成员（邮件设密链接）")
 public record InviteTenantMemberRequest(
     @NotBlank @Email @Schema(description = "用户邮箱", example = "member@demo.local") String email,
-    @NotBlank @Size(min = 8) @Schema(description = "初始密码（至少 8 位）") String password,
     @Size(max = 128) @Schema(description = "显示名；省略时取邮箱 @ 前部分") String displayName,
     @Pattern(regexp = "TENANT_ADMIN|MEMBER|VIEWER", message = "roleCode must be TENANT_ADMIN, MEMBER, or VIEWER")
         @Schema(

@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -35,6 +36,8 @@ class AdminUsersControllerTest {
   @Autowired MockMvc mockMvc;
 
   @Autowired ObjectMapper objectMapper;
+
+  @Autowired JdbcTemplate jdbcTemplate;
 
   @Test
   void listUsers_withoutToken_returns401() throws Exception {
@@ -130,14 +133,64 @@ class AdminUsersControllerTest {
                             TEST_TENANT_ID.toString(),
                             "email",
                             email,
-                            "password",
-                            "password123",
                             "roleCode",
                             "MEMBER"))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.email").value(email))
-        .andExpect(jsonPath("$.status").value("active"))
+        .andExpect(jsonPath("$.status").value("invited"))
         .andExpect(jsonPath("$.roles[0]").value("MEMBER"));
+  }
+
+  @Test
+  void inviteAndAcceptInvite_allowsLogin() throws Exception {
+    var email = "accept-" + System.currentTimeMillis() + "@test.local";
+    mockMvc
+        .perform(
+            post("/v1/admin/users")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "tenantId",
+                            TEST_TENANT_ID.toString(),
+                            "email",
+                            email,
+                            "roleCode",
+                            "MEMBER"))))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.status").value("invited"));
+
+    var payload =
+        jdbcTemplate.queryForObject(
+            "SELECT payload_json FROM sys_email_outbox WHERE to_email = ? ORDER BY created_at DESC LIMIT 1",
+            String.class,
+            email);
+    var inviteUrl = objectMapper.readTree(payload).get("inviteUrl").asText();
+    var token = inviteUrl.substring(inviteUrl.indexOf("token=") + "token=".length());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/accept-invite")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("token", token, "password", "newpassword1"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.email").value(email))
+        .andExpect(jsonPath("$.accessToken").isNotEmpty());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", email,
+                            "password", "newpassword1",
+                            "tenantId", "test"))))
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -154,8 +207,8 @@ class AdminUsersControllerTest {
                             TEST_TENANT_ID.toString(),
                             "email",
                             "admin@test.local",
-                            "password",
-                            "password123"))))
+                            "roleCode",
+                            "MEMBER"))))
         .andExpect(status().isConflict());
   }
 

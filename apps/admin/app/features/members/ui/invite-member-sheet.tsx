@@ -1,5 +1,4 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import { authPasswordFieldSchema } from '@repo/auth'
 import {
   Button,
   Input,
@@ -24,11 +23,9 @@ import { inviteTenantMember } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
-import { PasswordInput } from '~/shared/ui/password-input'
 
 const schema = z.object({
   email: z.string().min(1, '请输入邮箱').email('邮箱格式不正确'),
-  password: authPasswordFieldSchema(),
   displayName: z.string().max(128).optional(),
   roleCode: z.enum(['TENANT_ADMIN', 'MEMBER', 'VIEWER']),
 })
@@ -55,7 +52,7 @@ export function InviteMemberSheet({
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: standardSchemaResolver(schema),
-    defaultValues: { email: '', password: '', displayName: '', roleCode: 'MEMBER' },
+    defaultValues: { email: '', displayName: '', roleCode: 'MEMBER' },
   })
 
   const roleCode = watch('roleCode')
@@ -64,14 +61,13 @@ export function InviteMemberSheet({
     mutationFn: (values: FormValues) =>
       inviteTenantMember(tenantId, {
         email: values.email.trim(),
-        password: values.password,
         displayName: values.displayName?.trim() || undefined,
         roleCode: values.roleCode,
       }),
     onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.members(tenantId) })
       reset()
-      setSuccessMessage(`已邀请 ${variables.email}`)
+      setSuccessMessage(`已向 ${variables.email} 发送设密邮件`)
       window.setTimeout(() => {
         setSuccessMessage(null)
         onOpenChange(false)
@@ -90,7 +86,9 @@ export function InviteMemberSheet({
       <SheetContent className="w-full sm:max-w-md">
         <SheetHeader>
           <SheetTitle className="admin-display text-lg">邀请成员</SheetTitle>
-          <SheetDescription>在当前租户下创建成员账号。</SheetDescription>
+          <SheetDescription>
+            在当前租户下创建成员账号并发送设密邮件，用户通过邮件链接设置密码后激活。
+          </SheetDescription>
         </SheetHeader>
 
         <form
@@ -99,9 +97,6 @@ export function InviteMemberSheet({
         >
           <AdminField label="邮箱" htmlFor="member-email" error={errors.email?.message}>
             <Input id="member-email" autoComplete="off" {...register('email')} />
-          </AdminField>
-          <AdminField label="密码" htmlFor="member-password" error={errors.password?.message}>
-            <PasswordInput id="member-password" autoComplete="new-password" {...register('password')} />
           </AdminField>
           <AdminField label="显示名" htmlFor="member-display" error={errors.displayName?.message}>
             <Input id="member-display" {...register('displayName')} />
@@ -129,7 +124,7 @@ export function InviteMemberSheet({
           <AdminFormError message={mutation.isError ? formatAdminApiError(mutation.error) : null} />
           <SheetFooter className="px-0">
             <Button type="submit" disabled={isSubmitting || mutation.isPending}>
-              {mutation.isPending ? '邀请中…' : '发送邀请'}
+              {mutation.isPending ? '发送中…' : '发送设密邮件'}
             </Button>
           </SheetFooter>
         </form>

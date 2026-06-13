@@ -1,6 +1,7 @@
 package com.yunyan.saasapi.application.admin;
 
 import com.yunyan.saasapi.application.auth.UserSessionRevoker;
+import com.yunyan.saasapi.application.email.UserInviteService;
 import com.yunyan.saasapi.domain.RoleRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.UserRepository;
@@ -23,7 +24,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -41,9 +41,9 @@ public class TenantMemberAdminService {
   private final UserRepository userRepository;
   private final TenantRepository tenantRepository;
   private final RoleRepository roleRepository;
-  private final PasswordEncoder passwordEncoder;
   private final AdminAuditLogService adminAuditLogService;
   private final UserSessionRevoker userSessionRevoker;
+  private final UserInviteService userInviteService;
 
   public TenantMemberListResponse listMembers(SaasPrincipal principal, UUID tenantId) {
     ensureOwnTenant(principal, tenantId);
@@ -63,40 +63,45 @@ public class TenantMemberAdminService {
     ensureOwnTenant(principal, tenantId);
     var result =
         withTargetTenant(
-        tenantId,
-        () -> {
-          var tenant = requireActiveTenant(tenantId);
-          var email = request.email().trim().toLowerCase();
-
-          if (userRepository.findByTenantIdAndEmail(tenant.getId(), email).isPresent()) {
-            throw AuthException.conflict("Email already registered for this tenant");
-          }
-
-          var role =
-              roleRepository
-                  .findByCode(resolveRoleCode(request.roleCode()))
-                  .orElseThrow(() -> new IllegalStateException("Role is not seeded"));
-          validateAssignableRole(role.getCode());
-
-          var user = new SysUser();
-          user.setId(UUID.randomUUID());
-          user.setTenantId(tenant.getId());
-          user.setEmail(email);
-          user.setPasswordHash(passwordEncoder.encode(request.password()));
-          user.setDisplayName(resolveDisplayName(email, request.displayName()));
-          user.setStatus(STATUS_ACTIVE);
-          user.setCreatedAt(Instant.now());
-          userRepository.insert(user);
-          userRepository.insertUserRole(user.getId(), role.getId());
-
-          return toDto(user, tenant);
-        });
+            tenantId,
+            () -> {
+              var tenant = requireActiveTenant(tenantId);
+              var roleCode =
+                  StringUtils.hasText(request.roleCode()) ? request.roleCode().trim() : DEFAULT_ROLE;
+              validateAssignableRole(roleCode);
+              userInviteService.createInvitedUserAndSendEmail(
+                  tenant, request.email(), request.displayName(), roleCode);
+              var email = request.email().trim().toLowerCase();
+              var user =
+                  userRepository
+                      .findByTenantIdAndEmail(tenant.getId(), email)
+                      .orElseThrow(() -> new IllegalStateException("Invited user not found"));
+              return toDto(user, tenant);
+            });
     adminAuditLogService.recordMemberAction(
         principal,
         "member.invite",
         tenantId,
         UUID.fromString(result.id()),
-        "Invited " + result.email());
+        "Invited " + result.email() + " (email link)");
+    return result;
+  }
+
+  @Transactional
+  public AdminUserDto resendInviteMember(
+      SaasPrincipal principal, UUID tenantId, UUID userId) {
+    ensureOwnTenant(principal, tenantId);
+    var result =
+        withTargetTenant(
+            tenantId,
+            () -> {
+              var tenant = requireActiveTenant(tenantId);
+              var user = requireMemberInTenant(tenantId, userId);
+              userInviteService.resendInviteEmail(tenant, user);
+              return toDto(user, tenant);
+            });
+    adminAuditLogService.recordMemberAction(
+        principal, "member.invite.resend", tenantId, userId, "Resent invite to " + result.email());
     return result;
   }
 

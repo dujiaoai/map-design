@@ -17,4 +17,8 @@ public record LoginLookupResult(LoginLookupStatus status, AuthenticatedUser user
   public static LoginLookupResult tenantSuspended() {
     return new LoginLookupResult(LoginLookupStatus.TENANT_SUSPENDED, null);
   }
+
+  public static LoginLookupResult invitePending(AuthenticatedUser user) {
+    return new LoginLookupResult(LoginLookupStatus.INVITE_PENDING, user);
+  }
 }

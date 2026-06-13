@@ -45,12 +45,12 @@ export function UsersAdminPage() {
   const usersQuery = useAdminPagedQuery({
     queryKey: adminQueryKeys.users(tenantFilterId, {
       ...queryParams,
-      status: statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'disabled'),
+      status: statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'disabled' | 'invited'),
     }),
     queryFn: () =>
       fetchAdminUsers(tenantFilterId, {
         ...queryParams,
-        status: statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'disabled'),
+        status: statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'disabled' | 'invited'),
       }),
   })
 
@@ -123,6 +123,7 @@ export function UsersAdminPage() {
         statusOptions={[
           { value: 'all', label: '全部状态' },
           { value: 'active', label: 'active' },
+          { value: 'invited', label: 'invited' },
           { value: 'disabled', label: 'disabled' },
         ]}
       />

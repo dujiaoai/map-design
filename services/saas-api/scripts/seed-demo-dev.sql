@@ -109,6 +109,14 @@ INSERT INTO sys_tenant_feature (tenant_id, feature_code) VALUES
   ('11111111-1111-1111-1111-111111111101', 'custom.highway-alert'),
   ('11111111-1111-1111-1111-111111111101', 'custom.live-share');
 
+-- Demo map layers (Sprint E-1)
+DELETE FROM map_layer
+WHERE tenant_id = '11111111-1111-1111-1111-111111111101';
+
+INSERT INTO map_layer (id, tenant_id, name, layer_type, visible, sort_order) VALUES
+  ('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e101', '11111111-1111-1111-1111-111111111101', '专题图层', 'thematic', TRUE, 10),
+  ('e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e102', '11111111-1111-1111-1111-111111111101', '高清正射', 'ortho', TRUE, 20);
+
 COMMIT;
 
 -- ---------- verify ----------

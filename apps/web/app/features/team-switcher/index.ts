@@ -1,4 +1,5 @@
 export { formatTenantPlan } from './lib/format-tenant-plan'
 export { switchTenantBySlug } from './lib/switch-tenant'
+export { useEnabledTenantFeatures } from './model/use-enabled-tenant-features'
 export { useTeamSwitcher } from './model/use-team-switcher'
 export { TenantLogo } from './ui/tenant-logo'

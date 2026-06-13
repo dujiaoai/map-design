@@ -18,9 +18,17 @@ export const tenantListResponseSchema = z.object({
 
 export type TenantSummary = z.infer<typeof tenantSummarySchema>
 
+export const tenantFeaturesResponseSchema = z.object({
+  tenantId: z.string(),
+  features: z.array(z.string()),
+})
+
+export type TenantFeaturesResponse = z.infer<typeof tenantFeaturesResponseSchema>
+
 export const tenantQueryKeys = {
   all: ['tenants'] as const,
   list: () => [...tenantQueryKeys.all, 'list'] as const,
+  features: (tenantId: string) => [...tenantQueryKeys.all, 'features', tenantId] as const,
 }
 
 export function tenantsQueryOptions() {
@@ -36,5 +44,23 @@ export function useTenantsQuery(enabled = true) {
   return useQuery({
     ...tenantsQueryOptions(),
     enabled: enabled && usesSaasSessionBootstrap(),
+  })
+}
+
+export function tenantFeaturesQueryOptions(tenantId: string) {
+  return queryOptions({
+    queryKey: tenantQueryKeys.features(tenantId),
+    queryFn: async () =>
+      tenantFeaturesResponseSchema.parse(
+        await api.get<TenantFeaturesResponse>(`/tenants/${tenantId}/features`),
+      ),
+    staleTime: 60_000,
+  })
+}
+
+export function useTenantFeaturesQuery(tenantId: string | undefined, enabled = true) {
+  return useQuery({
+    ...tenantFeaturesQueryOptions(tenantId ?? ''),
+    enabled: enabled && Boolean(tenantId) && usesSaasSessionBootstrap(),
   })
 }

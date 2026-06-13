@@ -14,7 +14,7 @@ import {
   useActiveNavItemIds,
   useMapWorkspaceStore,
 } from '~/features/map-workspace'
-import { TenantLogo, useTeamSwitcher } from '~/features/team-switcher'
+import { TenantLogo, useEnabledTenantFeatures, useTeamSwitcher } from '~/features/team-switcher'
 
 export function AppSidebar(props: ComponentProps<typeof UiAppSidebar>) {
   const navigate = useNavigate()
@@ -24,9 +24,11 @@ export function AppSidebar(props: ComponentProps<typeof UiAppSidebar>) {
   const toggleMapModule = useMapWorkspaceStore((state) => state.toggleMapModule)
   const toggleMapDockModule = useMapWorkspaceStore((state) => state.toggleMapDockModule)
 
+  const enabledTenantFeatures = useEnabledTenantFeatures()
+
   const navMapSections = useMemo(
-    () => buildNavMapSections(mockNavMapSectionDefs, activeNavItemIds),
-    [activeNavItemIds],
+    () => buildNavMapSections(mockNavMapSectionDefs, activeNavItemIds, enabledTenantFeatures),
+    [activeNavItemIds, enabledTenantFeatures],
   )
 
   const handleNavSelect = useMemo(

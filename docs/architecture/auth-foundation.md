@@ -46,7 +46,7 @@
 | C-02 | 登出后 access token 短期可用窗口 | ✅ logout 将 access jti 写入 Redis denylist；未登出 token 仍 stateless（默认 15m） |
 | C-03 | 多租户同邮箱：无 `tenantId` 登录策略 | ✅ 多租户时 **400** `Tenant slug is required` |
 | C-04 | Rate limit / 登录失败计数（Redis） | ✅ 登录/注册/重置限流 + 失败锁定；测试 profile 默认关闭 |
-| C-05 | 密码强度（大小写+数字） | ✅ 配置 `SAAS_PASSWORD_STRENGTH` / `VITE_AUTH_PASSWORD_STRENGTH` 启用 |
+| C-05 | 密码强度（大小写+数字） | ✅ Docker/生产默认开启；本地 `SAAS_PASSWORD_STRENGTH` / `VITE_AUTH_PASSWORD_STRENGTH` |
 
 ### P3 · 管理体验深化
 

@@ -47,7 +47,7 @@ public class UsersController {
   @PutMapping("/me")
   @Operation(
       summary = "更新当前用户资料",
-      description = "首版仅支持修改 `name`（显示名）；返回更新后的完整 SessionDto。")
+      description = "支持修改 `name`、可选 `phone`（中国大陆 11 位）、`avatarUrl`；返回更新后的完整 SessionDto。")
   @ApiResponse(responseCode = "200", description = "更新成功，返回当前会话")
   @ApiResponse(
       responseCode = "400",

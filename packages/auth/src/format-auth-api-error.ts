@@ -80,4 +80,5 @@ export const AUTH_API_DETAIL_LOCALIZATIONS = {
   'Too many login attempts, try again later': '登录尝试过于频繁，请稍后再试',
   'Too many registration attempts, try again later': '注册请求过于频繁，请稍后再试',
   'Too many password reset attempts, try again later': '重置请求过于频繁，请稍后再试',
+  'Invalid phone number format': '请输入有效的 11 位手机号',
 } as const satisfies Record<string, string>

@@ -204,7 +204,9 @@ public class AuthService {
             .findById(principal.userId())
             .orElseThrow(() -> AuthException.unauthorized("User not found"));
     var phone =
-        request.phone() != null ? normalizeOptionalText(request.phone()) : existing.phone();
+        request.phone() != null
+            ? PhoneValidator.normalizeOptional(request.phone())
+            : existing.phone();
     var avatarUrl =
         request.avatarUrl() != null
             ? normalizeOptionalText(request.avatarUrl())

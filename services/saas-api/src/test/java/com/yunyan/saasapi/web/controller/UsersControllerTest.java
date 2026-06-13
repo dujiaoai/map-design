@@ -213,6 +213,22 @@ class UsersControllerTest {
   }
 
   @Test
+  void updateMe_withInvalidPhone_returns400() throws Exception {
+    var accessToken = loginAccessToken();
+
+    mockMvc
+        .perform(
+            put("/v1/users/me")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("name", "Profile User", "phone", "12345"))))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.detail").value("Invalid phone number format"));
+  }
+
+  @Test
   void updateMe_withBlankName_returns400() throws Exception {
     var accessToken = loginAccessToken();
 

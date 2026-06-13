@@ -42,6 +42,9 @@ saas:
   app:
     web-base-url: ${SAAS_WEB_BASE_URL:http://localhost:5175}
     admin-base-url: ${SAAS_ADMIN_BASE_URL:http://localhost:5181}
+  auth:
+    password:
+      strength-enabled: ${SAAS_PASSWORD_STRENGTH:false}
   invite:
     token-ttl: PT48H
     token-pepper: ${SAAS_INVITE_TOKEN_PEPPER:dev-invite-pepper-change-me!!}
@@ -49,9 +52,6 @@ saas:
     token-ttl: PT1H
   registration:
     token-ttl: PT24H
-  auth:
-    password:
-      strength-enabled: ${SAAS_PASSWORD_STRENGTH:false}
   rate-limit:
     enabled: true
     login:

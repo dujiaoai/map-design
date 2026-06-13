@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.application.auth;
 
+import com.yunyan.saasapi.application.auth.EmailNormalizer;
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.security.ratelimit.RateLimitException;
 import com.yunyan.saasapi.security.ratelimit.RateLimitStore;
@@ -111,7 +112,7 @@ public class AuthRateLimitService {
   }
 
   private static String normalizeEmail(String email) {
-    return email.trim().toLowerCase(Locale.ROOT);
+    return EmailNormalizer.normalize(email);
   }
 
   private static String normalizeIp(String clientIp) {

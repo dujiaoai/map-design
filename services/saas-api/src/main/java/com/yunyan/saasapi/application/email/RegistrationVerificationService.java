@@ -1,6 +1,7 @@
 package com.yunyan.saasapi.application.email;
 
 import com.yunyan.saasapi.application.auth.AuthenticatedUser;
+import com.yunyan.saasapi.application.auth.EmailNormalizer;
 import com.yunyan.saasapi.application.auth.UserAuthRepository;
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
@@ -50,7 +51,7 @@ public class RegistrationVerificationService {
       throw AuthException.forbidden("Tenant is suspended");
     }
 
-    var normalizedEmail = request.email().trim().toLowerCase();
+    var normalizedEmail = EmailNormalizer.normalize(request.email());
     var existing = userRepository.findByTenantIdAndEmail(tenant.getId(), normalizedEmail);
     if (existing.isPresent()) {
       var user = existing.get();

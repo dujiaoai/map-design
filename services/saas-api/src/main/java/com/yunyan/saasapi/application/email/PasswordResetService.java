@@ -1,6 +1,7 @@
 package com.yunyan.saasapi.application.email;
 
 import com.yunyan.saasapi.application.auth.AuthenticatedUser;
+import com.yunyan.saasapi.application.auth.EmailNormalizer;
 import com.yunyan.saasapi.application.auth.UserAuthRepository;
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
@@ -46,7 +47,7 @@ public class PasswordResetService {
       return;
     }
 
-    var normalizedEmail = email.trim().toLowerCase();
+    var normalizedEmail = EmailNormalizer.normalize(email);
     var user =
         userRepository.findByTenantIdAndEmail(tenant.getId(), normalizedEmail).orElse(null);
     if (user == null || !STATUS_ACTIVE.equals(user.getStatus())) {

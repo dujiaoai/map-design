@@ -127,6 +127,71 @@ class AuthControllerTest {
   }
 
   @Test
+  void register_withMixedCaseDuplicateEmail_returns409() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "Admin@test.local",
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.detail").value("Email already registered for this tenant"));
+  }
+
+  @Test
+  void register_withMixedCaseEmail_confirmAndLogin() throws Exception {
+    var ts = System.currentTimeMillis();
+    var normalizedEmail = "case-" + ts + "@test.local";
+    var mixedCaseEmail = "CASE-" + ts + "@test.local";
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", mixedCaseEmail,
+                            "password", "password",
+                            "tenantId", "test",
+                            "displayName", "Mixed Case User"))))
+        .andExpect(status().isNoContent());
+
+    var payload =
+        jdbcTemplate.queryForObject(
+            "SELECT payload_json FROM sys_email_outbox WHERE to_email = ? AND template = 'register-verification' ORDER BY created_at DESC LIMIT 1",
+            String.class,
+            normalizedEmail);
+    var verifyUrl = objectMapper.readTree(payload).get("verifyUrl").asText();
+    var token = verifyUrl.substring(verifyUrl.indexOf("token=") + "token=".length());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("token", token))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.email").value(normalizedEmail));
+
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", mixedCaseEmail,
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.email").value(normalizedEmail));
+  }
+
+  @Test
   void register_withUnknownTenant_returns404() throws Exception {
     mockMvc
         .perform(

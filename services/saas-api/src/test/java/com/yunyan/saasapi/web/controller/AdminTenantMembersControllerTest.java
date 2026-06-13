@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,6 +38,8 @@ class AdminTenantMembersControllerTest {
   @Autowired MockMvc mockMvc;
 
   @Autowired ObjectMapper objectMapper;
+
+  @Autowired JdbcTemplate jdbcTemplate;
 
   @Test
   void listMembers_withoutToken_returns401() throws Exception {
@@ -95,6 +98,60 @@ class AdminTenantMembersControllerTest {
         .andExpect(jsonPath("$.email").value(email))
         .andExpect(jsonPath("$.status").value("invited"))
         .andExpect(jsonPath("$.roles[0]").value("MEMBER"));
+  }
+
+  @Test
+  void resendInviteMember_withTenantAdmin_queuesNewInviteEmail() throws Exception {
+    var email = "resend-member-" + System.currentTimeMillis() + "@test.local";
+    var createBody =
+        mockMvc
+            .perform(
+                post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members")
+                    .header("Authorization", "Bearer " + loginAccessToken("admin@test.local"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            Map.of(
+                                "email", email,
+                                "roleCode", "MEMBER"))))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    var userId = JsonPath.read(createBody, "$.id");
+
+    var countBefore =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM sys_email_outbox WHERE to_email = ? AND template = 'member-invite'",
+            Integer.class,
+            email);
+
+    mockMvc
+        .perform(
+            post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members/" + userId + "/resend-invite")
+                .header("Authorization", "Bearer " + loginAccessToken("admin@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("invited"));
+
+    var countAfter =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM sys_email_outbox WHERE to_email = ? AND template = 'member-invite'",
+            Integer.class,
+            email);
+    if (countAfter <= countBefore) {
+      throw new AssertionError("expected new member-invite outbox row after resend");
+    }
+  }
+
+  @Test
+  void resendInviteMember_forActiveUser_returns400() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members/"
+                    + "22222222-2222-2222-2222-222222222201/resend-invite")
+                .header("Authorization", "Bearer " + loginAccessToken("admin@test.local")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.detail").value("User is not awaiting invite acceptance"));
   }
 
   @Test

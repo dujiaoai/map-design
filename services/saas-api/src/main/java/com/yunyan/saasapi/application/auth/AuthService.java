@@ -15,11 +15,14 @@ import com.yunyan.saasapi.web.dto.auth.SessionDto;
 import com.yunyan.saasapi.web.dto.auth.SessionTenantDto;
 import com.yunyan.saasapi.web.dto.auth.SessionUserDto;
 import com.yunyan.saasapi.application.email.EmailTokenHasher;
+import com.yunyan.saasapi.application.email.PasswordResetService;
 import com.yunyan.saasapi.application.email.UserInviteService;
 import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
 import com.yunyan.saasapi.domain.UserRepository;
 import com.yunyan.saasapi.web.dto.auth.AcceptInviteRequest;
 import com.yunyan.saasapi.web.dto.auth.ChangePasswordRequest;
+import com.yunyan.saasapi.web.dto.auth.PasswordResetConfirmRequest;
+import com.yunyan.saasapi.web.dto.auth.PasswordResetRequest;
 import com.yunyan.saasapi.web.dto.auth.UpdateUserRequest;
 import java.time.Duration;
 import java.time.Instant;
@@ -41,6 +44,7 @@ public class AuthService {
   private final RefreshTokenStore refreshTokenStore;
   private final EmailTokenHasher emailTokenHasher;
   private final EmailVerificationTokenRepository emailVerificationTokenRepository;
+  private final PasswordResetService passwordResetService;
 
   @Transactional
   public LoginResponse register(RegisterRequest request) {
@@ -169,6 +173,17 @@ public class AuthService {
             .orElseThrow(() -> new IllegalStateException("User not found after invite accept"));
     userAuthRepository.touchLastLoginAt(user.getId());
     return buildLoginResponse(authUser);
+  }
+
+  public void requestPasswordReset(PasswordResetRequest request) {
+    passwordResetService.requestPasswordReset(request.email(), request.tenantId());
+  }
+
+  @Transactional
+  public LoginResponse confirmPasswordReset(PasswordResetConfirmRequest request) {
+    var user = passwordResetService.confirmPasswordReset(request.token(), request.password());
+    userAuthRepository.touchLastLoginAt(user.id());
+    return buildLoginResponse(user);
   }
 
   private LoginResponse buildLoginResponse(AuthenticatedUser user) {

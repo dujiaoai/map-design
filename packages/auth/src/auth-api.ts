@@ -119,6 +119,27 @@ export function createAuthApi(options: AuthApiOptions) {
       })
       return parseJson(res)
     },
+
+    async requestPasswordReset(body: { email: string; tenantId: string }): Promise<void> {
+      const res = await fetchFn(`${base}/auth/password-reset/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(`Auth API ${res.status}: ${text}`)
+      }
+    },
+
+    async confirmPasswordReset(body: { token: string; password: string }): Promise<LoginResponse> {
+      const res = await fetchFn(`${base}/auth/password-reset/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body),
+      })
+      return parseJson(res)
+    },
   }
 }
 

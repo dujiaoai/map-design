@@ -11,6 +11,7 @@ public class SaasAppProperties {
   private final Mail mail = new Mail();
   private final App app = new App();
   private final Invite invite = new Invite();
+  private final PasswordReset passwordReset = new PasswordReset();
 
   @Data
   public static class Mail {
@@ -27,5 +28,10 @@ public class SaasAppProperties {
   public static class Invite {
     private Duration tokenTtl = Duration.ofHours(48);
     private String tokenPepper = "dev-invite-pepper-change-me!!";
+  }
+
+  @Data
+  public static class PasswordReset {
+    private Duration tokenTtl = Duration.ofHours(1);
   }
 }

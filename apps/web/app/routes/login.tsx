@@ -183,6 +183,9 @@ function SaasLoginForm() {
           />
           <span className="text-sm text-white/55">记住密码</span>
         </label>
+        <Link className="shrink-0 text-sm text-brand-light hover:underline" to="/forgot-password">
+          忘记密码？
+        </Link>
       </div>
 
       {submitError ? (

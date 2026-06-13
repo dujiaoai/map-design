@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 public class EmailVerificationTokenRepository {
 
   public static final String PURPOSE_INVITE = "invite";
+  public static final String PURPOSE_PASSWORD_RESET = "password-reset";
 
   private final SysEmailVerificationTokenMapper sysEmailVerificationTokenMapper;
 
@@ -23,26 +24,42 @@ public class EmailVerificationTokenRepository {
   }
 
   public void invalidateActiveInviteTokens(UUID userId) {
+    invalidateActiveTokens(userId, PURPOSE_INVITE);
+  }
+
+  public void invalidateActivePasswordResetTokens(UUID userId) {
+    invalidateActiveTokens(userId, PURPOSE_PASSWORD_RESET);
+  }
+
+  private void invalidateActiveTokens(UUID userId, String purpose) {
     TenantRlsBypass.run(
         () ->
             sysEmailVerificationTokenMapper.update(
                 null,
                 Wrappers.<SysEmailVerificationToken>lambdaUpdate()
                     .eq(SysEmailVerificationToken::getUserId, userId)
-                    .eq(SysEmailVerificationToken::getPurpose, PURPOSE_INVITE)
+                    .eq(SysEmailVerificationToken::getPurpose, purpose)
                     .isNull(SysEmailVerificationToken::getConsumedAt)
                     .gt(SysEmailVerificationToken::getExpiresAt, Instant.now())
                     .set(SysEmailVerificationToken::getConsumedAt, Instant.now())));
   }
 
   public Optional<SysEmailVerificationToken> findActiveInviteByHash(String tokenHash) {
+    return findActiveByHash(tokenHash, PURPOSE_INVITE);
+  }
+
+  public Optional<SysEmailVerificationToken> findActivePasswordResetByHash(String tokenHash) {
+    return findActiveByHash(tokenHash, PURPOSE_PASSWORD_RESET);
+  }
+
+  private Optional<SysEmailVerificationToken> findActiveByHash(String tokenHash, String purpose) {
     return TenantRlsBypass.call(
         () ->
             Optional.ofNullable(
                 sysEmailVerificationTokenMapper.selectOne(
                     Wrappers.<SysEmailVerificationToken>lambdaQuery()
                         .eq(SysEmailVerificationToken::getTokenHash, tokenHash)
-                        .eq(SysEmailVerificationToken::getPurpose, PURPOSE_INVITE)
+                        .eq(SysEmailVerificationToken::getPurpose, purpose)
                         .isNull(SysEmailVerificationToken::getConsumedAt)
                         .gt(SysEmailVerificationToken::getExpiresAt, Instant.now()))));
   }

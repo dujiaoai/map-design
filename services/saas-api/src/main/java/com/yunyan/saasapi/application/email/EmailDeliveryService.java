@@ -48,6 +48,58 @@ public class EmailDeliveryService {
     return outbox.getId();
   }
 
+  public UUID queuePasswordResetEmail(
+      UUID tenantId,
+      UUID userId,
+      String toEmail,
+      String tenantName,
+      String resetUrl) {
+    var outbox = new SysEmailOutbox();
+    outbox.setId(UUID.randomUUID());
+    outbox.setTenantId(tenantId);
+    outbox.setUserId(userId);
+    outbox.setTemplate("password-reset");
+    outbox.setToEmail(toEmail);
+    outbox.setPayloadJson(writePayload(Map.of("tenantName", tenantName, "resetUrl", resetUrl)));
+    outbox.setStatus("pending");
+    outbox.setCreatedAt(Instant.now());
+    emailOutboxRepository.insert(outbox);
+    deliverPasswordReset(outbox.getId(), toEmail, tenantName, resetUrl);
+    return outbox.getId();
+  }
+
+  private void deliverPasswordReset(UUID outboxId, String toEmail, String tenantName, String resetUrl) {
+    if (!saasAppProperties.getMail().isEnabled()) {
+      log.info("Mail disabled — password reset link for {}: {}", toEmail, resetUrl);
+      emailOutboxRepository.markSent(outboxId);
+      return;
+    }
+
+    try {
+      var message = new SimpleMailMessage();
+      message.setFrom(saasAppProperties.getMail().getFrom());
+      message.setTo(toEmail);
+      message.setSubject("云眼地图 · 重置密码");
+      message.setText(
+          """
+          您好，
+
+          我们收到了重置您在租户「%s」账号密码的请求。
+
+          请点击以下链接设置新密码（链接 1 小时内有效）：
+          %s
+
+          如非本人操作，请忽略此邮件，您的密码不会变更。
+          """
+              .formatted(tenantName, resetUrl));
+      mailSender.send(message);
+      emailOutboxRepository.markSent(outboxId);
+    } catch (MailException ex) {
+      log.warn("Failed to send password reset email to {}: {}", toEmail, ex.getMessage());
+      emailOutboxRepository.markFailed(outboxId, truncate(ex.getMessage()));
+    }
+  }
+
   private void deliverInvite(UUID outboxId, String toEmail, String tenantName, String inviteUrl) {
     if (!saasAppProperties.getMail().isEnabled()) {
       log.info("Mail disabled — invite link for {}: {}", toEmail, inviteUrl);

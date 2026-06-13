@@ -54,6 +54,7 @@
 | --- | --- |
 | D-01 | Admin 用户列表：状态筛选、最近登录 | ✅ 服务端 status + `lastLoginAt` 列 |
 | D-02 | 成员邀请：发送邮件 | ✅ M1 见 [auth-email-module.md](./auth-email-module.md) |
+| D-05 | 自助密码重置（邮件链接） | ✅ M3 见 [auth-email-module.md](./auth-email-module.md) |
 | D-03 | 跨租户成员操作审计可读性（已有首期，补 UI 筛选） |
 | D-04 | Account 页 Web/Admin 组件复用（`@repo/auth` 或 shared feature） |
 

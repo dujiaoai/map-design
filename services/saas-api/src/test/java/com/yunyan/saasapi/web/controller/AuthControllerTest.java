@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,6 +32,9 @@ class AuthControllerTest {
 
   @Autowired
   ObjectMapper objectMapper;
+
+  @Autowired
+  JdbcTemplate jdbcTemplate;
 
   @Test
   void protectedEndpoint_withoutToken_returns401() throws Exception {
@@ -304,6 +308,130 @@ class AuthControllerTest {
         .andExpect(jsonPath("$.accessToken").isNotEmpty())
         .andExpect(jsonPath("$.refreshToken").isNotEmpty())
         .andExpect(jsonPath("$.expiresIn").isNumber());
+  }
+
+  @Test
+  void passwordResetRequest_unknownEmail_returns204() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/password-reset/request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "missing-" + System.currentTimeMillis() + "@test.local",
+                            "tenantId", "test"))))
+        .andExpect(status().isNoContent());
+  }
+
+  @Test
+  void passwordResetRequest_activeUser_createsOutboxAndConfirmAllowsLogin() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/password-reset/request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("email", "admin@test.local", "tenantId", "test"))))
+        .andExpect(status().isNoContent());
+
+    var payload =
+        jdbcTemplate.queryForObject(
+            "SELECT payload_json FROM sys_email_outbox WHERE to_email = ? AND template = 'password-reset' ORDER BY created_at DESC LIMIT 1",
+            String.class,
+            "admin@test.local");
+    var resetUrl = objectMapper.readTree(payload).get("resetUrl").asText();
+    var token = resetUrl.substring(resetUrl.indexOf("token=") + "token=".length());
+
+    var loginBody =
+        mockMvc
+            .perform(
+                post("/v1/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            Map.of(
+                                "email", "admin@test.local",
+                                "password", "password",
+                                "tenantId", "test"))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    var refreshToken = JsonPath.read(loginBody, "$.refreshToken");
+
+    mockMvc
+        .perform(
+            post("/v1/auth/password-reset/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("token", token, "password", "resetpass1"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.accessToken").isNotEmpty())
+        .andExpect(jsonPath("$.user.email").value("admin@test.local"));
+
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "admin@test.local",
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isUnauthorized());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "admin@test.local",
+                            "password", "resetpass1",
+                            "tenantId", "test"))))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("refreshToken", refreshToken))))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void passwordResetRequest_disabledUser_returns204WithoutOutbox() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/password-reset/request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("email", "disabled@test.local", "tenantId", "test"))))
+        .andExpect(status().isNoContent());
+
+    var count =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM sys_email_outbox WHERE to_email = ? AND template = 'password-reset'",
+            Integer.class,
+            "disabled@test.local");
+    org.junit.jupiter.api.Assertions.assertEquals(0, count);
+  }
+
+  @Test
+  void passwordResetConfirm_invalidToken_returns400() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/password-reset/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("token", "invalid-token", "password", "newpassword1"))))
+        .andExpect(status().isBadRequest());
   }
 
   private String loginAndGetBody() throws Exception {

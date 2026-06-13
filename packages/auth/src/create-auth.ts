@@ -99,6 +99,19 @@ export function createAuth(options: CreateAuthOptions) {
       return session
     },
 
+    async requestPasswordReset(body: { email: string; tenantId: string }): Promise<void> {
+      if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用密码重置接口')
+      await authApi.requestPasswordReset(body)
+    },
+
+    async confirmPasswordReset(body: { token: string; password: string }): Promise<Session> {
+      if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用密码重置接口')
+      const response = loginResponseSchema.parse(await authApi.confirmPasswordReset(body))
+      const session = loginResponseToSession(response)
+      persist(session, authTokensToTokenPair(response))
+      return session
+    },
+
     async logout(): Promise<void> {
       const token = storage.getAccessToken()
       if (token && authApi) {

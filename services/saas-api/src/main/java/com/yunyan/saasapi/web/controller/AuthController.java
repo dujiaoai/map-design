@@ -7,6 +7,8 @@ import com.yunyan.saasapi.web.dto.auth.AuthTokensDto;
 import com.yunyan.saasapi.web.dto.auth.LoginRequest;
 import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.RefreshRequest;
+import com.yunyan.saasapi.web.dto.auth.PasswordResetConfirmRequest;
+import com.yunyan.saasapi.web.dto.auth.PasswordResetRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -72,6 +74,24 @@ public class AuthController {
       description = "使用邮件中的 token 设置密码并激活账号，响应体同登录。")
   LoginResponse acceptInvite(@Valid @RequestBody AcceptInviteRequest request) {
     return authService.acceptInvite(request);
+  }
+
+  @PostMapping("/password-reset/request")
+  @Operation(
+      summary = "请求密码重置邮件",
+      description = "若邮箱在指定租户下存在且为活跃账号，将发送重置链接。无论是否存在均返回 204，防止邮箱枚举。")
+  @ApiResponse(responseCode = "204", description = "请求已受理")
+  ResponseEntity<Void> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+    authService.requestPasswordReset(request);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
+
+  @PostMapping("/password-reset/confirm")
+  @Operation(
+      summary = "确认密码重置",
+      description = "使用邮件 token 设置新密码，吊销既有 refresh token 并返回登录态。")
+  LoginResponse confirmPasswordReset(@Valid @RequestBody PasswordResetConfirmRequest request) {
+    return authService.confirmPasswordReset(request);
   }
 
   @PostMapping("/refresh")

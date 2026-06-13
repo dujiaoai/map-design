@@ -1,5 +1,7 @@
 import { Button } from '@repo/ui'
-import { Link } from 'react-router'
+import { useNavigate } from 'react-router'
+
+import { auth } from '~/shared/auth/client'
 
 import type { Route } from './+types/forbidden'
 
@@ -8,6 +10,13 @@ export function meta(_args: Route.MetaArgs) {
 }
 
 export default function ForbiddenRoute() {
+  const navigate = useNavigate()
+
+  async function handleBackToLogin() {
+    await auth.logout()
+    void navigate('/login', { replace: true })
+  }
+
   return (
     <main className="flex min-h-svh flex-col items-center justify-center gap-4 bg-background px-6 text-center">
       <p className="admin-display text-6xl font-semibold text-primary/80">403</p>
@@ -15,9 +24,7 @@ export default function ForbiddenRoute() {
       <p className="max-w-md text-sm text-muted-foreground">
         当前账号缺少 PLATFORM_ADMIN / TENANT_ADMIN 或相应 admin 权限码。
       </p>
-      <Button nativeButton={false} render={<Link to="/login" />}>
-        返回登录
-      </Button>
+      <Button onClick={() => void handleBackToLogin()}>返回登录</Button>
     </main>
   )
 }

@@ -7,7 +7,7 @@ import { Link, redirect, useNavigate } from 'react-router'
 import { z } from 'zod'
 
 import { auth } from '~/shared/auth/client'
-import { getAdminHomePath } from '~/shared/auth/admin-access'
+import { getAdminHomePath, hasAdminAccess } from '~/shared/auth/admin-access'
 import {
   clearRememberLogin,
   loadRememberLogin,
@@ -49,8 +49,9 @@ export function links() {
 
 export async function clientLoader() {
   auth.hydrateSession()
-  if (auth.isAuthenticated()) {
-    throw redirect(getAdminHomePath(auth.getSession()))
+  const session = auth.getSession()
+  if (session && hasAdminAccess(session)) {
+    throw redirect(getAdminHomePath(session))
   }
   return null
 }

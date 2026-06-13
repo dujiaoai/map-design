@@ -13,4 +13,7 @@ public interface AccessTokenDenylist {
   void denyUser(UUID userId, Duration ttl);
 
   boolean isUserDenied(UUID userId);
+
+  /** 重新启用账号时清除 user 级 denylist，避免新签发的 token 仍被拒绝 */
+  void clearUserDeny(UUID userId);
 }

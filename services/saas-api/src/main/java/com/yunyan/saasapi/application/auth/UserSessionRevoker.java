@@ -27,6 +27,9 @@ public class UserSessionRevoker {
       denyActiveAccessTokens(user.getId());
       securityNotificationService.notifyAccountDisabled(user);
     }
+    if (isNewlyEnabled(previousStatus, newStatus)) {
+      accessTokenDenylist.clearUserDeny(user.getId());
+    }
   }
 
   /** 角色/权限变更后强制重新登录以刷新 JWT 内 permissions claim */
@@ -55,5 +58,12 @@ public class UserSessionRevoker {
       return false;
     }
     return previousStatus == null || !STATUS_DISABLED.equalsIgnoreCase(previousStatus);
+  }
+
+  private static boolean isNewlyEnabled(String previousStatus, String newStatus) {
+    if (previousStatus == null || !STATUS_DISABLED.equalsIgnoreCase(previousStatus.trim())) {
+      return false;
+    }
+    return StringUtils.hasText(newStatus) && !STATUS_DISABLED.equalsIgnoreCase(newStatus.trim());
   }
 }

@@ -195,6 +195,35 @@ class AdminUsersControllerTest {
   }
 
   @Test
+  void patchUser_reEnableAllowsFreshLoginAndUsersMe() throws Exception {
+    var platformToken = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            patch("/v1/admin/users/" + TENANT_ADMIN_USER_ID)
+                .header("Authorization", "Bearer " + platformToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("status", "disabled"))))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            patch("/v1/admin/users/" + TENANT_ADMIN_USER_ID)
+                .header("Authorization", "Bearer " + platformToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("status", "active"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("active"));
+
+    var freshAccessToken = loginAccessToken("admin@test.local");
+
+    mockMvc
+        .perform(get("/v1/users/me").header("Authorization", "Bearer " + freshAccessToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.email").value("admin@test.local"));
+  }
+
+  @Test
   void login_setsLastLoginAtOnUserList() throws Exception {
     mockMvc
         .perform(

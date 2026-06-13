@@ -54,6 +54,14 @@ public class RedisAccessTokenDenylist implements AccessTokenDenylist {
     return Boolean.TRUE.equals(redisTemplate.hasKey(userKey(userId)));
   }
 
+  @Override
+  public void clearUserDeny(UUID userId) {
+    if (userId == null) {
+      return;
+    }
+    redisTemplate.delete(userKey(userId));
+  }
+
   private static String key(String jti) {
     return KEY_PREFIX + jti;
   }

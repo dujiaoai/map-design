@@ -65,6 +65,14 @@ public class InMemoryAccessTokenDenylist implements AccessTokenDenylist {
     return true;
   }
 
+  @Override
+  public void clearUserDeny(UUID userId) {
+    if (userId == null) {
+      return;
+    }
+    deniedUsers.remove(userId);
+  }
+
   /** Clears all entries; used by integration tests only. */
   public void resetForTests() {
     denied.clear();

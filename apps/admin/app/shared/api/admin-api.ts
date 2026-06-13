@@ -147,21 +147,6 @@ export function fetchAdminUsers(tenantId?: string, params?: AdminListQuery) {
   return api.get<AdminUserListResponse>(`/admin/users${query ? `?${query}` : ''}`)
 }
 
-export interface InviteUserPayload {
-  tenantId: string
-  email: string
-  displayName?: string
-  roleCode?: 'TENANT_ADMIN' | 'MEMBER' | 'VIEWER'
-}
-
-export function inviteAdminUser(payload: InviteUserPayload) {
-  return api.post<AdminUserSummary>('/admin/users', payload)
-}
-
-export function resendAdminUserInvite(userId: string) {
-  return api.post<AdminUserSummary>(`/admin/users/${userId}/resend-invite`)
-}
-
 export interface PatchUserPayload {
   displayName?: string
   status?: 'active' | 'disabled'
@@ -224,18 +209,49 @@ export function fetchTenantMembers(tenantId: string) {
   return api.get<TenantMemberListResponse>(`/admin/tenants/${tenantId}/members`)
 }
 
-export interface InviteTenantMemberPayload {
-  email: string
-  displayName?: string
+export interface TenantInviteLinkSummary {
+  id: string
+  roleCode: 'TENANT_ADMIN' | 'MEMBER' | 'VIEWER'
+  label: string | null
+  maxUses: number | null
+  useCount: number
+  expiresAt: number | null
+  revokedAt: number | null
+  createdAt: number
+  status: 'active' | 'expired' | 'revoked' | 'exhausted'
+}
+
+export interface TenantInviteLinkListResponse {
+  links: TenantInviteLinkSummary[]
+}
+
+export interface CreateTenantInviteLinkPayload {
   roleCode?: 'TENANT_ADMIN' | 'MEMBER' | 'VIEWER'
+  label?: string
+  maxUses?: number
+  expiresInHours?: number
 }
 
-export function inviteTenantMember(tenantId: string, payload: InviteTenantMemberPayload) {
-  return api.post<AdminUserSummary>(`/admin/tenants/${tenantId}/members`, payload)
+export interface CreateTenantInviteLinkResponse {
+  link: TenantInviteLinkSummary
+  inviteUrl: string
 }
 
-export function resendTenantMemberInvite(tenantId: string, userId: string) {
-  return api.post<AdminUserSummary>(`/admin/tenants/${tenantId}/members/${userId}/resend-invite`)
+export function fetchTenantInviteLinks(tenantId: string) {
+  return api.get<TenantInviteLinkListResponse>(`/admin/tenants/${tenantId}/invite-links`)
+}
+
+export function createTenantInviteLink(
+  tenantId: string,
+  payload: CreateTenantInviteLinkPayload,
+) {
+  return api.post<CreateTenantInviteLinkResponse>(`/admin/tenants/${tenantId}/invite-links`, payload)
+}
+
+export function revokeTenantInviteLink(tenantId: string, linkId: string) {
+  return api.delete<TenantInviteLinkSummary>(
+    `/admin/tenants/${tenantId}/invite-links/${linkId}`,
+  )
 }
 
 export function patchTenantMember(

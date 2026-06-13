@@ -1,7 +1,6 @@
 package com.yunyan.saasapi.application.admin;
 
 import com.yunyan.saasapi.application.auth.UserSessionRevoker;
-import com.yunyan.saasapi.application.email.UserInviteService;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.UserRepository;
 import com.yunyan.saasapi.domain.entity.SysTenant;
@@ -9,7 +8,6 @@ import com.yunyan.saasapi.domain.entity.SysUser;
 import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.web.dto.admin.AdminUserDto;
 import com.yunyan.saasapi.web.dto.admin.AdminUserListResponse;
-import com.yunyan.saasapi.web.dto.admin.InviteUserRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchUserRequest;
 import java.time.Instant;
 import java.util.List;
@@ -32,7 +30,6 @@ public class UserAdminService {
   private final UserRepository userRepository;
   private final TenantRepository tenantRepository;
   private final UserSessionRevoker userSessionRevoker;
-  private final UserInviteService userInviteService;
 
   public AdminUserListResponse listUsers(Optional<UUID> tenantId, AdminListParams params) {
     tenantId.ifPresent(this::requireTenant);
@@ -53,33 +50,6 @@ public class UserAdminService {
           dtos, result.total(), params.resolvePage(), params.resolveSize());
     }
     return AdminUserListResponse.unpaged(dtos);
-  }
-
-  @Transactional
-  public AdminUserDto inviteUser(InviteUserRequest request) {
-    var tenant = requireActiveTenant(request.tenantId());
-    userInviteService.createInvitedUserAndSendEmail(
-        tenant, request.email(), request.displayName(), request.roleCode());
-    var email = request.email().trim().toLowerCase();
-    var user =
-        userRepository
-            .findByTenantIdAndEmail(tenant.getId(), email)
-            .orElseThrow(() -> new IllegalStateException("Invited user not found"));
-    return toDto(user, tenant);
-  }
-
-  @Transactional
-  public AdminUserDto resendInviteEmail(UUID userId) {
-    var user =
-        userRepository
-            .findById(userId)
-            .orElseThrow(() -> AuthException.notFound("User not found"));
-    var tenant =
-        tenantRepository
-            .findById(user.getTenantId())
-            .orElseThrow(() -> AuthException.notFound("Tenant not found"));
-    userInviteService.resendInviteEmail(tenant, user);
-    return toDto(user, tenant);
   }
 
   @Transactional
@@ -118,14 +88,6 @@ public class UserAdminService {
         .orElseThrow(() -> AuthException.notFound("Tenant not found"));
   }
 
-  private SysTenant requireActiveTenant(UUID tenantId) {
-    var tenant = requireTenant(tenantId);
-    if (!isTenantActive(tenant)) {
-      throw AuthException.forbidden("Tenant is suspended");
-    }
-    return tenant;
-  }
-
   private Map<UUID, SysTenant> loadTenantsById(java.util.List<SysUser> users) {
     var tenantIds = users.stream().map(SysUser::getTenantId).distinct().toList();
     if (tenantIds.isEmpty()) {
@@ -137,10 +99,6 @@ public class UserAdminService {
 
   private static boolean hasPatchFields(PatchUserRequest request) {
     return StringUtils.hasText(request.displayName()) || StringUtils.hasText(request.status());
-  }
-
-  private static boolean isTenantActive(SysTenant tenant) {
-    return tenant.getStatus() == null || STATUS_ACTIVE.equals(tenant.getStatus());
   }
 
   private AdminUserDto toDto(SysUser user, SysTenant tenant) {

@@ -21,10 +21,12 @@ saas:
     admin-base-url: http://localhost:5181
   invite:
     token-pepper: test-invite-pepper-with-32-bytes!!
+    link-default-ttl: P7D
   password-reset:
     token-ttl: PT1H
   registration:
     token-ttl: PT24H
+    allow-public-org-signup: true
   auth:
     password:
       strength-enabled: false

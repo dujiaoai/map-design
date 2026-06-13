@@ -3,6 +3,8 @@ import type {
   LoginCredentials,
   LoginResponse,
   RegisterCredentials,
+  RegisterOrgCredentials,
+  RegisterOrgResponse,
   Session,
 } from './types'
 
@@ -42,6 +44,26 @@ export function createAuthApi(options: AuthApiOptions) {
         const text = await res.text()
         throw new Error(`Auth API ${res.status}: ${text}`)
       }
+    },
+
+    async registerOrg(credentials: RegisterOrgCredentials): Promise<RegisterOrgResponse> {
+      const body: Record<string, string> = {
+        orgName: credentials.orgName.trim(),
+        email: credentials.email,
+        password: credentials.password,
+      }
+      if (credentials.slug?.trim()) {
+        body.slug = credentials.slug.trim()
+      }
+      if (credentials.displayName?.trim()) {
+        body.displayName = credentials.displayName.trim()
+      }
+      const res = await fetchFn(`${base}/auth/register-org`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body),
+      })
+      return parseJson(res)
     },
 
     async resendRegistrationVerification(body: {
@@ -146,6 +168,42 @@ export function createAuthApi(options: AuthApiOptions) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(body),
+      })
+      return parseJson(res)
+    },
+
+    async previewInviteLink(token: string): Promise<{
+      tenantName: string
+      tenantSlug: string
+      roleCode: string
+      expiresAt: number | null
+      remainingUses: number | null
+    }> {
+      const search = new URLSearchParams({ token })
+      const res = await fetchFn(`${base}/auth/invite-links/preview?${search.toString()}`, {
+        headers: { Accept: 'application/json' },
+      })
+      return parseJson(res)
+    },
+
+    async joinViaInviteLink(body: {
+      token: string
+      email: string
+      password: string
+      displayName?: string
+    }): Promise<LoginResponse> {
+      const payload: Record<string, string> = {
+        token: body.token,
+        email: body.email,
+        password: body.password,
+      }
+      if (body.displayName?.trim()) {
+        payload.displayName = body.displayName.trim()
+      }
+      const res = await fetchFn(`${base}/auth/join-via-invite-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
       })
       return parseJson(res)
     },

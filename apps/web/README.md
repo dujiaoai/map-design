@@ -62,7 +62,7 @@ pnpm --filter @repo/saas-web validate      # typecheck + lint + test
 - **`@repo/api-client`**：`app/shared/api/client.ts` 注入 token 与 401 刷新
 - 受保护路由：`layouts/app-layout.tsx` 调用 `auth.requireAuthenticated(redirect)`
 - `/login`：配置 `VITE_API_URL` 后走 `auth.login()` → `POST /v1/auth/login`（邮箱 + 密码 + 租户 slug）；未配置时降级为 `auth.devLogin()` 占位会话
-- `/register`：`auth.register()` → `POST /v1/auth/register`（邮箱 + 密码 ≥8 位 + 租户 slug + 可选显示名），成功后自动登录进入工作台
+- `/register`：`auth.register()` → `POST /v1/auth/register`（邮箱 + 密码 ≥8 位 + 租户 slug + 可选显示名），成功后查收验证邮件；`/verify-email?token=...` 确认后登录
 - Bootstrap / 顶栏用户：`useWorkspaceSession` + `GET /v1/users/me`；**无** `ruoyi-profile-store`（C-08～C-12）
 - 侧栏：`mock-nav-items` + **C-09 ✅** `filterNavMainItemsForTenant`（`useEnabledTenantFeatures`）
 - Account 抽屉：`GET/PUT /v1/users/me`、`POST /v1/users/me/password`（C-10）

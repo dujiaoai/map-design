@@ -1,11 +1,12 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { Button, cn, Input } from '@repo/ui'
 import { Building2Icon, UserIcon } from 'lucide-react'
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
+import { authEmailFieldSchema, authTenantIdFieldSchema } from '~/shared/auth/auth-form-schema'
 import { auth } from '~/shared/auth/client'
 import { formatLoginError } from '~/shared/auth/format-login-error'
 import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
@@ -22,11 +23,18 @@ import type { Route } from './+types/resend-verification'
 import './login.css'
 
 const resendVerificationSchema = z.object({
-  email: z.string().min(1, '请输入邮箱').email('请输入有效邮箱'),
-  tenantId: z.string().min(1, '请输入租户标识'),
+  email: authEmailFieldSchema,
+  tenantId: authTenantIdFieldSchema,
 })
 
 type ResendVerificationFormValues = z.infer<typeof resendVerificationSchema>
+
+function fieldA11y(errorMessage: string | undefined, errorId: string) {
+  return {
+    'aria-describedby': errorMessage ? errorId : undefined,
+    'aria-invalid': errorMessage ? true : undefined,
+  } as const
+}
 
 export function meta(_args: Route.MetaArgs) {
   return [{ title: '重发验证邮件 · 云眼地图工作台' }]
@@ -39,25 +47,36 @@ export async function clientLoader() {
 }
 
 function ResendVerificationForm() {
+  const [searchParams] = useSearchParams()
+  const emailFromUrl = searchParams.get('email')?.trim().toLowerCase()
+  const tenantFromUrl = searchParams.get('tenant')?.trim()
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<ResendVerificationFormValues>({
     resolver: standardSchemaResolver(resendVerificationSchema),
     defaultValues: { email: '', tenantId: 'demo' },
   })
 
+  useEffect(() => {
+    reset({
+      email: emailFromUrl ?? '',
+      tenantId: tenantFromUrl || 'demo',
+    })
+  }, [emailFromUrl, reset, tenantFromUrl])
+
   async function onSubmit(values: ResendVerificationFormValues) {
     setSubmitError(null)
     setSuccessMessage(null)
     try {
       await auth.resendRegistrationVerification({
-        email: values.email.trim(),
-        tenantId: values.tenantId.trim(),
+        email: values.email,
+        tenantId: values.tenantId,
       })
       setSuccessMessage('若该邮箱在指定租户下有待验证账号，您将收到新的验证邮件，请查收。')
     } catch (error) {
@@ -79,10 +98,11 @@ function ResendVerificationForm() {
             className={cn(authFieldInputClassName, 'pl-9')}
             placeholder="you@demo.local"
             type="email"
+            {...fieldA11y(errors.email?.message, 'resend-email-error')}
             {...register('email')}
           />
         </div>
-        <AuthFieldError message={errors.email?.message} />
+        <AuthFieldError id="resend-email-error" message={errors.email?.message} />
       </div>
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 1 } as CSSProperties}>
@@ -96,20 +116,28 @@ function ResendVerificationForm() {
             autoComplete="organization"
             className={cn(authFieldInputClassName, 'pl-9')}
             placeholder="demo"
+            {...fieldA11y(errors.tenantId?.message, 'resend-tenant-error')}
             {...register('tenantId')}
           />
         </div>
-        <AuthFieldError message={errors.tenantId?.message} />
+        <AuthFieldError id="resend-tenant-error" message={errors.tenantId?.message} />
       </div>
 
       {successMessage ? (
-        <p className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary-foreground/90">
+        <p
+          className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary-foreground/90"
+          role="status"
+          aria-live="polite"
+        >
           {successMessage}
         </p>
       ) : null}
 
       {submitError ? (
-        <p className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90">
+        <p
+          className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90"
+          role="alert"
+        >
           {submitError}
         </p>
       ) : null}

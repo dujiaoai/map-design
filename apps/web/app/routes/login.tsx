@@ -1,6 +1,6 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { Button, cn, Input } from '@repo/ui'
-import { Building2Icon, UserIcon } from 'lucide-react'
+import { Building2Icon, LockIcon, UserIcon } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate, useSearchParams } from 'react-router'
@@ -145,6 +145,7 @@ function SaasLoginForm() {
           id="login-password"
           autoComplete="current-password"
           className={authFieldInputClassName}
+          leadingIcon={<LockIcon className="size-4" />}
           placeholder="请输入密码"
           {...register('password')}
         />
@@ -294,6 +295,7 @@ function DevLoginForm() {
           id="login-dev-password"
           autoComplete="current-password"
           className={authFieldInputClassName}
+          leadingIcon={<LockIcon className="size-4" />}
           placeholder="请输入密码"
           {...register('password')}
         />

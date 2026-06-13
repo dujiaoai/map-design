@@ -13,6 +13,8 @@ import com.yunyan.saasapi.web.dto.auth.LoginUserDto;
 import com.yunyan.saasapi.web.dto.auth.RefreshRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterConfirmRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterResendRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterOrgRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterOrgResponse;
 import com.yunyan.saasapi.web.dto.auth.RegisterRequest;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.security.TenantContext;
@@ -23,6 +25,7 @@ import com.yunyan.saasapi.application.email.EmailTokenHasher;
 import com.yunyan.saasapi.application.email.PasswordResetService;
 import com.yunyan.saasapi.application.email.RegistrationVerificationService;
 import com.yunyan.saasapi.application.email.SecurityNotificationService;
+import com.yunyan.saasapi.application.email.TenantInviteLinkService;
 import com.yunyan.saasapi.application.email.UserInviteService;
 import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
 import com.yunyan.saasapi.domain.UserRepository;
@@ -30,6 +33,8 @@ import com.yunyan.saasapi.web.dto.auth.AcceptInviteRequest;
 import com.yunyan.saasapi.web.dto.auth.ChangePasswordRequest;
 import com.yunyan.saasapi.web.dto.auth.PasswordResetConfirmRequest;
 import com.yunyan.saasapi.web.dto.auth.PasswordResetRequest;
+import com.yunyan.saasapi.web.dto.auth.JoinViaInviteLinkRequest;
+import com.yunyan.saasapi.web.dto.auth.InviteLinkPreviewResponse;
 import com.yunyan.saasapi.web.dto.auth.UpdateUserRequest;
 import java.time.Duration;
 import java.time.Instant;
@@ -56,13 +61,20 @@ public class AuthService {
   private final EmailVerificationTokenRepository emailVerificationTokenRepository;
   private final PasswordResetService passwordResetService;
   private final RegistrationVerificationService registrationVerificationService;
+  private final OrgRegistrationService orgRegistrationService;
   private final AuthRateLimitService authRateLimitService;
   private final SecurityNotificationService securityNotificationService;
   private final PasswordPolicyService passwordPolicyService;
+  private final TenantInviteLinkService tenantInviteLinkService;
 
   public void requestRegistration(RegisterRequest request, String clientIp) {
     authRateLimitService.checkRegister(clientIp, request.email());
     registrationVerificationService.requestRegistration(request);
+  }
+
+  public RegisterOrgResponse requestOrgRegistration(RegisterOrgRequest request, String clientIp) {
+    authRateLimitService.checkRegister(clientIp, request.email());
+    return orgRegistrationService.requestOrgRegistration(request);
   }
 
   public void resendRegistrationVerification(RegisterResendRequest request, String clientIp) {
@@ -257,6 +269,18 @@ public class AuthService {
             .orElseThrow(() -> new IllegalStateException("User not found after invite accept"));
     userAuthRepository.touchLastLoginAt(user.getId());
     return buildLoginResponse(authUser);
+  }
+
+  public InviteLinkPreviewResponse previewInviteLink(String token) {
+    return tenantInviteLinkService.preview(token);
+  }
+
+  @Transactional
+  public LoginResponse joinViaInviteLink(JoinViaInviteLinkRequest request, String clientIp) {
+    authRateLimitService.checkRegister(clientIp, request.email());
+    var user = tenantInviteLinkService.joinViaInviteLink(request);
+    userAuthRepository.touchLastLoginAt(user.id());
+    return buildLoginResponse(user);
   }
 
   public void requestPasswordReset(PasswordResetRequest request, String clientIp) {

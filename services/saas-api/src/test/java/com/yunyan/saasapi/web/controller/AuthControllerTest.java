@@ -649,6 +649,151 @@ class AuthControllerTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  void registerOrg_createsTenantAndTenantAdmin() throws Exception {
+    var email = "org-owner-" + System.currentTimeMillis() + "@test.local";
+    var orgName = "New Survey Co " + System.currentTimeMillis();
+
+    var body =
+        mockMvc
+            .perform(
+                post("/v1/auth/register-org")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            Map.of(
+                                "orgName", orgName,
+                                "email", email,
+                                "password", "password",
+                                "displayName", "Org Owner"))))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.orgName").value(orgName))
+            .andExpect(jsonPath("$.tenantSlug").isString())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    var tenantSlug = JsonPath.read(body, "$.tenantSlug");
+
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", email,
+                            "password", "password",
+                            "tenantId", tenantSlug))))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.detail").value("Email not verified, check your inbox to complete registration"));
+
+    var payload =
+        jdbcTemplate.queryForObject(
+            "SELECT payload_json FROM sys_email_outbox WHERE to_email = ? AND template = 'register-verification' ORDER BY created_at DESC LIMIT 1",
+            String.class,
+            email);
+    var verifyUrl = objectMapper.readTree(payload).get("verifyUrl").asText();
+    var token = verifyUrl.substring(verifyUrl.indexOf("token=") + "token=".length());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("token", token))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.email").value(email))
+        .andExpect(jsonPath("$.user.roles", hasItem("TENANT_ADMIN")))
+        .andExpect(jsonPath("$.user.tenant.slug").value(tenantSlug));
+  }
+
+  @Test
+  void registerOrg_withExplicitSlug_usesSlug() throws Exception {
+    var slug = "acme-" + System.currentTimeMillis();
+    var email = "acme-owner-" + System.currentTimeMillis() + "@test.local";
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register-org")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "orgName", "Acme Survey",
+                            "slug", slug,
+                            "email", email,
+                            "password", "password"))))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.tenantSlug").value(slug));
+  }
+
+  @Test
+  @Sql(scripts = {"/sql/auth-test-seed.sql", "/sql/reset-role-permissions.sql"})
+  void joinViaInviteLink_createsActiveUserAndAllowsLogin() throws Exception {
+    var createBody =
+        mockMvc
+            .perform(
+                post("/v1/admin/tenants/11111111-1111-1111-1111-111111111101/invite-links")
+                    .header(
+                        "Authorization",
+                        "Bearer "
+                            + JsonPath.read(
+                                mockMvc
+                                    .perform(
+                                        post("/v1/auth/login")
+                                            .contentType(MediaType.APPLICATION_JSON)
+                                            .content(
+                                                objectMapper.writeValueAsString(
+                                                    Map.of(
+                                                        "email",
+                                                        "admin@test.local",
+                                                        "password",
+                                                        "password",
+                                                        "tenantId",
+                                                        "test"))))
+                                    .andExpect(status().isOk())
+                                    .andReturn()
+                                    .getResponse()
+                                    .getContentAsString(),
+                                "$.accessToken"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(Map.of("roleCode", "MEMBER"))))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    var inviteUrl = JsonPath.read(createBody, "$.inviteUrl").toString();
+    var token = inviteUrl.substring(inviteUrl.indexOf("token=") + "token=".length());
+    var email = "join-link-" + System.currentTimeMillis() + "@test.local";
+
+    mockMvc
+        .perform(get("/v1/auth/invite-links/preview").param("token", token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tenantSlug").value("test"))
+        .andExpect(jsonPath("$.roleCode").value("MEMBER"));
+
+    mockMvc
+        .perform(
+            post("/v1/auth/join-via-invite-link")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("token", token, "email", email, "password", "password"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.email").value(email))
+        .andExpect(jsonPath("$.user.roles", hasItem("MEMBER")));
+
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("email", email, "password", "password", "tenantId", "test"))))
+        .andExpect(status().isOk());
+  }
+
   private String loginAndGetBody() throws Exception {
     return mockMvc
         .perform(

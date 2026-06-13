@@ -42,6 +42,8 @@ public class SaasAppProperties {
   @Data
   public static class Invite {
     private Duration tokenTtl = Duration.ofHours(48);
+    /** 可分享邀请链接默认有效期；为零或未配置表示不过期 */
+    private Duration linkDefaultTtl = Duration.ofDays(7);
     private String tokenPepper = "dev-invite-pepper-change-me!!";
   }
 
@@ -53,6 +55,8 @@ public class SaasAppProperties {
   @Data
   public static class Registration {
     private Duration tokenTtl = Duration.ofHours(24);
+    /** 允许 POST /v1/auth/register-org 自助创建租户 */
+    private boolean allowPublicOrgSignup = true;
   }
 
   @Data

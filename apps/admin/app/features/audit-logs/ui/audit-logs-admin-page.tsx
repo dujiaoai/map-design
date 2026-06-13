@@ -22,6 +22,8 @@ const AUDIT_ACTION_OPTIONS = [
   { value: 'all', label: '全部动作' },
   { value: 'member.invite', label: '邀请成员' },
   { value: 'member.invite.resend', label: '重发邀请' },
+  { value: 'member.invite-link.create', label: '创建邀请链接' },
+  { value: 'member.invite-link.revoke', label: '撤销邀请链接' },
   { value: 'member.update', label: '更新成员' },
   { value: 'member.roles.update', label: '更新角色' },
 ] as const

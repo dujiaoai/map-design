@@ -81,6 +81,19 @@ export interface RegisterCredentials {
   displayName?: string
 }
 
+export interface RegisterOrgCredentials {
+  orgName: string
+  slug?: string
+  email: string
+  password: string
+  displayName?: string
+}
+
+export interface RegisterOrgResponse {
+  tenantSlug: string
+  orgName: string
+}
+
 export type RedirectFn = (path: string) => Response
 
 export interface StorageLike {

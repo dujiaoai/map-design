@@ -47,11 +47,13 @@ saas:
       strength-enabled: ${SAAS_PASSWORD_STRENGTH:false}
   invite:
     token-ttl: PT48H
+    link-default-ttl: P7D
     token-pepper: ${SAAS_INVITE_TOKEN_PEPPER:dev-invite-pepper-change-me!!}
   password-reset:
     token-ttl: PT1H
   registration:
     token-ttl: PT24H
+    allow-public-org-signup: ${SAAS_ALLOW_PUBLIC_ORG_SIGNUP:true}
   rate-limit:
     enabled: true
     login:

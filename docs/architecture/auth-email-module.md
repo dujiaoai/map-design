@@ -9,6 +9,7 @@
 | --- | --- |
 | 首期场景 | M1 邀请 → M3 重置 → M2 注册验证 → **M4 安全通知** |
 | 注册流程 | 两阶段：`POST /register` 发验证邮件 → `POST /register/confirm` 激活并登录 |
+| 自助开组织 | `POST /register-org` 创建租户 + 首个 `TENANT_ADMIN` → 同上验证流程 |
 | 待验证状态 | `unverified`；验证前登录返回 **403** |
 | outbox | **要**：可追溯 |
 | 发信环境 | 测试 `saas.mail.enabled=false` 只记 outbox + 日志 |
@@ -17,7 +18,8 @@
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
-| POST | `/v1/auth/register` | 创建 `unverified` 用户，**204** |
+| POST | `/v1/auth/register` | 加入已有租户，创建 `unverified` 用户，**204** |
+| POST | `/v1/auth/register-org` | 自助创建租户 + 首个 `TENANT_ADMIN`，**201** `{ tenantSlug, orgName }` |
 | POST | `/v1/auth/register/resend` | 重发注册验证邮件 **204**（防枚举） |
 | POST | `/v1/auth/register/confirm` | `{ token }` → 激活 + 登录态 |
 | POST | `/v1/auth/accept-invite` | 邀请设密 |

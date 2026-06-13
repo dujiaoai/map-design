@@ -3,6 +3,8 @@ package com.yunyan.saasapi.web.controller;
 import com.yunyan.saasapi.application.auth.AuthService;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.auth.AcceptInviteRequest;
+import com.yunyan.saasapi.web.dto.auth.InviteLinkPreviewResponse;
+import com.yunyan.saasapi.web.dto.auth.JoinViaInviteLinkRequest;
 import com.yunyan.saasapi.web.dto.auth.AuthTokensDto;
 import com.yunyan.saasapi.web.dto.auth.LoginRequest;
 import com.yunyan.saasapi.web.dto.auth.LoginResponse;
@@ -11,6 +13,8 @@ import com.yunyan.saasapi.web.dto.auth.PasswordResetConfirmRequest;
 import com.yunyan.saasapi.web.dto.auth.PasswordResetRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterConfirmRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterResendRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterOrgRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterOrgResponse;
 import com.yunyan.saasapi.web.dto.auth.RegisterRequest;
 import com.yunyan.saasapi.web.support.ClientIpResolver;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,9 +28,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -55,6 +62,26 @@ public class AuthController {
       @Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
     authService.requestRegistration(request, ClientIpResolver.resolve(httpRequest));
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
+
+  @PostMapping("/register-org")
+  @ResponseStatus(HttpStatus.CREATED)
+  @Operation(
+      summary = "自助创建组织并注册首个管理员",
+      description =
+          "创建新租户、首个 TENANT_ADMIN 账号（unverified）并发送邮箱验证链接。需配置 saas.registration.allow-public-org-signup=true。")
+  @ApiResponse(responseCode = "201", description = "组织已创建，验证邮件已发送")
+  @ApiResponse(
+      responseCode = "403",
+      description = "公开组织注册已关闭",
+      content = @Content(mediaType = "application/problem+json"))
+  @ApiResponse(
+      responseCode = "409",
+      description = "无法分配组织标识",
+      content = @Content(mediaType = "application/problem+json"))
+  RegisterOrgResponse registerOrg(
+      @Valid @RequestBody RegisterOrgRequest request, HttpServletRequest httpRequest) {
+    return authService.requestOrgRegistration(request, ClientIpResolver.resolve(httpRequest));
   }
 
   @PostMapping("/register/confirm")
@@ -96,6 +123,23 @@ public class AuthController {
       description = "使用邮件中的 token 设置密码并激活账号，响应体同登录。")
   LoginResponse acceptInvite(@Valid @RequestBody AcceptInviteRequest request) {
     return authService.acceptInvite(request);
+  }
+
+  @GetMapping("/invite-links/preview")
+  @Operation(
+      summary = "预览邀请链接",
+      description = "公开接口，用于加入页展示租户名称与链接有效性。")
+  InviteLinkPreviewResponse previewInviteLink(@RequestParam("token") String token) {
+    return authService.previewInviteLink(token);
+  }
+
+  @PostMapping("/join-via-invite-link")
+  @Operation(
+      summary = "通过邀请链接加入租户",
+      description = "使用可分享邀请链接注册并登录，响应体同登录。")
+  LoginResponse joinViaInviteLink(
+      @Valid @RequestBody JoinViaInviteLinkRequest request, HttpServletRequest httpRequest) {
+    return authService.joinViaInviteLink(request, ClientIpResolver.resolve(httpRequest));
   }
 
   @PostMapping("/password-reset/request")

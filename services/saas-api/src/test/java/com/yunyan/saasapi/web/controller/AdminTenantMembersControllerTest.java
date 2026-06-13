@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -38,8 +37,6 @@ class AdminTenantMembersControllerTest {
   @Autowired MockMvc mockMvc;
 
   @Autowired ObjectMapper objectMapper;
-
-  @Autowired JdbcTemplate jdbcTemplate;
 
   @Test
   void listMembers_withoutToken_returns401() throws Exception {
@@ -81,98 +78,9 @@ class AdminTenantMembersControllerTest {
   }
 
   @Test
-  void inviteMember_withTenantAdmin_returns201() throws Exception {
-    var email = "invited-" + System.currentTimeMillis() + "@test.local";
-
-    mockMvc
-        .perform(
-            post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members")
-                .header("Authorization", "Bearer " + loginAccessToken("admin@test.local"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    objectMapper.writeValueAsString(
-                        Map.of(
-                            "email", email,
-                            "roleCode", "MEMBER"))))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.email").value(email))
-        .andExpect(jsonPath("$.status").value("invited"))
-        .andExpect(jsonPath("$.roles[0]").value("MEMBER"));
-  }
-
-  @Test
-  void resendInviteMember_withTenantAdmin_queuesNewInviteEmail() throws Exception {
-    var email = "resend-member-" + System.currentTimeMillis() + "@test.local";
-    var createBody =
-        mockMvc
-            .perform(
-                post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members")
-                    .header("Authorization", "Bearer " + loginAccessToken("admin@test.local"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        objectMapper.writeValueAsString(
-                            Map.of(
-                                "email", email,
-                                "roleCode", "MEMBER"))))
-            .andExpect(status().isCreated())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-    var userId = JsonPath.read(createBody, "$.id");
-
-    var countBefore =
-        jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM sys_email_outbox WHERE to_email = ? AND template = 'member-invite'",
-            Integer.class,
-            email);
-
-    mockMvc
-        .perform(
-            post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members/" + userId + "/resend-invite")
-                .header("Authorization", "Bearer " + loginAccessToken("admin@test.local")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("invited"));
-
-    var countAfter =
-        jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM sys_email_outbox WHERE to_email = ? AND template = 'member-invite'",
-            Integer.class,
-            email);
-    if (countAfter <= countBefore) {
-      throw new AssertionError("expected new member-invite outbox row after resend");
-    }
-  }
-
-  @Test
-  void resendInviteMember_forActiveUser_returns400() throws Exception {
-    mockMvc
-        .perform(
-            post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members/"
-                    + "22222222-2222-2222-2222-222222222201/resend-invite")
-                .header("Authorization", "Bearer " + loginAccessToken("admin@test.local")))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.detail").value("User is not awaiting invite acceptance"));
-  }
-
-  @Test
   void updateMemberRoles_withTenantAdmin_returnsUpdatedRoles() throws Exception {
     var email = "roles-" + System.currentTimeMillis() + "@test.local";
-    var createBody =
-        mockMvc
-            .perform(
-                post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members")
-                    .header("Authorization", "Bearer " + loginAccessToken("admin@test.local"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        objectMapper.writeValueAsString(
-                            Map.of(
-                                "email", email,
-                                "roleCode", "MEMBER"))))
-            .andExpect(status().isCreated())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-    var userId = JsonPath.read(createBody, "$.id");
+    var userId = createMemberViaInviteLink(email, "password");
 
     mockMvc
         .perform(
@@ -187,22 +95,7 @@ class AdminTenantMembersControllerTest {
   @Test
   void updateMemberRoles_platformAdminRole_returns400() throws Exception {
     var email = "badrole-" + System.currentTimeMillis() + "@test.local";
-    var createBody =
-        mockMvc
-            .perform(
-                post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members")
-                    .header("Authorization", "Bearer " + loginAccessToken("admin@test.local"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        objectMapper.writeValueAsString(
-                            Map.of(
-                                "email", email,
-                                "roleCode", "MEMBER"))))
-            .andExpect(status().isCreated())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-    var userId = JsonPath.read(createBody, "$.id");
+    var userId = createMemberViaInviteLink(email, "password");
 
     mockMvc
         .perform(
@@ -218,22 +111,7 @@ class AdminTenantMembersControllerTest {
   @Test
   void patchMember_disableBlocksLogin() throws Exception {
     var email = "disable-" + System.currentTimeMillis() + "@test.local";
-    var createBody =
-        mockMvc
-            .perform(
-                post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members")
-                    .header("Authorization", "Bearer " + loginAccessToken("admin@test.local"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        objectMapper.writeValueAsString(
-                            Map.of(
-                                "email", email,
-                                "roleCode", "MEMBER"))))
-            .andExpect(status().isCreated())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-    var userId = JsonPath.read(createBody, "$.id");
+    var userId = createMemberViaInviteLink(email, "password");
 
     mockMvc
         .perform(
@@ -252,9 +130,41 @@ class AdminTenantMembersControllerTest {
                     objectMapper.writeValueAsString(
                         Map.of(
                             "email", email,
-                            "password", "password123",
+                            "password", "password",
                             "tenantId", "test"))))
-        .andExpect(status().isUnauthorized());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.detail").value("Account is disabled"));
+  }
+
+  private String createMemberViaInviteLink(String email, String password) throws Exception {
+    var adminToken = loginAccessToken("admin@test.local");
+    var createBody =
+        mockMvc
+            .perform(
+                post("/v1/admin/tenants/" + TEST_TENANT_ID + "/invite-links")
+                    .header("Authorization", "Bearer " + adminToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(Map.of("roleCode", "MEMBER"))))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    var inviteUrl = JsonPath.read(createBody, "$.inviteUrl").toString();
+    var token = inviteUrl.substring(inviteUrl.indexOf("token=") + "token=".length());
+
+    var joinBody =
+        mockMvc
+            .perform(
+                post("/v1/auth/join-via-invite-link")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            Map.of("token", token, "email", email, "password", password))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return JsonPath.read(joinBody, "$.user.id");
   }
 
   private String loginAccessToken(String email) throws Exception {

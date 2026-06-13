@@ -47,29 +47,23 @@ class AdminAuditLogsControllerTest {
   }
 
   @Test
-  void crossTenantInvite_writesAuditLogWithCrossTenantFlag() throws Exception {
+  void crossTenantInviteLinkCreate_writesAuditLogWithCrossTenantFlag() throws Exception {
     var token = loginAccessToken("platform@test.local");
-    var email = "audited-" + System.currentTimeMillis() + "@test.local";
 
     mockMvc
         .perform(
-            post("/v1/admin/tenants/" + OTHER_TENANT_ID + "/members")
+            post("/v1/admin/tenants/" + OTHER_TENANT_ID + "/invite-links")
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    objectMapper.writeValueAsString(
-                        Map.of(
-                            "email", email,
-                            "password", "password123",
-                            "roleCode", "MEMBER"))))
+                .content(objectMapper.writeValueAsString(Map.of("roleCode", "MEMBER"))))
         .andExpect(status().isCreated());
 
     mockMvc
         .perform(get("/v1/admin/audit-logs").header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.logs[*].action", hasItem("member.invite")))
-        .andExpect(jsonPath("$.logs[?(@.action=='member.invite')].crossTenant", hasItem(true)))
-        .andExpect(jsonPath("$.logs[?(@.action=='member.invite')].detail", hasItem("Invited " + email + " (email link)")));
+        .andExpect(jsonPath("$.logs[*].action", hasItem("member.invite-link.create")))
+        .andExpect(
+            jsonPath("$.logs[?(@.action=='member.invite-link.create')].crossTenant", hasItem(true)));
   }
 
   private String loginAccessToken(String email) throws Exception {

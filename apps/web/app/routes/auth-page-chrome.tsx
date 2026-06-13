@@ -44,9 +44,13 @@ export async function authGuestClientLoader() {
   return null
 }
 
-export function AuthFieldError({ message }: { message?: string }) {
+export function AuthFieldError({ id, message }: { id?: string; message?: string }) {
   if (!message) return null
-  return <p className="text-xs text-red-300/90">{message}</p>
+  return (
+    <p id={id} className="text-xs text-red-300/90" role="alert">
+      {message}
+    </p>
+  )
 }
 
 function AuthPageAtmosphere() {

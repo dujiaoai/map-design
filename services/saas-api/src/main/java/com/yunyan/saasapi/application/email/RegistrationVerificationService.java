@@ -88,6 +88,12 @@ public class RegistrationVerificationService {
     sendVerificationEmail(tenant, user);
   }
 
+  /** 为新组织首个管理员发送注册验证邮件。 */
+  public void sendRegistrationVerification(SysTenant tenant, SysUser user) {
+    emailVerificationTokenRepository.invalidateActiveRegisterTokens(user.getId());
+    sendVerificationEmail(tenant, user);
+  }
+
   @Transactional
   public AuthenticatedUser confirmRegistration(String rawToken) {
     var hash = emailTokenHasher.hash(rawToken.trim());

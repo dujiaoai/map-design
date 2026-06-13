@@ -23,7 +23,6 @@ import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
 
 import { EditUserSheet } from './edit-user-sheet'
-import { InviteUserSheet } from './invite-user-sheet'
 
 export function UsersAdminPage() {
   const { can } = useAdminPermissions()
@@ -31,7 +30,6 @@ export function UsersAdminPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const tenantFilterId = searchParams.get('tenantId') ?? undefined
 
-  const [inviteOpen, setInviteOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<AdminUserSummary | null>(null)
   const [statusFilter, setStatusFilter] = useState('all')
 
@@ -76,12 +74,8 @@ export function UsersAdminPage() {
     <div className="space-y-6">
       <AdminPageHeader
         title="用户"
-        description="跨租户用户列表；可按租户筛选并邀请新成员。"
-        actions={
-          canWrite ? (
-            <Button onClick={() => setInviteOpen(true)}>邀请用户</Button>
-          ) : null
-        }
+        description="跨租户用户列表；邀请新成员请前往对应租户的「成员」页生成邀请链接。"
+        actions={null}
       />
 
       <div className="flex flex-wrap items-center gap-3">
@@ -200,11 +194,6 @@ export function UsersAdminPage() {
         )}
       </AdminPanel>
 
-      <InviteUserSheet
-        open={inviteOpen}
-        onOpenChange={setInviteOpen}
-        defaultTenantId={tenantFilterId}
-      />
       <EditUserSheet
         user={editingUser}
         open={Boolean(editingUser)}

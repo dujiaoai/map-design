@@ -19,8 +19,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { type AdminUserSummary, patchAdminUser, resendAdminUserInvite } from '~/shared/api/admin-api'
-import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
+import { type AdminUserSummary, patchAdminUser } from '~/shared/api/admin-api'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 
@@ -35,7 +34,6 @@ export function EditUserSheet({
   user,
   open,
   onOpenChange,
-  tenantFilterId,
 }: {
   user: AdminUserSummary | null
   open: boolean
@@ -78,13 +76,6 @@ export function EditUserSheet({
     },
   })
 
-  const resendMutation = useMutation({
-    mutationFn: () => resendAdminUserInvite(user!.id),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
-    },
-  })
-
   function onSubmit(values: FormValues) {
     if (!user) return
     mutation.mutate(values)
@@ -104,7 +95,9 @@ export function EditUserSheet({
           </AdminField>
           <AdminField label="状态">
             {isInvited ? (
-              <p className="text-sm text-muted-foreground">待接受邀请（用户设密后自动变为正常）</p>
+              <p className="text-sm text-muted-foreground">
+                待激活（历史邮件邀请账号，请让用户通过原邮件链接完成设密）
+              </p>
             ) : (
               <Select
                 value={status}
@@ -120,27 +113,7 @@ export function EditUserSheet({
               </Select>
             )}
           </AdminField>
-          {isInvited ? (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={resendMutation.isPending}
-              onClick={() => resendMutation.mutate()}
-            >
-              {resendMutation.isPending ? '发送中…' : '重发设密邮件'}
-            </Button>
-          ) : null}
-          <AdminFormError
-            message={
-              mutation.isError
-                ? formatAdminApiError(mutation.error)
-                : resendMutation.isError
-                  ? formatAdminApiError(resendMutation.error)
-                  : resendMutation.isSuccess
-                    ? '已重新发送设密邮件'
-                    : null
-            }
-          />
+          <AdminFormError message={mutation.isError ? formatAdminApiError(mutation.error) : null} />
           <SheetFooter className="px-0">
             <Button type="submit" disabled={!user || isSubmitting || mutation.isPending}>
               {mutation.isPending ? '保存中…' : '保存更改'}

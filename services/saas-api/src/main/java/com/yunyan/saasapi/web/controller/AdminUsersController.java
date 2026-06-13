@@ -5,7 +5,6 @@ import com.yunyan.saasapi.application.admin.UserAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.web.dto.admin.AdminUserDto;
 import com.yunyan.saasapi.web.dto.admin.AdminUserListResponse;
-import com.yunyan.saasapi.web.dto.admin.InviteUserRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchUserRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -14,16 +13,13 @@ import jakarta.validation.Valid;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -48,22 +44,6 @@ public class AdminUsersController {
       @RequestParam(required = false) Integer size) {
     return userAdminService.listUsers(
         Optional.ofNullable(tenantId), new AdminListParams(q, page, size, status));
-  }
-
-  @PostMapping
-  @ResponseStatus(HttpStatus.CREATED)
-  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_USERS_WRITE + "')")
-  @Operation(summary = "邀请用户加入租户", description = "创建账号并分配租户内角色（默认 MEMBER）")
-  public AdminUserDto inviteUser(@Valid @RequestBody InviteUserRequest request) {
-    return userAdminService.inviteUser(request);
-  }
-
-  @PostMapping("/{userId}/resend-invite")
-  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_USERS_WRITE + "')")
-  @Operation(summary = "重发邀请邮件", description = "仅 status=invited 的用户可重发设密链接")
-  public AdminUserDto resendInvite(
-      @PathVariable UUID userId) {
-    return userAdminService.resendInviteEmail(userId);
   }
 
   @PatchMapping("/{userId}")

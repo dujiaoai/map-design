@@ -1,7 +1,6 @@
 package com.yunyan.saasapi.application.admin;
 
 import com.yunyan.saasapi.application.auth.UserSessionRevoker;
-import com.yunyan.saasapi.application.email.UserInviteService;
 import com.yunyan.saasapi.domain.RoleRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.UserRepository;
@@ -12,7 +11,6 @@ import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.security.TenantContext;
 import com.yunyan.saasapi.web.dto.admin.AdminUserDto;
-import com.yunyan.saasapi.web.dto.admin.InviteTenantMemberRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchUserRequest;
 import com.yunyan.saasapi.web.dto.admin.TenantMemberListResponse;
 import com.yunyan.saasapi.web.dto.admin.UpdateMemberRolesRequest;
@@ -43,7 +41,6 @@ public class TenantMemberAdminService {
   private final RoleRepository roleRepository;
   private final AdminAuditLogService adminAuditLogService;
   private final UserSessionRevoker userSessionRevoker;
-  private final UserInviteService userInviteService;
 
   public TenantMemberListResponse listMembers(SaasPrincipal principal, UUID tenantId) {
     ensureOwnTenant(principal, tenantId);
@@ -55,54 +52,6 @@ public class TenantMemberAdminService {
           var members = users.stream().map(user -> toDto(user, tenant)).toList();
           return new TenantMemberListResponse(members);
         });
-  }
-
-  @Transactional
-  public AdminUserDto inviteMember(
-      SaasPrincipal principal, UUID tenantId, InviteTenantMemberRequest request) {
-    ensureOwnTenant(principal, tenantId);
-    var result =
-        withTargetTenant(
-            tenantId,
-            () -> {
-              var tenant = requireActiveTenant(tenantId);
-              var roleCode =
-                  StringUtils.hasText(request.roleCode()) ? request.roleCode().trim() : DEFAULT_ROLE;
-              validateAssignableRole(roleCode);
-              userInviteService.createInvitedUserAndSendEmail(
-                  tenant, request.email(), request.displayName(), roleCode);
-              var email = request.email().trim().toLowerCase();
-              var user =
-                  userRepository
-                      .findByTenantIdAndEmail(tenant.getId(), email)
-                      .orElseThrow(() -> new IllegalStateException("Invited user not found"));
-              return toDto(user, tenant);
-            });
-    adminAuditLogService.recordMemberAction(
-        principal,
-        "member.invite",
-        tenantId,
-        UUID.fromString(result.id()),
-        "Invited " + result.email() + " (email link)");
-    return result;
-  }
-
-  @Transactional
-  public AdminUserDto resendInviteMember(
-      SaasPrincipal principal, UUID tenantId, UUID userId) {
-    ensureOwnTenant(principal, tenantId);
-    var result =
-        withTargetTenant(
-            tenantId,
-            () -> {
-              var tenant = requireActiveTenant(tenantId);
-              var user = requireMemberInTenant(tenantId, userId);
-              userInviteService.resendInviteEmail(tenant, user);
-              return toDto(user, tenant);
-            });
-    adminAuditLogService.recordMemberAction(
-        principal, "member.invite.resend", tenantId, userId, "Resent invite to " + result.email());
-    return result;
   }
 
   @Transactional
@@ -261,21 +210,6 @@ public class TenantMemberAdminService {
 
   private static boolean hasPatchFields(PatchUserRequest request) {
     return StringUtils.hasText(request.displayName()) || StringUtils.hasText(request.status());
-  }
-
-  private static String resolveRoleCode(String roleCode) {
-    if (!StringUtils.hasText(roleCode)) {
-      return DEFAULT_ROLE;
-    }
-    return roleCode.trim();
-  }
-
-  private static String resolveDisplayName(String email, String displayName) {
-    if (StringUtils.hasText(displayName)) {
-      return displayName.trim();
-    }
-    var at = email.indexOf('@');
-    return at > 0 ? email.substring(0, at) : email;
   }
 
   private static boolean isTenantActive(SysTenant tenant) {

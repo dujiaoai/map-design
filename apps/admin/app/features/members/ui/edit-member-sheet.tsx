@@ -23,19 +23,18 @@ import { z } from 'zod'
 import {
   type AdminUserSummary,
   patchTenantMember,
-  resendTenantMemberInvite,
   updateTenantMemberRoles,
 } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 
-const TENANT_ROLES = ['TENANT_ADMIN', 'MEMBER', 'VIEWER'] as const
+import { TENANT_MEMBER_ROLE_LABELS, TENANT_MEMBER_ROLES } from '../lib/member-role-labels'
 
 const schema = z.object({
   displayName: z.string().min(1, '请输入显示名').max(128),
   status: z.enum(['active', 'disabled']),
-  roleCode: z.enum(TENANT_ROLES),
+  roleCode: z.enum(TENANT_MEMBER_ROLES),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -69,7 +68,7 @@ export function EditMemberSheet({
   useEffect(() => {
     if (!member) return
     const primaryRole =
-      member.roles.find((role) => TENANT_ROLES.includes(role as (typeof TENANT_ROLES)[number])) ??
+      member.roles.find((role) => TENANT_MEMBER_ROLES.includes(role as (typeof TENANT_MEMBER_ROLES)[number])) ??
       'MEMBER'
     reset({
       displayName: member.displayName,
@@ -94,13 +93,6 @@ export function EditMemberSheet({
     },
   })
 
-  const resendMutation = useMutation({
-    mutationFn: () => resendTenantMemberInvite(tenantId, member!.id),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: adminQueryKeys.members(tenantId) })
-    },
-  })
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md">
@@ -121,7 +113,9 @@ export function EditMemberSheet({
           </AdminField>
           <AdminField label="状态">
             {isInvited ? (
-              <p className="text-sm text-muted-foreground">待接受邀请（用户设密后自动变为正常）</p>
+              <p className="text-sm text-muted-foreground">
+                待激活（历史邮件邀请账号，请让用户通过原邮件链接完成设密）
+              </p>
             ) : (
               <Select
                 value={status}
@@ -137,16 +131,6 @@ export function EditMemberSheet({
               </Select>
             )}
           </AdminField>
-          {isInvited ? (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={resendMutation.isPending}
-              onClick={() => resendMutation.mutate()}
-            >
-              {resendMutation.isPending ? '发送中…' : '重发设密邮件'}
-            </Button>
-          ) : null}
           <AdminField label="角色">
             <Select
               value={roleCode}
@@ -158,9 +142,9 @@ export function EditMemberSheet({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {TENANT_ROLES.map((role) => (
+                {TENANT_MEMBER_ROLES.map((role) => (
                   <SelectItem key={role} value={role}>
-                    {role}
+                    {TENANT_MEMBER_ROLE_LABELS[role]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -171,17 +155,7 @@ export function EditMemberSheet({
               含 PLATFORM_ADMIN，角色编辑可能受限
             </Badge>
           ) : null}
-          <AdminFormError
-            message={
-              mutation.isError
-                ? formatAdminApiError(mutation.error)
-                : resendMutation.isError
-                  ? formatAdminApiError(resendMutation.error)
-                  : resendMutation.isSuccess
-                    ? '已重新发送设密邮件'
-                    : null
-            }
-          />
+          <AdminFormError message={mutation.isError ? formatAdminApiError(mutation.error) : null} />
           <SheetFooter className="px-0">
             <Button type="submit" disabled={!member || isSubmitting || mutation.isPending}>
               {mutation.isPending ? '保存中…' : '保存更改'}

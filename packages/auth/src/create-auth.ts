@@ -7,6 +7,8 @@ import { createTokenStorage } from './storage/token-storage'
 import type {
   LoginCredentials,
   RegisterCredentials,
+  RegisterOrgCredentials,
+  RegisterOrgResponse,
   RedirectFn,
   SaaSRole,
   Session,
@@ -88,6 +90,11 @@ export function createAuth(options: CreateAuthOptions) {
       await authApi.register(credentials)
     },
 
+    async registerOrg(credentials: RegisterOrgCredentials): Promise<RegisterOrgResponse> {
+      if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用组织注册接口')
+      return authApi.registerOrg(credentials)
+    },
+
     async resendRegistrationVerification(body: {
       email: string
       tenantId: string
@@ -107,6 +114,24 @@ export function createAuth(options: CreateAuthOptions) {
     async acceptInvite(body: { token: string; password: string }): Promise<Session> {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用接受邀请接口')
       const response = loginResponseSchema.parse(await authApi.acceptInvite(body))
+      const session = loginResponseToSession(response)
+      persist(session, authTokensToTokenPair(response))
+      return session
+    },
+
+    async previewInviteLink(token: string) {
+      if (!authApi) throw new Error('未配置 apiBaseUrl，无法预览邀请链接')
+      return authApi.previewInviteLink(token)
+    },
+
+    async joinViaInviteLink(body: {
+      token: string
+      email: string
+      password: string
+      displayName?: string
+    }): Promise<Session> {
+      if (!authApi) throw new Error('未配置 apiBaseUrl，无法通过邀请链接加入')
+      const response = loginResponseSchema.parse(await authApi.joinViaInviteLink(body))
       const session = loginResponseToSession(response)
       persist(session, authTokensToTokenPair(response))
       return session

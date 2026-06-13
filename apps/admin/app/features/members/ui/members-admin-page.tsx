@@ -64,7 +64,7 @@ export function MembersAdminPage({
           description={`${resolvedTenantName} · 管理本租户成员与角色分配。`}
           actions={
             canWrite ? (
-              <Button onClick={() => setInviteOpen(true)}>邀请成员</Button>
+              <Button onClick={() => setInviteOpen(true)}>邀请链接</Button>
             ) : null
           }
         />

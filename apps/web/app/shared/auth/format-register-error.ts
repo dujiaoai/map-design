@@ -4,7 +4,7 @@ import { AUTH_API_DETAIL_LOCALIZATIONS, formatAuthApiError } from '@repo/auth'
 export function formatRegisterError(error: unknown): string {
   return formatAuthApiError(error, {
     statusMessages: {
-      403: '该租户已停用，请联系管理员',
+      403: '该租户已停用，或当前未开放自助创建组织',
       404: '租户不存在，请检查租户标识（如 demo）',
       409: '该邮箱已在此租户注册，请直接登录',
       429: '操作过于频繁，请稍后再试',

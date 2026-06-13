@@ -1,5 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import { Button, Input } from '@repo/ui'
+import { Button, cn, Input } from '@repo/ui'
 import { Building2Icon, UserIcon } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
@@ -28,6 +28,9 @@ const loginSchema = z.object({
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
+
+const adminLoginFieldInputClassName =
+  'admin-login-input h-11 rounded-[10px] border-white/10 bg-[var(--admin-login-field-bg)] text-[var(--text-on-dark)] shadow-none placeholder:text-white/35 focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/30'
 
 export function meta(_args: Route.MetaArgs) {
   return [{ title: '登录 · 云眼运营后台' }]
@@ -125,9 +128,10 @@ export default function LoginRoute() {
               <UserIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-primary/55" />
               <Input
                 id="admin-email"
-                className="admin-login-input pl-9"
+                className={cn(adminLoginFieldInputClassName, 'pl-9')}
                 autoComplete="email"
                 placeholder="admin@demo.local"
+                type="email"
                 {...register('email')}
               />
             </div>
@@ -141,6 +145,8 @@ export default function LoginRoute() {
             <PasswordInput
               id="admin-password"
               autoComplete="current-password"
+              className={adminLoginFieldInputClassName}
+              leadingIcon
               placeholder="password"
               {...register('password')}
             />
@@ -157,7 +163,7 @@ export default function LoginRoute() {
               <Building2Icon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-primary/55" />
               <Input
                 id="admin-tenant"
-                className="admin-login-input pl-9"
+                className={cn(adminLoginFieldInputClassName, 'pl-9')}
                 autoComplete="organization"
                 placeholder="demo"
                 {...register('tenantId')}

@@ -6,6 +6,8 @@
   overflow: hidden;
   background: #0a0e14;
   color: #e8edf5;
+  /* 与 bg-white/[0.04] 在登录卡片上视觉一致的不透明色，供 autofill 覆盖 Chrome 默认白底 */
+  --admin-login-field-bg: #161c26;
 }
 
 .admin-login-bg {
@@ -75,23 +77,24 @@
 }
 
 .admin-login-input {
-  height: 2.75rem;
-  width: 100%;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
-  padding-inline: 0.85rem 0.85rem;
-  color: #f3f6fb;
-  font-size: 0.95rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.25s ease;
 }
 
-.admin-login-input::placeholder {
-  color: rgba(255, 255, 255, 0.35);
+.admin-login-input:-webkit-autofill,
+.admin-login-input:-webkit-autofill:hover,
+.admin-login-input:-webkit-autofill:focus,
+.admin-login-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--admin-login-field-bg) inset !important;
+  box-shadow: 0 0 0 1000px var(--admin-login-field-bg) inset !important;
+  -webkit-text-fill-color: var(--text-on-dark) !important;
+  caret-color: var(--text-on-dark);
+  transition: background-color 99999s ease-in-out 0s;
 }
 
-.admin-login-input:focus-visible {
-  outline: none;
-  border-color: color-mix(in oklab, var(--brand) 70%, white);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand) 25%, transparent);
+.admin-login-input:autofill {
+  box-shadow: 0 0 0 1000px var(--admin-login-field-bg) inset !important;
+  -webkit-text-fill-color: var(--text-on-dark) !important;
+  caret-color: var(--text-on-dark);
 }

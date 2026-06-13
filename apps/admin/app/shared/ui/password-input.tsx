@@ -1,25 +1,32 @@
 import { cn } from '@repo/ui'
-import { EyeIcon, EyeOffIcon } from 'lucide-react'
-import { forwardRef, useState } from 'react'
+import { EyeIcon, EyeOffIcon, LockIcon } from 'lucide-react'
+import { forwardRef, useState, type ComponentProps } from 'react'
 
-export const PasswordInput = forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
-  function PasswordInput({ className, ...props }, ref) {
+const inputClassName =
+  'h-9 w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40'
+
+type PasswordInputProps = ComponentProps<'input'> & {
+  leadingIcon?: boolean
+}
+
+export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
+  function PasswordInput({ className, leadingIcon, ...props }, ref) {
     const [visible, setVisible] = useState(false)
 
     return (
       <div className="relative">
+        {leadingIcon ? (
+          <LockIcon className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-primary/55" />
+        ) : null}
         <input
           ref={ref}
           type={visible ? 'text' : 'password'}
-          className={cn(
-            'h-11 w-full rounded-[10px] border border-white/10 bg-[var(--surface-elevated)] px-3 pr-10 text-base text-[var(--text-on-dark)] shadow-[0_0_0_1px_var(--brand-muted)_inset] transition-[color,box-shadow] placeholder:text-white/35 focus-visible:border-primary focus-visible:ring-primary/30 md:text-sm',
-            className,
-          )}
+          className={cn(inputClassName, 'pr-9', leadingIcon && 'pl-9', className)}
           {...props}
         />
         <button
           type="button"
-          className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center rounded-sm p-1 text-white/45 hover:text-white/80"
+          className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 z-10 flex -translate-y-1/2 items-center justify-center rounded-sm border-0 bg-transparent p-1"
           aria-label={visible ? '隐藏密码' : '显示密码'}
           onClick={() => setVisible((current) => !current)}
         >

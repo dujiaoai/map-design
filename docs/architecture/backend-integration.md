@@ -4,10 +4,10 @@
 
 | 阶段 | saas-web / admin | 客户端 | 说明 |
 | --- | --- | --- | --- |
-| **当前（C-06～C-12）** | 身份与会话主路径 → SaaS | `@repo/api-client` | Sprint D 权限/admin |
+| **当前（C-06～C-12 + Admin P0～P3）** | 身份与会话 + 运营后台 → SaaS | `@repo/api-client` | `/v1/admin/*`、apps/admin 已交付 |
 | 遗留 | `build-nav-tree` 等类型引用 | `@repo/ruoyi-api`（非会话路径） | 随业务迁移逐步移除 |
 | **Sprint C** | 身份与会话 | `@repo/api-client` | C-01～C-08 ✅；C-09 暂缓 |
-| **Sprint D** | 权限与后台 | `@repo/api-client` | `/v1/admin/*`、apps/admin |
+| **Sprint D** | 权限与后台 | `@repo/api-client` | `/v1/admin/*`、apps/admin ✅ |
 | **Sprint E** | 业务工作台 | `@repo/api-client` | 地图、机库等 — **C/D 不做** |
 
 详见 [services-development-plan.md](./services-development-plan.md)、[ADR-0005](../adr/0005-ruoyi-transitional-backend.md)。
@@ -21,7 +21,7 @@
 | 用户信息 | `GET/PUT /v1/users/me`、`POST .../password` | C |
 | 租户、能力 | `/v1/tenants`、`/features` | B（已就绪） |
 | 侧栏导航 | 前端 `mock-nav-items` 全量 | C（无 `/v1/menus`；**C-09 filterNavByTenant 暂缓**） |
-| 权限配置、后台 | `/v1/admin/*` | D |
+| 权限配置、后台 | `/v1/admin/*` | D ✅（Admin P0～P3 增强） |
 | 地图 / 机库 / 专题 | `/v1/layers`、`/v1/uav/*` 等 | **E（Later）** |
 
 App 层：`shared/queries/` + TanStack Query；UI 不直接调 client。
@@ -59,7 +59,7 @@ sequenceDiagram
 
 ## Sprint D 数据流（概要）
 
-- `PLATFORM_ADMIN` / `TENANT_ADMIN` → `apps/admin` → `/v1/admin/tenants|users|roles|permissions`
+- `PLATFORM_ADMIN` / `TENANT_ADMIN` → `apps/admin` → `/v1/admin/stats|tenants|users|members|roles|features`
 - saas-web：`requireRole` / 权限码与 `users/me` 或 JWT claims 一致
 
 ## 菜单与导航

@@ -18,7 +18,7 @@ map-design/                    # @repo/saas（Biome 根）
 ├── apps/
 │   ├── web/                   # @repo/saas-web — 租户工作台（活跃）
 │   ├── marketing/             # @repo/saas-marketing — 占位
-│   └── admin/                 # @repo/saas-admin — 占位
+│   └── admin/                 # @repo/saas-admin — 运营后台（P0～P3 ✅）
 ├── packages/
 │   ├── ui/                    # @repo/ui
 │   ├── auth/                  # @repo/auth
@@ -41,7 +41,7 @@ map-design/                    # @repo/saas（Biome 根）
 flowchart TB
   subgraph apps [Apps]
     Web["@repo/saas-web"]
-    Admin["@repo/saas-admin (planned)"]
+    Admin["@repo/saas-admin"]
     Marketing["@repo/saas-marketing (planned)"]
   end
 
@@ -61,8 +61,9 @@ flowchart TB
   Web --> ApiClient
   Web --> RuoYiApi
   UAV --> UI
-  Admin -.-> UI
-  Admin -.-> Auth
+  Admin --> UI
+  Admin --> Auth
+  Admin --> ApiClient
   Marketing -.-> UI
 ```
 
@@ -93,7 +94,7 @@ packages:
 | `@repo/saas` | 根 | Biome lint/format |
 | `@repo/saas-web` | `apps/web` | 租户工作台 SPA |
 | `@repo/saas-marketing` | `apps/marketing` | 官网（待建） |
-| `@repo/saas-admin` | `apps/admin` | 平台运营（待建） |
+| `@repo/saas-admin` | `apps/admin` | 平台运营后台 SPA（P0～P3 ✅） |
 | `@repo/ui` | `packages/ui` | shadcn + Base UI 组件库 |
 | `@repo/auth` | `packages/auth` | Session / Tenant / RBAC |
 | `@repo/api-client` | `packages/api-client` | 通用 REST 客户端 |
@@ -107,7 +108,7 @@ packages:
 | **Biome** | `apps/**`、`packages/**`、`cloud/**` | 统一 lint/format，根脚本 `@repo/saas check` |
 | **Turborepo** | 全 workspace | 构建/类型检查/测试并行与缓存，见 [turbo.md](../runbooks/turbo.md) |
 | **TypeScript** | 各包独立 `tsconfig.json` | 无根 tsconfig，Vite alias 指向 UI 源码 |
-| **Vitest** | web、packages | 单元测试；Playwright E2E 规划中 |
+| **Vitest** | web、admin、packages | 单元测试；Playwright E2E 规划中 |
 | **Vite 8** | web、cloud-uav | React Router 7 Framework + Tailwind 4 |
 
 ## 与遗留栈的关系

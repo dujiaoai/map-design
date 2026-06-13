@@ -271,10 +271,12 @@ flowchart TD
 
 **验收：**
 
-- [ ] `PLATFORM_ADMIN` 可管理租户、查看用户、配置角色权限
-- [ ] `TENANT_ADMIN` 可管理本租户成员与角色（范围内）
-- [ ] 普通用户权限仅来自 SaaS，不依赖 RuoYi `getInfo` 权限串
+- [x] `PLATFORM_ADMIN` 可管理租户、查看用户、配置角色权限
+- [x] `TENANT_ADMIN` 可管理本租户成员与角色（范围内）
+- [x] 普通用户权限仅来自 SaaS，不依赖 RuoYi `getInfo` 权限串
 - [ ] Admin 与 saas-api 本地 Docker 栈可联调（`deploy.mjs smoke`）
+
+**Admin 功能完善（P0～P3 · 2026-06）**：在 Sprint D 基座上交付概览统计、租户详情、跨租户成员、能力管理、列表分页、`/account`、TeamSwitcher、Skeleton、404 与测试覆盖。路由与 API 见 [apps.md](./apps.md)。
 
 ---
 

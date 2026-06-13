@@ -4,7 +4,7 @@
 
 | 能力 | Platform Admin | Tenant Admin | Member | Viewer |
 | --- | --- | --- | --- | --- |
-| 访问 Admin App | Yes | No | No | No |
+| 访问 Admin App | Yes | Yes（成员管理） | No | No |
 | 管理所有租户 | Yes | No | No | No |
 | 邀请成员 | — | Yes | No | No |
 | Web 核心功能 | — | Yes | Yes | Read-only |
@@ -146,6 +146,17 @@
 | Docker 全栈 | `deploy/docker-compose`：postgres、redis、saas-api、saas-web、saas-admin |
 | Nginx `/v1` | 前端同源反代 → `saas-api:8082` |
 | 构建注入 | `VITE_API_URL=/v1`（`deploy/env/*.production`） |
+
+### 已完成（Admin 功能完善 P0～P3 · 2026-06）
+
+| 阶段 | 能力 |
+| --- | --- |
+| P0 | `GET /v1/admin/stats`；概览页；表格筛选；`TENANT_ADMIN` 默认 `/members` |
+| P1 | `GET /v1/admin/tenants/{id}`；租户详情 Tab；跨租户成员；`feature-catalog` + 租户能力 GET/PUT |
+| P2 | 租户/用户列表服务端分页；`/account`；Admin TeamSwitcher + remember-login |
+| P3 | 列表 Skeleton；全局 404；Vitest（filter、分页、loader、TeamSwitcher）+ MockMvc 补齐 |
+
+详见 [apps.md](./apps.md) Admin 节与 [`apps/admin/README.md`](../../apps/admin/README.md)。
 
 ## 目标架构（远期）
 

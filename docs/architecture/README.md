@@ -8,7 +8,7 @@ SaaS 产品线前端 monorepo，本仓库（`map-design`）根目录即产品线
 | --- | --- | --- | --- | --- |
 | Marketing | `www.example.com` | 访客 | 官网、定价、注册 | 占位 |
 | Web | `app.example.com` | 租户用户 | 工作台、核心业务 | **活跃开发** |
-| Admin | `admin.example.com` | 平台运营 | 租户、计费、审计 | 占位 |
+| Admin | `admin.example.com` | 平台运营 / 租户管理员 | 租户、用户、成员、能力 | **P0～P3 已交付** |
 
 ## 系统上下文
 
@@ -36,7 +36,7 @@ flowchart LR
 ## 认证与授权
 
 **当前**：登录/注册/bootstrap 已走 SaaS（C-06～C-08）；Account 部分仍 RuoYi。  
-**路线图**：C-10～C-12 收尾 → Sprint D 权限与后台 → Sprint E 业务域（Later）。详见 [services-development-plan.md](./services-development-plan.md)（含 **§十 执行指引**）。
+**路线图**：C-10～C-12 收尾 ✅ → Sprint D 权限与后台 ✅ → Admin P0～P3 ✅ → Sprint E 业务域（Later）。详见 [services-development-plan.md](./services-development-plan.md)（含 **§十 执行指引**）。
 
 ## API 双轨
 
@@ -106,6 +106,10 @@ flowchart LR
 | Sprint D：Admin CRUD 页（D-08） | ✅ |
 | Sprint D：saas-web 权限门控（D-09） | ✅ |
 | Sprint D：Docker 全栈部署（D-10） | ✅ |
+| Admin 功能完善 P0：概览统计、筛选、租户管理员落点 | ✅ |
+| Admin 功能完善 P1：租户详情、跨租户成员、能力管理 | ✅ |
+| Admin 功能完善 P2：列表分页、`/account`、TeamSwitcher | ✅ |
+| Admin 功能完善 P3：Skeleton、404、Vitest/MockMvc | ✅ |
 | Sprint E：地图/机库等业务 API | Later，C/D 不做 |
 | packages（ui/auth/api-client/ruoyi-api） | 已完成 |
 | SaaS `/v1` 后端 | Auth MVP + 租户 API ✅ |

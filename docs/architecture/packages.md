@@ -7,7 +7,7 @@
 | 包 | 依赖 | 消费方 |
 | --- | --- | --- |
 | `@repo/ui` | React 19、Base UI、Tailwind | saas-web、cloud-uav |
-| `@repo/auth` | zod、zustand | saas-web（admin 规划） |
+| `@repo/auth` | zod、zustand | saas-web、saas-admin |
 | `@repo/api-client` | 无 runtime 依赖 | saas-web（规划主用） |
 | `@repo/ruoyi-api` | zod | saas-web（当前主用） |
 
@@ -125,7 +125,7 @@ RuoYi 后端 API 封装，响应用 Zod 校验。
 | 协议 | RuoYi envelope `{ code, msg, data }` | 标准 REST + HTTP status |
 | 校验 | Zod schema per endpoint | 调用方自行解析 |
 | saas-web 会话 | api-client（C-06～C-12 ✅） | 登录、注册、bootstrap、Account、TeamSwitcher、无 RuoYi 桥接 |
-| admin / 权限 | Sprint D → api-client | `/v1/admin/*`、权限码 |
+| admin / 权限 | api-client | `/v1/admin/*`、权限码（P0～P3 ✅） |
 | 业务 API | Sprint E | 地图、机库等 |
 | 阶段 | 迁移前 RuoYi | C/D 后 saas-web + admin 主用 api-client |
 | Token | 手动 getToken 注入 | authHandlers 自动管理 |

@@ -11,7 +11,7 @@
 | 路由 | React Router 7 | React Router 7 | React Router 7 |
 | 鉴权 | 公开 + 注册 | 租户 session | 平台管理员 MFA |
 | 部署 | 静态 / Edge | 静态 SPA | 内网 / VPN |
-| **状态** | 占位 README | **活跃开发** | **Sprint D** 脚手架 |
+| **状态** | 占位 README | **活跃开发** | **P0～P3 已交付** |
 
 ## Web（`app.example.com`）
 
@@ -41,19 +41,53 @@
 pnpm --filter @repo/saas-web dev
 ```
 
-## Admin（`admin.example.com`）· Sprint D
+## Admin（`admin.example.com`）· P0～P3 ✅
+
+**状态**：第一期 MVP 已交付（2026-06）。`PLATFORM_ADMIN` 负责全平台运营；`TENANT_ADMIN`（具备 `admin:members:*`）可管理本租户成员。  
+**注意**：≠ `apps/yunyan-admin`（若依 Vue 后台）。
+
+### 角色与默认落点
+
+| 角色 | 默认首页 | 能力范围 |
+| --- | --- | --- |
+| `PLATFORM_ADMIN` | `/` 概览 | 统计、租户/用户/角色、跨租户成员、租户能力开关 |
+| `TENANT_ADMIN` | `/members` | 本租户成员邀请、编辑、角色分配 |
+
+### 已实现路由
 
 | 路由 | 说明 |
 | --- | --- |
-| `/login` | SaaS 登录（`PLATFORM_ADMIN`） |
-| `/tenants` | 租户列表 / 创建（`/v1/admin/tenants`） |
-| `/tenants/:id` | 租户详情、成员 |
-| `/users` | 用户列表（`/v1/admin/users`） |
-| `/roles` | 角色与**权限配置** |
+| `/login` | SaaS 登录（记住凭据供 TeamSwitcher 切租户） |
+| `/` | 运营概览（`GET /v1/admin/stats` + `GET /v1/admin/ping`） |
+| `/tenants` | 租户列表、创建、编辑；服务端 `q` / `page` / `size` |
+| `/tenants/:tenantId` | 租户详情（信息 / 成员 / 能力 Tab） |
+| `/users` | 跨租户用户列表、邀请、编辑；可按 `?tenantId=` 筛选 |
+| `/members` | 成员管理；`?tenantId=`（平台可跨租户，租户管理员仅本租户） |
+| `/roles` | 角色与权限配置（未保存切换确认） |
+| `/account` | 当前账号资料（`PUT /users/me`）与改密 |
+| `/403` | 无运营权限 |
+| `*` | 404 友好页（按会话返回概览或登录） |
+
+### 已实现 Admin API（节选）
+
+| 能力 | 端点 |
+| --- | --- |
+| 平台统计 | `GET /v1/admin/stats` |
+| 租户 CRUD + 分页 | `GET/POST/PATCH /v1/admin/tenants`；`GET /v1/admin/tenants/{id}` |
+| 租户能力 | `GET /v1/admin/feature-catalog`；`GET/PUT /v1/admin/tenants/{id}/features` |
+| 用户 CRUD + 分页 | `GET/POST/PATCH /v1/admin/users` |
+| 成员与角色 | `GET/POST/PATCH /v1/admin/tenants/{id}/members`；`PUT .../roles` |
+| 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
+
+列表页 loading 使用 Skeleton；Vitest + MockMvc 覆盖 P0～P3 核心路径。
+
+### 规划（P4 · Later）
 
 ```
-/billing, /audit-logs, /system   # Later
+/billing, /audit-logs, /system   # 计费、审计、系统
 ```
+
+邮箱邀请（无初始密码）、PLATFORM impersonation + 审计、Admin MFA 等见 [auth-rbac.md](./auth-rbac.md) 与 Admin 完善计划。
 
 开发：
 
@@ -61,7 +95,7 @@ pnpm --filter @repo/saas-web dev
 pnpm --filter @repo/saas-admin dev
 ```
 
-**注意**：≠ `apps/yunyan-admin`（若依 Vue 后台）。
+联调账号见 [`apps/admin/README.md`](../../apps/admin/README.md)。
 
 ## Marketing（`www.example.com`）
 

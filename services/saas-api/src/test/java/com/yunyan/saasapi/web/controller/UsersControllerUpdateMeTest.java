@@ -104,6 +104,8 @@ class UsersControllerUpdateMeTest {
             "22222222-2222-2222-2222-222222222201",
             "admin@test.local",
             name,
+            null,
+            null,
             List.of("TENANT_ADMIN"),
             List.of("workspace:use")),
         new SessionTenantDto(

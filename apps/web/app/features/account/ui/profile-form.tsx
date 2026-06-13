@@ -47,12 +47,16 @@ export function ProfileForm({ session }: { session: Session }) {
     resolver: standardSchemaResolver(profileFormSchema),
     defaultValues: {
       name: session.user.name ?? '',
+      phone: session.user.phone ?? '',
+      avatarUrl: session.user.avatarUrl ?? '',
     },
   })
 
   useEffect(() => {
     reset({
       name: session.user.name ?? '',
+      phone: session.user.phone ?? '',
+      avatarUrl: session.user.avatarUrl ?? '',
     })
   }, [session, reset])
 
@@ -68,6 +72,14 @@ export function ProfileForm({ session }: { session: Session }) {
     <form className="space-y-4" onSubmit={(event) => void handleSubmit(onSubmit)(event)}>
       <FormField label="显示名" error={errors.name?.message}>
         <Input maxLength={128} {...register('name')} />
+      </FormField>
+
+      <FormField label="手机号" error={errors.phone?.message}>
+        <Input maxLength={32} autoComplete="tel" {...register('phone')} />
+      </FormField>
+
+      <FormField label="头像 URL" error={errors.avatarUrl?.message}>
+        <Input maxLength={512} placeholder="https://…" {...register('avatarUrl')} />
       </FormField>
 
       <FormField label="邮箱">

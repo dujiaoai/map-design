@@ -10,6 +10,8 @@ public record AuthenticatedUser(
     String tenantSlug,
     String email,
     String displayName,
+    String phone,
+    String avatarUrl,
     String passwordHash,
     List<String> roleCodes,
     List<String> permissionCodes) {}

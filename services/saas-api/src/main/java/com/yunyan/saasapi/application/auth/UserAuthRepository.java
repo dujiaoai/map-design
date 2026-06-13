@@ -202,12 +202,15 @@ public class UserAuthRepository {
     sysUserMapper.updateById(user);
   }
 
-  public AuthenticatedUser updateDisplayName(UUID userId, String displayName) {
+  public AuthenticatedUser updateProfile(
+      UUID userId, String displayName, String phone, String avatarUrl) {
     var user = sysUserMapper.selectById(userId);
     if (user == null || !"active".equals(user.getStatus())) {
       throw AuthException.unauthorized("User not found");
     }
     user.setDisplayName(displayName);
+    user.setPhone(phone);
+    user.setAvatarUrl(avatarUrl);
     sysUserMapper.updateById(user);
 
     var tenant = sysTenantMapper.selectById(user.getTenantId());
@@ -215,6 +218,12 @@ public class UserAuthRepository {
       throw AuthException.unauthorized("User not found");
     }
     return toAuthenticatedUser(user, tenant);
+  }
+
+  public AuthenticatedUser updateDisplayName(UUID userId, String displayName) {
+    var existing =
+        findById(userId).orElseThrow(() -> AuthException.unauthorized("User not found"));
+    return updateProfile(userId, displayName, existing.phone(), existing.avatarUrl());
   }
 
   public Optional<AuthenticatedUser> findById(UUID userId) {
@@ -247,6 +256,8 @@ public class UserAuthRepository {
         tenant.getSlug(),
         user.getEmail(),
         user.getDisplayName(),
+        user.getPhone(),
+        user.getAvatarUrl(),
         user.getPasswordHash(),
         roleCodes,
         permissionResolver.resolveByRoleCodes(roleCodes));

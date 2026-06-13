@@ -193,7 +193,18 @@ public class AuthService {
     if (principal == null) {
       throw AuthException.unauthorized("Not authenticated");
     }
-    var user = userAuthRepository.updateDisplayName(principal.userId(), request.name().trim());
+    var existing =
+        userAuthRepository
+            .findById(principal.userId())
+            .orElseThrow(() -> AuthException.unauthorized("User not found"));
+    var phone =
+        request.phone() != null ? normalizeOptionalText(request.phone()) : existing.phone();
+    var avatarUrl =
+        request.avatarUrl() != null
+            ? normalizeOptionalText(request.avatarUrl())
+            : existing.avatarUrl();
+    var user = userAuthRepository.updateProfile(
+        principal.userId(), request.name().trim(), phone, avatarUrl);
     return toSessionDto(user, principal.accessTokenExpiresAt());
   }
 
@@ -260,6 +271,8 @@ public class AuthService {
         user.id().toString(),
         user.email(),
         user.displayName(),
+        user.phone(),
+        user.avatarUrl(),
         user.roleCodes(),
         user.permissionCodes(),
         new SessionTenantDto(user.tenantId().toString(), user.tenantName(), user.tenantSlug()));
@@ -286,12 +299,22 @@ public class AuthService {
     return request.tenantId().trim();
   }
 
+  private static String normalizeOptionalText(String value) {
+    if (value == null) {
+      return null;
+    }
+    var trimmed = value.trim();
+    return trimmed.isEmpty() ? null : trimmed;
+  }
+
   private SessionDto toSessionDto(AuthenticatedUser user, Instant accessTokenExpiresAt) {
     return new SessionDto(
         new SessionUserDto(
             user.id().toString(),
             user.email(),
             user.displayName(),
+            user.phone(),
+            user.avatarUrl(),
             user.roleCodes(),
             user.permissionCodes()),
         new SessionTenantDto(user.tenantId().toString(), user.tenantName(), user.tenantSlug()),

@@ -32,7 +32,7 @@
 | --- | --- |
 | B-01 | 邀请/注册/改密密码策略一致（长度、不能与旧密码相同） | ✅ |
 | B-02 | 禁用用户后 refresh token 立即失效 | ✅ `UserSessionRevoker` + MockMvc |
-| B-03 | 用户资料字段扩展（头像、手机） | 暂缓 |
+| B-03 | 用户资料字段扩展（头像、手机） | ✅ V12 + `PUT /users/me` + Account Web/Admin |
 | B-04 | 邮箱规范化（trim、lower-case） | ✅ `EmailNormalizer` 全路径 + MockMvc |
 | B-05 | 注册冲突错误体全覆盖 | ✅ 409 detail + 前端 `formatRegisterError` |
 | — | Admin 用户列表 `status` 服务端筛选 | ✅ `GET /v1/admin/users?status=` |
@@ -64,7 +64,6 @@
 
 - P4 计费、系统配置、MFA、impersonation
 - 地图/机库/专题等业务 API
-- B-03 头像/手机等资料扩展（下一批）
 
 ## 交付节奏
 
@@ -107,5 +106,4 @@ flowchart LR
 
 | 项 | 说明 |
 | --- | --- |
-| B-03 | 用户资料：头像 URL、手机号 |
 | — | `pnpm smoke:saas-api` 全链路（需 Docker Postgres + API） |

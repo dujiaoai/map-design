@@ -71,7 +71,10 @@ export function createAuthApi(options: AuthApiOptions) {
       return parseJson(res)
     },
 
-    async updateSession(accessToken: string, body: { name: string }): Promise<Session> {
+    async updateSession(
+      accessToken: string,
+      body: { name: string; phone?: string | null; avatarUrl?: string | null },
+    ): Promise<Session> {
       const res = await fetchFn(`${base}/users/me`, {
         method: 'PUT',
         headers: {

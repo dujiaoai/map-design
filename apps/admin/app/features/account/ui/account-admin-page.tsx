@@ -33,7 +33,12 @@ export function AccountAdminPage() {
       />
       <div className="grid gap-6 lg:grid-cols-2">
         <AdminPanel className="p-5">
-          <ProfileSection sessionName={session.user.name ?? ''} email={session.user.email} />
+          <ProfileSection
+            email={session.user.email}
+            sessionAvatarUrl={session.user.avatarUrl ?? ''}
+            sessionName={session.user.name ?? ''}
+            sessionPhone={session.user.phone ?? ''}
+          />
         </AdminPanel>
         <AdminPanel className="p-5">
           <PasswordSection />
@@ -43,7 +48,17 @@ export function AccountAdminPage() {
   )
 }
 
-function ProfileSection({ sessionName, email }: { sessionName: string; email: string }) {
+function ProfileSection({
+  sessionName,
+  sessionPhone,
+  sessionAvatarUrl,
+  email,
+}: {
+  sessionName: string
+  sessionPhone: string
+  sessionAvatarUrl: string
+  email: string
+}) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const {
     register,
@@ -52,16 +67,28 @@ function ProfileSection({ sessionName, email }: { sessionName: string; email: st
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
     resolver: standardSchemaResolver(profileFormSchema),
-    defaultValues: { name: sessionName },
+    defaultValues: {
+      name: sessionName,
+      phone: sessionPhone,
+      avatarUrl: sessionAvatarUrl,
+    },
   })
 
   useEffect(() => {
-    reset({ name: sessionName })
-  }, [sessionName, reset])
+    reset({
+      name: sessionName,
+      phone: sessionPhone,
+      avatarUrl: sessionAvatarUrl,
+    })
+  }, [sessionAvatarUrl, sessionName, sessionPhone, reset])
 
   const mutation = useMutation({
     mutationFn: async (values: ProfileFormValues) => {
-      const updated = await updateAccountProfile(values.name.trim())
+      const updated = await updateAccountProfile({
+        name: values.name.trim(),
+        phone: values.phone?.trim() || null,
+        avatarUrl: values.avatarUrl?.trim() || null,
+      })
       const accessToken = auth.getAccessToken()
       const refreshToken = auth.getRefreshToken()
       if (accessToken && refreshToken) {
@@ -79,6 +106,12 @@ function ProfileSection({ sessionName, email }: { sessionName: string; email: st
       <h2 className="admin-display text-lg font-semibold">个人资料</h2>
       <AdminField label="显示名" htmlFor="profile-name" error={errors.name?.message}>
         <Input id="profile-name" maxLength={128} {...register('name')} />
+      </AdminField>
+      <AdminField label="手机号" htmlFor="profile-phone" error={errors.phone?.message}>
+        <Input id="profile-phone" maxLength={32} autoComplete="tel" {...register('phone')} />
+      </AdminField>
+      <AdminField label="头像 URL" htmlFor="profile-avatar" error={errors.avatarUrl?.message}>
+        <Input id="profile-avatar" maxLength={512} placeholder="https://…" {...register('avatarUrl')} />
       </AdminField>
       <AdminField label="邮箱">
         <Input readOnly type="email" value={email} />

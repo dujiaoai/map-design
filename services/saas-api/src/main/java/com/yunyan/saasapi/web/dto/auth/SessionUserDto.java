@@ -8,6 +8,8 @@ public record SessionUserDto(
     @Schema(description = "用户 UUID") String id,
     @Schema(description = "邮箱", example = "admin@demo.local") String email,
     @Schema(description = "显示名", example = "Demo Admin") String name,
+    @Schema(description = "手机号", example = "13800138000") String phone,
+    @Schema(description = "头像 URL") String avatarUrl,
     @Schema(
             description = "角色码列表",
             example = "[\"TENANT_ADMIN\"]",

@@ -14,6 +14,8 @@ export const sessionUserSchema = z.object({
   id: z.string(),
   email: z.string().email(),
   name: z.string().nullish(),
+  phone: z.string().nullish(),
+  avatarUrl: z.string().nullish(),
   roles: z.array(
     z.enum([SaaSRole.PLATFORM_ADMIN, SaaSRole.TENANT_ADMIN, SaaSRole.MEMBER, SaaSRole.VIEWER]),
   ),

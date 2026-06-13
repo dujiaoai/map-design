@@ -147,6 +147,8 @@ class AuthControllerRegisterTest {
             "33333333-3333-3333-3333-333333333301",
             "newuser@test.local",
             "New User",
+            null,
+            null,
             List.of("MEMBER"),
             List.of("workspace:use"),
             new SessionTenantDto(

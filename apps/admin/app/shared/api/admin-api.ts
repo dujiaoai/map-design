@@ -295,8 +295,18 @@ export function fetchAdminAuditLogs(params?: AdminListQuery) {
   return api.get<AdminAuditLogListResponse>(`/admin/audit-logs${buildAdminListQuery(params)}`)
 }
 
-export async function updateAccountProfile(name: string) {
-  const session = sessionSchema.parse(await api.put<Session>('/users/me', { name }))
+export async function updateAccountProfile(values: {
+  name: string
+  phone?: string | null
+  avatarUrl?: string | null
+}) {
+  const session = sessionSchema.parse(
+    await api.put<Session>('/users/me', {
+      name: values.name,
+      phone: values.phone ?? null,
+      avatarUrl: values.avatarUrl ?? null,
+    }),
+  )
   return session
 }
 

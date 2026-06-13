@@ -15,19 +15,23 @@ export function useUpdateUserProfileMutation() {
   return useMutation({
     mutationFn: async (values: ProfileFormValues) => {
       const name = values.name.trim()
+      const phone = values.phone?.trim() || null
+      const avatarUrl = values.avatarUrl?.trim() || null
 
       if (!usesSaasSessionBootstrap()) {
         const current = auth.getSession()
         if (!current) throw new Error('未登录')
         const updated: Session = {
           ...current,
-          user: { ...current.user, name },
+          user: { ...current.user, name, phone, avatarUrl },
         }
         persistAuthSession(updated)
         return updated
       }
 
-      const session = sessionSchema.parse(await api.put<Session>('/users/me', { name }))
+      const session = sessionSchema.parse(
+        await api.put<Session>('/users/me', { name, phone, avatarUrl }),
+      )
       persistAuthSession(session)
       return session
     },

@@ -192,6 +192,27 @@ class UsersControllerTest {
   }
 
   @Test
+  void updateMe_withPhoneAndAvatarUrl_persistsFields() throws Exception {
+    var accessToken = loginAccessToken();
+
+    mockMvc
+        .perform(
+            put("/v1/users/me")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "name", "Profile User",
+                            "phone", "13800138000",
+                            "avatarUrl", "https://cdn.example/avatar.png"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.name").value("Profile User"))
+        .andExpect(jsonPath("$.user.phone").value("13800138000"))
+        .andExpect(jsonPath("$.user.avatarUrl").value("https://cdn.example/avatar.png"));
+  }
+
+  @Test
   void updateMe_withBlankName_returns400() throws Exception {
     var accessToken = loginAccessToken();
 

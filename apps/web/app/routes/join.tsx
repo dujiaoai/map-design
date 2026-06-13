@@ -3,13 +3,16 @@ import {
   AUTH_API_DETAIL_LOCALIZATIONS,
   authPasswordFieldSchema,
   formatAuthApiError,
+  isAuthPasswordStrengthRequired,
 } from '@repo/auth'
-import { Button, cn } from '@repo/ui'
+import { Button, cn, Input } from '@repo/ui'
+import { LockIcon, LockKeyholeIcon, UserCircle2Icon, UserIcon } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
+import { authEmailFieldSchema } from '~/shared/auth/auth-form-schema'
 import { auth } from '~/shared/auth/client'
 import {
   buildInviteLinkSubtitle,
@@ -31,10 +34,14 @@ import type { Route } from './+types/join'
 
 import './login.css'
 
+const joinPasswordPlaceholder = isAuthPasswordStrengthRequired()
+  ? '至少 8 位，含大小写字母与数字'
+  : '至少 8 位'
+
 const joinInviteSchema = z
   .object({
-    email: z.string().min(1, '请输入邮箱').email('邮箱格式不正确'),
-    displayName: z.string().max(128).optional(),
+    email: authEmailFieldSchema,
+    displayName: z.string().trim().max(128, '显示名最多 128 个字符').optional(),
     password: authPasswordFieldSchema(),
     confirmPassword: z.string().min(1, '请确认密码'),
   })
@@ -58,6 +65,13 @@ const ROLE_LABELS = {
   MEMBER: '成员',
   VIEWER: '只读查看者',
 } as const
+
+function fieldA11y(errorMessage: string | undefined, errorId: string) {
+  return {
+    'aria-describedby': errorMessage ? errorId : undefined,
+    'aria-invalid': errorMessage ? true : undefined,
+  } as const
+}
 
 export function meta(_args: Route.MetaArgs) {
   return [{ title: '加入团队 · 云眼地图工作台' }]
@@ -115,7 +129,7 @@ function JoinInviteForm({
     try {
       await auth.joinViaInviteLink({
         token,
-        email: values.email.trim(),
+        email: values.email,
         password: values.password,
         displayName: values.displayName?.trim() || undefined,
       })
@@ -133,26 +147,37 @@ function JoinInviteForm({
         <label className="text-sm font-medium text-white/70" htmlFor="join-email">
           邮箱
         </label>
-        <input
-          id="join-email"
-          autoComplete="email"
-          className={cn(authFieldInputClassName)}
-          {...register('email')}
-        />
-        <AuthFieldError message={errors.email?.message} />
+        <div className="relative">
+          <UserIcon className="login-field-icon pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-primary/50" />
+          <Input
+            id="join-email"
+            autoComplete="email"
+            className={cn(authFieldInputClassName, 'pl-9')}
+            placeholder="you@example.com"
+            type="email"
+            {...fieldA11y(errors.email?.message, 'join-email-error')}
+            {...register('email')}
+          />
+        </div>
+        <AuthFieldError id="join-email-error" message={errors.email?.message} />
       </div>
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 1 } as CSSProperties}>
         <label className="text-sm font-medium text-white/70" htmlFor="join-display">
           显示名（可选）
         </label>
-        <input
-          id="join-display"
-          autoComplete="name"
-          className={cn(authFieldInputClassName)}
-          {...register('displayName')}
-        />
-        <AuthFieldError message={errors.displayName?.message} />
+        <div className="relative">
+          <UserCircle2Icon className="login-field-icon pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-primary/50" />
+          <Input
+            id="join-display"
+            autoComplete="name"
+            className={cn(authFieldInputClassName, 'pl-9')}
+            placeholder="留空则使用邮箱前缀"
+            {...fieldA11y(errors.displayName?.message, 'join-display-error')}
+            {...register('displayName')}
+          />
+        </div>
+        <AuthFieldError id="join-display-error" message={errors.displayName?.message} />
       </div>
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 2 } as CSSProperties}>
@@ -162,10 +187,13 @@ function JoinInviteForm({
         <PasswordInput
           id="join-password"
           autoComplete="new-password"
-          className={cn(authFieldInputClassName)}
+          className={authFieldInputClassName}
+          leadingIcon={<LockIcon className="size-4" />}
+          placeholder={joinPasswordPlaceholder}
+          {...fieldA11y(errors.password?.message, 'join-password-error')}
           {...register('password')}
         />
-        <AuthFieldError message={errors.password?.message} />
+        <AuthFieldError id="join-password-error" message={errors.password?.message} />
       </div>
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 3 } as CSSProperties}>
@@ -175,10 +203,13 @@ function JoinInviteForm({
         <PasswordInput
           id="join-confirm"
           autoComplete="new-password"
-          className={cn(authFieldInputClassName)}
+          className={authFieldInputClassName}
+          leadingIcon={<LockKeyholeIcon className="size-4" />}
+          placeholder="再次输入密码"
+          {...fieldA11y(errors.confirmPassword?.message, 'join-confirm-error')}
           {...register('confirmPassword')}
         />
-        <AuthFieldError message={errors.confirmPassword?.message} />
+        <AuthFieldError id="join-confirm-error" message={errors.confirmPassword?.message} />
       </div>
 
       {submitError ? (

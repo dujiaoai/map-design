@@ -31,10 +31,12 @@
 | 项 | 说明 |
 | --- | --- |
 | B-01 | 邀请/注册/改密密码策略一致（长度、不能与旧密码相同） |
-| B-02 | Admin 禁用用户后 refresh token 失效策略验证与补测 |
-| B-03 | 用户资料字段扩展（头像、手机）与 DTO/OpenAPI 对齐 |
-| B-04 | 邮箱规范化（trim、lower-case）全链路一致 |
-| B-05 | 注册冲突、未知租户错误体与前端 `format-register-error` 全覆盖 |
+| B-02 | 禁用用户后 refresh token 立即失效 | ✅ `UserSessionRevoker` + MockMvc |
+| B-03 | 用户资料字段扩展（头像、手机） | 暂缓 |
+| B-04 | 邮箱规范化（trim、lower-case） | 部分已有（邀请路径） |
+| B-05 | 注册冲突错误体全覆盖 | 暂缓 |
+| — | Admin 用户列表 `status` 服务端筛选 | ✅ `GET /v1/admin/users?status=` |
+| — | `last_login_at` 字段与列表展示 | ✅ V9 迁移 + 登录写入 |
 
 ### P2 · 会话与安全加固
 
@@ -50,8 +52,8 @@
 
 | 项 | 说明 |
 | --- | --- |
-| D-01 | Admin 用户列表：状态筛选、最近登录、批量禁用 |
-| D-02 | 成员邀请：发送邮件占位 → 真实邮件（后续） |
+| D-01 | Admin 用户列表：状态筛选、最近登录 | ✅ 服务端 status + `lastLoginAt` 列 |
+| D-02 | 成员邀请：发送邮件 | 见 [auth-email-module.md](./auth-email-module.md)（待决策） |
 | D-03 | 跨租户成员操作审计可读性（已有首期，补 UI 筛选） |
 | D-04 | Account 页 Web/Admin 组件复用（`@repo/auth` 或 shared feature） |
 

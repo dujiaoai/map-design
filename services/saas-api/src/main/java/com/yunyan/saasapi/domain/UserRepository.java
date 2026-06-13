@@ -10,6 +10,7 @@ import com.yunyan.saasapi.domain.mapper.SysRoleMapper;
 import com.yunyan.saasapi.domain.mapper.SysUserMapper;
 import com.yunyan.saasapi.domain.mapper.SysUserRoleMapper;
 import com.yunyan.saasapi.security.TenantRlsBypass;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,6 +57,11 @@ public class UserRepository {
               w.or().in(SysUser::getTenantId, tenantIdsFromSearch);
             }
           });
+    }
+
+    var status = params.normalizedStatus();
+    if (StringUtils.hasText(status)) {
+      wrapper.eq(SysUser::getStatus, status);
     }
 
     if (params.isPaginated()) {

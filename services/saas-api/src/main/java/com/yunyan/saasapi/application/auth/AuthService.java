@@ -62,6 +62,7 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), lookup.user().passwordHash())) {
           throw AuthException.unauthorized("Invalid email or password");
         }
+        userAuthRepository.touchLastLoginAt(lookup.user().id());
         yield buildLoginResponse(lookup.user());
       }
     };

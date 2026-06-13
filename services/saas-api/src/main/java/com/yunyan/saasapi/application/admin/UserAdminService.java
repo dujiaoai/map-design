@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.application.admin;
 
+import com.yunyan.saasapi.application.auth.UserSessionRevoker;
 import com.yunyan.saasapi.domain.RoleRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.UserRepository;
@@ -34,6 +35,7 @@ public class UserAdminService {
   private final TenantRepository tenantRepository;
   private final RoleRepository roleRepository;
   private final PasswordEncoder passwordEncoder;
+  private final UserSessionRevoker userSessionRevoker;
 
   public AdminUserListResponse listUsers(Optional<UUID> tenantId, AdminListParams params) {
     tenantId.ifPresent(this::requireTenant);
@@ -96,6 +98,8 @@ public class UserAdminService {
             .findById(userId)
             .orElseThrow(() -> AuthException.notFound("User not found"));
 
+    var previousStatus = user.getStatus();
+
     if (StringUtils.hasText(request.displayName())) {
       user.setDisplayName(request.displayName().trim());
     }
@@ -104,6 +108,8 @@ public class UserAdminService {
     }
 
     userRepository.update(user);
+    userSessionRevoker.revokeRefreshTokenIfNewlyDisabled(
+        previousStatus, user.getStatus(), user.getId());
 
     var tenant =
         tenantRepository
@@ -173,6 +179,11 @@ public class UserAdminService {
         user.getDisplayName(),
         status,
         roles,
-        createdAt);
+        createdAt,
+        toEpochMillis(user.getLastLoginAt()));
+  }
+
+  private static Long toEpochMillis(Instant instant) {
+    return instant == null ? null : instant.toEpochMilli();
   }
 }

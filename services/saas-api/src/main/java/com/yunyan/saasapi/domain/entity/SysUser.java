@@ -20,4 +20,5 @@ public class SysUser {
   private String displayName;
   private String status;
   private Instant createdAt;
+  private Instant lastLoginAt;
 }

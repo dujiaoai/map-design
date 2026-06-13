@@ -57,7 +57,7 @@ class AdminUsersControllerTest {
             get("/v1/admin/users")
                 .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.users", hasSize(2)))
+        .andExpect(jsonPath("$.users", hasSize(3)))
         .andExpect(jsonPath("$.users[*].email", hasItem("admin@test.local")))
         .andExpect(jsonPath("$.users[*].roles", hasItem(java.util.List.of("TENANT_ADMIN"))));
   }
@@ -70,7 +70,7 @@ class AdminUsersControllerTest {
                 .param("tenantId", TEST_TENANT_ID.toString())
                 .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.users", hasSize(2)))
+        .andExpect(jsonPath("$.users", hasSize(3)))
         .andExpect(jsonPath("$.users[*].tenantSlug", hasItem("test")));
   }
 
@@ -84,7 +84,7 @@ class AdminUsersControllerTest {
                 .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.users", hasSize(1)))
-        .andExpect(jsonPath("$.total").value(2))
+        .andExpect(jsonPath("$.total").value(3))
         .andExpect(jsonPath("$.page").value(1))
         .andExpect(jsonPath("$.size").value(1));
   }
@@ -99,6 +99,19 @@ class AdminUsersControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.users", hasSize(1)))
         .andExpect(jsonPath("$.users[0].email").value("platform@test.local"));
+  }
+
+  @Test
+  void listUsers_withStatusFilter_returnsDisabledOnly() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/users")
+                .param("status", "disabled")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.users", hasSize(1)))
+        .andExpect(jsonPath("$.users[0].email").value("disabled@test.local"))
+        .andExpect(jsonPath("$.users[0].status").value("disabled"));
   }
 
   @Test
@@ -169,7 +182,53 @@ class AdminUsersControllerTest {
                             "email", "admin@test.local",
                             "password", "password",
                             "tenantId", "test"))))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.detail").value("Account is disabled"));
+  }
+
+  @Test
+  void patchUser_disableRevokesRefreshToken() throws Exception {
+    var victimLoginBody = loginBody("admin@test.local");
+    var refreshToken = JsonPath.read(victimLoginBody, "$.refreshToken");
+
+    mockMvc
+        .perform(
+            patch("/v1/admin/users/" + TENANT_ADMIN_USER_ID)
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("status", "disabled"))))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("refreshToken", refreshToken))))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void login_setsLastLoginAtOnUserList() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "admin@test.local",
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/v1/admin/users")
+                .param("q", "admin@test.local")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.users[0].email").value("admin@test.local"))
+        .andExpect(jsonPath("$.users[0].lastLoginAt").isNumber());
   }
 
   @Test

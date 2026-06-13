@@ -39,14 +39,15 @@ public class AdminUsersController {
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_USERS_READ + "')")
   @Operation(
       summary = "列出用户",
-      description = "可选 tenantId 过滤；q/page/size 分页搜索（无分页参数时返回全量）")
+      description = "可选 tenantId、status 过滤；q/page/size 分页搜索（无分页参数时返回全量）")
   public AdminUserListResponse listUsers(
       @RequestParam(required = false) UUID tenantId,
       @RequestParam(required = false) String q,
+      @RequestParam(required = false) String status,
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer size) {
     return userAdminService.listUsers(
-        Optional.ofNullable(tenantId), new AdminListParams(q, page, size));
+        Optional.ofNullable(tenantId), new AdminListParams(q, page, size, status));
   }
 
   @PostMapping

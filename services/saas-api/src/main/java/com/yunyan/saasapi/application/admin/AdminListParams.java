@@ -2,7 +2,11 @@ package com.yunyan.saasapi.application.admin;
 
 import org.springframework.util.StringUtils;
 
-public record AdminListParams(String q, Integer page, Integer size) {
+public record AdminListParams(String q, Integer page, Integer size, String status) {
+
+  public AdminListParams(String q, Integer page, Integer size) {
+    this(q, page, size, null);
+  }
 
   public static final int DEFAULT_PAGE_SIZE = 20;
   public static final int MAX_PAGE_SIZE = 100;
@@ -30,5 +34,16 @@ public record AdminListParams(String q, Integer page, Integer size) {
       return null;
     }
     return q.trim();
+  }
+
+  public String normalizedStatus() {
+    if (!StringUtils.hasText(status)) {
+      return null;
+    }
+    var normalized = status.trim();
+    if ("all".equalsIgnoreCase(normalized)) {
+      return null;
+    }
+    return normalized;
   }
 }

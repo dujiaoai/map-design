@@ -12,6 +12,7 @@ import com.yunyan.saasapi.domain.mapper.SysUserRoleMapper;
 import com.yunyan.saasapi.application.permission.PermissionResolver;
 import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.TenantRlsBypass;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -159,6 +160,16 @@ public class UserAuthRepository {
 
   private static boolean isTenantActive(SysTenant tenant) {
     return tenant.getStatus() == null || "active".equals(tenant.getStatus());
+  }
+
+  public void touchLastLoginAt(UUID userId) {
+    TenantRlsBypass.run(
+        () -> {
+          var user = new SysUser();
+          user.setId(userId);
+          user.setLastLoginAt(Instant.now());
+          sysUserMapper.updateById(user);
+        });
   }
 
   public void updatePasswordHash(UUID userId, String passwordHash) {

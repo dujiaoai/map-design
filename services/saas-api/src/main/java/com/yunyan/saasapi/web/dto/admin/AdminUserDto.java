@@ -13,4 +13,5 @@ public record AdminUserDto(
     @Schema(description = "显示名") String displayName,
     @Schema(description = "状态", allowableValues = {"active", "disabled"}) String status,
     @Schema(description = "角色码列表") List<String> roles,
-    @Schema(description = "创建时间，毫秒 epoch") long createdAt) {}
+    @Schema(description = "创建时间，毫秒 epoch") long createdAt,
+    @Schema(description = "最近登录时间，毫秒 epoch；未登录过为 null") Long lastLoginAt) {}

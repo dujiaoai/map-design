@@ -1,0 +1,2 @@
+ALTER TABLE sys_user
+    ADD COLUMN last_login_at TIMESTAMP WITH TIME ZONE;

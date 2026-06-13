@@ -43,8 +43,15 @@ export function UsersAdminPage() {
   })
 
   const usersQuery = useAdminPagedQuery({
-    queryKey: adminQueryKeys.users(tenantFilterId, queryParams),
-    queryFn: () => fetchAdminUsers(tenantFilterId, queryParams),
+    queryKey: adminQueryKeys.users(tenantFilterId, {
+      ...queryParams,
+      status: statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'disabled'),
+    }),
+    queryFn: () =>
+      fetchAdminUsers(tenantFilterId, {
+        ...queryParams,
+        status: statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'disabled'),
+      }),
   })
 
   const tenantLabel = useMemo(() => {
@@ -59,10 +66,8 @@ export function UsersAdminPage() {
       filterAdminTableRows(usersQuery.data?.users, {
         search: '',
         searchKeys: userSearchKeys,
-        status: statusFilter,
-        statusKey: 'status',
       }),
-    [usersQuery.data?.users, statusFilter],
+    [usersQuery.data?.users],
   )
 
   const total = usersQuery.data?.total ?? usersQuery.data?.users.length ?? 0
@@ -111,7 +116,10 @@ export function UsersAdminPage() {
         onSearchChange={setSearchInput}
         searchPlaceholder="搜索邮箱、显示名或租户 slug…"
         status={statusFilter}
-        onStatusChange={setStatusFilter}
+        onStatusChange={(value) => {
+          setStatusFilter(value)
+          setPage(1)
+        }}
         statusOptions={[
           { value: 'all', label: '全部状态' },
           { value: 'active', label: 'active' },
@@ -121,7 +129,7 @@ export function UsersAdminPage() {
 
       <AdminPanel className="p-0">
         {usersQuery.isLoading ? (
-          <AdminTableSkeleton columns={canWrite ? 7 : 6} showPagination />
+          <AdminTableSkeleton columns={canWrite ? 8 : 7} showPagination />
         ) : usersQuery.isError ? (
           <AdminEmptyState message="加载失败，请刷新重试" />
         ) : !usersQuery.data?.users.length ? (
@@ -138,6 +146,7 @@ export function UsersAdminPage() {
                   <AdminTableHeaderCell>租户</AdminTableHeaderCell>
                   <AdminTableHeaderCell>角色</AdminTableHeaderCell>
                   <AdminTableHeaderCell>状态</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>最近登录</AdminTableHeaderCell>
                   <AdminTableHeaderCell>创建时间</AdminTableHeaderCell>
                   {canWrite ? (
                     <AdminTableHeaderCell className="text-right">操作</AdminTableHeaderCell>
@@ -161,6 +170,9 @@ export function UsersAdminPage() {
                     </AdminTableCell>
                     <AdminTableCell>
                       <AdminStatusBadge status={user.status} />
+                    </AdminTableCell>
+                    <AdminTableCell className="text-muted-foreground">
+                      {user.lastLoginAt ? formatAdminDate(user.lastLoginAt) : '—'}
                     </AdminTableCell>
                     <AdminTableCell className="text-muted-foreground">
                       {formatAdminDate(user.createdAt)}

@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.application.admin;
 
+import com.yunyan.saasapi.application.auth.UserSessionRevoker;
 import com.yunyan.saasapi.domain.RoleRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.UserRepository;
@@ -42,6 +43,7 @@ public class TenantMemberAdminService {
   private final RoleRepository roleRepository;
   private final PasswordEncoder passwordEncoder;
   private final AdminAuditLogService adminAuditLogService;
+  private final UserSessionRevoker userSessionRevoker;
 
   public TenantMemberListResponse listMembers(SaasPrincipal principal, UUID tenantId) {
     ensureOwnTenant(principal, tenantId);
@@ -113,6 +115,7 @@ public class TenantMemberAdminService {
           }
 
           var user = requireMemberInTenant(tenantId, userId);
+          var previousStatus = user.getStatus();
 
           if (StringUtils.hasText(request.displayName())) {
             user.setDisplayName(request.displayName().trim());
@@ -122,6 +125,8 @@ public class TenantMemberAdminService {
           }
 
           userRepository.update(user);
+          userSessionRevoker.revokeRefreshTokenIfNewlyDisabled(
+              previousStatus, user.getStatus(), user.getId());
           var tenant = requireTenant(tenantId);
           return toDto(user, tenant);
         });
@@ -283,6 +288,7 @@ public class TenantMemberAdminService {
         user.getDisplayName(),
         status,
         roles,
-        createdAt);
+        createdAt,
+        user.getLastLoginAt() == null ? null : user.getLastLoginAt().toEpochMilli());
   }
 }

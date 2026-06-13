@@ -35,6 +35,7 @@ export interface AdminListQuery {
   q?: string
   page?: number
   size?: number
+  status?: 'active' | 'disabled'
 }
 
 export interface AdminTenantListResponse {
@@ -49,6 +50,7 @@ function buildAdminListQuery(params?: AdminListQuery) {
   if (params?.q) search.set('q', params.q)
   if (params?.page != null) search.set('page', String(params.page))
   if (params?.size != null) search.set('size', String(params.size))
+  if (params?.status) search.set('status', params.status)
   const query = search.toString()
   return query ? `?${query}` : ''
 }
@@ -120,6 +122,7 @@ export interface AdminUserSummary {
   tenantName: string
   roles: string[]
   createdAt: number
+  lastLoginAt?: number | null
 }
 
 export interface AdminUserListResponse {
@@ -135,6 +138,7 @@ export function fetchAdminUsers(tenantId?: string, params?: AdminListQuery) {
   if (params?.q) search.set('q', params.q)
   if (params?.page != null) search.set('page', String(params.page))
   if (params?.size != null) search.set('size', String(params.size))
+  if (params?.status) search.set('status', params.status)
   const query = search.toString()
   return api.get<AdminUserListResponse>(`/admin/users${query ? `?${query}` : ''}`)
 }

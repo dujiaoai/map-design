@@ -89,7 +89,7 @@ export function MembersAdminPage({
 
       <AdminPanel>
         {membersQuery.isLoading ? (
-          <AdminTableSkeleton columns={canWrite ? 6 : 5} />
+          <AdminTableSkeleton columns={canWrite ? 7 : 6} />
         ) : membersQuery.isError ? (
           <AdminEmptyState message="加载失败，请确认租户权限后重试" />
         ) : !membersQuery.data?.members.length ? (
@@ -104,6 +104,7 @@ export function MembersAdminPage({
                 <AdminTableHeaderCell>显示名</AdminTableHeaderCell>
                 <AdminTableHeaderCell>角色</AdminTableHeaderCell>
                 <AdminTableHeaderCell>状态</AdminTableHeaderCell>
+                <AdminTableHeaderCell>最近登录</AdminTableHeaderCell>
                 <AdminTableHeaderCell>创建时间</AdminTableHeaderCell>
                 {canWrite ? (
                   <AdminTableHeaderCell className="text-right">操作</AdminTableHeaderCell>
@@ -126,6 +127,9 @@ export function MembersAdminPage({
                   </AdminTableCell>
                   <AdminTableCell>
                     <AdminStatusBadge status={member.status} />
+                  </AdminTableCell>
+                  <AdminTableCell className="text-muted-foreground">
+                    {member.lastLoginAt ? formatAdminDate(member.lastLoginAt) : '—'}
                   </AdminTableCell>
                   <AdminTableCell className="text-muted-foreground">
                     {formatAdminDate(member.createdAt)}

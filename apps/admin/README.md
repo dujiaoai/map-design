@@ -48,6 +48,9 @@ pnpm --filter @repo/saas-admin dev
 | `/members` | 成员管理；`?tenantId=`（平台可跨租户） | `admin:members:read` 或平台角色 |
 | `/roles` | 角色与权限配置 | `admin:roles:read` |
 | `/account` | 账号资料与改密 | 已登录 |
+| `/billing` | 计费（规划中占位页） |
+| `/audit-logs` | 审计日志列表 | `admin:tenants:read` |
+| `/system` | 系统（规划中占位页） |
 | `/403` | 无运营权限 | — |
 | `*` | 404 友好页 | — |
 
@@ -75,6 +78,6 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 - Admin：http://localhost:8083/login（`admin@demo.local` / `password` / `demo`）
 - 若本机 `mvn spring-boot:run` 占用 8082，在 `deploy/.env` 设置 `SAAS_API_PORT=18082`
 
-## Later（P4）
+## Later（P4 余项）
 
-`/billing`、`/audit-logs`、`/system`、邮箱邀请、impersonation 审计、Admin MFA。
+邮箱邀请、impersonation 审计深化、Admin MFA；`/billing`、`/system` 占位页待产品定义。

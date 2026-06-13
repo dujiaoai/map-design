@@ -14,4 +14,5 @@ export const adminQueryKeys = {
   permissions: ['admin', 'permissions'] as const,
   rolePermissions: (roleId: string) => ['admin', 'roles', roleId, 'permissions'] as const,
   members: (tenantId: string) => ['admin', 'members', tenantId] as const,
+  auditLogs: (params?: AdminListQuery) => ['admin', 'audit-logs', params ?? {}] as const,
 }

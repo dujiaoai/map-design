@@ -65,6 +65,9 @@ pnpm --filter @repo/saas-web dev
 | `/members` | 成员管理；`?tenantId=`（平台可跨租户，租户管理员仅本租户） |
 | `/roles` | 角色与权限配置（未保存切换确认） |
 | `/account` | 当前账号资料（`PUT /users/me`）与改密 |
+| `/audit-logs` | 成员操作审计日志（`GET /v1/admin/audit-logs`） |
+| `/billing` | 计费（规划中占位页） |
+| `/system` | 系统配置（规划中占位页） |
 | `/403` | 无运营权限 |
 | `*` | 404 友好页（按会话返回概览或登录） |
 
@@ -77,17 +80,18 @@ pnpm --filter @repo/saas-web dev
 | 租户能力 | `GET /v1/admin/feature-catalog`；`GET/PUT /v1/admin/tenants/{id}/features` |
 | 用户 CRUD + 分页 | `GET/POST/PATCH /v1/admin/users` |
 | 成员与角色 | `GET/POST/PATCH /v1/admin/tenants/{id}/members`；`PUT .../roles` |
+| 审计日志 | `GET /v1/admin/audit-logs`（成员写操作 + crossTenant 标记） |
 | 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
 
 列表页 loading 使用 Skeleton；Vitest + MockMvc 覆盖 P0～P3 核心路径。
 
-### 规划（P4 · Later）
+### 规划（P4 · 进行中 / Later）
 
-```
-/billing, /audit-logs, /system   # 计费、审计、系统
-```
-
-邮箱邀请（无初始密码）、PLATFORM impersonation + 审计、Admin MFA 等见 [auth-rbac.md](./auth-rbac.md) 与 Admin 完善计划。
+| 状态 | 项 |
+| --- | --- |
+| ✅ | `/audit-logs` 列表 + `sys_admin_audit_log` + 成员写操作落库 |
+| 占位 | `/billing`、`/system` |
+| Later | 邮箱邀请、impersonation、Admin MFA |
 
 开发：
 

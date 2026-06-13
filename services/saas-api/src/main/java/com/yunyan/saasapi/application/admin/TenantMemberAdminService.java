@@ -41,6 +41,7 @@ public class TenantMemberAdminService {
   private final TenantRepository tenantRepository;
   private final RoleRepository roleRepository;
   private final PasswordEncoder passwordEncoder;
+  private final AdminAuditLogService adminAuditLogService;
 
   public TenantMemberListResponse listMembers(SaasPrincipal principal, UUID tenantId) {
     ensureOwnTenant(principal, tenantId);
@@ -58,7 +59,8 @@ public class TenantMemberAdminService {
   public AdminUserDto inviteMember(
       SaasPrincipal principal, UUID tenantId, InviteTenantMemberRequest request) {
     ensureOwnTenant(principal, tenantId);
-    return withTargetTenant(
+    var result =
+        withTargetTenant(
         tenantId,
         () -> {
           var tenant = requireActiveTenant(tenantId);
@@ -87,13 +89,21 @@ public class TenantMemberAdminService {
 
           return toDto(user, tenant);
         });
+    adminAuditLogService.recordMemberAction(
+        principal,
+        "member.invite",
+        tenantId,
+        UUID.fromString(result.id()),
+        "Invited " + result.email());
+    return result;
   }
 
   @Transactional
   public AdminUserDto patchMember(
       SaasPrincipal principal, UUID tenantId, UUID userId, PatchUserRequest request) {
     ensureOwnTenant(principal, tenantId);
-    return withTargetTenant(
+    var result =
+        withTargetTenant(
         tenantId,
         () -> {
           requireActiveTenant(tenantId);
@@ -115,13 +125,17 @@ public class TenantMemberAdminService {
           var tenant = requireTenant(tenantId);
           return toDto(user, tenant);
         });
+    adminAuditLogService.recordMemberAction(
+        principal, "member.update", tenantId, userId, "Updated member " + result.email());
+    return result;
   }
 
   @Transactional
   public AdminUserDto updateMemberRoles(
       SaasPrincipal principal, UUID tenantId, UUID userId, UpdateMemberRolesRequest request) {
     ensureOwnTenant(principal, tenantId);
-    return withTargetTenant(
+    var result =
+        withTargetTenant(
         tenantId,
         () -> {
           requireActiveTenant(tenantId);
@@ -134,6 +148,13 @@ public class TenantMemberAdminService {
           var tenant = requireTenant(tenantId);
           return toDto(user, tenant);
         });
+    adminAuditLogService.recordMemberAction(
+        principal,
+        "member.roles.update",
+        tenantId,
+        userId,
+        "Roles -> " + String.join(",", result.roles()));
+    return result;
   }
 
   private static <T> T withTargetTenant(UUID tenantId, Supplier<T> action) {

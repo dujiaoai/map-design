@@ -258,6 +258,29 @@ export function fetchSessionTenants() {
   return api.get<SessionTenantListResponse>('/tenants')
 }
 
+export interface AdminAuditLogEntry {
+  id: string
+  actorEmail: string
+  action: string
+  resourceType: string
+  resourceId: string | null
+  targetTenantId: string | null
+  crossTenant: boolean
+  detail: string | null
+  createdAt: number
+}
+
+export interface AdminAuditLogListResponse {
+  logs: AdminAuditLogEntry[]
+  total?: number
+  page?: number
+  size?: number
+}
+
+export function fetchAdminAuditLogs(params?: AdminListQuery) {
+  return api.get<AdminAuditLogListResponse>(`/admin/audit-logs${buildAdminListQuery(params)}`)
+}
+
 export async function updateAccountProfile(name: string) {
   const session = sessionSchema.parse(await api.put<Session>('/users/me', { name }))
   return session

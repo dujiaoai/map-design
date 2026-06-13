@@ -1,9 +1,12 @@
 import type { LucideIcon } from 'lucide-react'
 import {
   Building2Icon,
+  CreditCardIcon,
   LayoutDashboardIcon,
+  ScrollTextIcon,
   SettingsIcon,
   ShieldIcon,
+  SlidersHorizontalIcon,
   UserRoundCogIcon,
   UsersIcon,
 } from 'lucide-react'
@@ -46,6 +49,24 @@ export const adminNavItems: AdminNavItem[] = [
     label: '角色',
     icon: ShieldIcon,
     permissions: ['admin:roles:read'],
+  },
+  {
+    to: '/audit-logs',
+    label: '审计',
+    icon: ScrollTextIcon,
+    permissions: ['admin:tenants:read'],
+  },
+  {
+    to: '/billing',
+    label: '计费',
+    icon: CreditCardIcon,
+    permissions: ['admin:tenants:read'],
+  },
+  {
+    to: '/system',
+    label: '系统',
+    icon: SlidersHorizontalIcon,
+    permissions: ['admin:tenants:read'],
   },
   {
     to: '/account',

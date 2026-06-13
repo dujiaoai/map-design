@@ -11,6 +11,12 @@ import { Link, useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
 import { auth } from '~/shared/auth/client'
+import {
+  buildInviteLinkSubtitle,
+  formatJoinError,
+  loginHrefForTenant,
+  suggestsLoginAfterJoinError,
+} from '~/shared/auth/format-join-error'
 import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
 import { PasswordInput } from '~/shared/ui/password-input'
 
@@ -39,6 +45,14 @@ const joinInviteSchema = z
 
 type JoinInviteFormValues = z.infer<typeof joinInviteSchema>
 
+type InviteLinkPreview = {
+  tenantName: string
+  tenantSlug: string
+  roleCode: string
+  expiresAt: number | null
+  remainingUses: number | null
+}
+
 const ROLE_LABELS = {
   TENANT_ADMIN: '租户管理员',
   MEMBER: '成员',
@@ -55,19 +69,37 @@ export async function clientLoader() {
   return authGuestClientLoader()
 }
 
+function JoinInviteSummary({ preview }: { preview: InviteLinkPreview }) {
+  const roleLabel = ROLE_LABELS[preview.roleCode as keyof typeof ROLE_LABELS] ?? preview.roleCode
+  return (
+    <div className="login-field-group space-y-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70">
+      <p>
+        即将加入 <span className="text-brand-light">{preview.tenantName}</span>
+        {preview.tenantSlug ? (
+          <>
+            {' '}
+            (<span className="font-mono text-xs text-white/50">{preview.tenantSlug}</span>)
+          </>
+        ) : null}
+        ，角色为 <span className="text-brand-light">{roleLabel}</span>。
+      </p>
+      <p className="text-xs text-white/45">
+        {buildInviteLinkSubtitle(preview.expiresAt, preview.remainingUses)}
+      </p>
+    </div>
+  )
+}
+
 function JoinInviteForm({
   token,
-  tenantName,
-  roleCode,
+  preview,
 }: {
   token: string
-  tenantName: string
-  roleCode: string
+  preview: InviteLinkPreview
 }) {
   const navigate = useNavigate()
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const roleLabel =
-    ROLE_LABELS[roleCode as keyof typeof ROLE_LABELS] ?? roleCode
+  const loginHref = loginHrefForTenant(preview.tenantSlug)
 
   const {
     register,
@@ -89,18 +121,13 @@ function JoinInviteForm({
       })
       void navigate('/', { replace: true })
     } catch (error) {
-      setSubmitError(
-        formatAuthApiError(error, { detailLocalizations: AUTH_API_DETAIL_LOCALIZATIONS }),
-      )
+      setSubmitError(formatJoinError(error))
     }
   }
 
   return (
     <form className="login-form-fields" onSubmit={handleSubmit(onSubmit)}>
-      <p className="login-field-group rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70">
-        即将加入 <span className="text-brand-light">{tenantName}</span>
-        ，角色为 <span className="text-brand-light">{roleLabel}</span>。
-      </p>
+      <JoinInviteSummary preview={preview} />
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 0 } as CSSProperties}>
         <label className="text-sm font-medium text-white/70" htmlFor="join-email">
@@ -155,9 +182,18 @@ function JoinInviteForm({
       </div>
 
       {submitError ? (
-        <p className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90">
-          {submitError}
-        </p>
+        <div className="space-y-2">
+          <p className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90">
+            {submitError}
+          </p>
+          {suggestsLoginAfterJoinError(submitError) ? (
+            <p className="text-center text-sm text-white/50">
+              <Link className="text-brand-light hover:underline" to={loginHref}>
+                使用该租户账号登录
+              </Link>
+            </p>
+          ) : null}
+        </div>
       ) : null}
 
       <div className="login-field-group" style={{ '--field-i': 4 } as CSSProperties}>
@@ -172,7 +208,7 @@ function JoinInviteForm({
 
       <p className="text-center text-sm text-white/50">
         已有账号？{' '}
-        <Link className="text-brand-light hover:underline" to="/login">
+        <Link className="text-brand-light hover:underline" to={loginHref}>
           去登录
         </Link>
       </p>
@@ -233,10 +269,7 @@ export default function JoinInviteRoute() {
   const saasAuthEnabled = isSaasAuthEnabled()
   const shouldPreview = saasAuthEnabled && Boolean(token)
   const [previewError, setPreviewError] = useState<string | null>(null)
-  const [preview, setPreview] = useState<{
-    tenantName: string
-    roleCode: string
-  } | null>(null)
+  const [preview, setPreview] = useState<InviteLinkPreview | null>(null)
   const [previewLoading, setPreviewLoading] = useState(shouldPreview)
 
   useEffect(() => {
@@ -256,7 +289,13 @@ export default function JoinInviteRoute() {
       .previewInviteLink(token)
       .then((data) => {
         if (cancelled) return
-        setPreview({ tenantName: data.tenantName, roleCode: data.roleCode })
+        setPreview({
+          tenantName: data.tenantName,
+          tenantSlug: data.tenantSlug,
+          roleCode: data.roleCode,
+          expiresAt: data.expiresAt,
+          remainingUses: data.remainingUses,
+        })
       })
       .catch((error) => {
         if (cancelled) return
@@ -274,14 +313,18 @@ export default function JoinInviteRoute() {
     }
   }, [shouldPreview, token])
 
+  const shellSubtitle = preview
+    ? buildInviteLinkSubtitle(preview.expiresAt, preview.remainingUses)
+    : '请从管理员分享的完整链接打开本页'
+
   return (
     <AuthPageShell
       badge={saasAuthEnabled ? 'SaaS API' : '未启用'}
       brandDescription="使用管理员分享的邀请链接注册账号，立即加入团队协作空间。"
       headline="加入协作空间"
       headlineAccent="填写信息完成注册"
-      subtitle="邀请链接有效期内可多次使用（若管理员设置了上限）"
-      title="接受团队邀请"
+      subtitle={shellSubtitle}
+      title="加入团队"
     >
       {!saasAuthEnabled ? (
         <JoinInviteUnavailable />
@@ -292,11 +335,7 @@ export default function JoinInviteRoute() {
       ) : previewError ? (
         <InvalidLinkNotice message={previewError} />
       ) : preview ? (
-        <JoinInviteForm
-          token={token}
-          tenantName={preview.tenantName}
-          roleCode={preview.roleCode}
-        />
+        <JoinInviteForm token={token} preview={preview} />
       ) : null}
     </AuthPageShell>
   )

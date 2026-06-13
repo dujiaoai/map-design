@@ -33,7 +33,10 @@ export {
 } from './model/mock-nav-items'
 export { isParallelPanelTool } from './lib/is-parallel-panel-tool'
 export { buildNavMapSections } from './lib/build-nav-map-sections'
-export { filterNavMainItemsByTenant } from './lib/filter-nav-by-tenant'
+export {
+  filterNavMainItemsByTenant,
+  filterNavMainItemsForTenant,
+} from './lib/filter-nav-by-tenant'
 export {
   findNavSubItemByDockModuleId,
   findNavSubItemByModuleId,

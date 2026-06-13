@@ -9,8 +9,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router'
 
-import { mockNavMainItems } from '~/entities/navigation'
+import { filterNavMainItemsForTenant, mockNavMainItems } from '~/entities/navigation'
 import { useActiveNavItemIds, useMapWorkspaceStore } from '~/features/map-workspace'
+import { useEnabledTenantFeatures } from '~/features/team-switcher'
 import {
   buildWorkspaceCommandRegistry,
   createWorkspaceActionExecutor,
@@ -30,6 +31,11 @@ export function WorkspaceCommandPalette() {
   const setQuery = useMapWorkspaceStore((state) => state.setCommandPaletteQuery)
   const closeCommandPalette = useMapWorkspaceStore((state) => state.closeCommandPalette)
   const activeNavItemIds = useActiveNavItemIds()
+  const enabledTenantFeatures = useEnabledTenantFeatures()
+  const tenantNavItems = useMemo(
+    () => filterNavMainItemsForTenant(mockNavMainItems, enabledTenantFeatures),
+    [enabledTenantFeatures],
+  )
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -37,8 +43,8 @@ export function WorkspaceCommandPalette() {
   const [recentKeys, setRecentKeys] = useState<string[]>(() => loadCommandHistory())
 
   const registry = useMemo(
-    () => buildWorkspaceCommandRegistry(mockNavMainItems, activeNavItemIds),
-    [activeNavItemIds],
+    () => buildWorkspaceCommandRegistry(tenantNavItems, activeNavItemIds, enabledTenantFeatures),
+    [activeNavItemIds, enabledTenantFeatures, tenantNavItems],
   )
 
   const flatItems = useMemo(
@@ -57,7 +63,7 @@ export function WorkspaceCommandPalette() {
   const executeAction = useMemo(
     () =>
       createWorkspaceActionExecutor({
-        items: mockNavMainItems,
+        items: tenantNavItems,
         navigate,
         getState: () => useMapWorkspaceStore.getState(),
         clearMapTool: () => useMapWorkspaceStore.getState().clearMapTool(),
@@ -66,7 +72,7 @@ export function WorkspaceCommandPalette() {
           useMapWorkspaceStore.getState().setGlobalSearchQuery(nextQuery),
         openGlobalSearchDrawer: () => useMapWorkspaceStore.getState().openGlobalSearchDrawer(),
       }),
-    [navigate],
+    [navigate, tenantNavItems],
   )
 
   const runCommand = useCallback(

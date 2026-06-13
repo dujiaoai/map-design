@@ -1,3 +1,4 @@
+import { DEFAULT_TENANT_FEATURES, getModuleTenantFeature } from '../model/mock-nav-items'
 import type { NavMainItem, NavMainSubItem } from '../model/types'
 
 function filterSubItems(
@@ -33,4 +34,12 @@ export function filterNavMainItemsByTenant(
       return item
     })
     .filter((item): item is NavMainItem => item !== null)
+}
+
+/** 过滤 mock-nav 顶层项（侧栏段、命令面板、handleNavSelect 共用） */
+export function filterNavMainItemsForTenant(
+  items: NavMainItem[],
+  enabledTenantFeatures: ReadonlySet<string> = new Set(DEFAULT_TENANT_FEATURES),
+): NavMainItem[] {
+  return filterNavMainItemsByTenant(items, enabledTenantFeatures, getModuleTenantFeature)
 }

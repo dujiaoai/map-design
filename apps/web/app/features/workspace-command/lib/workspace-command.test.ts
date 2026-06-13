@@ -8,6 +8,16 @@ import {
 } from '~/features/workspace-command'
 
 describe('workspace command registry', () => {
+  it('excludes tenant-gated modules when feature is not enabled', () => {
+    const registry = buildWorkspaceCommandRegistry(
+      undefined,
+      [],
+      new Set(['custom.live-share']),
+    )
+    expect(registry.some((item) => item.id === 'nav:module-custom-highway-alert')).toBe(false)
+    expect(registry.some((item) => item.id === 'nav:module-custom-live-share')).toBe(true)
+  })
+
   it('includes nav tools and system commands', () => {
     const registry = buildWorkspaceCommandRegistry()
     expect(registry.some((item) => item.id === 'nav:tool-measure-distance')).toBe(true)

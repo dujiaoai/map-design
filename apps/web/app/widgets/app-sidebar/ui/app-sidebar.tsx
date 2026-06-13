@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router'
 
 import {
   buildNavMapSections,
+  filterNavMainItemsForTenant,
   mockNavMainItems,
   mockNavMapSectionDefs,
 } from '~/entities/navigation'
@@ -25,6 +26,10 @@ export function AppSidebar(props: ComponentProps<typeof UiAppSidebar>) {
   const toggleMapDockModule = useMapWorkspaceStore((state) => state.toggleMapDockModule)
 
   const enabledTenantFeatures = useEnabledTenantFeatures()
+  const tenantNavItems = useMemo(
+    () => filterNavMainItemsForTenant(mockNavMainItems, enabledTenantFeatures),
+    [enabledTenantFeatures],
+  )
 
   const navMapSections = useMemo(
     () => buildNavMapSections(mockNavMapSectionDefs, activeNavItemIds, enabledTenantFeatures),
@@ -34,14 +39,14 @@ export function AppSidebar(props: ComponentProps<typeof UiAppSidebar>) {
   const handleNavSelect = useMemo(
     () =>
       createNavSelectHandler({
-        items: mockNavMainItems,
+        items: tenantNavItems,
         navigate,
         togglePanelTool,
         toggleMapTool,
         toggleMapModule,
         toggleMapDockModule,
       }),
-    [navigate, toggleMapDockModule, toggleMapModule, toggleMapTool, togglePanelTool],
+    [navigate, tenantNavItems, toggleMapDockModule, toggleMapModule, toggleMapTool, togglePanelTool],
   )
 
   const { teams, activeTeamId, onTeamChange, showTeamSwitcher } = useTeamSwitcher()

@@ -1,4 +1,6 @@
 import {
+  DEFAULT_TENANT_FEATURES,
+  filterNavMainItemsForTenant,
   findNavSectionIdByNavItemId,
   mockModuleMeta,
   mockNavMainItems,
@@ -216,8 +218,10 @@ function flattenNavLeaves(items: NavMainItem[]): NavMainSubItem[] {
 export function buildWorkspaceCommandRegistry(
   items: NavMainItem[] = mockNavMainItems,
   activeNavItemIds: string[] = [],
+  enabledTenantFeatures: ReadonlySet<string> = new Set(DEFAULT_TENANT_FEATURES),
 ): WorkspaceCommandItem[] {
-  const navCommands = flattenNavLeaves(items)
+  const tenantNavItems = filterNavMainItemsForTenant(items, enabledTenantFeatures)
+  const navCommands = flattenNavLeaves(tenantNavItems)
     .map((leaf) => buildNavCommandItem(leaf, activeNavItemIds))
     .filter((item): item is WorkspaceCommandItem => Boolean(item))
     .sort(compareNavCommandItems)

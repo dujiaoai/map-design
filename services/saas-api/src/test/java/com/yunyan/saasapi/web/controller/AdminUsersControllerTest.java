@@ -324,6 +324,28 @@ class AdminUsersControllerTest {
   }
 
   @Test
+  void patchUser_disableBlocksExistingAccessToken() throws Exception {
+    var victimLoginBody = loginBody("admin@test.local");
+    var accessToken = JsonPath.read(victimLoginBody, "$.accessToken");
+
+    mockMvc
+        .perform(get("/v1/users/me").header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            patch("/v1/admin/users/" + TENANT_ADMIN_USER_ID)
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("status", "disabled"))))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(get("/v1/users/me").header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
   void login_setsLastLoginAtOnUserList() throws Exception {
     mockMvc
         .perform(

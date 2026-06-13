@@ -15,6 +15,7 @@ import { createNavSelectHandler, useActiveNavItemIds, useMapWorkspaceStore } fro
 import {
   canReorderQuickTools,
   DEFAULT_QUICK_TOOLBAR_POSITION,
+  filterQuickToolsForMapWrite,
   groupSelectedQuickTools,
   hasSeenQuickToolbarOnboarding,
   loadQuickToolbarPosition,
@@ -24,6 +25,7 @@ import {
   saveQuickToolbarPosition,
   useQuickToolbarPrefs,
 } from '~/features/map-quick-toolbar'
+import { useCanWriteMap } from '~/shared/session/use-session-access'
 import {
   EDGE_MARGIN,
   QUICK_TOOLBAR_DRAG_ID,
@@ -40,6 +42,11 @@ import { QuickToolbarSortableTool } from './quick-toolbar-sortable-tool'
 export function MapQuickToolbar({ className }: { className?: string }) {
   const { selectedIds, collapsed, setCollapsed, layout, setLayout, catalog, toggleTool, reorderTools, restoreDefaults, minTools } =
     useQuickToolbarPrefs()
+  const canWriteMap = useCanWriteMap()
+  const visibleSelectedIds = useMemo(
+    () => filterQuickToolsForMapWrite(selectedIds, canWriteMap),
+    [selectedIds, canWriteMap],
+  )
 
   const containerRef = useRef<HTMLElement | null>(null)
   const toolbarRef = useRef<HTMLDivElement>(null)
@@ -47,7 +54,7 @@ export function MapQuickToolbar({ className }: { className?: string }) {
   const [canvasWidth, setCanvasWidth] = useState(0)
   const [showOnboarding, setShowOnboarding] = useState(false)
 
-  const layoutKey = `${collapsed ? 'collapsed' : 'expanded'}|${layout}|${selectedIds.join('|')}|${canvasWidth}`
+  const layoutKey = `${collapsed ? 'collapsed' : 'expanded'}|${layout}|${visibleSelectedIds.join('|')}|${canvasWidth}`
 
   const surface = useWorkspaceSurfaceDnd({
     dragId: QUICK_TOOLBAR_DRAG_ID,
@@ -123,7 +130,7 @@ export function MapQuickToolbar({ className }: { className?: string }) {
         onCollapse={handleCollapse}
         layout={layout}
         onLayoutChange={handleLayoutChange}
-        selectedIds={selectedIds}
+        selectedIds={visibleSelectedIds}
         catalog={catalog}
         toggleTool={toggleTool}
         reorderTools={reorderTools}

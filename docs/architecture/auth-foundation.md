@@ -107,3 +107,4 @@ flowchart LR
 | 项 | 说明 |
 | --- | --- |
 | — | `pnpm smoke:saas-api` 全链路（需 Docker Postgres + API） |
+| — | JWT 权限变更后前端主动 refresh 以同步 `@PreAuthorize` |

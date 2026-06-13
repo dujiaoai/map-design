@@ -154,6 +154,8 @@ public class TenantMemberAdminService {
           var roles = resolveAssignableRoles(normalizeRoleCodes(request.roleCodes()));
           userRepository.replaceUserRoles(userId, roles.stream().map(SysRole::getId).toList());
 
+          userSessionRevoker.revokeActiveSessions(userId);
+
           var user = requireMemberInTenant(tenantId, userId);
           var tenant = requireTenant(tenantId);
           return toDto(user, tenant);

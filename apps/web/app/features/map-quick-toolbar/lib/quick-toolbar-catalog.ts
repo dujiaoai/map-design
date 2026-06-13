@@ -132,6 +132,24 @@ export function canReorderQuickTools(activeId: string, overId: string): boolean 
   return Boolean(activeTool && overTool && activeTool.group === overTool.group)
 }
 
+/** VIEWER 等无 workspace:map:write 时隐藏的工具 */
+export function quickToolRequiresMapWrite(navItemId: string): boolean {
+  const tool = resolveQuickToolDef(navItemId)
+  if (!tool) return false
+  if (tool.group === 'draw' || tool.group === 'compare' || tool.group === 'measure') {
+    return true
+  }
+  return navItemId === 'tool-import-file'
+}
+
+export function filterQuickToolsForMapWrite(
+  ids: string[],
+  canWriteMap: boolean,
+): string[] {
+  if (canWriteMap) return ids
+  return ids.filter((id) => !quickToolRequiresMapWrite(id))
+}
+
 export function sanitizeQuickToolbarIds(ids: string[]): string[] {
   const unique: string[] = []
   for (const id of ids) {

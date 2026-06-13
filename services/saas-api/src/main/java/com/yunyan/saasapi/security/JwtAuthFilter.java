@@ -48,6 +48,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       if (parsed.jti() != null && accessTokenDenylist.isDenied(parsed.jti())) {
         return;
       }
+      if (accessTokenDenylist.isUserDenied(parsed.userId())) {
+        return;
+      }
       TenantContext.set(parsed.tenantId().toString());
 
       var permissionCodes = resolvePermissionCodes(parsed.permissionCodes(), parsed.roleCodes());

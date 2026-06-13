@@ -4,6 +4,12 @@ export {
   authChangePasswordSchema,
   authPasswordFieldSchema,
 } from './src/password-policy'
+export { authProfileFormSchema, authResetPasswordSchema } from './src/account-schemas'
+export {
+  AUTH_API_DETAIL_LOCALIZATIONS,
+  type FormatAuthApiErrorOptions,
+  formatAuthApiError,
+} from './src/format-auth-api-error'
 export { type AuthApi, type AuthApiOptions, createAuthApi } from './src/auth-api'
 export { type AuthClient, type CreateAuthOptions, createAuth } from './src/create-auth'
 export { SessionProvider, useIsAuthenticated, useSession } from './src/react/session-context'

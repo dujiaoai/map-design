@@ -1,37 +1,14 @@
-const loginDetailLocalizations = {
-  'Tenant is suspended': '该租户已停用，请联系管理员',
-  'Account is disabled': '账号已禁用，请联系管理员',
-  'Too many login attempts, try again later': '登录尝试过于频繁，请稍后再试',
-} as const
+import { AUTH_API_DETAIL_LOCALIZATIONS, formatAuthApiError } from '@repo/auth'
 
-function parseProblemDetail(message: string): string | null {
-  const bodyMatch = message.match(/Auth API \d{3}: (.+)/)
-  if (!bodyMatch?.[1]) return null
-  try {
-    const parsed = JSON.parse(bodyMatch[1]) as { detail?: string; title?: string }
-    return parsed.detail ?? parsed.title ?? null
-  } catch {
-    return null
-  }
-}
-
-function localizeDetail(detail: string): string {
-  return loginDetailLocalizations[detail as keyof typeof loginDetailLocalizations] ?? detail
-}
-
+/** 将 admin 登录抛错转为可读文案 */
 export function formatLoginError(error: unknown): string {
-  if (!(error instanceof Error)) return '登录失败，请稍后重试'
-  const message = error.message
-  if (message.includes('未配置 apiBaseUrl')) {
-    return '未配置 VITE_API_URL，无法连接登录服务'
-  }
-  const statusMatch = message.match(/Auth API (\d{3}):/)
-  if (statusMatch) {
-    const status = Number(statusMatch[1])
-    const detail = parseProblemDetail(message)
-    if (detail) return localizeDetail(detail)
-    if (status === 401) return '邮箱、密码或租户不正确'
-    if (status === 429) return '操作过于频繁，请稍后再试'
-  }
-  return '登录失败，请检查账号信息后重试'
+  return formatAuthApiError(error, {
+    statusMessages: {
+      401: '邮箱、密码或租户不正确',
+      429: '操作过于频繁，请稍后再试',
+    },
+    detailLocalizations: AUTH_API_DETAIL_LOCALIZATIONS,
+    unconfiguredMessage: '未配置 VITE_API_URL，无法连接登录服务',
+    fallbackMessage: '登录失败，请检查账号信息后重试',
+  })
 }

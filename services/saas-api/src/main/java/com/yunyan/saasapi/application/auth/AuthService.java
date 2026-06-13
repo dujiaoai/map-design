@@ -314,6 +314,8 @@ public class AuthService {
   }
 
   private AuthTokensDto issueTokens(AuthenticatedUser user) {
+    // 账号曾禁用时写入的 user 级 denylist 可能仍残留；成功签发新 token 即视为可登录
+    accessTokenDenylist.clearUserDeny(user.id());
     var access = jwtService.issueAccessToken(user);
     var refresh = jwtService.issueRefreshToken(user);
     var refreshTtl = Duration.between(java.time.Instant.now(), refresh.expiresAt());

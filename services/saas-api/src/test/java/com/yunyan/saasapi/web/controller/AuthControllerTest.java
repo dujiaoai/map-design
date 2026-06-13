@@ -12,7 +12,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.yunyan.saasapi.security.AccessTokenDenylist;
+import java.time.Duration;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -38,9 +41,25 @@ class AuthControllerTest {
   @Autowired
   JdbcTemplate jdbcTemplate;
 
+  @Autowired
+  AccessTokenDenylist accessTokenDenylist;
+
   @Test
   void protectedEndpoint_withoutToken_returns401() throws Exception {
     mockMvc.perform(get("/v1/users/me")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void login_clearsStaleUserDenylist() throws Exception {
+    var userId = UUID.fromString("22222222-2222-2222-2222-222222222201");
+    accessTokenDenylist.denyUser(userId, Duration.ofMinutes(15));
+
+    var accessToken = JsonPath.read(loginAndGetBody(), "$.accessToken");
+
+    mockMvc
+        .perform(get("/v1/users/me").header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.email").value("admin@test.local"));
   }
 
   @Test

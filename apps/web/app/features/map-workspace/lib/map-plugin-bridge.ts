@@ -54,6 +54,11 @@ export function resetMapPluginBridge(): void {
   customBridgeAttached = false
 }
 
+/** 是否已由 MapProvider / 宿主注入自定义 bridge（非默认 noop） */
+export function isMapPluginBridgeAttached(): boolean {
+  return customBridgeAttached
+}
+
 /** 地图引擎已挂载（注入 bridge 或显式 env 开启） */
 export function isMapEngineReady(): boolean {
   return customBridgeAttached || import.meta.env.VITE_MAP_ENGINE_READY === 'true'

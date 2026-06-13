@@ -1,5 +1,12 @@
 export { createNavSelectHandler } from './lib/handle-nav-select'
 export {
+  createRegistryMapPluginBridge,
+  type MapPluginDrawerLoader,
+  type MapPluginRuntime,
+  type MapPluginToolLoader,
+  type RegistryMapPluginBridgeOptions,
+} from './lib/create-registry-map-plugin-bridge'
+export {
   buildWorkspaceBreadcrumbTrail,
   resolveWorkspaceContext,
   selectWorkspaceBreadcrumbTrail,
@@ -11,6 +18,7 @@ export {
   createDevMapPluginBridge,
   getMapPluginBridge,
   isMapEngineReady,
+  isMapPluginBridgeAttached,
   resetMapPluginBridge,
   setMapPluginBridge,
   type MapPluginBridge,

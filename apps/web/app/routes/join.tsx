@@ -20,6 +20,7 @@ import {
   loginHrefForTenant,
   suggestsLoginAfterJoinError,
 } from '~/shared/auth/format-join-error'
+import { formatTenantMemberRoleLabel } from '~/shared/auth/tenant-member-role-labels'
 import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
 import { PasswordInput } from '~/shared/ui/password-input'
 
@@ -60,12 +61,6 @@ type InviteLinkPreview = {
   remainingUses: number | null
 }
 
-const ROLE_LABELS = {
-  TENANT_ADMIN: '租户管理员',
-  MEMBER: '成员',
-  VIEWER: '只读查看者',
-} as const
-
 function fieldA11y(errorMessage: string | undefined, errorId: string) {
   return {
     'aria-describedby': errorMessage ? errorId : undefined,
@@ -84,7 +79,7 @@ export async function clientLoader() {
 }
 
 function JoinInviteSummary({ preview }: { preview: InviteLinkPreview }) {
-  const roleLabel = ROLE_LABELS[preview.roleCode as keyof typeof ROLE_LABELS] ?? preview.roleCode
+  const roleLabel = formatTenantMemberRoleLabel(preview.roleCode)
   return (
     <div className="login-field-group space-y-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70">
       <p>
@@ -296,9 +291,10 @@ function InvalidLinkNotice({ message }: { message: string }) {
 
 export default function JoinInviteRoute() {
   const [searchParams] = useSearchParams()
-  const token = searchParams.get('token')?.trim() ?? ''
+  const navigate = useNavigate()
+  const [inviteToken] = useState(() => searchParams.get('token')?.trim() ?? '')
   const saasAuthEnabled = isSaasAuthEnabled()
-  const shouldPreview = saasAuthEnabled && Boolean(token)
+  const shouldPreview = saasAuthEnabled && Boolean(inviteToken)
   const [previewError, setPreviewError] = useState<string | null>(null)
   const [preview, setPreview] = useState<InviteLinkPreview | null>(null)
   const [previewLoading, setPreviewLoading] = useState(shouldPreview)
@@ -317,7 +313,7 @@ export default function JoinInviteRoute() {
     setPreview(null)
 
     void auth
-      .previewInviteLink(token)
+      .previewInviteLink(inviteToken)
       .then((data) => {
         if (cancelled) return
         setPreview({
@@ -342,7 +338,12 @@ export default function JoinInviteRoute() {
     return () => {
       cancelled = true
     }
-  }, [shouldPreview, token])
+  }, [shouldPreview, inviteToken])
+
+  useEffect(() => {
+    if (!preview || !searchParams.has('token')) return
+    void navigate({ pathname: '/join', search: '' }, { replace: true })
+  }, [navigate, preview, searchParams])
 
   const shellSubtitle = preview
     ? buildInviteLinkSubtitle(preview.expiresAt, preview.remainingUses)
@@ -359,14 +360,14 @@ export default function JoinInviteRoute() {
     >
       {!saasAuthEnabled ? (
         <JoinInviteUnavailable />
-      ) : !token ? (
+      ) : !inviteToken ? (
         <MissingTokenNotice />
       ) : previewLoading ? (
         <p className="text-sm text-white/60">正在验证邀请链接…</p>
       ) : previewError ? (
         <InvalidLinkNotice message={previewError} />
       ) : preview ? (
-        <JoinInviteForm token={token} preview={preview} />
+        <JoinInviteForm token={inviteToken} preview={preview} />
       ) : null}
     </AuthPageShell>
   )

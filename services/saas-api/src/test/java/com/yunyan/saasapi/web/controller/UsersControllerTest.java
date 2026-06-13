@@ -132,6 +132,13 @@ class UsersControllerTest {
                             "newPassword", "newpassword"))))
         .andExpect(status().isNoContent());
 
+    var notificationCount =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM sys_email_outbox WHERE to_email = ? AND template = 'password-changed'",
+            Integer.class,
+            email);
+    org.junit.jupiter.api.Assertions.assertEquals(1, notificationCount);
+
     mockMvc
         .perform(
             post("/v1/auth/refresh")

@@ -56,6 +56,7 @@
 | D-02 | 成员邀请：发送邮件 | ✅ M1 见 [auth-email-module.md](./auth-email-module.md) |
 | D-05 | 自助密码重置（邮件链接） | ✅ M3 见 [auth-email-module.md](./auth-email-module.md) |
 | D-06 | 注册邮箱验证 | ✅ M2 见 [auth-email-module.md](./auth-email-module.md) |
+| D-07 | 安全通知邮件（改密/禁用） | ✅ M4 见 [auth-email-module.md](./auth-email-module.md) |
 | D-03 | 跨租户成员操作审计可读性（已有首期，补 UI 筛选） |
 | D-04 | Account 页 Web/Admin 组件复用（`@repo/auth` 或 shared feature） |
 

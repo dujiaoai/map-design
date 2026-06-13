@@ -88,6 +88,102 @@ public class EmailDeliveryService {
     return outbox.getId();
   }
 
+  public UUID queuePasswordChangedEmail(
+      UUID tenantId, UUID userId, String toEmail, String tenantName) {
+    var outbox = new SysEmailOutbox();
+    outbox.setId(UUID.randomUUID());
+    outbox.setTenantId(tenantId);
+    outbox.setUserId(userId);
+    outbox.setTemplate("password-changed");
+    outbox.setToEmail(toEmail);
+    outbox.setPayloadJson(writePayload(Map.of("tenantName", tenantName)));
+    outbox.setStatus("pending");
+    outbox.setCreatedAt(Instant.now());
+    emailOutboxRepository.insert(outbox);
+    deliverPasswordChanged(outbox.getId(), toEmail, tenantName);
+    return outbox.getId();
+  }
+
+  public UUID queueAccountDisabledEmail(
+      UUID tenantId, UUID userId, String toEmail, String tenantName) {
+    var outbox = new SysEmailOutbox();
+    outbox.setId(UUID.randomUUID());
+    outbox.setTenantId(tenantId);
+    outbox.setUserId(userId);
+    outbox.setTemplate("account-disabled");
+    outbox.setToEmail(toEmail);
+    outbox.setPayloadJson(writePayload(Map.of("tenantName", tenantName)));
+    outbox.setStatus("pending");
+    outbox.setCreatedAt(Instant.now());
+    emailOutboxRepository.insert(outbox);
+    deliverAccountDisabled(outbox.getId(), toEmail, tenantName);
+    return outbox.getId();
+  }
+
+  private void deliverPasswordChanged(UUID outboxId, String toEmail, String tenantName) {
+    if (!saasAppProperties.getMail().isEnabled()) {
+      log.info(
+          "Mail disabled — password changed notification for {} (tenant {})",
+          toEmail,
+          tenantName);
+      emailOutboxRepository.markSent(outboxId);
+      return;
+    }
+
+    try {
+      var message = new SimpleMailMessage();
+      message.setFrom(saasAppProperties.getMail().getFrom());
+      message.setTo(toEmail);
+      message.setSubject("云眼地图 · 密码已变更");
+      message.setText(
+          """
+          您好，
+
+          您在租户「%s」的账号密码已成功变更。
+
+          如非本人操作，请立即联系管理员或通过「忘记密码」重置密码。
+          """
+              .formatted(tenantName));
+      mailSender.send(message);
+      emailOutboxRepository.markSent(outboxId);
+    } catch (MailException ex) {
+      log.warn("Failed to send password changed email to {}: {}", toEmail, ex.getMessage());
+      emailOutboxRepository.markFailed(outboxId, truncate(ex.getMessage()));
+    }
+  }
+
+  private void deliverAccountDisabled(UUID outboxId, String toEmail, String tenantName) {
+    if (!saasAppProperties.getMail().isEnabled()) {
+      log.info(
+          "Mail disabled — account disabled notification for {} (tenant {})",
+          toEmail,
+          tenantName);
+      emailOutboxRepository.markSent(outboxId);
+      return;
+    }
+
+    try {
+      var message = new SimpleMailMessage();
+      message.setFrom(saasAppProperties.getMail().getFrom());
+      message.setTo(toEmail);
+      message.setSubject("云眼地图 · 账号已禁用");
+      message.setText(
+          """
+          您好，
+
+          您在租户「%s」的账号已被管理员禁用，当前无法登录。
+
+          如有疑问，请联系租户管理员。
+          """
+              .formatted(tenantName));
+      mailSender.send(message);
+      emailOutboxRepository.markSent(outboxId);
+    } catch (MailException ex) {
+      log.warn("Failed to send account disabled email to {}: {}", toEmail, ex.getMessage());
+      emailOutboxRepository.markFailed(outboxId, truncate(ex.getMessage()));
+    }
+  }
+
   private void deliverRegisterVerification(
       UUID outboxId, String toEmail, String tenantName, String verifyUrl) {
     if (!saasAppProperties.getMail().isEnabled()) {

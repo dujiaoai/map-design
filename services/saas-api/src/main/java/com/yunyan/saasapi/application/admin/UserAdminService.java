@@ -103,8 +103,7 @@ public class UserAdminService {
     }
 
     userRepository.update(user);
-    userSessionRevoker.revokeRefreshTokenIfNewlyDisabled(
-        previousStatus, user.getStatus(), user.getId());
+    userSessionRevoker.handleUserStatusChange(previousStatus, user.getStatus(), user);
 
     var tenant =
         tenantRepository

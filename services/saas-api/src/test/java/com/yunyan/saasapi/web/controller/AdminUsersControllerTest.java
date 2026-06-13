@@ -252,6 +252,13 @@ class AdminUsersControllerTest {
                 .content(objectMapper.writeValueAsString(Map.of("status", "disabled"))))
         .andExpect(status().isOk());
 
+    var notificationCount =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM sys_email_outbox WHERE to_email = ? AND template = 'account-disabled'",
+            Integer.class,
+            "admin@test.local");
+    org.junit.jupiter.api.Assertions.assertEquals(1, notificationCount);
+
     mockMvc
         .perform(
             post("/v1/auth/refresh")

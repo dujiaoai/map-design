@@ -20,6 +20,7 @@ import com.yunyan.saasapi.web.dto.auth.SessionUserDto;
 import com.yunyan.saasapi.application.email.EmailTokenHasher;
 import com.yunyan.saasapi.application.email.PasswordResetService;
 import com.yunyan.saasapi.application.email.RegistrationVerificationService;
+import com.yunyan.saasapi.application.email.SecurityNotificationService;
 import com.yunyan.saasapi.application.email.UserInviteService;
 import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
 import com.yunyan.saasapi.domain.UserRepository;
@@ -53,6 +54,7 @@ public class AuthService {
   private final PasswordResetService passwordResetService;
   private final RegistrationVerificationService registrationVerificationService;
   private final AuthRateLimitService authRateLimitService;
+  private final SecurityNotificationService securityNotificationService;
 
   public void requestRegistration(RegisterRequest request, String clientIp) {
     authRateLimitService.checkRegister(clientIp, request.email());
@@ -160,6 +162,8 @@ public class AuthService {
     userAuthRepository.updatePasswordHash(
         principal.userId(), passwordEncoder.encode(request.newPassword()));
     logout(principal.userId());
+    securityNotificationService.notifyPasswordChanged(
+        principal.userId(), principal.tenantId(), user.email());
   }
 
   @Transactional
@@ -219,6 +223,8 @@ public class AuthService {
   public LoginResponse confirmPasswordReset(PasswordResetConfirmRequest request) {
     var user = passwordResetService.confirmPasswordReset(request.token(), request.password());
     userAuthRepository.touchLastLoginAt(user.id());
+    securityNotificationService.notifyPasswordChanged(
+        user.id(), user.tenantId(), user.email());
     return buildLoginResponse(user);
   }
 

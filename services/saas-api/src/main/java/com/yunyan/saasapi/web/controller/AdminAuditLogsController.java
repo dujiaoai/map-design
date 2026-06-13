@@ -1,7 +1,7 @@
 package com.yunyan.saasapi.web.controller;
 
 import com.yunyan.saasapi.application.admin.AdminAuditLogService;
-import com.yunyan.saasapi.application.admin.AdminListParams;
+import com.yunyan.saasapi.application.admin.AuditLogListParams;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditLogListResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,7 +31,9 @@ public class AdminAuditLogsController {
   public AdminAuditLogListResponse listAuditLogs(
       @RequestParam(required = false) String q,
       @RequestParam(required = false) Integer page,
-      @RequestParam(required = false) Integer size) {
-    return adminAuditLogService.listLogs(new AdminListParams(q, page, size));
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String action,
+      @RequestParam(required = false) Boolean crossTenant) {
+    return adminAuditLogService.listLogs(new AuditLogListParams(q, page, size, action, crossTenant));
   }
 }

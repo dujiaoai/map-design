@@ -19,12 +19,12 @@ public class AdminAuditLogService {
 
   private final AdminAuditLogRepository adminAuditLogRepository;
 
-  public AdminAuditLogListResponse listLogs(AdminListParams params) {
+  public AdminAuditLogListResponse listLogs(AuditLogListParams params) {
     var page = adminAuditLogRepository.findLogs(params);
     var logs = page.items().stream().map(this::toDto).toList();
-    if (params.isPaginated()) {
+    if (params.toListParams().isPaginated()) {
       return new AdminAuditLogListResponse(
-          logs, page.total(), params.resolvePage(), params.resolveSize());
+          logs, page.total(), params.toListParams().resolvePage(), params.toListParams().resolveSize());
     }
     return new AdminAuditLogListResponse(logs);
   }

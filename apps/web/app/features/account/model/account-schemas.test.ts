@@ -13,12 +13,20 @@ describe('profileFormSchema', () => {
 })
 
 describe('resetPasswordSchema', () => {
-  it('requires matching passwords and min length', () => {
+  it('requires matching passwords, min length, and new != old', () => {
     expect(
       resetPasswordSchema.safeParse({
         oldPassword: 'password',
         newPassword: 'short',
         confirmPassword: 'short',
+      }).success,
+    ).toBe(false)
+
+    expect(
+      resetPasswordSchema.safeParse({
+        oldPassword: 'password',
+        newPassword: 'password',
+        confirmPassword: 'password',
       }).success,
     ).toBe(false)
 

@@ -1,6 +1,7 @@
 export {
   AUTH_PASSWORD_MAX_LENGTH,
   AUTH_PASSWORD_MIN_LENGTH,
+  authChangePasswordSchema,
   authPasswordFieldSchema,
 } from './src/password-policy'
 export { type AuthApi, type AuthApiOptions, createAuthApi } from './src/auth-api'

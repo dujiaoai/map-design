@@ -10,7 +10,7 @@ import { useTenantsQuery } from '~/shared/queries/tenant-queries'
 export function useTeamSwitcher() {
   const navigate = useNavigate()
   const saasTeams = usesSaasSessionBootstrap()
-  const { session } = useSession()
+  const session = useSession()
   const tenantsQuery = useTenantsQuery(saasTeams)
   const [switching, setSwitching] = useState(false)
 

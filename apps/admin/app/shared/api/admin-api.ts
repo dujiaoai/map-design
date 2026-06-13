@@ -36,6 +36,8 @@ export interface AdminListQuery {
   page?: number
   size?: number
   status?: 'active' | 'disabled' | 'invited'
+  action?: string
+  crossTenant?: boolean
 }
 
 export interface AdminTenantListResponse {
@@ -51,6 +53,8 @@ function buildAdminListQuery(params?: AdminListQuery) {
   if (params?.page != null) search.set('page', String(params.page))
   if (params?.size != null) search.set('size', String(params.size))
   if (params?.status) search.set('status', params.status)
+  if (params?.action) search.set('action', params.action)
+  if (params?.crossTenant != null) search.set('crossTenant', String(params.crossTenant))
   const query = search.toString()
   return query ? `?${query}` : ''
 }

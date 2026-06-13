@@ -1,4 +1,5 @@
-import { Badge } from '@repo/ui'
+import { Badge, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
+import { useState } from 'react'
 
 import { fetchAdminAuditLogs, type AdminAuditLogEntry } from '~/shared/api/admin-api'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
@@ -17,12 +18,28 @@ import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { formatAdminDate } from '~/shared/ui/admin-status-badge'
 
+const AUDIT_ACTION_OPTIONS = [
+  { value: 'all', label: '全部动作' },
+  { value: 'member.invite', label: '邀请成员' },
+  { value: 'member.invite.resend', label: '重发邀请' },
+  { value: 'member.update', label: '更新成员' },
+  { value: 'member.roles.update', label: '更新角色' },
+] as const
+
 export function AuditLogsAdminPage() {
   const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
+  const [actionFilter, setActionFilter] = useState<string>('all')
+  const [crossTenantOnly, setCrossTenantOnly] = useState(false)
+
+  const listQuery = {
+    ...queryParams,
+    action: actionFilter === 'all' ? undefined : actionFilter,
+    crossTenant: crossTenantOnly ? true : undefined,
+  }
 
   const query = useAdminPagedQuery({
-    queryKey: adminQueryKeys.auditLogs(queryParams),
-    queryFn: () => fetchAdminAuditLogs(queryParams),
+    queryKey: adminQueryKeys.auditLogs(listQuery),
+    queryFn: () => fetchAdminAuditLogs(listQuery),
   })
 
   const total = query.data?.total ?? query.data?.logs.length ?? 0
@@ -34,11 +51,42 @@ export function AuditLogsAdminPage() {
         description="记录成员邀请、更新与角色分配；跨租户操作会标记 crossTenant。"
       />
 
-      <AdminTableToolbar
-        search={searchInput}
-        onSearchChange={setSearchInput}
-        searchPlaceholder="搜索操作人、动作或详情…"
-      />
+      <div className="flex flex-wrap items-center gap-3">
+        <AdminTableToolbar
+          search={searchInput}
+          onSearchChange={setSearchInput}
+          searchPlaceholder="搜索操作人、动作或详情…"
+        />
+        <Select
+          value={actionFilter}
+          onValueChange={(value) => {
+            setActionFilter(value)
+            setPage(1)
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="动作类型" />
+          </SelectTrigger>
+          <SelectContent>
+            {AUDIT_ACTION_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <label className="text-muted-foreground flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={crossTenantOnly}
+            onChange={(event) => {
+              setCrossTenantOnly(event.target.checked)
+              setPage(1)
+            }}
+          />
+          仅跨租户
+        </label>
+      </div>
 
       <AdminPanel className="p-0">
         {query.isLoading ? (

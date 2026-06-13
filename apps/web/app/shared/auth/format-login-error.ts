@@ -4,10 +4,12 @@ import { formatAuthApiError } from './format-auth-api-error'
 export function formatLoginError(error: unknown): string {
   return formatAuthApiError(error, {
     statusMessages: {
+      400: '请填写租户标识后再登录',
       401: '邮箱、密码或租户不正确',
       429: '操作过于频繁，请稍后再试',
     },
     detailLocalizations: {
+      'Tenant slug is required': '该邮箱关联多个租户，请填写租户标识后再登录',
       'Tenant is suspended': '该租户已停用，请联系管理员',
       'Account is disabled': '账号已禁用，请联系管理员',
       'Invite pending, check your email to set a password': '邀请待接受，请查收邮件设置密码',

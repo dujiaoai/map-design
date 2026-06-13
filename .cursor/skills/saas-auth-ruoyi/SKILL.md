@@ -1,8 +1,8 @@
 ---
 name: saas-auth-ruoyi
 description: >-
-  saas-web 认证与会话：C-06～C-08 已切 SaaS 登录/注册/bootstrap；C-09 菜单 filter 暂缓；
-  C-06～C-12 SaaS 会话 ✅；Sprint D 权限与 admin。Use when adding protected routes,
+  saas-web 认证与会话：C-06～C-12 SaaS 主路径 ✅（含 C-09 tenant features 侧栏过滤）；
+  Sprint D 权限与 admin。Use when adding protected routes,
   login/register/logout, bootstrap, profile, tenant session sync, or choosing ruoyi-api vs api-client.
 metadata:
   author: map-design
@@ -27,7 +27,7 @@ compatibility: Requires map-design apps/web, @repo/auth, @repo/api-client.
 | --- | --- |
 | C-01～C-05 | ✅ 后端 auth + `users/me` |
 | C-06～C-08 | ✅ 登录、注册、bootstrap 去 RuoYi |
-| C-09 | ⏸ **暂缓** — 不做 `filterNavByTenant` / 菜单路由权限 |
+| C-09 | ✅ `filterNavMainItemsForTenant` + `useEnabledTenantFeatures`（侧栏/命令面板） |
 | C-10 | ✅ Account UI → `users/me*` |
 | C-11 | ✅ TeamSwitcher → `GET /v1/tenants` |
 | C-12 | ✅ — 已移除 `ruoyi-profile-store`；`useWorkspaceSession` |
@@ -39,7 +39,7 @@ compatibility: Requires map-design apps/web, @repo/auth, @repo/api-client.
 | --- | --- | --- |
 | 注册、登录、刷新、登出 | `@repo/api-client` → `/v1/auth/*` | RuoYi `login` / 验证码 |
 | Bootstrap 用户 | `@repo/api-client` → `GET /v1/users/me` | RuoYi `getUserInfo` / `getMenuRouters` |
-| 侧栏导航 | `mock-nav-items` + registry（**全量**） | RuoYi `getMenuRouters`；C-09 前不接 `filterNavByTenant` |
+| 侧栏导航 | `mock-nav-items` + `filterNavMainItemsForTenant`（C-09 ✅） | RuoYi `getMenuRouters` |
 | Profile 读/写/改密 | `@repo/api-client` → `/v1/users/me*`（C-10 ✅） | 新代码勿增 RuoYi profile |
 | 租户列表 / 能力 | `GET /v1/tenants*`（C-11 ✅） | — |
 | App 数据层 | `shared/queries/*` + TanStack Query | widget 裸 fetch |

@@ -159,7 +159,7 @@ flowchart TB
 | ID | 标准 | 验收标准 |
 | --- | --- | --- |
 | **A-01** | 认证（Sprint C） | ✅ C-06～C-07：登录 + **注册** + refresh；SaaS JWT |
-| **A-02** | Bootstrap（Sprint C） | ✅ C-08：`users/me` + mock-nav 全量；C-09 filter **暂缓** |
+| **A-02** | Bootstrap（Sprint C） | ✅ C-08～C-12：`users/me` + C-09 tenant features 侧栏过滤 |
 | **A-03** | API 客户端 | C/D 新代码仅用 `@repo/api-client` |
 | **A-04** | RBAC（Sprint D） | `sys_permission` + Admin 配置；`requireRole`/权限码 |
 | **A-05** | 多租户（Sprint C） | `TenantProvider` + `/v1/tenants` + `/features` |

@@ -6,7 +6,7 @@
 | --- | --- | --- | --- |
 | **当前（C-06～C-12 + Admin P0～P3）** | 身份与会话 + 运营后台 → SaaS | `@repo/api-client` | `/v1/admin/*`、apps/admin 已交付 |
 | 遗留 | `build-nav-tree` 等类型引用 | `@repo/ruoyi-api`（非会话路径） | 随业务迁移逐步移除 |
-| **Sprint C** | 身份与会话 | `@repo/api-client` | C-01～C-08 ✅；C-09 暂缓 |
+| **Sprint C** | 身份与会话 | `@repo/api-client` | C-01～C-12 ✅（含 C-09 tenant features 侧栏过滤） |
 | **Sprint D** | 权限与后台 | `@repo/api-client` | `/v1/admin/*`、apps/admin ✅ |
 | **Sprint E** | 业务工作台 | `@repo/api-client` | 地图、机库等 — **C/D 不做** |
 
@@ -20,7 +20,7 @@
 | 登录、刷新、登出 | `/v1/auth/login`、`/refresh`、`/logout` | C |
 | 用户信息 | `GET/PUT /v1/users/me`、`POST .../password` | C |
 | 租户、能力 | `/v1/tenants`、`/features` | B（已就绪） |
-| 侧栏导航 | 前端 `mock-nav-items` 全量 | C（无 `/v1/menus`；**C-09 filterNavByTenant 暂缓**） |
+| 侧栏导航 | `mock-nav-items` + `filterNavMainItemsForTenant` | C-09 ✅（无 `/v1/menus`；按 `GET /v1/tenants/{id}/features` 过滤） |
 | 权限配置、后台 | `/v1/admin/*` | D ✅（Admin P0～P3 增强） |
 | 地图 / 机库 / 专题 | `/v1/layers`、`/v1/uav/*` 等 | **E（Later）** |
 
@@ -54,7 +54,7 @@ sequenceDiagram
   API->>SaaS: POST /auth/*
   SaaS-->>Login: JWT + user
   Bootstrap->>API: GET /users/me
-  Bootstrap->>Bootstrap: mock-nav（全量；C-09 features 过滤暂缓）
+  Bootstrap->>Bootstrap: mock-nav + filterNavMainItemsForTenant（C-09 ✅）
 ```
 
 ## Sprint D 数据流（概要）
@@ -64,19 +64,15 @@ sequenceDiagram
 
 ## 菜单与导航
 
-**当前（C-09 暂缓）：**
-
-```
-mock-nav-items + registry → AppSidebar（全量展示）
-```
-
-**规划（C-09 恢复时）：**
+**当前（C-09 ✅）：**
 
 ```
 mock-nav-items + registry
-  → filterNavByTenant(/v1/tenants/{id}/features)
-  → AppSidebar
+  → filterNavMainItemsForTenant(enabledTenantFeatures)
+  → AppSidebar / WorkspaceCommandPalette
 ```
+
+`enabledTenantFeatures` 来自 `GET /v1/tenants/{id}/features`（`useEnabledTenantFeatures`）。
 
 不经过 RuoYi `getRouters`；不提供 `/v1/menus`（Sprint C/D）。
 

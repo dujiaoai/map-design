@@ -1,5 +1,5 @@
 ---
-description: saas-web 认证与会话 — C-06～C-12 SaaS 主路径；C-09 菜单 filter 暂缓；Sprint D 权限
+description: saas-web 认证与会话 — C-06～C-12 SaaS 主路径（含 C-09 features 过滤）；Sprint D 权限
 globs:
   - apps/web/app/shared/auth/**
   - apps/web/app/shared/session/**
@@ -24,7 +24,7 @@ alwaysApply: false
 ## 进度
 
 - **C-06～C-08 ✅**：登录、注册、bootstrap → `GET /v1/users/me`
-- **C-09 ⏸**：不做 `filterNavByTenant` / 菜单路由权限
+- **C-09 ✅**：`filterNavMainItemsForTenant` + `useEnabledTenantFeatures`（侧栏/命令面板）
 - **C-10 ✅**：Account → `GET/PUT /users/me`、`POST /users/me/password`
 - **C-11 ✅**：TeamSwitcher → `GET /v1/tenants` + 重新登录切租户
 - **C-12 ✅**：`useWorkspaceSession`；已移除 `ruoyi-profile-store`
@@ -34,7 +34,7 @@ alwaysApply: false
 ```
 register/login → api-client POST /v1/auth/* → auth.setSession
 app-layout clientLoader → requireAuthenticated → bootstrapAuthenticatedApp
-  → GET /v1/users/me（或 mock）→ mock-nav 全量 → 失败 clearAppSession → /login
+  → GET /v1/users/me（或 mock）→ mock-nav + filterNavMainItemsForTenant → 失败 clearAppSession → /login
 ```
 
 ## API 选用
@@ -42,7 +42,7 @@ app-layout clientLoader → requireAuthenticated → bootstrapAuthenticatedApp
 | 场景 | 包 | Sprint |
 | --- | --- | --- |
 | 注册、登录、refresh、logout、bootstrap | `@repo/api-client` | C ✅ |
-| 侧栏导航 | `mock-nav-items` 全量 | C（C-09 暂缓 filter） |
+| 侧栏导航 | `mock-nav-items` + `filterNavMainItemsForTenant` | C-09 ✅ |
 | Account profile | `/v1/users/me*` | C-10 ✅ |
 | 权限码 / admin API | `@repo/api-client` `/v1/admin/*` | D |
 
@@ -63,6 +63,6 @@ app-layout clientLoader → requireAuthenticated → bootstrapAuthenticatedApp
 ## 禁止
 
 - bootstrap 依赖 RuoYi userInfo / menuRouters
-- 擅自实现 C-09 `filterNavByTenant`（除非用户明确要求）
+- 擅自移除 C-09 `filterNavMainItemsForTenant` 门控（除非用户明确要求全量侧栏）
 - widget 层 `createRuoYiClient` 或裸 `/YunYanApi`（新代码）
 - Sprint C/D 实现地图/机库等业务 API（→ Sprint E）

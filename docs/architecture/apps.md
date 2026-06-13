@@ -32,7 +32,7 @@
 /settings/*               # feature 已有，路由待注册
 ```
 
-> **Sprint C 进度**：C-06～C-12 ✅（身份与会话主路径 → `@repo/api-client`）。**C-09 菜单 filter 暂缓**。下一步 Sprint D。  
+> **Sprint C 进度**：C-06～C-12 ✅（身份与会话主路径 → `@repo/api-client`；C-09 侧栏/命令面板按 tenant features 过滤）。Sprint D Admin 已交付。  
 > **不做**：地图/机库等业务 API（Sprint E）。
 
 开发：

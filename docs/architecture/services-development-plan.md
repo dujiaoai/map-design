@@ -70,7 +70,7 @@ map-design/
 - `@repo/auth` 的 `loginResponseSchema`（`accessToken`、`refreshToken`、`expiresIn`、`user.name/roles/tenant`）与后端 DTO 一致
 - `apps/web` 已配置 `VITE_API_URL` + vite `/v1` 代理 → `:8082`
 - **登录 / 注册 / bootstrap**：SaaS `/v1/auth/*` + `GET /v1/users/me`（C-06～C-08 ✅）
-- **侧栏**：`mock-nav-items` 静态全量；**C-09 `filterNavByTenant` 暂缓**（不做菜单路由权限）
+- **侧栏**：`mock-nav-items` + **C-09 ✅** `filterNavMainItemsForTenant`（按 tenant features 过滤；非菜单路由 RBAC）
 
 ### 本地验证命令
 
@@ -200,7 +200,7 @@ flowchart TD
 **验收：**
 
 - [x] TeamSwitcher 可拉取真实租户列表
-- [x] `GET /v1/tenants/{id}/features` API 就绪（前端 `filterNavByTenant` 接法 **C-09 暂缓**）
+- [x] `GET /v1/tenants/{id}/features` API 就绪（前端 C-09 ✅ `filterNavMainItemsForTenant`）
 - [x] MockMvc 覆盖 tenants + features
 
 ---
@@ -344,7 +344,7 @@ flowchart TD
 
 ## 十、执行指引（由你指定开工项）
 
-文档已对齐：**Sprint C/D = 平台基础；Sprint E = 业务域（Later）**。**C-01～C-08 已完成；C-09 菜单权限暂缓**。实现顺序由你指定，可用任务编号点名，例如「做 C-10」或「只做 D 后端」。
+文档已对齐：**Sprint C/D = 平台基础；Sprint E = 业务域（Later）**。**C-01～C-12 已完成**（含 C-09 tenant features 侧栏过滤）。实现顺序由你指定，可用任务编号点名。
 
 ### 任务索引（可复制）
 
@@ -370,9 +370,9 @@ flowchart TD
 
 ### 建议默认顺序（仅供参考，非强制）
 
-1. ~~**C-02～C-08**~~ 身份与会话主路径 ✅（**C-09 暂缓**）  
-2. **Sprint D** 权限与 `apps/admin`（C-09 filter 仍暂缓）  
-3. **D-01～D-06** 权限与 admin API → **D-07～D-10** Admin 与部署  
+1. ~~**C-02～C-12**~~ 身份与会话主路径 ✅（含 C-09）  
+2. ~~**Sprint D**~~ 权限与 `apps/admin` ✅  
+3. **Sprint E** 地图、机库等业务 API（Later）
 
 你指定后，按编号在对应 Skill（`java-rest-api`、`java-auth-security`、`saas-auth-ruoyi`、`saas-fsd-feature`）下实现即可。
 

@@ -31,7 +31,7 @@ flowchart LR
 
 ## 多租户
 
-默认：**共享 DB + Row-Level Security + `tenant_id`**（[ADR-0004](../adr/0004-tenant-isolation-strategy.md) Accepted）。前端 `@repo/auth` 已提供 `TenantProvider`；侧栏暂为 `mock-nav-items` 全量（**C-09 `filterNavByTenant` 暂缓**）。详见 [multi-tenancy.md](./multi-tenancy.md)；RLS 原理见 [tenant-rls-b05.md](./supplements/tenant-rls-b05.md)。
+默认：**共享 DB + Row-Level Security + `tenant_id`**（[ADR-0004](../adr/0004-tenant-isolation-strategy.md) Accepted）。前端 `@repo/auth` 已提供 `TenantProvider`；侧栏 `mock-nav-items` 经 **C-09 ✅** `filterNavMainItemsForTenant` 按 tenant features 过滤。详见 [multi-tenancy.md](./multi-tenancy.md)；RLS 原理见 [tenant-rls-b05.md](./supplements/tenant-rls-b05.md)。
 
 ## 认证与授权
 
@@ -92,7 +92,7 @@ flowchart LR
 | --- | --- |
 | saas-web FSD 骨架 + 地图工作台 UI | 已完成 |
 | Sprint C：登录·注册·bootstrap（C-06～C-08） | ✅ 已完成 |
-| Sprint C：侧栏 filterNavByTenant（C-09） | ⏸ 暂缓 |
+| Sprint C：侧栏 filterNavMainItemsForTenant（C-09） | ✅ 已完成 |
 | Sprint C：Account（C-10） | ✅ |
 | Sprint C：TeamSwitcher（C-11） | ✅ |
 | Sprint C：RuoYi 会话清理（C-12） | ✅ |

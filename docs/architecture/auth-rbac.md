@@ -177,7 +177,7 @@ sequenceDiagram
   WebApp->>API: POST /auth/register 或 /auth/login
   API-->>WebApp: tokens + user
   WebApp->>API: GET /users/me
-  WebApp->>WebApp: mock-nav（全量，无 filterNavByTenant）
+  WebApp->>WebApp: mock-nav + filterNavMainItemsForTenant（C-09 ✅）
   WebApp->>Browser: 进入工作台
 ```
 

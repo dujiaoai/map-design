@@ -44,7 +44,7 @@ map-design/
 | --- | --- |
 | Web FSD 骨架 + 地图工作台 UI | 已完成 |
 | SaaS 登录/注册/bootstrap（C-06～C-08） | 已完成 |
-| Account / 侧栏 filter（C-09～C-12） | C-09 暂缓；C-10～C-12 ✅ |
+| Account / 侧栏 filter（C-09～C-12） | C-09～C-12 ✅ |
 | packages（ui/auth/api-client/ruoyi-api） | 已完成 |
 | cloud-uav ESM 远程插件脚手架 | 已完成 |
 | Biome lint/format | 已完成 |

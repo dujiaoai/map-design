@@ -23,7 +23,7 @@
 | 登录 | `POST /v1/auth/login` + `routes/login.tsx` |
 | 刷新 / 登出 | `/v1/auth/refresh`、`/logout`（`@repo/auth`） |
 | Bootstrap 用户 | `GET /v1/users/me`（**不再** RuoYi `getUserInfo` / `getMenuRouters`） |
-| 侧栏导航 | `mock-nav-items` **全量静态**（C-09 `filterNavByTenant` **暂缓**） |
+| 侧栏导航 | `filterNavMainItemsForTenant` + `GET /v1/tenants/{id}/features`（C-09 ✅） |
 | Mock 开发 | `MOCK_ACCESS_TOKEN` + `devLogin` 跳过网络 |
 
 ### 已完成（C-10）
@@ -31,7 +31,7 @@
 | 能力 | 实现 |
 | --- | --- |
 | Account 读/写/改密 | `AccountSheet` → `GET/PUT /v1/users/me`、`POST /v1/users/me/password` |
-| 资料字段 | 首版仅 `name`（显示名）；邮箱只读 |
+| 资料字段 | `name`、可选 `phone` / `avatarUrl`（B-03）；邮箱只读 |
 
 ### 已完成（C-11）
 
@@ -59,7 +59,7 @@
 - JWT / `SessionDto.user.roles`：`PLATFORM_ADMIN` | `TENANT_ADMIN` | `MEMBER` | `VIEWER`
 - **`user.permissions[]`**：来自 `GET /v1/users/me` / login，精确匹配（如 `workspace:use`）
 - 工作台入口：`app-layout` `requirePermission(workspace:use)`；无权限 → `/403`
-- **C-09 仍暂缓**：侧栏 `filterNavByTenant` / features 门控
+- **C-09 ✅**：侧栏与命令面板 `filterNavMainItemsForTenant` + `useEnabledTenantFeatures`
 
 ## Sprint C 任务状态
 
@@ -67,7 +67,7 @@
 | --- | --- | --- |
 | C-01～C-05 | ✅ | 后端 auth + `users/me` |
 | C-06～C-08 | ✅ | 登录、注册、bootstrap 去 RuoYi |
-| C-09 | ⏸ 暂缓 | 菜单 `filterNavByTenant` / features 门控 |
+| C-09 | ✅ | 侧栏/命令面板 `filterNavMainItemsForTenant` + tenant features |
 | C-10 | ✅ | Account UI → `users/me*` |
 | C-11 | ✅ | TeamSwitcher → `GET /v1/tenants` |
 | C-12 | ✅ | RuoYi 会话桥接清理 |

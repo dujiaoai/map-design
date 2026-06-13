@@ -17,7 +17,7 @@
 - **登录 / 注册 / 刷新 / 登出** → `/v1/auth/*`
 - **用户信息** → `GET/PUT /v1/users/me`、`POST /v1/users/me/password`
 - **Bootstrap** → `GET /v1/users/me`（**非** RuoYi `getInfo`/`getRouters`）✅
-- **侧栏** → `mock-nav-items` 全量展示；`filterNavByTenant`（C-09）**暂缓**
+- **侧栏** → `mock-nav-items` + **`filterNavMainItemsForTenant`**（C-09 ✅）
 
 **仍不做（Sprint C/D 内）：**
 
@@ -32,7 +32,7 @@
 
 `services/` 是 map-design 的 **SaaS 目标后端**，与前端 `@repo/api-client`（`/v1`、Bearer JWT、标准 HTTP 响应）对接，**不**走 RuoYi envelope。
 
-**Sprint C 进度（2026-06）**：后端 C-01～C-05 ✅；前端 C-06～C-12 ✅（身份与会话主路径已去 RuoYi）。**C-09 菜单/租户能力过滤暂缓**。
+**Sprint C 进度（2026-06）**：后端 C-01～C-05 ✅；前端 C-06～C-12 ✅；**C-09 租户 features 门控 ✅**。
 
 **Sprint D 进度**：**D-01 ✅** … **D-09 ✅** saas-web 权限门控；**D-10 ✅** Docker 全栈部署。**暂不启动**地图/机库等业务 API。
 
@@ -106,7 +106,7 @@ mvn -f services/pom.xml -pl saas-api test
 | ~~**PostgreSQL RLS 未做**~~      | ✅ `sys_user` RLS（`V5__rls.sql` + `TenantRlsDataSource`）                           | —   |
 | ~~**工作台会话仍走 RuoYi**~~       | ✅ C-06～C-08：登录、注册、bootstrap 已切 SaaS                                        | —   |
 | ~~**注册 / 用户资料写接口**~~        | ✅ C-02～C-05 后端 + C-10 Account UI（`users/me*`）                                  | —   |
-| **侧栏租户能力过滤**                 | C-09 **暂缓**；当前 mock-nav 全量，不接 `features` 门控                               | —   |
+| **侧栏租户能力过滤**                 | ✅ C-09：`GET /tenants/{id}/features` + `filterNavMainItemsForTenant`               | —   |
 | **RBAC / 权限配置 / 后台管理**       | D-01～D-10 ✅ | —   |
 | ~~**Docker 全栈未含 saas-api**~~       | ✅ D-10：`deploy/docker-compose` 含 PG/Redis/saas-api/web/admin | —   |
 | **业务域 API**                    | 地图、机库、专题等 — **Sprint C/D 不做**，待基础能力验收后另开迭代 | Later |
@@ -228,7 +228,7 @@ flowchart TD
 | C-06 ✅ | 登录页切 SaaS | `routes/login.tsx` → `/v1/auth/login`；`VITE_API_URL` + refresh/logout；bootstrap 最小 SaaS 分支 |
 | C-07 ✅ | **注册页** | `routes/register.tsx` → `/v1/auth/register`；`auth.register()` 注册后进入工作台 |
 | C-08 ✅ | Bootstrap 去 RuoYi | `GET /v1/users/me`；移除 `getUserInfo` / `getMenuRouters` |
-| C-09 ⏸ | 侧栏租户能力过滤（**暂缓**） | `filterNavByTenant` + `features` API；当前侧栏固定 `mock-nav-items` 全量 |
+| C-09 ✅ | 侧栏租户能力过滤 | `filterNavMainItemsForTenant` + `features` API |
 | C-10 ✅ | Account / 用户信息 UI | `AccountSheet`：`GET/PUT /users/me`、`POST /users/me/password` |
 | C-11 ✅ | TeamSwitcher | 侧栏 `GET /v1/tenants`；切换租户 = 目标 slug 重新登录 |
 | C-12 ✅ | 清理 RuoYi 会话依赖 | 移除 `ruoyi-profile-store`；顶栏/壳层统一 `useWorkspaceSession` |
@@ -240,7 +240,7 @@ flowchart TD
 - [x] Account UI 读写信/改密走 `/v1/users/me*`（C-10）
 - [x] TeamSwitcher 拉取 `/v1/tenants`；切换租户重新登录（C-11）
 - [x] 清理 RuoYi profile 桥接（C-12）
-- [ ] 侧栏 `filterNavByTenant`（C-09，**暂缓**）
+- [x] 侧栏 `filterNavMainItemsForTenant`（C-09）
 - [x] `pnpm smoke:saas-api` 通过；`pnpm --filter @repo/saas-web test` 通过
 
 ---
@@ -352,7 +352,7 @@ flowchart TD
 | --- | --- | --- |
 | C-01～C-05 | C | 后端：登录补全、**注册**、`users/me` 读写改密 |
 | C-06～C-08 ✅ | C | 前端：登录/注册、bootstrap 去 RuoYi |
-| C-09 ⏸ | C | 侧栏 `filterNavByTenant`（暂缓） |
+| C-09 | ✅ | C | 侧栏/命令面板 tenant features 门控 |
 | C-10 ✅ | C | Account / `users/me` UI |
 | C-11 ✅ | C | TeamSwitcher → `GET /v1/tenants` |
 | C-12 ✅ | C | RuoYi 会话清理 |

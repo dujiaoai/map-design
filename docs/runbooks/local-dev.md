@@ -167,7 +167,7 @@ curl -s http://localhost:8082/v1/tenants \
 pnpm --filter @repo/saas-web dev
 ```
 
-> **说明**：需配置 `VITE_API_URL=/v1`，`/login` 与 `/register` 走 SaaS；bootstrap 为 `GET /users/me`。侧栏为 `mock-nav-items` 全量（C-09 菜单权限过滤暂缓）。联调页：`/dev/saas-auth-smoke`。
+> **说明**：需配置 `VITE_API_URL=/v1`，`/login` 与 `/register` 走 SaaS；bootstrap 为 `GET /users/me`。侧栏按租户 features 过滤（C-09）。联调页：`/dev/saas-auth-smoke`。
 
 #### 6. Auth 端到端冒烟
 

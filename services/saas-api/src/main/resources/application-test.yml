@@ -24,6 +24,8 @@ saas:
     token-ttl: PT1H
   registration:
     token-ttl: PT24H
+  rate-limit:
+    enabled: false
   jwt:
     issuer: yunyan-saas-test
     secret: test-jwt-secret-with-at-least-32-bytes!!

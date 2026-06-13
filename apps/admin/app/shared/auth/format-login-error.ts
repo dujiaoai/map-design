@@ -1,6 +1,7 @@
 const loginDetailLocalizations = {
   'Tenant is suspended': '该租户已停用，请联系管理员',
   'Account is disabled': '账号已禁用，请联系管理员',
+  'Too many login attempts, try again later': '登录尝试过于频繁，请稍后再试',
 } as const
 
 function parseProblemDetail(message: string): string | null {
@@ -30,6 +31,7 @@ export function formatLoginError(error: unknown): string {
     const detail = parseProblemDetail(message)
     if (detail) return localizeDetail(detail)
     if (status === 401) return '邮箱、密码或租户不正确'
+    if (status === 429) return '操作过于频繁，请稍后再试'
   }
   return '登录失败，请检查账号信息后重试'
 }

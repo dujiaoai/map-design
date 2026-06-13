@@ -51,7 +51,7 @@ class AuthControllerRegisterTest {
 
   @Test
   void register_withValidRequest_returns204() throws Exception {
-    doNothing().when(authService).requestRegistration(any());
+    doNothing().when(authService).requestRegistration(any(), any());
 
     mockMvc
         .perform(
@@ -101,7 +101,7 @@ class AuthControllerRegisterTest {
 
   @Test
   void register_withUnknownTenant_returns404ProblemDetail() throws Exception {
-    doThrow(AuthException.notFound("Tenant not found")).when(authService).requestRegistration(any());
+    doThrow(AuthException.notFound("Tenant not found")).when(authService).requestRegistration(any(), any());
 
     mockMvc
         .perform(
@@ -122,7 +122,7 @@ class AuthControllerRegisterTest {
   void register_withDuplicateEmail_returns409ProblemDetail() throws Exception {
     doThrow(AuthException.conflict("Email already registered for this tenant"))
         .when(authService)
-        .requestRegistration(any());
+        .requestRegistration(any(), any());
 
     mockMvc
         .perform(

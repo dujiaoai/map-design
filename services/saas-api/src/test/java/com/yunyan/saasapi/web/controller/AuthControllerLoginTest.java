@@ -49,7 +49,7 @@ class AuthControllerLoginTest {
 
   @Test
   void login_withValidRequest_returns200AndFlatJsonBody() throws Exception {
-    when(authService.login(any())).thenReturn(sampleLoginResponse());
+    when(authService.login(any(), any())).thenReturn(sampleLoginResponse());
 
     mockMvc
         .perform(
@@ -103,7 +103,7 @@ class AuthControllerLoginTest {
 
   @Test
   void login_withBadCredentials_returns401ProblemDetail() throws Exception {
-    when(authService.login(any())).thenThrow(AuthException.unauthorized("Invalid email or password"));
+    when(authService.login(any(), any())).thenThrow(AuthException.unauthorized("Invalid email or password"));
 
     mockMvc
         .perform(

@@ -17,7 +17,7 @@
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
-| POST | `/v1/auth/register` | 创建 `pending_verification` 用户，**204** |
+| POST | `/v1/auth/register` | 创建 `unverified` 用户，**204** |
 | POST | `/v1/auth/register/confirm` | `{ token }` → 激活 + 登录态 |
 | POST | `/v1/auth/accept-invite` | 邀请设密 |
 | POST | `/v1/auth/password-reset/request` | 重置请求 **204** |
@@ -50,4 +50,4 @@ saas:
 | 项 | 说明 |
 | --- | --- |
 | M4 安全通知 | 改密/禁用提醒（可选） |
-| Rate limit | 按 IP + 邮箱（Redis） |
+| Rate limit | ✅ 见 [auth-foundation.md](./auth-foundation.md) C-04 |

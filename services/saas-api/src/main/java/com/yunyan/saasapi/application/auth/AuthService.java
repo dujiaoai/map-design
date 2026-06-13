@@ -48,8 +48,10 @@ public class AuthService {
   private final EmailVerificationTokenRepository emailVerificationTokenRepository;
   private final PasswordResetService passwordResetService;
   private final RegistrationVerificationService registrationVerificationService;
+  private final AuthRateLimitService authRateLimitService;
 
-  public void requestRegistration(RegisterRequest request) {
+  public void requestRegistration(RegisterRequest request, String clientIp) {
+    authRateLimitService.checkRegister(clientIp, request.email());
     registrationVerificationService.requestRegistration(request);
   }
 
@@ -60,14 +62,21 @@ public class AuthService {
     return buildLoginResponse(user);
   }
 
-  public LoginResponse login(LoginRequest request) {
-    var lookup = userAuthRepository.lookupForLogin(request.email(), resolveTenantSlug(request));
+  public LoginResponse login(LoginRequest request, String clientIp) {
+    var tenantSlug = resolveTenantSlug(request);
+    authRateLimitService.checkLogin(clientIp, request.email(), tenantSlug);
+
+    var lookup = userAuthRepository.lookupForLogin(request.email(), tenantSlug);
 
     return switch (lookup.status()) {
       case TENANT_SUSPENDED -> throw AuthException.forbidden("Tenant is suspended");
-      case NOT_FOUND -> throw AuthException.unauthorized("Invalid email or password");
+      case NOT_FOUND -> {
+        authRateLimitService.recordLoginFailure(request.email(), tenantSlug);
+        throw AuthException.unauthorized("Invalid email or password");
+      }
       case ACCOUNT_DISABLED -> {
         if (!passwordEncoder.matches(request.password(), lookup.user().passwordHash())) {
+          authRateLimitService.recordLoginFailure(request.email(), tenantSlug);
           throw AuthException.unauthorized("Invalid email or password");
         }
         throw AuthException.forbidden("Account is disabled");
@@ -78,8 +87,10 @@ public class AuthService {
           throw AuthException.forbidden("Email not verified, check your inbox to complete registration");
       case FOUND -> {
         if (!passwordEncoder.matches(request.password(), lookup.user().passwordHash())) {
+          authRateLimitService.recordLoginFailure(request.email(), tenantSlug);
           throw AuthException.unauthorized("Invalid email or password");
         }
+        authRateLimitService.clearLoginFailures(request.email(), tenantSlug);
         userAuthRepository.touchLastLoginAt(lookup.user().id());
         yield buildLoginResponse(lookup.user());
       }
@@ -179,7 +190,8 @@ public class AuthService {
     return buildLoginResponse(authUser);
   }
 
-  public void requestPasswordReset(PasswordResetRequest request) {
+  public void requestPasswordReset(PasswordResetRequest request, String clientIp) {
+    authRateLimitService.checkPasswordResetRequest(clientIp, request.email(), request.tenantId());
     passwordResetService.requestPasswordReset(request.email(), request.tenantId());
   }
 

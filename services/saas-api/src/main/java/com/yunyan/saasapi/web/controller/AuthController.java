@@ -11,11 +11,13 @@ import com.yunyan.saasapi.web.dto.auth.PasswordResetConfirmRequest;
 import com.yunyan.saasapi.web.dto.auth.PasswordResetRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterConfirmRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterRequest;
+import com.yunyan.saasapi.web.support.ClientIpResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -48,8 +50,9 @@ public class AuthController {
       responseCode = "409",
       description = "该租户下邮箱已注册",
       content = @Content(mediaType = "application/problem+json"))
-  ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
-    authService.requestRegistration(request);
+  ResponseEntity<Void> register(
+      @Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+    authService.requestRegistration(request, ClientIpResolver.resolve(httpRequest));
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
@@ -70,8 +73,8 @@ public class AuthController {
       responseCode = "401",
       description = "邮箱或密码错误",
       content = @Content(mediaType = "application/problem+json"))
-  LoginResponse login(@Valid @RequestBody LoginRequest request) {
-    return authService.login(request);
+  LoginResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+    return authService.login(request, ClientIpResolver.resolve(httpRequest));
   }
 
   @PostMapping("/accept-invite")
@@ -87,8 +90,9 @@ public class AuthController {
       summary = "请求密码重置邮件",
       description = "若邮箱在指定租户下存在且为活跃账号，将发送重置链接。无论是否存在均返回 204，防止邮箱枚举。")
   @ApiResponse(responseCode = "204", description = "请求已受理")
-  ResponseEntity<Void> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
-    authService.requestPasswordReset(request);
+  ResponseEntity<Void> requestPasswordReset(
+      @Valid @RequestBody PasswordResetRequest request, HttpServletRequest httpRequest) {
+    authService.requestPasswordReset(request, ClientIpResolver.resolve(httpRequest));
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 

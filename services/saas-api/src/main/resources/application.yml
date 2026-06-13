@@ -48,6 +48,23 @@ saas:
     token-ttl: PT1H
   registration:
     token-ttl: PT24H
+  rate-limit:
+    enabled: true
+    login:
+      ip-max-attempts: 5
+      ip-window: PT1M
+      account-max-attempts: 5
+      account-window: PT15M
+    register:
+      ip-max-attempts: 3
+      ip-window: PT1H
+      email-max-attempts: 1
+      email-window: PT15M
+    password-reset:
+      ip-max-attempts: 3
+      ip-window: PT1H
+      email-max-attempts: 1
+      email-window: PT15M
   jwt:
     issuer: yunyan-saas
     secret: ${SAAS_JWT_SECRET:dev-only-change-me-use-32chars-minimum!!}

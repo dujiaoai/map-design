@@ -44,20 +44,21 @@ public class UserAuthRepository {
   }
 
   private LoginLookupResult lookupForLoginWithRlsBypass(String email, String tenantSlug) {
+    var normalizedEmail = EmailNormalizer.normalize(email);
     if (StringUtils.hasText(tenantSlug)) {
-      return lookupForLoginInTenant(email, tenantSlug.trim());
+      return lookupForLoginInTenant(normalizedEmail, tenantSlug.trim());
     }
 
     var activeUsers = sysUserMapper.selectList(
         Wrappers.<SysUser>lambdaQuery()
-            .eq(SysUser::getEmail, email)
+            .eq(SysUser::getEmail, normalizedEmail)
             .eq(SysUser::getStatus, "active"));
 
     if (activeUsers.isEmpty()) {
       return LoginLookupResult.notFound();
     }
     if (activeUsers.size() > 1) {
-      return LoginLookupResult.notFound();
+      return LoginLookupResult.tenantRequired();
     }
 
     var tenant = sysTenantMapper.selectById(activeUsers.getFirst().getTenantId());
@@ -127,6 +128,7 @@ public class UserAuthRepository {
 
   private AuthenticatedUser registerMemberWithRlsBypass(
       String email, String passwordHash, String displayName, String tenantSlug) {
+    var normalizedEmail = EmailNormalizer.normalize(email);
     var tenant =
         sysTenantMapper.selectOne(
             Wrappers.<SysTenant>lambdaQuery().eq(SysTenant::getSlug, tenantSlug.trim()));
@@ -140,7 +142,7 @@ public class UserAuthRepository {
     var duplicate =
         sysUserMapper.selectOne(
             Wrappers.<SysUser>lambdaQuery()
-                .eq(SysUser::getEmail, email)
+                .eq(SysUser::getEmail, normalizedEmail)
                 .eq(SysUser::getTenantId, tenant.getId()));
     if (duplicate != null) {
       throw AuthException.conflict("Email already registered for this tenant");
@@ -155,9 +157,9 @@ public class UserAuthRepository {
     var user = new SysUser();
     user.setId(UUID.randomUUID());
     user.setTenantId(tenant.getId());
-    user.setEmail(email);
+    user.setEmail(normalizedEmail);
     user.setPasswordHash(passwordHash);
-    user.setDisplayName(resolveDisplayName(email, displayName));
+    user.setDisplayName(resolveDisplayName(normalizedEmail, displayName));
     user.setStatus("active");
     sysUserMapper.insert(user);
 

@@ -14,6 +14,10 @@ public record LoginLookupResult(LoginLookupStatus status, AuthenticatedUser user
     return new LoginLookupResult(LoginLookupStatus.NOT_FOUND, null);
   }
 
+  public static LoginLookupResult tenantRequired() {
+    return new LoginLookupResult(LoginLookupStatus.TENANT_REQUIRED, null);
+  }
+
   public static LoginLookupResult tenantSuspended() {
     return new LoginLookupResult(LoginLookupStatus.TENANT_SUSPENDED, null);
   }

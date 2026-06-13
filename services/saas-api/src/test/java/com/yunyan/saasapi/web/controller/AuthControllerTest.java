@@ -226,6 +226,36 @@ class AuthControllerTest {
   }
 
   @Test
+  void login_withMixedCaseEmail_returns200() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "ADMIN@test.local",
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.email").value("admin@test.local"));
+  }
+
+  @Test
+  @Sql(scripts = {"/sql/auth-test-seed.sql", "/sql/tenants-multi-membership-seed.sql"})
+  void login_withoutTenantWhenMultipleMemberships_returns400() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("email", "admin@test.local", "password", "password"))))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.detail").value("Tenant slug is required"));
+  }
+
+  @Test
   void usersMe_withAccessToken_returns200() throws Exception {
     var loginBody =
         mockMvc

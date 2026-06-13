@@ -69,20 +69,22 @@ public class AuthService {
   }
 
   public LoginResponse login(LoginRequest request, String clientIp) {
+    var normalizedEmail = EmailNormalizer.normalize(request.email());
     var tenantSlug = resolveTenantSlug(request);
-    authRateLimitService.checkLogin(clientIp, request.email(), tenantSlug);
+    authRateLimitService.checkLogin(clientIp, normalizedEmail, tenantSlug);
 
-    var lookup = userAuthRepository.lookupForLogin(request.email(), tenantSlug);
+    var lookup = userAuthRepository.lookupForLogin(normalizedEmail, tenantSlug);
 
     return switch (lookup.status()) {
       case TENANT_SUSPENDED -> throw AuthException.forbidden("Tenant is suspended");
+      case TENANT_REQUIRED -> throw AuthException.badRequest("Tenant slug is required");
       case NOT_FOUND -> {
-        authRateLimitService.recordLoginFailure(request.email(), tenantSlug);
+        authRateLimitService.recordLoginFailure(normalizedEmail, tenantSlug);
         throw AuthException.unauthorized("Invalid email or password");
       }
       case ACCOUNT_DISABLED -> {
         if (!passwordEncoder.matches(request.password(), lookup.user().passwordHash())) {
-          authRateLimitService.recordLoginFailure(request.email(), tenantSlug);
+          authRateLimitService.recordLoginFailure(normalizedEmail, tenantSlug);
           throw AuthException.unauthorized("Invalid email or password");
         }
         throw AuthException.forbidden("Account is disabled");
@@ -93,10 +95,10 @@ public class AuthService {
           throw AuthException.forbidden("Email not verified, check your inbox to complete registration");
       case FOUND -> {
         if (!passwordEncoder.matches(request.password(), lookup.user().passwordHash())) {
-          authRateLimitService.recordLoginFailure(request.email(), tenantSlug);
+          authRateLimitService.recordLoginFailure(normalizedEmail, tenantSlug);
           throw AuthException.unauthorized("Invalid email or password");
         }
-        authRateLimitService.clearLoginFailures(request.email(), tenantSlug);
+        authRateLimitService.clearLoginFailures(normalizedEmail, tenantSlug);
         userAuthRepository.touchLastLoginAt(lookup.user().id());
         yield buildLoginResponse(lookup.user());
       }
@@ -199,6 +201,9 @@ public class AuthService {
             .orElseThrow(() -> AuthException.badRequest("Invalid or expired invite link"));
     if (!UserInviteService.STATUS_INVITED.equals(user.getStatus())) {
       throw AuthException.badRequest("Invite already accepted");
+    }
+    if (passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+      throw AuthException.badRequest("New password must differ from current password");
     }
 
     user.setPasswordHash(passwordEncoder.encode(request.password()));

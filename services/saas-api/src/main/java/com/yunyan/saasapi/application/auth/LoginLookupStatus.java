@@ -3,6 +3,7 @@ package com.yunyan.saasapi.application.auth;
 public enum LoginLookupStatus {
   FOUND,
   NOT_FOUND,
+  TENANT_REQUIRED,
   TENANT_SUSPENDED,
   ACCOUNT_DISABLED,
   INVITE_PENDING,

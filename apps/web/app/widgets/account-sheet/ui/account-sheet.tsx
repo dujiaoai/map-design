@@ -39,7 +39,7 @@ export function AccountSheet({
 }) {
   const saasAccount = usesSaasSessionBootstrap()
   const sessionQuery = useSessionQuery(open && saasAccount)
-  const { session: contextSession } = useSession()
+  const contextSession = useSession()
   const session = saasAccount ? (sessionQuery.data ?? contextSession) : contextSession
   const navUser = sessionToNavUserData(session, {
     loading: saasAccount && sessionQuery.isPending && !session,

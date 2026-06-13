@@ -38,9 +38,7 @@ export function meta(_args: Route.MetaArgs) {
   return [{ title: '重置密码 · 云眼地图工作台' }]
 }
 
-export function links(_args: Route.LinksArgs) {
-  return authPageLinks()
-}
+export const links: Route.LinksFunction = () => authPageLinks()
 
 export async function clientLoader() {
   return authGuestClientLoader()

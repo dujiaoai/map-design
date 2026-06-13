@@ -1,5 +1,5 @@
 import { mockNavMainItems, resolveNavToolMeta } from '~/entities/navigation'
-import type { MapToolPresentation } from '~/entities/navigation'
+import type { MapToolVariantKey } from '~/entities/navigation'
 import type { ActiveMapTool } from '~/features/map-workspace'
 
 export interface MapToolEntry {
@@ -7,8 +7,8 @@ export interface MapToolEntry {
   toolId: string
   title: string
   placement: 'left' | 'right'
-  presentation: MapToolPresentation
-  variantKey?: string
+  presentation: 'anchor' | 'movable-panel'
+  variantKey?: MapToolVariantKey
   pluginToolId: string
 }
 
@@ -33,7 +33,7 @@ export function buildMapToolEntries(options: {
         toolId: options.activeMapTool.toolId,
         title: meta.title,
         placement: meta.placement,
-        presentation: meta.presentation,
+        presentation: meta.presentation as 'anchor' | 'movable-panel',
         variantKey: meta.variantKey,
         pluginToolId: meta.pluginToolId,
       })
@@ -48,7 +48,7 @@ export function buildMapToolEntries(options: {
         toolId: panel.toolId,
         title: meta.title,
         placement: meta.placement,
-        presentation: meta.presentation,
+        presentation: meta.presentation as 'anchor' | 'movable-panel',
         variantKey: meta.variantKey,
         pluginToolId: meta.pluginToolId,
       })

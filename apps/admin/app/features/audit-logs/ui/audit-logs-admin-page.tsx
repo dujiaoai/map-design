@@ -60,6 +60,7 @@ export function AuditLogsAdminPage() {
         <Select
           value={actionFilter}
           onValueChange={(value) => {
+            if (value == null) return
             setActionFilter(value)
             setPage(1)
           }}

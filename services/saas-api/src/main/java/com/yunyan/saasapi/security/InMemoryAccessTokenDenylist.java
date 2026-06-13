@@ -64,4 +64,10 @@ public class InMemoryAccessTokenDenylist implements AccessTokenDenylist {
     }
     return true;
   }
+
+  /** Clears all entries; used by integration tests only. */
+  public void resetForTests() {
+    denied.clear();
+    deniedUsers.clear();
+  }
 }

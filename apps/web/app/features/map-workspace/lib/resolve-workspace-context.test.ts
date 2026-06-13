@@ -17,7 +17,7 @@ const idleWorkspaceState = {
   dockPanelCollapsed: false,
   commandPaletteOpen: false,
   globalSearchPopoverOpen: false,
-} as const
+}
 
 describe('resolveWorkspaceContext', () => {
   it('returns null labels when workspace is idle', () => {
@@ -70,7 +70,11 @@ describe('resolveWorkspaceContext', () => {
   it('prioritizes active map tool for breadcrumb context', () => {
     const snapshot = resolveWorkspaceContext({
       ...idleWorkspaceState,
-      activeMapTool: { navItemId: 'tool-measure-distance', toolId: 'measure-distance' },
+      activeMapTool: {
+        navItemId: 'tool-measure-distance',
+        toolId: 'measure-distance',
+        pluginToolId: 'measure-distance',
+      },
       activeDockModuleNavId: 'dock-uav-list',
       activeDockModuleId: 'uav-list',
       dockPanelCollapsed: false,
@@ -87,7 +91,11 @@ describe('resolveWorkspaceContext', () => {
   it('uses global drawer tool as sole breadcrumb when analysis module is also open', () => {
     const snapshot = resolveWorkspaceContext({
       ...idleWorkspaceState,
-      activeDrawerTool: { navItemId: 'tool-global-search', toolId: 'global-search' },
+      activeDrawerTool: {
+        navItemId: 'tool-global-search',
+        toolId: 'global-search',
+        pluginToolId: 'global-search',
+      },
       activeModuleNavId: 'module-spatial-analysis',
       activeModuleId: 'spatial-analysis',
       modulePanelCollapsed: false,
@@ -101,7 +109,11 @@ describe('resolveWorkspaceContext', () => {
   it('uses single-segment breadcrumb for global search only', () => {
     const snapshot = resolveWorkspaceContext({
       ...idleWorkspaceState,
-      activeDrawerTool: { navItemId: 'tool-global-search', toolId: 'global-search' },
+      activeDrawerTool: {
+        navItemId: 'tool-global-search',
+        toolId: 'global-search',
+        pluginToolId: 'global-search',
+      },
     })
 
     expect(snapshot.breadcrumbTrail).toEqual(['搜索'])
@@ -150,7 +162,10 @@ describe('buildWorkspaceBreadcrumbTrail', () => {
         sectionLabel: '图层',
         moduleLabel: '专题图层',
         contextLabel: '测距',
-        foregroundTool: { navItemId: 'tool-measure-distance', toolId: 'measure-distance' },
+        foregroundTool: {
+          navItemId: 'tool-measure-distance',
+          toolId: 'measure-distance',
+        },
       }),
     ).toEqual(['图层', '专题图层', '测距'])
   })
@@ -161,7 +176,10 @@ describe('buildWorkspaceBreadcrumbTrail', () => {
         sectionLabel: '分析',
         moduleLabel: '做分析',
         contextLabel: '搜索',
-        activeDrawerTool: { navItemId: 'tool-global-search', toolId: 'global-search' },
+        activeDrawerTool: {
+          navItemId: 'tool-global-search',
+          toolId: 'global-search',
+        },
       }),
     ).toEqual(['搜索'])
   })

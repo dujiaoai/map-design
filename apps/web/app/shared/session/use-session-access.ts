@@ -55,7 +55,7 @@ export function useCanReadMap(): boolean {
 /** @deprecated 请用 `useWorkspaceSession` + `useSessionPermissions` */
 export function useLegacySessionProfile() {
   const { session, isLoading, error } = useWorkspaceSession()
-  const { session: contextSession } = useSession()
+  const contextSession = useSession()
 
   return {
     session: session ?? contextSession,

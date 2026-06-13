@@ -37,5 +37,5 @@ export function useIsRuoYiAdmin(): boolean {
 /** @deprecated RuoYi role key；请用 `useHasSaasRole` */
 export function useHasRoleKey(roleKey: string): boolean {
   const { roles } = useLegacySessionProfile()
-  return roles.includes(roleKey)
+  return (roles as string[]).includes(roleKey)
 }

@@ -42,9 +42,7 @@ export function meta(_args: Route.MetaArgs) {
   return [{ title: '注册 · 云眼地图工作台' }]
 }
 
-export function links(_args: Route.LinksArgs) {
-  return authPageLinks()
-}
+export const links: Route.LinksFunction = () => authPageLinks()
 
 export async function clientLoader() {
   return authGuestClientLoader()
@@ -57,8 +55,8 @@ function RegisterUnavailable() {
         注册需配置 <code className="text-brand-light">VITE_API_URL</code> 并启动 SaaS API。本地开发请在根目录
         `.env` 设置 <code className="text-brand-light">VITE_API_URL=/v1</code>。
       </p>
-      <Button asChild className="h-11 w-full rounded-[10px]">
-        <Link to="/login">返回登录</Link>
+      <Button className="h-11 w-full rounded-[10px]" nativeButton={false} render={<Link to="/login" />}>
+        返回登录
       </Button>
     </div>
   )

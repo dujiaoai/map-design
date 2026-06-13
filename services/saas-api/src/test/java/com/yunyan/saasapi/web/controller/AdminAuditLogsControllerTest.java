@@ -69,7 +69,7 @@ class AdminAuditLogsControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.logs[*].action", hasItem("member.invite")))
         .andExpect(jsonPath("$.logs[?(@.action=='member.invite')].crossTenant", hasItem(true)))
-        .andExpect(jsonPath("$.logs[?(@.action=='member.invite')].detail", hasItem("Invited " + email)));
+        .andExpect(jsonPath("$.logs[?(@.action=='member.invite')].detail", hasItem("Invited " + email + " (email link)")));
   }
 
   private String loginAccessToken(String email) throws Exception {

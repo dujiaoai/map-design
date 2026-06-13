@@ -49,8 +49,6 @@ export function QuickToolbarSortableTool({
                 : 'text-muted-foreground hover:bg-accent hover:text-foreground dark:text-white/55 dark:hover:bg-white/8 dark:hover:text-white/90',
             )}
             onClick={onSelect}
-            {...attributes}
-            {...listeners}
           >
             <Icon className="size-4" />
           </button>

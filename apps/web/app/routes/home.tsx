@@ -35,8 +35,7 @@ export function meta(_args: Route.MetaArgs) {
   ]
 }
 
-export function links(_args: Route.LinksArgs) {
-  return [
+export const links: Route.LinksFunction = () => [
     { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
     { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' as const },
     {
@@ -44,7 +43,6 @@ export function links(_args: Route.LinksArgs) {
       href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700&family=ZCOOL+QingKe+HuangYou&display=swap',
     },
   ]
-}
 
 export default function Home() {
   const pointer = useWorkspacePointer()

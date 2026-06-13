@@ -7,7 +7,7 @@ import { usesSaasSessionBootstrap } from '~/shared/session/fetch-saas-session'
 export function useWorkspaceSession() {
   const saasSession = usesSaasSessionBootstrap()
   const sessionQuery = useSessionQuery(saasSession)
-  const { session: contextSession } = useSession()
+  const contextSession = useSession()
   const session = saasSession ? (sessionQuery.data ?? contextSession) : contextSession
 
   return {

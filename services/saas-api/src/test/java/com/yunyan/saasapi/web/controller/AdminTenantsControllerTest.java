@@ -115,7 +115,8 @@ class AdminTenantsControllerTest {
                             "email", "admin@test.local",
                             "password", "password",
                             "tenantId", "test"))))
-        .andExpect(status().isUnauthorized());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.detail").value("Tenant is suspended"));
   }
 
   @Test

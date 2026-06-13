@@ -99,13 +99,13 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-sm text-muted-foreground">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
+      <p className="shrink-0 text-sm text-muted-foreground">
         生成可分享链接，任何人持链接均可注册加入本租户。链接 token 仅在创建时显示一次，请立即复制保存。
       </p>
 
       <form
-        className="grid gap-3 rounded-lg border border-border/60 p-3"
+        className="grid shrink-0 gap-3 rounded-lg border border-border/60 p-3"
         onSubmit={handleSubmit((values) => createMutation.mutate(values))}
       >
         <p className="text-sm font-medium">创建新链接</p>
@@ -156,7 +156,7 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
       </form>
 
       {createdInviteUrl ? (
-        <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
+        <div className="shrink-0 space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
           <p className="text-sm font-medium text-primary">链接已生成，请立即复制</p>
           <p className="break-all font-mono text-xs text-muted-foreground">{createdInviteUrl}</p>
           <div className="flex flex-wrap items-center gap-2">
@@ -171,56 +171,58 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
         </div>
       ) : null}
 
-      <div className="space-y-2">
-        <p className="text-sm font-medium">已有链接</p>
-        {linksQuery.isLoading ? (
-          <p className="text-sm text-muted-foreground">加载中…</p>
-        ) : linksQuery.isError ? (
-          <p className="text-sm text-destructive">加载失败</p>
-        ) : !linksQuery.data?.links.length ? (
-          <p className="text-sm text-muted-foreground">暂无邀请链接</p>
-        ) : (
-          <ul className="space-y-2">
-            {linksQuery.data.links.map((link) => (
-              <li
-                key={link.id}
-                className="flex flex-col gap-2 rounded-lg border border-border/60 p-3 text-sm"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline" className="font-mono text-[10px]">
-                    {TENANT_MEMBER_ROLE_LABELS[link.roleCode]}
-                  </Badge>
-                  <Badge
-                    variant={link.status === 'active' ? 'default' : 'secondary'}
-                    className="text-[10px]"
-                  >
-                    {INVITE_LINK_STATUS_LABELS[link.status]}
-                  </Badge>
-                  {link.label ? (
-                    <span className="text-muted-foreground">{link.label}</span>
+      <div className="flex min-h-0 flex-1 flex-col gap-2">
+        <p className="shrink-0 text-sm font-medium">已有链接</p>
+        <div className="admin-scroll-area -mr-1 min-h-0 flex-1 pr-1">
+          {linksQuery.isLoading ? (
+            <p className="text-sm text-muted-foreground">加载中…</p>
+          ) : linksQuery.isError ? (
+            <p className="text-sm text-destructive">加载失败</p>
+          ) : !linksQuery.data?.links.length ? (
+            <p className="text-sm text-muted-foreground">暂无邀请链接</p>
+          ) : (
+            <ul className="space-y-2">
+              {linksQuery.data.links.map((link) => (
+                <li
+                  key={link.id}
+                  className="flex flex-col gap-2 rounded-lg border border-border/60 p-3 text-sm"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="font-mono text-[10px]">
+                      {TENANT_MEMBER_ROLE_LABELS[link.roleCode]}
+                    </Badge>
+                    <Badge
+                      variant={link.status === 'active' ? 'default' : 'secondary'}
+                      className="text-[10px]"
+                    >
+                      {INVITE_LINK_STATUS_LABELS[link.status]}
+                    </Badge>
+                    {link.label ? (
+                      <span className="text-muted-foreground">{link.label}</span>
+                    ) : null}
+                  </div>
+                  <div className="grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
+                    <span>使用：{formatInviteLinkUses(link.useCount, link.maxUses)}</span>
+                    <span>过期：{formatInviteLinkExpiry(link.expiresAt)}</span>
+                    <span>创建：{formatAdminDate(link.createdAt)}</span>
+                  </div>
+                  {link.status === 'active' ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="w-fit"
+                      disabled={revokeMutation.isPending}
+                      onClick={() => revokeMutation.mutate(link.id)}
+                    >
+                      撤销链接
+                    </Button>
                   ) : null}
-                </div>
-                <div className="grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
-                  <span>使用：{formatInviteLinkUses(link.useCount, link.maxUses)}</span>
-                  <span>过期：{formatInviteLinkExpiry(link.expiresAt)}</span>
-                  <span>创建：{formatAdminDate(link.createdAt)}</span>
-                </div>
-                {link.status === 'active' ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="w-fit"
-                    disabled={revokeMutation.isPending}
-                    onClick={() => revokeMutation.mutate(link.id)}
-                  >
-                    撤销链接
-                  </Button>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <AdminFormError message={revokeMutation.isError ? formatAdminApiError(revokeMutation.error) : null} />
       </div>
     </div>

@@ -58,6 +58,7 @@ export function AppSidebar({
   notificationUnreadCount,
   onLogout,
   hideFooter = false,
+  hideNotifications = false,
   brand,
   teams = defaultData.teams,
   activeTeamId,
@@ -83,6 +84,8 @@ export function AppSidebar({
   onLogout?: () => void
   /** 工作台顶栏已承载通知/账号时隐藏侧栏页脚 */
   hideFooter?: boolean
+  /** 隐藏侧栏通知入口（运营后台等无通知中心的场景） */
+  hideNotifications?: boolean
   /** 静态品牌头（Logo + 平台名），与 teams 二选一 */
   brand?: SidebarBrandProps
   teams?: TeamSwitcherTeam[]
@@ -149,7 +152,9 @@ export function AppSidebar({
       </SidebarContent>
       {!hideFooter ? (
         <SidebarFooter>
-          <NavNotifications unreadCount={notificationUnreadCount} onClick={onNotificationsClick} />
+          {!hideNotifications ? (
+            <NavNotifications unreadCount={notificationUnreadCount} onClick={onNotificationsClick} />
+          ) : null}
           <NavUser user={user} onAccountClick={onAccountClick} onLogout={onLogout} />
         </SidebarFooter>
       ) : null}

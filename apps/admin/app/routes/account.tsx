@@ -1,12 +1,14 @@
-import { AccountAdminPage } from '~/features/account/ui/account-admin-page'
+import { useEffect } from 'react'
+import { redirect, useNavigate } from 'react-router'
+
 import { hasAdminAccess } from '~/shared/auth/admin-access'
 import { auth } from '~/shared/auth/client'
-import { redirect } from 'react-router'
+import { useAdminChrome } from '~/widgets/admin-shell/model/admin-chrome-context'
 
 import type { Route } from './+types/account'
 
 export function meta(_args: Route.MetaArgs) {
-  return [{ title: '账号设置 · 云眼运营后台' }]
+  return [{ title: '账号信息 · 云眼运营后台' }]
 }
 
 export async function clientLoader(_args: Route.ClientLoaderArgs) {
@@ -18,5 +20,13 @@ export async function clientLoader(_args: Route.ClientLoaderArgs) {
 }
 
 export default function AccountRoute() {
-  return <AccountAdminPage />
+  const { openAccount } = useAdminChrome()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    openAccount()
+    void navigate('/', { replace: true })
+  }, [navigate, openAccount])
+
+  return null
 }

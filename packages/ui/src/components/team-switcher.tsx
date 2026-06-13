@@ -54,8 +54,8 @@ export function TeamSwitcher({
           <DropdownMenuTrigger
             render={
               <SidebarMenuButton
-                size="default"
-                className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
+                size="lg"
+                className="h-auto min-h-12 py-2 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:min-h-8! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0! data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
               />
             }
           >

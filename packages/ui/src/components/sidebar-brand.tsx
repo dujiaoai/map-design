@@ -17,11 +17,11 @@ export function SidebarBrand({ logo, title, subtitle }: SidebarBrandProps) {
     <SidebarMenu>
       <SidebarMenuItem>
         <SidebarMenuButton
-          size="default"
+          size="lg"
+          tooltip={title}
           className={cn(
-            'pointer-events-none cursor-default hover:bg-transparent active:bg-transparent',
-            'group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0!',
-            'group-data-[collapsible=icon]:[&>div:not(:first-child)]:hidden',
+            'pointer-events-none h-auto min-h-12 cursor-default py-2 hover:bg-transparent active:bg-transparent',
+            'group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:min-h-8! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0!',
           )}
           aria-label={title}
         >

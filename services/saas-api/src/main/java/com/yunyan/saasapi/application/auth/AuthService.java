@@ -47,15 +47,24 @@ public class AuthService {
   }
 
   public LoginResponse login(LoginRequest request) {
-    var user = userAuthRepository
-        .findForLogin(request.email(), resolveTenantSlug(request))
-        .orElseThrow(() -> AuthException.unauthorized("Invalid email or password"));
+    var lookup = userAuthRepository.lookupForLogin(request.email(), resolveTenantSlug(request));
 
-    if (!passwordEncoder.matches(request.password(), user.passwordHash())) {
-      throw AuthException.unauthorized("Invalid email or password");
-    }
-
-    return buildLoginResponse(user);
+    return switch (lookup.status()) {
+      case TENANT_SUSPENDED -> throw AuthException.forbidden("Tenant is suspended");
+      case NOT_FOUND -> throw AuthException.unauthorized("Invalid email or password");
+      case ACCOUNT_DISABLED -> {
+        if (!passwordEncoder.matches(request.password(), lookup.user().passwordHash())) {
+          throw AuthException.unauthorized("Invalid email or password");
+        }
+        throw AuthException.forbidden("Account is disabled");
+      }
+      case FOUND -> {
+        if (!passwordEncoder.matches(request.password(), lookup.user().passwordHash())) {
+          throw AuthException.unauthorized("Invalid email or password");
+        }
+        yield buildLoginResponse(lookup.user());
+      }
+    };
   }
 
   public AuthTokensDto refresh(RefreshRequest request) {

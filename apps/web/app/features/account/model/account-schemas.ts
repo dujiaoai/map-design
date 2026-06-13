@@ -1,3 +1,4 @@
+import { authPasswordFieldSchema } from '@repo/auth'
 import { z } from 'zod'
 
 /** 对齐 `PUT /v1/users/me` 的 `name` 字段 */
@@ -11,7 +12,7 @@ export type ProfileFormValues = z.infer<typeof profileFormSchema>
 export const resetPasswordSchema = z
   .object({
     oldPassword: z.string().min(1, '旧密码不能为空'),
-    newPassword: z.string().min(8, '新密码至少 8 位').max(128, '最多 128 个字符'),
+    newPassword: authPasswordFieldSchema('新密码至少 8 位'),
     confirmPassword: z.string().min(1, '确认密码不能为空'),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

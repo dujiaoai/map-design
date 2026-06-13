@@ -1,14 +1,18 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { Button, Input } from '@repo/ui'
 import { Building2Icon, UserIcon } from 'lucide-react'
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
 import { redirect, useNavigate } from 'react-router'
 import { z } from 'zod'
 
 import { auth } from '~/shared/auth/client'
 import { getAdminHomePath } from '~/shared/auth/admin-access'
-import { saveRememberLogin } from '~/shared/lib/remember-login'
+import {
+  clearRememberLogin,
+  loadRememberLogin,
+  saveRememberLogin,
+} from '~/shared/lib/remember-login'
 import { formatLoginError } from '~/shared/auth/format-login-error'
 import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
 import { PasswordInput } from '~/shared/ui/password-input'
@@ -50,17 +54,31 @@ export async function clientLoader() {
 
 export default function LoginRoute() {
   const navigate = useNavigate()
+  const [rememberMe, setRememberMe] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const saasEnabled = isSaasAuthEnabled()
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: standardSchemaResolver(loginSchema),
-    defaultValues: { email: 'admin@demo.local', password: 'password', tenantId: 'demo' },
+    defaultValues: { email: '', password: '', tenantId: 'demo' },
   })
+
+  useEffect(() => {
+    const saved = loadRememberLogin()
+    if (!saved) return
+
+    reset({
+      email: saved.email,
+      password: saved.password,
+      tenantId: saved.tenantSlug ?? 'demo',
+    })
+    setRememberMe(true)
+  }, [reset])
 
   async function onSubmit(values: LoginFormValues) {
     if (!saasEnabled) {
@@ -77,7 +95,11 @@ export default function LoginRoute() {
         password: values.password,
         tenantId,
       })
-      saveRememberLogin(email, values.password, tenantId)
+      if (rememberMe) {
+        saveRememberLogin(email, values.password, tenantId)
+      } else {
+        clearRememberLogin()
+      }
       void navigate(getAdminHomePath(auth.getSession()), { replace: true })
     } catch (error) {
       setSubmitError(formatLoginError(error))
@@ -146,13 +168,23 @@ export default function LoginRoute() {
             ) : null}
           </div>
 
+          <label className="admin-login-field flex cursor-pointer select-none items-center gap-2 text-sm text-white/60" style={{ '--field-i': 3 } as CSSProperties}>
+            <input
+              checked={rememberMe}
+              type="checkbox"
+              className="size-4 cursor-pointer rounded border-white/20 accent-primary focus-visible:ring-2 focus-visible:ring-primary/30"
+              onChange={(event) => setRememberMe(event.target.checked)}
+            />
+            记住密码
+          </label>
+
           {submitError ? (
             <p className="rounded-lg border border-red-400/25 bg-red-500/10 px-3 py-2 text-sm text-red-100/90">
               {submitError}
             </p>
           ) : null}
 
-          <div className="admin-login-field pt-1" style={{ '--field-i': 3 } as CSSProperties}>
+          <div className="admin-login-field pt-1" style={{ '--field-i': 4 } as CSSProperties}>
             <Button className="h-11 w-full rounded-[10px] text-base" disabled={isSubmitting} type="submit">
               {isSubmitting ? '登录中…' : '进入控制台'}
             </Button>

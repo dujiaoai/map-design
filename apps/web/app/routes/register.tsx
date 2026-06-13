@@ -1,4 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
+import { authPasswordFieldSchema } from '@repo/auth'
 import { Button, cn, Input } from '@repo/ui'
 import { Building2Icon, UserIcon } from 'lucide-react'
 import { useState, type CSSProperties } from 'react'
@@ -25,7 +26,7 @@ import './login.css'
 const registerFormSchema = z
   .object({
     email: z.string().min(1, '请输入邮箱').email('请输入有效邮箱'),
-    password: z.string().min(8, '密码至少 8 位'),
+    password: authPasswordFieldSchema(),
     confirmPassword: z.string().min(1, '请确认密码'),
     tenantId: z.string().min(1, '请输入租户标识'),
     displayName: z.string().optional(),

@@ -1,5 +1,7 @@
 # 认证与 RBAC
 
+> **深化计划**：[auth-foundation.md](./auth-foundation.md)（注册/登录/管理基础能力 P0～P3，暂缓业务向 P4）
+
 ## 角色矩阵（目标）
 
 | 能力 | Platform Admin | Tenant Admin | Member | Viewer |

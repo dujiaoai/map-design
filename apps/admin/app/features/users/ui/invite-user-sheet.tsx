@@ -1,4 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
+import { authPasswordFieldSchema } from '@repo/auth'
 import {
   Button,
   Input,
@@ -28,7 +29,7 @@ import { PasswordInput } from '~/shared/ui/password-input'
 const schema = z.object({
   tenantId: z.string().min(1, '请选择租户'),
   email: z.string().min(1, '请输入邮箱').email('邮箱格式不正确'),
-  password: z.string().min(8, '密码至少 8 位'),
+  password: authPasswordFieldSchema(),
   displayName: z.string().max(128).optional(),
   roleCode: z.enum(['TENANT_ADMIN', 'MEMBER', 'VIEWER']),
 })

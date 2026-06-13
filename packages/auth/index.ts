@@ -1,3 +1,8 @@
+export {
+  AUTH_PASSWORD_MAX_LENGTH,
+  AUTH_PASSWORD_MIN_LENGTH,
+  authPasswordFieldSchema,
+} from './src/password-policy'
 export { type AuthApi, type AuthApiOptions, createAuthApi } from './src/auth-api'
 export { type AuthClient, type CreateAuthOptions, createAuth } from './src/create-auth'
 export { SessionProvider, useIsAuthenticated, useSession } from './src/react/session-context'

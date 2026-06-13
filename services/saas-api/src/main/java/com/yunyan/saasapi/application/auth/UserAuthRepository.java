@@ -29,46 +29,74 @@ public class UserAuthRepository {
   private final SysRoleMapper sysRoleMapper;
   private final PermissionResolver permissionResolver;
 
-  public Optional<AuthenticatedUser> findForLogin(String email, String tenantSlug) {
-    return TenantRlsBypass.call(() -> findForLoginWithRlsBypass(email, tenantSlug));
+  public LoginLookupResult lookupForLogin(String email, String tenantSlug) {
+    return TenantRlsBypass.call(() -> lookupForLoginWithRlsBypass(email, tenantSlug));
   }
 
-  private Optional<AuthenticatedUser> findForLoginWithRlsBypass(String email, String tenantSlug) {
-    var users = sysUserMapper.selectList(
+  public Optional<AuthenticatedUser> findForLogin(String email, String tenantSlug) {
+    var lookup = lookupForLogin(email, tenantSlug);
+    if (lookup.status() == LoginLookupStatus.FOUND) {
+      return Optional.of(lookup.user());
+    }
+    return Optional.empty();
+  }
+
+  private LoginLookupResult lookupForLoginWithRlsBypass(String email, String tenantSlug) {
+    if (StringUtils.hasText(tenantSlug)) {
+      return lookupForLoginInTenant(email, tenantSlug.trim());
+    }
+
+    var activeUsers = sysUserMapper.selectList(
         Wrappers.<SysUser>lambdaQuery()
             .eq(SysUser::getEmail, email)
             .eq(SysUser::getStatus, "active"));
 
-    if (users.isEmpty()) {
-      return Optional.empty();
+    if (activeUsers.isEmpty()) {
+      return LoginLookupResult.notFound();
+    }
+    if (activeUsers.size() > 1) {
+      return LoginLookupResult.notFound();
     }
 
-    SysUser user;
-    if (StringUtils.hasText(tenantSlug)) {
-      var tenant = sysTenantMapper.selectOne(
-          Wrappers.<SysTenant>lambdaQuery().eq(SysTenant::getSlug, tenantSlug));
-      if (tenant == null || !isTenantActive(tenant)) {
-        return Optional.empty();
-      }
-      user = users.stream()
-          .filter(candidate -> tenant.getId().equals(candidate.getTenantId()))
-          .findFirst()
-          .orElse(null);
-      if (user == null) {
-        return Optional.empty();
-      }
-      return Optional.of(toAuthenticatedUser(user, tenant));
+    var tenant = sysTenantMapper.selectById(activeUsers.getFirst().getTenantId());
+    if (tenant == null) {
+      return LoginLookupResult.notFound();
+    }
+    if (!isTenantActive(tenant)) {
+      return LoginLookupResult.tenantSuspended();
+    }
+    return LoginLookupResult.found(toAuthenticatedUser(activeUsers.getFirst(), tenant));
+  }
+
+  private LoginLookupResult lookupForLoginInTenant(String email, String tenantSlug) {
+    var tenant = sysTenantMapper.selectOne(
+        Wrappers.<SysTenant>lambdaQuery().eq(SysTenant::getSlug, tenantSlug));
+    if (tenant == null) {
+      return LoginLookupResult.notFound();
+    }
+    if (!isTenantActive(tenant)) {
+      return LoginLookupResult.tenantSuspended();
     }
 
-    if (users.size() > 1) {
-      return Optional.empty();
+    var activeUser = sysUserMapper.selectOne(
+        Wrappers.<SysUser>lambdaQuery()
+            .eq(SysUser::getEmail, email)
+            .eq(SysUser::getTenantId, tenant.getId())
+            .eq(SysUser::getStatus, "active"));
+    if (activeUser != null) {
+      return LoginLookupResult.found(toAuthenticatedUser(activeUser, tenant));
     }
 
-    var tenant = sysTenantMapper.selectById(users.getFirst().getTenantId());
-    if (tenant == null || !isTenantActive(tenant)) {
-      return Optional.empty();
+    var disabledUser = sysUserMapper.selectOne(
+        Wrappers.<SysUser>lambdaQuery()
+            .eq(SysUser::getEmail, email)
+            .eq(SysUser::getTenantId, tenant.getId())
+            .eq(SysUser::getStatus, "disabled"));
+    if (disabledUser != null) {
+      return LoginLookupResult.accountDisabled(toAuthenticatedUser(disabledUser, tenant));
     }
-    return Optional.of(toAuthenticatedUser(users.getFirst(), tenant));
+
+    return LoginLookupResult.notFound();
   }
 
   public AuthenticatedUser registerMember(

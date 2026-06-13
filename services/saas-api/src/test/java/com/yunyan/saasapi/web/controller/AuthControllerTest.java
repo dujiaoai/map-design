@@ -130,6 +130,53 @@ class AuthControllerTest {
   }
 
   @Test
+  void login_withSuspendedTenant_returns403() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "suspended-tenant@test.local",
+                            "password", "password",
+                            "tenantId", "suspended"))))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.detail").value("Tenant is suspended"));
+  }
+
+  @Test
+  void login_withDisabledAccountAndCorrectPassword_returns403() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "disabled@test.local",
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.detail").value("Account is disabled"));
+  }
+
+  @Test
+  void login_withDisabledAccountAndWrongPassword_returns401() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "disabled@test.local",
+                            "password", "wrong",
+                            "tenantId", "test"))))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
   void usersMe_withAccessToken_returns200() throws Exception {
     var loginBody =
         mockMvc

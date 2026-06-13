@@ -74,6 +74,8 @@ export const AUTH_API_DETAIL_LOCALIZATIONS = {
   'Invalid or expired invite link': '邀请链接无效或已过期',
   'Email already registered for this tenant': '该邮箱已在此租户注册，请直接登录',
   'Email already verified': '邮箱已验证，请直接登录',
+  'Password must be at least 8 characters and contain uppercase, lowercase, and a digit':
+    '密码须至少 8 位且包含大小写字母与数字',
   'New password must differ from current password': '新密码不能与当前密码相同',
   'Too many login attempts, try again later': '登录尝试过于频繁，请稍后再试',
   'Too many registration attempts, try again later': '注册请求过于频繁，请稍后再试',

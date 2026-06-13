@@ -24,6 +24,9 @@ saas:
     token-ttl: PT1H
   registration:
     token-ttl: PT24H
+  auth:
+    password:
+      strength-enabled: false
   rate-limit:
     enabled: false
   jwt:

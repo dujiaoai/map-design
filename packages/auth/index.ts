@@ -1,8 +1,10 @@
 export {
   AUTH_PASSWORD_MAX_LENGTH,
   AUTH_PASSWORD_MIN_LENGTH,
+  AUTH_PASSWORD_STRENGTH_REGEX,
   authChangePasswordSchema,
   authPasswordFieldSchema,
+  isAuthPasswordStrengthRequired,
 } from './src/password-policy'
 export { authProfileFormSchema, authResetPasswordSchema } from './src/account-schemas'
 export {

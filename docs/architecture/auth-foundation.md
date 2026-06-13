@@ -46,7 +46,7 @@
 | C-02 | 登出后 access token 短期可用窗口 | ✅ logout 将 access jti 写入 Redis denylist；未登出 token 仍 stateless（默认 15m） |
 | C-03 | 多租户同邮箱：无 `tenantId` 登录策略 | ✅ 多租户时 **400** `Tenant slug is required` |
 | C-04 | Rate limit / 登录失败计数（Redis） | ✅ 登录/注册/重置限流 + 失败锁定；测试 profile 默认关闭 |
-| C-05 | 密码强度（大小写+数字）可选升级，与产品确认后启用 |
+| C-05 | 密码强度（大小写+数字） | ✅ 配置 `SAAS_PASSWORD_STRENGTH` / `VITE_AUTH_PASSWORD_STRENGTH` 启用 |
 
 ### P3 · 管理体验深化
 
@@ -107,6 +107,5 @@ flowchart LR
 
 | 项 | 说明 |
 | --- | --- |
-| C-05 | 密码强度（大小写+数字），产品确认后启用 `@repo/auth` schema 开关 |
 | B-03 | 用户资料：头像 URL、手机号 |
 | — | `pnpm smoke:saas-api` 全链路（需 Docker Postgres + API） |

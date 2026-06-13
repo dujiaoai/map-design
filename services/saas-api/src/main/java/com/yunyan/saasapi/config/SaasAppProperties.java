@@ -10,6 +10,7 @@ public class SaasAppProperties {
 
   private final Mail mail = new Mail();
   private final App app = new App();
+  private final Auth auth = new Auth();
   private final Invite invite = new Invite();
   private final PasswordReset passwordReset = new PasswordReset();
   private final Registration registration = new Registration();
@@ -24,6 +25,17 @@ public class SaasAppProperties {
   @Data
   public static class App {
     private String webBaseUrl = "http://localhost:5175";
+  }
+
+  @Data
+  public static class Auth {
+    private final Password password = new Password();
+  }
+
+  @Data
+  public static class Password {
+    /** 新密码须含大小写字母与数字（不影响已有 password 登录） */
+    private boolean strengthEnabled = false;
   }
 
   @Data

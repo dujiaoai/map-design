@@ -2,6 +2,7 @@ package com.yunyan.saasapi.application.email;
 
 import com.yunyan.saasapi.application.auth.AuthenticatedUser;
 import com.yunyan.saasapi.application.auth.EmailNormalizer;
+import com.yunyan.saasapi.application.auth.PasswordPolicyService;
 import com.yunyan.saasapi.application.auth.UserAuthRepository;
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
@@ -39,9 +40,11 @@ public class RegistrationVerificationService {
   private final EmailVerificationTokenRepository emailVerificationTokenRepository;
   private final EmailDeliveryService emailDeliveryService;
   private final SaasAppProperties saasAppProperties;
+  private final PasswordPolicyService passwordPolicyService;
 
   @Transactional
   public void requestRegistration(RegisterRequest request) {
+    passwordPolicyService.validateNewPassword(request.password());
     var tenantSlug = request.tenantId().trim();
     var tenant =
         tenantRepository

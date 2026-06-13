@@ -48,6 +48,9 @@ saas:
     token-ttl: PT1H
   registration:
     token-ttl: PT24H
+  auth:
+    password:
+      strength-enabled: ${SAAS_PASSWORD_STRENGTH:false}
   rate-limit:
     enabled: true
     login:

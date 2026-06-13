@@ -2,6 +2,7 @@ package com.yunyan.saasapi.application.email;
 
 import com.yunyan.saasapi.application.auth.AuthenticatedUser;
 import com.yunyan.saasapi.application.auth.EmailNormalizer;
+import com.yunyan.saasapi.application.auth.PasswordPolicyService;
 import com.yunyan.saasapi.application.auth.UserAuthRepository;
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
@@ -35,6 +36,7 @@ public class PasswordResetService {
   private final EmailDeliveryService emailDeliveryService;
   private final RefreshTokenStore refreshTokenStore;
   private final SaasAppProperties saasAppProperties;
+  private final PasswordPolicyService passwordPolicyService;
 
   @Transactional
   public void requestPasswordReset(String email, String tenantSlug) {
@@ -77,6 +79,7 @@ public class PasswordResetService {
       throw AuthException.badRequest("New password must differ from current password");
     }
 
+    passwordPolicyService.validateNewPassword(newPassword);
     user.setPasswordHash(passwordEncoder.encode(newPassword));
     userRepository.update(user);
     emailVerificationTokenRepository.consume(token.getId());

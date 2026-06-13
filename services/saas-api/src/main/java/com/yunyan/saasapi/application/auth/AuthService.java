@@ -57,6 +57,7 @@ public class AuthService {
   private final RegistrationVerificationService registrationVerificationService;
   private final AuthRateLimitService authRateLimitService;
   private final SecurityNotificationService securityNotificationService;
+  private final PasswordPolicyService passwordPolicyService;
 
   public void requestRegistration(RegisterRequest request, String clientIp) {
     authRateLimitService.checkRegister(clientIp, request.email());
@@ -179,6 +180,7 @@ public class AuthService {
       throw AuthException.badRequest("New password must differ from current password");
     }
 
+    passwordPolicyService.validateNewPassword(request.newPassword());
     userAuthRepository.updatePasswordHash(
         principal.userId(), passwordEncoder.encode(request.newPassword()));
     logout(principal);
@@ -224,6 +226,7 @@ public class AuthService {
       throw AuthException.badRequest("New password must differ from current password");
     }
 
+    passwordPolicyService.validateNewPassword(request.password());
     user.setPasswordHash(passwordEncoder.encode(request.password()));
     user.setStatus("active");
     userRepository.update(user);

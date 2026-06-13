@@ -35,6 +35,16 @@ public class InMemoryRefreshTokenStore implements RefreshTokenStore {
   }
 
   @Override
+  public synchronized boolean revokeIfMatches(UUID userId, String jti) {
+    var entry = tokens.get(userId);
+    if (entry == null || entry.isExpired() || !entry.jti().equals(jti)) {
+      return false;
+    }
+    tokens.remove(userId);
+    return true;
+  }
+
+  @Override
   public Optional<String> findActiveJti(UUID userId) {
     var entry = tokens.get(userId);
     if (entry == null || entry.isExpired()) {

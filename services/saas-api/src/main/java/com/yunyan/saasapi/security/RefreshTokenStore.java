@@ -12,5 +12,8 @@ public interface RefreshTokenStore {
 
   void revoke(UUID userId, String jti);
 
+  /** Atomically revokes only when the active token matches {@code jti}. */
+  boolean revokeIfMatches(UUID userId, String jti);
+
   Optional<String> findActiveJti(UUID userId);
 }

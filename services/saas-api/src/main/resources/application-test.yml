@@ -31,3 +31,4 @@ saas:
     secret: test-jwt-secret-with-at-least-32-bytes!!
     access-ttl: PT15M
     refresh-ttl: P7D
+    refresh-grace-period: PT30S

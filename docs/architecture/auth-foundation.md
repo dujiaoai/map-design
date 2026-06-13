@@ -42,7 +42,7 @@
 
 | 项 | 说明 |
 | --- | --- |
-| C-01 | Refresh 轮换边界：并发 refresh、过期 access 仍可用 `/users/me` |
+| C-01 | Refresh 轮换边界：并发 refresh、过期 access 仍可用 `/users/me` | ✅ 30s 宽限期幂等 refresh；access JWT  Stateless 窗口见代码注释 |
 | C-02 | 登出后 access token 短期可用窗口文档化或缩短 |
 | C-03 | 多租户同邮箱：无 `tenantId` 登录策略（保持模糊 401 或引导选租户） |
 | C-04 | Rate limit / 登录失败计数（Redis） | ✅ 登录/注册/重置限流 + 失败锁定；测试 profile 默认关闭 |

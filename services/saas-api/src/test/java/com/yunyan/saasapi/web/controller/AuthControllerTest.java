@@ -305,23 +305,32 @@ class AuthControllerTest {
   }
 
   @Test
-  void refresh_rotatesToken_oldRefreshCannotBeReused() throws Exception {
+  void refresh_gracePeriod_allowsIdempotentReuseOfConsumedRefresh() throws Exception {
     var loginBody = loginAndGetBody();
     var refreshToken = JsonPath.read(loginBody, "$.refreshToken");
 
-    mockMvc
-        .perform(
-            post("/v1/auth/refresh")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(Map.of("refreshToken", refreshToken))))
-        .andExpect(status().isOk());
+    var firstRefreshBody =
+        mockMvc
+            .perform(
+                post("/v1/auth/refresh")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(Map.of("refreshToken", refreshToken))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    var rotatedAccessToken = JsonPath.read(firstRefreshBody, "$.accessToken");
+    var rotatedRefreshToken = JsonPath.read(firstRefreshBody, "$.refreshToken");
 
     mockMvc
         .perform(
             post("/v1/auth/refresh")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(Map.of("refreshToken", refreshToken))))
-        .andExpect(status().isUnauthorized());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.accessToken").value(rotatedAccessToken))
+        .andExpect(jsonPath("$.refreshToken").value(rotatedRefreshToken));
   }
 
   @Test

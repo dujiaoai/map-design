@@ -8,4 +8,10 @@ public record JwtProperties(
     String issuer,
     String secret,
     Duration accessTtl,
-    Duration refreshTtl) {}
+    Duration refreshTtl,
+    Duration refreshGracePeriod) {
+
+  public Duration effectiveRefreshGracePeriod() {
+    return refreshGracePeriod == null ? Duration.ofSeconds(30) : refreshGracePeriod;
+  }
+}

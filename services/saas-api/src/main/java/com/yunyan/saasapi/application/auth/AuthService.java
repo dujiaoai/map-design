@@ -2,6 +2,8 @@ package com.yunyan.saasapi.application.auth;
 
 import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.JwtService;
+import com.yunyan.saasapi.config.JwtProperties;
+import com.yunyan.saasapi.security.RefreshRotationGraceStore;
 import com.yunyan.saasapi.security.RefreshTokenStore;
 import com.yunyan.saasapi.web.dto.auth.AuthTokensDto;
 import com.yunyan.saasapi.web.dto.auth.LoginRequest;
@@ -44,6 +46,8 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final RefreshTokenStore refreshTokenStore;
+  private final RefreshRotationGraceStore refreshRotationGraceStore;
+  private final JwtProperties jwtProperties;
   private final EmailTokenHasher emailTokenHasher;
   private final EmailVerificationTokenRepository emailVerificationTokenRepository;
   private final PasswordResetService passwordResetService;
@@ -103,7 +107,20 @@ public class AuthService {
     }
 
     var parsed = jwtService.parseRefreshToken(request.refreshToken());
-    if (!refreshTokenStore.isActive(parsed.userId(), parsed.jti())) {
+    var gracePeriod = jwtProperties.effectiveRefreshGracePeriod();
+    if (!gracePeriod.isZero() && !gracePeriod.isNegative()) {
+      var graceHit = refreshRotationGraceStore.find(parsed.userId(), parsed.jti());
+      if (graceHit.isPresent()) {
+        return graceHit.get();
+      }
+    }
+
+    if (!refreshTokenStore.revokeIfMatches(parsed.userId(), parsed.jti())) {
+      if (!gracePeriod.isZero() && !gracePeriod.isNegative()) {
+        return refreshRotationGraceStore
+            .find(parsed.userId(), parsed.jti())
+            .orElseThrow(() -> AuthException.unauthorized("Refresh token revoked or expired"));
+      }
       throw AuthException.unauthorized("Refresh token revoked or expired");
     }
 
@@ -113,8 +130,11 @@ public class AuthService {
             .findById(parsed.userId())
             .orElseThrow(() -> AuthException.unauthorized("User not found")));
 
-    refreshTokenStore.revoke(parsed.userId(), parsed.jti());
-    return issueTokens(user);
+    var tokens = issueTokens(user);
+    if (!gracePeriod.isZero() && !gracePeriod.isNegative()) {
+      refreshRotationGraceStore.store(parsed.userId(), parsed.jti(), tokens, gracePeriod);
+    }
+    return tokens;
   }
 
   public void logout(UUID userId) {

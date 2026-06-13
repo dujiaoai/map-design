@@ -200,7 +200,8 @@ docker compose up -d --build
 | 访问 | URL |
 | --- | --- |
 | Web 工作台 | http://localhost:8084 |
-| 运营后台 | http://localhost:8083 |
+| 运营后台 | http://localhost:8083/login |
+| 运营后台 API 反代 | http://localhost:8083/v1/admin/ping |
 | SaaS API（直连调试） | http://localhost:8082/actuator/health |
 | Cloud UAV registry | http://localhost:8081/yunyan-cloud-uav/assets/registry.js |
 | 统一网关（可选 profile） | http://localhost:9080 |
@@ -213,7 +214,10 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 curl -I http://localhost:8084/v1/ping
 curl -I http://localhost:8084/
 curl -I http://localhost:8083/
+curl -s http://localhost:8083/v1/admin/ping
 ```
+
+`smoke` 含 **saas-admin SPA** 与 **`/v1/admin/ping`** 反代检查。若本机已跑 `mvn spring-boot:run` 占用 8082，在 `deploy/.env` 将 `SAAS_API_PORT=18082`（容器内仍 8082，仅宿主机映射改端口）。
 
 首次启动后 `saas-api-seed` 会执行 `seed-demo-dev.sql`。演示账号：
 

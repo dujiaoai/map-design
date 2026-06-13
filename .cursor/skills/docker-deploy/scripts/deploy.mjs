@@ -118,6 +118,11 @@ switch (command) {
       { name: 'SaaS /v1 proxy', url: `http://localhost:${webPort}/v1/ping`, method: 'GET' },
       { name: 'saas-api health', url: `http://localhost:${apiPort}/actuator/health` },
       { name: 'saas-admin SPA', url: `http://localhost:${adminPort}/` },
+      {
+        name: 'saas-admin /v1/admin/ping',
+        url: `http://localhost:${adminPort}/v1/admin/ping`,
+        method: 'GET',
+      },
       { name: 'RuoYi proxy', url: `http://localhost:${webPort}/YunYanApi/captchaImage` },
       { name: 'cloud-uav registry', url: `http://localhost:${uavPort}/yunyan-cloud-uav/assets/registry.js` },
     ]

@@ -98,6 +98,7 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 | SaaS 反代 | `http://localhost:{SAAS_WEB_PORT}/v1/ping` | HTTP 200 |
 | API 健康 | `http://localhost:{SAAS_API_PORT}/actuator/health` | HTTP 200 |
 | Admin SPA | `http://localhost:{SAAS_ADMIN_PORT}/` | HTTP 200 |
+| Admin API 反代 | `http://localhost:{SAAS_ADMIN_PORT}/v1/admin/ping` | HTTP 200 |
 | API 反代 | `http://localhost:{SAAS_WEB_PORT}/YunYanApi/captchaImage` | HTTP 200（body 与直连 upstream 一致） |
 | UAV registry | `http://localhost:{CLOUD_UAV_PORT}/yunyan-cloud-uav/assets/registry.js` | HTTP 200 |
 
@@ -144,6 +145,7 @@ location /YunYanApi {
 | `/YunYanApi/*` 404 | `saas-web.conf.template` 是否保留前缀转发 |
 | Docker Hub 拉取 maven/temurin 超时 | `Dockerfile.saas-api` 已改用本地缓存的 `node:20-alpine` + Alpine OpenJDK/Maven |
 | `/v1/ping` smoke 401 | Spring Security 仅放行 GET；smoke 对 API 用 GET 而非 HEAD |
+| `8082` 端口冲突 | 本机 `mvn spring-boot:run` 时 `deploy/.env` 设 `SAAS_API_PORT=18082` |
 | 容器 unhealthy | `docker compose logs saas-web` / `cloud-uav` |
 
 ## 与本地 dev 的关系

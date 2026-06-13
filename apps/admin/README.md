@@ -65,6 +65,16 @@ pnpm --filter @repo/saas-admin validate
 cd services/saas-api && mvn test -Dtest=Admin*ControllerTest
 ```
 
+### Docker 全栈联调
+
+```bash
+node .cursor/skills/docker-deploy/scripts/deploy.mjs up
+node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
+```
+
+- Admin：http://localhost:8083/login（`admin@demo.local` / `password` / `demo`）
+- 若本机 `mvn spring-boot:run` 占用 8082，在 `deploy/.env` 设置 `SAAS_API_PORT=18082`
+
 ## Later（P4）
 
 `/billing`、`/audit-logs`、`/system`、邮箱邀请、impersonation 审计、Admin MFA。

@@ -2,6 +2,8 @@ package com.yunyan.saasapi.web.controller;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -48,8 +50,8 @@ class AuthControllerRegisterTest {
   }
 
   @Test
-  void register_withValidRequest_returns200AndFlatJsonBody() throws Exception {
-    when(authService.register(any())).thenReturn(sampleLoginResponse());
+  void register_withValidRequest_returns204() throws Exception {
+    doNothing().when(authService).requestRegistration(any());
 
     mockMvc
         .perform(
@@ -62,6 +64,18 @@ class AuthControllerRegisterTest {
                             "password", "password",
                             "tenantId", "test",
                             "displayName", "New User"))))
+        .andExpect(status().isNoContent());
+  }
+
+  @Test
+  void registerConfirm_withValidToken_returns200AndFlatJsonBody() throws Exception {
+    when(authService.confirmRegistration(any())).thenReturn(sampleLoginResponse());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("token", "verify-token"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.accessToken").value("access-token"))
         .andExpect(jsonPath("$.user.email").value("newuser@test.local"))
@@ -87,7 +101,7 @@ class AuthControllerRegisterTest {
 
   @Test
   void register_withUnknownTenant_returns404ProblemDetail() throws Exception {
-    when(authService.register(any())).thenThrow(AuthException.notFound("Tenant not found"));
+    doThrow(AuthException.notFound("Tenant not found")).when(authService).requestRegistration(any());
 
     mockMvc
         .perform(
@@ -106,8 +120,9 @@ class AuthControllerRegisterTest {
 
   @Test
   void register_withDuplicateEmail_returns409ProblemDetail() throws Exception {
-    when(authService.register(any()))
-        .thenThrow(AuthException.conflict("Email already registered for this tenant"));
+    doThrow(AuthException.conflict("Email already registered for this tenant"))
+        .when(authService)
+        .requestRegistration(any());
 
     mockMvc
         .perform(

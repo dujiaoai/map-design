@@ -62,29 +62,49 @@ async function main() {
       displayName: 'Smoke Register',
     },
   })
-  if (!register.ok) fail('register', `HTTP ${register.status} ${JSON.stringify(register.body)}`)
-  if (!register.body?.accessToken || register.body?.user?.roles?.includes('MEMBER') !== true) {
-    fail('register', 'missing tokens or MEMBER role')
+  if (register.status !== 204) {
+    fail('register', `HTTP ${register.status} ${JSON.stringify(register.body)}`)
   }
-  passed.push('register')
+  passed.push('register-request')
 
-  const newPassword = 'newpass99'
-  const changePwd = await api('/users/me/password', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${register.body.accessToken}` },
-    body: { oldPassword: credentials.password, newPassword },
-  })
-  if (changePwd.status !== 204) {
-    fail('users/me-password', `expected 204, got HTTP ${changePwd.status}`)
+  const verifyToken = process.env.SMOKE_REGISTER_TOKEN?.trim()
+  let registerSession = null
+  if (verifyToken) {
+    const confirm = await api('/auth/register/confirm', {
+      method: 'POST',
+      body: { token: verifyToken },
+    })
+    if (!confirm.ok) {
+      fail('register-confirm', `HTTP ${confirm.status} ${JSON.stringify(confirm.body)}`)
+    }
+    if (!confirm.body?.accessToken || confirm.body?.user?.roles?.includes('MEMBER') !== true) {
+      fail('register-confirm', 'missing tokens or MEMBER role')
+    }
+    registerSession = confirm.body
+    passed.push('register-confirm')
+
+    const newPassword = 'newpass99'
+    const changePwd = await api('/users/me/password', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${registerSession.accessToken}` },
+      body: { oldPassword: credentials.password, newPassword },
+    })
+    if (changePwd.status !== 204) {
+      fail('users/me-password', `expected 204, got HTTP ${changePwd.status}`)
+    }
+    passed.push('users/me-password')
+
+    const loginNewPwd = await api('/auth/login', {
+      method: 'POST',
+      body: { email: registerEmail, password: newPassword, tenantId: credentials.tenantId },
+    })
+    if (!loginNewPwd.ok) fail('login-after-password', `HTTP ${loginNewPwd.status}`)
+    passed.push('login-after-password')
+  } else {
+    console.log(
+      'hint: 设置 SMOKE_REGISTER_TOKEN 可跑完整注册确认与改密步骤（从日志/outbox 取 verify-email token）',
+    )
   }
-  passed.push('users/me-password')
-
-  const loginNewPwd = await api('/auth/login', {
-    method: 'POST',
-    body: { email: registerEmail, password: newPassword, tenantId: credentials.tenantId },
-  })
-  if (!loginNewPwd.ok) fail('login-after-password', `HTTP ${loginNewPwd.status}`)
-  passed.push('login-after-password')
 
   const login = await api('/auth/login', { method: 'POST', body: credentials })
   if (!login.ok) fail('login', `HTTP ${login.status} ${JSON.stringify(login.body)}`)

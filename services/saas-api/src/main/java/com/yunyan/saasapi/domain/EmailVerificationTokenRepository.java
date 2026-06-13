@@ -16,6 +16,7 @@ public class EmailVerificationTokenRepository {
 
   public static final String PURPOSE_INVITE = "invite";
   public static final String PURPOSE_PASSWORD_RESET = "password-reset";
+  public static final String PURPOSE_REGISTER = "register";
 
   private final SysEmailVerificationTokenMapper sysEmailVerificationTokenMapper;
 
@@ -29,6 +30,10 @@ public class EmailVerificationTokenRepository {
 
   public void invalidateActivePasswordResetTokens(UUID userId) {
     invalidateActiveTokens(userId, PURPOSE_PASSWORD_RESET);
+  }
+
+  public void invalidateActiveRegisterTokens(UUID userId) {
+    invalidateActiveTokens(userId, PURPOSE_REGISTER);
   }
 
   private void invalidateActiveTokens(UUID userId, String purpose) {
@@ -50,6 +55,10 @@ public class EmailVerificationTokenRepository {
 
   public Optional<SysEmailVerificationToken> findActivePasswordResetByHash(String tokenHash) {
     return findActiveByHash(tokenHash, PURPOSE_PASSWORD_RESET);
+  }
+
+  public Optional<SysEmailVerificationToken> findActiveRegisterByHash(String tokenHash) {
+    return findActiveByHash(tokenHash, PURPOSE_REGISTER);
   }
 
   private Optional<SysEmailVerificationToken> findActiveByHash(String tokenHash, String purpose) {

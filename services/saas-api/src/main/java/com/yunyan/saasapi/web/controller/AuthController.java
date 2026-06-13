@@ -9,6 +9,7 @@ import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.RefreshRequest;
 import com.yunyan.saasapi.web.dto.auth.PasswordResetConfirmRequest;
 import com.yunyan.saasapi.web.dto.auth.PasswordResetRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterConfirmRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,14 +36,10 @@ public class AuthController {
 
   @PostMapping("/register")
   @Operation(
-      summary = "邮箱密码注册",
+      summary = "提交注册并发送验证邮件",
       description =
-          "在已有租户下创建账号并签发 token（首版无邮箱验证）。新用户默认角色为 MEMBER；同一租户内邮箱不可重复。")
-  @ApiResponse(responseCode = "200", description = "注册成功，响应体同登录")
-  @ApiResponse(
-      responseCode = "400",
-      description = "请求体验证失败",
-      content = @Content(mediaType = "application/problem+json"))
+          "在已有租户下创建待验证账号（status=unverified）并发送邮箱验证链接。验证前无法登录。")
+  @ApiResponse(responseCode = "204", description = "验证邮件已发送（或已重新发送）")
   @ApiResponse(
       responseCode = "404",
       description = "租户 slug 不存在",
@@ -51,8 +48,17 @@ public class AuthController {
       responseCode = "409",
       description = "该租户下邮箱已注册",
       content = @Content(mediaType = "application/problem+json"))
-  LoginResponse register(@Valid @RequestBody RegisterRequest request) {
-    return authService.register(request);
+  ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
+    authService.requestRegistration(request);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
+
+  @PostMapping("/register/confirm")
+  @Operation(
+      summary = "确认注册邮箱验证",
+      description = "使用邮件 token 激活账号，响应体同登录。")
+  LoginResponse confirmRegistration(@Valid @RequestBody RegisterConfirmRequest request) {
+    return authService.confirmRegistration(request);
   }
 
   @PostMapping("/login")

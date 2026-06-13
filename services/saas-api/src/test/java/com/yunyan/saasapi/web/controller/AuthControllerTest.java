@@ -42,7 +42,7 @@ class AuthControllerTest {
   }
 
   @Test
-  void register_withValidRequest_returnsTokensAndMemberRole() throws Exception {
+  void register_withValidRequest_sendsVerificationAndConfirmAllowsLogin() throws Exception {
     var email = "register-" + System.currentTimeMillis() + "@test.local";
 
     mockMvc
@@ -56,6 +56,21 @@ class AuthControllerTest {
                             "password", "password",
                             "tenantId", "test",
                             "displayName", "Registered User"))))
+        .andExpect(status().isNoContent());
+
+    var payload =
+        jdbcTemplate.queryForObject(
+            "SELECT payload_json FROM sys_email_outbox WHERE to_email = ? AND template = 'register-verification' ORDER BY created_at DESC LIMIT 1",
+            String.class,
+            email);
+    var verifyUrl = objectMapper.readTree(payload).get("verifyUrl").asText();
+    var token = verifyUrl.substring(verifyUrl.indexOf("token=") + "token=".length());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("token", token))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.accessToken").isNotEmpty())
         .andExpect(jsonPath("$.refreshToken").isNotEmpty())
@@ -63,6 +78,36 @@ class AuthControllerTest {
         .andExpect(jsonPath("$.user.name").value("Registered User"))
         .andExpect(jsonPath("$.user.roles", hasItem("MEMBER")))
         .andExpect(jsonPath("$.user.tenant.slug").value("test"));
+  }
+
+  @Test
+  void register_pendingUserCannotLogin() throws Exception {
+    var email = "pending-" + System.currentTimeMillis() + "@test.local";
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", email,
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", email,
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.detail").value("Email not verified, check your inbox to complete registration"));
   }
 
   @Test

@@ -83,9 +83,14 @@ export function createAuth(options: CreateAuthOptions) {
       return session
     },
 
-    async register(credentials: RegisterCredentials): Promise<Session> {
+    async register(credentials: RegisterCredentials): Promise<void> {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用注册接口')
-      const response = loginResponseSchema.parse(await authApi.register(credentials))
+      await authApi.register(credentials)
+    },
+
+    async confirmRegistration(token: string): Promise<Session> {
+      if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用注册验证接口')
+      const response = loginResponseSchema.parse(await authApi.confirmRegistration(token))
       const session = loginResponseToSession(response)
       persist(session, authTokensToTokenPair(response))
       return session

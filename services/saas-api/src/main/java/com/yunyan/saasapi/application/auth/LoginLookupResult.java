@@ -21,4 +21,8 @@ public record LoginLookupResult(LoginLookupStatus status, AuthenticatedUser user
   public static LoginLookupResult invitePending(AuthenticatedUser user) {
     return new LoginLookupResult(LoginLookupStatus.INVITE_PENDING, user);
   }
+
+  public static LoginLookupResult emailVerificationPending(AuthenticatedUser user) {
+    return new LoginLookupResult(LoginLookupStatus.EMAIL_VERIFICATION_PENDING, user);
+  }
 }

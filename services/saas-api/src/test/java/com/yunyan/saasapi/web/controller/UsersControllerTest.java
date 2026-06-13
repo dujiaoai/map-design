@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,6 +33,9 @@ class UsersControllerTest {
 
   @Autowired
   ObjectMapper objectMapper;
+
+  @Autowired
+  JdbcTemplate jdbcTemplate;
 
   @Test
   void me_withoutToken_returns401() throws Exception {
@@ -112,24 +116,9 @@ class UsersControllerTest {
   @Test
   void changePassword_withValidPassword_updatesAndRevokesRefresh() throws Exception {
     var email = "pwd-" + System.currentTimeMillis() + "@test.local";
-    var registerBody =
-        mockMvc
-            .perform(
-                post("/v1/auth/register")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        objectMapper.writeValueAsString(
-                            Map.of(
-                                "email", email,
-                                "password", "password",
-                                "tenantId", "test"))))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-
-    var accessToken = JsonPath.read(registerBody, "$.accessToken");
-    var refreshToken = JsonPath.read(registerBody, "$.refreshToken");
+    var tokens = registerAndConfirm(email, "password");
+    var accessToken = tokens.accessToken();
+    var refreshToken = tokens.refreshToken();
 
     mockMvc
         .perform(
@@ -212,23 +201,7 @@ class UsersControllerTest {
   @Test
   void me_afterRegister_returnsMemberSession() throws Exception {
     var email = "me-register-" + System.currentTimeMillis() + "@test.local";
-    var registerBody =
-        mockMvc
-            .perform(
-                post("/v1/auth/register")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        objectMapper.writeValueAsString(
-                            Map.of(
-                                "email", email,
-                                "password", "password",
-                                "tenantId", "test"))))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-
-    var accessToken = JsonPath.read(registerBody, "$.accessToken");
+    var accessToken = registerAndConfirm(email, "password").accessToken();
 
     mockMvc
         .perform(get("/v1/users/me").header("Authorization", "Bearer " + accessToken))
@@ -244,6 +217,41 @@ class UsersControllerTest {
   private String loginAccessToken() throws Exception {
     return JsonPath.read(loginBody(), "$.accessToken");
   }
+
+  private RegisterTokens registerAndConfirm(String email, String password) throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("email", email, "password", password, "tenantId", "test"))))
+        .andExpect(status().isNoContent());
+
+    var payload =
+        jdbcTemplate.queryForObject(
+            "SELECT payload_json FROM sys_email_outbox WHERE to_email = ? AND template = 'register-verification' ORDER BY created_at DESC LIMIT 1",
+            String.class,
+            email);
+    var verifyUrl = objectMapper.readTree(payload).get("verifyUrl").asText();
+    var token = verifyUrl.substring(verifyUrl.indexOf("token=") + "token=".length());
+
+    var confirmBody =
+        mockMvc
+            .perform(
+                post("/v1/auth/register/confirm")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(Map.of("token", token))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    return new RegisterTokens(
+        JsonPath.read(confirmBody, "$.accessToken"), JsonPath.read(confirmBody, "$.refreshToken"));
+  }
+
+  private record RegisterTokens(String accessToken, String refreshToken) {}
 
   private String loginBody() throws Exception {
     return mockMvc

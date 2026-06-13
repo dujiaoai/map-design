@@ -5,6 +5,7 @@ import com.yunyan.saasapi.domain.entity.SysRole;
 import com.yunyan.saasapi.domain.entity.SysTenant;
 import com.yunyan.saasapi.domain.entity.SysUser;
 import com.yunyan.saasapi.domain.entity.SysUserRole;
+import com.yunyan.saasapi.application.email.RegistrationVerificationService;
 import com.yunyan.saasapi.domain.mapper.SysRoleMapper;
 import com.yunyan.saasapi.domain.mapper.SysTenantMapper;
 import com.yunyan.saasapi.domain.mapper.SysUserMapper;
@@ -104,6 +105,15 @@ public class UserAuthRepository {
             .eq(SysUser::getStatus, "invited"));
     if (invitedUser != null) {
       return LoginLookupResult.invitePending(toAuthenticatedUser(invitedUser, tenant));
+    }
+
+    var pendingUser = sysUserMapper.selectOne(
+        Wrappers.<SysUser>lambdaQuery()
+            .eq(SysUser::getEmail, email)
+            .eq(SysUser::getTenantId, tenant.getId())
+            .eq(SysUser::getStatus, RegistrationVerificationService.STATUS_UNVERIFIED));
+    if (pendingUser != null) {
+      return LoginLookupResult.emailVerificationPending(toAuthenticatedUser(pendingUser, tenant));
     }
 
     return LoginLookupResult.notFound();

@@ -46,6 +46,8 @@ saas:
     token-pepper: ${SAAS_INVITE_TOKEN_PEPPER:dev-invite-pepper-change-me!!}
   password-reset:
     token-ttl: PT1H
+  registration:
+    token-ttl: PT24H
   jwt:
     issuer: yunyan-saas
     secret: ${SAAS_JWT_SECRET:dev-only-change-me-use-32chars-minimum!!}

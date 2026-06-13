@@ -24,7 +24,7 @@ export function createAuthApi(options: AuthApiOptions) {
   }
 
   return {
-    async register(credentials: RegisterCredentials): Promise<LoginResponse> {
+    async register(credentials: RegisterCredentials): Promise<void> {
       const body: Record<string, string> = {
         email: credentials.email,
         password: credentials.password,
@@ -37,6 +37,18 @@ export function createAuthApi(options: AuthApiOptions) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(`Auth API ${res.status}: ${text}`)
+      }
+    },
+
+    async confirmRegistration(token: string): Promise<LoginResponse> {
+      const res = await fetchFn(`${base}/auth/register/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ token }),
       })
       return parseJson(res)
     },

@@ -68,6 +68,59 @@ public class EmailDeliveryService {
     return outbox.getId();
   }
 
+  public UUID queueRegisterVerificationEmail(
+      UUID tenantId,
+      UUID userId,
+      String toEmail,
+      String tenantName,
+      String verifyUrl) {
+    var outbox = new SysEmailOutbox();
+    outbox.setId(UUID.randomUUID());
+    outbox.setTenantId(tenantId);
+    outbox.setUserId(userId);
+    outbox.setTemplate("register-verification");
+    outbox.setToEmail(toEmail);
+    outbox.setPayloadJson(writePayload(Map.of("tenantName", tenantName, "verifyUrl", verifyUrl)));
+    outbox.setStatus("pending");
+    outbox.setCreatedAt(Instant.now());
+    emailOutboxRepository.insert(outbox);
+    deliverRegisterVerification(outbox.getId(), toEmail, tenantName, verifyUrl);
+    return outbox.getId();
+  }
+
+  private void deliverRegisterVerification(
+      UUID outboxId, String toEmail, String tenantName, String verifyUrl) {
+    if (!saasAppProperties.getMail().isEnabled()) {
+      log.info("Mail disabled — register verification link for {}: {}", toEmail, verifyUrl);
+      emailOutboxRepository.markSent(outboxId);
+      return;
+    }
+
+    try {
+      var message = new SimpleMailMessage();
+      message.setFrom(saasAppProperties.getMail().getFrom());
+      message.setTo(toEmail);
+      message.setSubject("云眼地图 · 验证邮箱并完成注册");
+      message.setText(
+          """
+          您好，
+
+          感谢注册加入租户「%s」。
+
+          请点击以下链接验证邮箱并激活账号（链接 24 小时内有效）：
+          %s
+
+          如非本人操作，请忽略此邮件。
+          """
+              .formatted(tenantName, verifyUrl));
+      mailSender.send(message);
+      emailOutboxRepository.markSent(outboxId);
+    } catch (MailException ex) {
+      log.warn("Failed to send register verification email to {}: {}", toEmail, ex.getMessage());
+      emailOutboxRepository.markFailed(outboxId, truncate(ex.getMessage()));
+    }
+  }
+
   private void deliverPasswordReset(UUID outboxId, String toEmail, String tenantName, String resetUrl) {
     if (!saasAppProperties.getMail().isEnabled()) {
       log.info("Mail disabled — password reset link for {}: {}", toEmail, resetUrl);

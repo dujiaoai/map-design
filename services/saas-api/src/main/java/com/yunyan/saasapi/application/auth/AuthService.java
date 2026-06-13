@@ -8,6 +8,7 @@ import com.yunyan.saasapi.web.dto.auth.LoginRequest;
 import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.LoginUserDto;
 import com.yunyan.saasapi.web.dto.auth.RefreshRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterConfirmRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterRequest;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.security.TenantContext;
@@ -16,6 +17,7 @@ import com.yunyan.saasapi.web.dto.auth.SessionTenantDto;
 import com.yunyan.saasapi.web.dto.auth.SessionUserDto;
 import com.yunyan.saasapi.application.email.EmailTokenHasher;
 import com.yunyan.saasapi.application.email.PasswordResetService;
+import com.yunyan.saasapi.application.email.RegistrationVerificationService;
 import com.yunyan.saasapi.application.email.UserInviteService;
 import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
 import com.yunyan.saasapi.domain.UserRepository;
@@ -45,16 +47,16 @@ public class AuthService {
   private final EmailTokenHasher emailTokenHasher;
   private final EmailVerificationTokenRepository emailVerificationTokenRepository;
   private final PasswordResetService passwordResetService;
+  private final RegistrationVerificationService registrationVerificationService;
+
+  public void requestRegistration(RegisterRequest request) {
+    registrationVerificationService.requestRegistration(request);
+  }
 
   @Transactional
-  public LoginResponse register(RegisterRequest request) {
-    var tenantSlug = request.tenantId().trim();
-    var user =
-        userAuthRepository.registerMember(
-            request.email().trim(),
-            passwordEncoder.encode(request.password()),
-            request.displayName(),
-            tenantSlug);
+  public LoginResponse confirmRegistration(RegisterConfirmRequest request) {
+    var user = registrationVerificationService.confirmRegistration(request.token());
+    userAuthRepository.touchLastLoginAt(user.id());
     return buildLoginResponse(user);
   }
 
@@ -72,6 +74,8 @@ public class AuthService {
       }
       case INVITE_PENDING ->
           throw AuthException.forbidden("Invite pending, check your email to set a password");
+      case EMAIL_VERIFICATION_PENDING ->
+          throw AuthException.forbidden("Email not verified, check your inbox to complete registration");
       case FOUND -> {
         if (!passwordEncoder.matches(request.password(), lookup.user().passwordHash())) {
           throw AuthException.unauthorized("Invalid email or password");

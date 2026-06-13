@@ -4,7 +4,7 @@ import { Button, cn, Input } from '@repo/ui'
 import { Building2Icon, UserIcon } from 'lucide-react'
 import { useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import { z } from 'zod'
 
 import { auth } from '~/shared/auth/client'
@@ -65,8 +65,8 @@ function RegisterUnavailable() {
 }
 
 function RegisterForm() {
-  const navigate = useNavigate()
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const {
     register,
@@ -85,6 +85,7 @@ function RegisterForm() {
 
   async function onSubmit(values: RegisterFormValues) {
     setSubmitError(null)
+    setSuccessMessage(null)
 
     const email = values.email.trim()
     const tenantId = values.tenantId.trim()
@@ -97,7 +98,7 @@ function RegisterForm() {
         tenantId,
         displayName: displayName || undefined,
       })
-      void navigate('/', { replace: true })
+      setSuccessMessage(`验证邮件已发送至 ${email}，请查收并点击链接完成注册。`)
     } catch (error) {
       setSubmitError(formatRegisterError(error))
     }
@@ -182,6 +183,12 @@ function RegisterForm() {
         <AuthFieldError message={errors.tenantId?.message} />
       </div>
 
+      {successMessage ? (
+        <p className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary-foreground/90">
+          {successMessage}
+        </p>
+      ) : null}
+
       {submitError ? (
         <p className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90">
           {submitError}
@@ -191,10 +198,10 @@ function RegisterForm() {
       <div className="login-field-group" style={{ '--field-i': 5 } as CSSProperties}>
         <Button
           className="mt-1 h-11 w-full rounded-[10px] text-base font-medium"
-          disabled={isSubmitting}
+          disabled={isSubmitting || Boolean(successMessage)}
           type="submit"
         >
-          {isSubmitting ? '注册中…' : '注册并进入工作台'}
+          {isSubmitting ? '发送中…' : '发送验证邮件'}
         </Button>
       </div>
 
@@ -206,7 +213,7 @@ function RegisterForm() {
       </p>
 
       <p className="cc-mono text-center text-[11px] leading-relaxed text-white/38">
-        加入已有租户 · 默认角色 MEMBER · 演示租户 slug: demo
+        加入已有租户 · 默认角色 MEMBER · 需验证邮箱后登录 · 演示租户 slug: demo
       </p>
     </form>
   )
@@ -218,10 +225,10 @@ export default function Register() {
   return (
     <AuthPageShell
       badge={saasAuthEnabled ? 'SaaS API' : '未启用'}
-      brandDescription="注册即加入指定租户，获得地图工作台访问权限。首版无邮箱验证，请使用有效租户 slug。"
+      brandDescription="注册后需验证邮箱方可登录。填写信息后将收到验证链接，点击即可激活账号。"
       headline="加入协作空间"
       headlineAccent="开启地图工作台之旅"
-      subtitle="创建账号并加入租户"
+      subtitle="创建账号并验证邮箱"
       title="注册账号"
     >
       {saasAuthEnabled ? <RegisterForm /> : <RegisterUnavailable />}

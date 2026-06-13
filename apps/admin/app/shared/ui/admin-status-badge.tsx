@@ -3,6 +3,7 @@ import { Badge, cn } from '@repo/ui'
 const STATUS_LABELS: Record<string, string> = {
   active: '正常',
   invited: '待接受',
+  unverified: '待验证',
   suspended: '已停用',
   disabled: '已禁用',
 }

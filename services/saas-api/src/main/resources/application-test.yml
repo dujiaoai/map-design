@@ -22,6 +22,8 @@ saas:
     token-pepper: test-invite-pepper-with-32-bytes!!
   password-reset:
     token-ttl: PT1H
+  registration:
+    token-ttl: PT24H
   jwt:
     issuer: yunyan-saas-test
     secret: test-jwt-secret-with-at-least-32-bytes!!

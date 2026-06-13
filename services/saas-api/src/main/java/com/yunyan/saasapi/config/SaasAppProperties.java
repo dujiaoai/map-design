@@ -25,6 +25,7 @@ public class SaasAppProperties {
   @Data
   public static class App {
     private String webBaseUrl = "http://localhost:5175";
+    private String adminBaseUrl = "http://localhost:5181";
   }
 
   @Data

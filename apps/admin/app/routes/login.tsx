@@ -3,7 +3,7 @@ import { Button, cn, Input } from '@repo/ui'
 import { Building2Icon, UserIcon } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
-import { redirect, useNavigate } from 'react-router'
+import { Link, redirect, useNavigate } from 'react-router'
 import { z } from 'zod'
 
 import { auth } from '~/shared/auth/client'
@@ -156,9 +156,14 @@ export default function LoginRoute() {
           </div>
 
           <div className="admin-login-field space-y-1.5" style={{ '--field-i': 2 } as CSSProperties}>
-            <label className="text-sm text-white/65" htmlFor="admin-tenant">
-              租户 slug
-            </label>
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-sm text-white/65" htmlFor="admin-tenant">
+                租户 slug
+              </label>
+              <Link className="shrink-0 text-xs text-primary hover:underline" to="/forgot-password">
+                忘记密码？
+              </Link>
+            </div>
             <div className="relative">
               <Building2Icon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-primary/55" />
               <Input

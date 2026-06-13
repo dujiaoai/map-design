@@ -8,6 +8,7 @@ export default [
     route('forgot-password', 'routes/forgot-password.tsx'),
     route('reset-password', 'routes/reset-password.tsx'),
     route('verify-email', 'routes/verify-email.tsx'),
+    route('resend-verification', 'routes/resend-verification.tsx'),
     route('dev/saas-auth-smoke', 'routes/dev.saas-auth-smoke.tsx'),
   ]),
   layout('layouts/app-layout.tsx', [

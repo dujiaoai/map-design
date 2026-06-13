@@ -1,5 +1,7 @@
 package com.yunyan.saasapi.web.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.lessThan;
@@ -108,6 +110,66 @@ class AuthControllerTest {
                             "tenantId", "test"))))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.detail").value("Email not verified, check your inbox to complete registration"));
+  }
+
+  @Test
+  void registerResend_forUnverifiedUser_sendsNewVerificationEmail() throws Exception {
+    var email = "resend-" + System.currentTimeMillis() + "@test.local";
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", email,
+                            "password", "password",
+                            "tenantId", "test"))))
+        .andExpect(status().isNoContent());
+
+    var countBefore =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM sys_email_outbox WHERE to_email = ? AND template = 'register-verification'",
+            Integer.class,
+            email);
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register/resend")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("email", email, "tenantId", "test"))))
+        .andExpect(status().isNoContent());
+
+    var countAfter =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM sys_email_outbox WHERE to_email = ? AND template = 'register-verification'",
+            Integer.class,
+            email);
+    assertTrue(countAfter > countBefore);
+  }
+
+  @Test
+  void registerResend_forActiveUser_returns204WithoutNewEmail() throws Exception {
+    mockMvc
+        .perform(
+            post("/v1/auth/register/resend")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "email", "admin@test.local",
+                            "tenantId", "test"))))
+        .andExpect(status().isNoContent());
+
+    var count =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM sys_email_outbox WHERE to_email = ? AND template = 'register-verification'",
+            Integer.class,
+            "admin@test.local");
+    assertEquals(0, count);
   }
 
   @Test

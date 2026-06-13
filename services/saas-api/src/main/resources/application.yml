@@ -41,6 +41,7 @@ saas:
     from: ${SAAS_MAIL_FROM:noreply@yunyan.local}
   app:
     web-base-url: ${SAAS_WEB_BASE_URL:http://localhost:5175}
+    admin-base-url: ${SAAS_ADMIN_BASE_URL:http://localhost:5181}
   invite:
     token-ttl: PT48H
     token-pepper: ${SAAS_INVITE_TOKEN_PEPPER:dev-invite-pepper-change-me!!}

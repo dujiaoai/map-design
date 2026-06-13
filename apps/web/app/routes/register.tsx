@@ -184,9 +184,17 @@ function RegisterForm() {
       </div>
 
       {successMessage ? (
-        <p className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary-foreground/90">
-          {successMessage}
-        </p>
+        <div className="space-y-3">
+          <p className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary-foreground/90">
+            {successMessage}
+          </p>
+          <p className="text-center text-sm text-white/50">
+            未收到？{' '}
+            <Link className="text-brand-light hover:underline" to="/resend-verification">
+              重发验证邮件
+            </Link>
+          </p>
+        </div>
       ) : null}
 
       {submitError ? (

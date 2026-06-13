@@ -10,6 +10,7 @@ import com.yunyan.saasapi.web.dto.auth.RefreshRequest;
 import com.yunyan.saasapi.web.dto.auth.PasswordResetConfirmRequest;
 import com.yunyan.saasapi.web.dto.auth.PasswordResetRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterConfirmRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterResendRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterRequest;
 import com.yunyan.saasapi.web.support.ClientIpResolver;
 import io.swagger.v3.oas.annotations.Operation;
@@ -62,6 +63,18 @@ public class AuthController {
       description = "使用邮件 token 激活账号，响应体同登录。")
   LoginResponse confirmRegistration(@Valid @RequestBody RegisterConfirmRequest request) {
     return authService.confirmRegistration(request);
+  }
+
+  @PostMapping("/register/resend")
+  @Operation(
+      summary = "重发注册验证邮件",
+      description =
+          "若邮箱在指定租户下存在且 status=unverified，将发送新的验证链接。无论是否存在均返回 204，防止邮箱枚举。")
+  @ApiResponse(responseCode = "204", description = "请求已受理")
+  ResponseEntity<Void> resendRegistrationVerification(
+      @Valid @RequestBody RegisterResendRequest request, HttpServletRequest httpRequest) {
+    authService.resendRegistrationVerification(request, ClientIpResolver.resolve(httpRequest));
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 
   @PostMapping("/login")

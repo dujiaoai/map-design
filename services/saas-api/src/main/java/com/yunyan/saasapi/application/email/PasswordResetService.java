@@ -39,7 +39,7 @@ public class PasswordResetService {
   private final PasswordPolicyService passwordPolicyService;
 
   @Transactional
-  public void requestPasswordReset(String email, String tenantSlug) {
+  public void requestPasswordReset(String email, String tenantSlug, String clientApp) {
     if (!StringUtils.hasText(email) || !StringUtils.hasText(tenantSlug)) {
       return;
     }
@@ -57,7 +57,7 @@ public class PasswordResetService {
     }
 
     emailVerificationTokenRepository.invalidateActivePasswordResetTokens(user.getId());
-    sendPasswordResetEmail(tenant, user);
+    sendPasswordResetEmail(tenant, user, clientApp);
   }
 
   @Transactional
@@ -92,7 +92,7 @@ public class PasswordResetService {
         .orElseThrow(() -> new IllegalStateException("User not found after password reset"));
   }
 
-  private void sendPasswordResetEmail(SysTenant tenant, SysUser user) {
+  private void sendPasswordResetEmail(SysTenant tenant, SysUser user, String clientApp) {
     var rawToken = emailTokenHasher.generateRawToken();
     var token = new SysEmailVerificationToken();
     token.setId(UUID.randomUUID());
@@ -103,12 +103,18 @@ public class PasswordResetService {
     token.setCreatedAt(Instant.now());
     emailVerificationTokenRepository.insert(token);
 
+    var baseUrl = resolveResetBaseUrl(clientApp);
     var resetUrl =
-        saasAppProperties.getApp().getWebBaseUrl().replaceAll("/$", "")
-            + "/reset-password?token="
-            + rawToken;
+        baseUrl.replaceAll("/$", "") + "/reset-password?token=" + rawToken;
     emailDeliveryService.queuePasswordResetEmail(
         tenant.getId(), user.getId(), user.getEmail(), tenant.getName(), resetUrl);
+  }
+
+  private String resolveResetBaseUrl(String clientApp) {
+    if (StringUtils.hasText(clientApp) && "admin".equalsIgnoreCase(clientApp.trim())) {
+      return saasAppProperties.getApp().getAdminBaseUrl();
+    }
+    return saasAppProperties.getApp().getWebBaseUrl();
   }
 
   private static boolean isTenantActive(SysTenant tenant) {

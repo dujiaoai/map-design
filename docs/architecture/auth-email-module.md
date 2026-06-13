@@ -18,6 +18,7 @@
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
 | POST | `/v1/auth/register` | 创建 `unverified` 用户，**204** |
+| POST | `/v1/auth/register/resend` | 重发注册验证邮件 **204**（防枚举） |
 | POST | `/v1/auth/register/confirm` | `{ token }` → 激活 + 登录态 |
 | POST | `/v1/auth/accept-invite` | 邀请设密 |
 | POST | `/v1/auth/password-reset/request` | 重置请求 **204** |
@@ -40,6 +41,7 @@
 | 路由 | 说明 |
 | --- | --- |
 | `/register` | 提交后提示查收验证邮件 |
+| `/resend-verification` | 重发注册验证邮件 |
 | `/verify-email?token=...` | 自动确认并进入工作台 |
 | `/forgot-password` / `/reset-password` | M3 |
 | `/accept-invite` | M1 |

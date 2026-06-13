@@ -88,6 +88,14 @@ export function createAuth(options: CreateAuthOptions) {
       await authApi.register(credentials)
     },
 
+    async resendRegistrationVerification(body: {
+      email: string
+      tenantId: string
+    }): Promise<void> {
+      if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用注册验证重发接口')
+      await authApi.resendRegistrationVerification(body)
+    },
+
     async confirmRegistration(token: string): Promise<Session> {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用注册验证接口')
       const response = loginResponseSchema.parse(await authApi.confirmRegistration(token))
@@ -104,7 +112,11 @@ export function createAuth(options: CreateAuthOptions) {
       return session
     },
 
-    async requestPasswordReset(body: { email: string; tenantId: string }): Promise<void> {
+    async requestPasswordReset(body: {
+      email: string
+      tenantId: string
+      clientApp?: 'web' | 'admin'
+    }): Promise<void> {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用密码重置接口')
       await authApi.requestPasswordReset(body)
     },

@@ -113,6 +113,29 @@ public class RegistrationVerificationService {
         .orElseThrow(() -> new IllegalStateException("User not found after registration confirm"));
   }
 
+  /** 对待验证账号重发验证邮件；不存在或非 unverified 时静默忽略（防枚举）。 */
+  @Transactional
+  public void resendVerificationEmail(String email, String tenantSlug) {
+    if (!StringUtils.hasText(email) || !StringUtils.hasText(tenantSlug)) {
+      return;
+    }
+
+    var tenant = tenantRepository.findBySlug(tenantSlug.trim()).orElse(null);
+    if (tenant == null || !isTenantActive(tenant)) {
+      return;
+    }
+
+    var normalizedEmail = EmailNormalizer.normalize(email);
+    var user =
+        userRepository.findByTenantIdAndEmail(tenant.getId(), normalizedEmail).orElse(null);
+    if (user == null || !STATUS_UNVERIFIED.equals(user.getStatus())) {
+      return;
+    }
+
+    emailVerificationTokenRepository.invalidateActiveRegisterTokens(user.getId());
+    sendVerificationEmail(tenant, user);
+  }
+
   private void sendVerificationEmail(SysTenant tenant, SysUser user) {
     var rawToken = emailTokenHasher.generateRawToken();
     var token = new SysEmailVerificationToken();

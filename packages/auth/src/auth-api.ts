@@ -44,6 +44,21 @@ export function createAuthApi(options: AuthApiOptions) {
       }
     },
 
+    async resendRegistrationVerification(body: {
+      email: string
+      tenantId: string
+    }): Promise<void> {
+      const res = await fetchFn(`${base}/auth/register/resend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(`Auth API ${res.status}: ${text}`)
+      }
+    },
+
     async confirmRegistration(token: string): Promise<LoginResponse> {
       const res = await fetchFn(`${base}/auth/register/confirm`, {
         method: 'POST',
@@ -135,11 +150,22 @@ export function createAuthApi(options: AuthApiOptions) {
       return parseJson(res)
     },
 
-    async requestPasswordReset(body: { email: string; tenantId: string }): Promise<void> {
+    async requestPasswordReset(body: {
+      email: string
+      tenantId: string
+      clientApp?: 'web' | 'admin'
+    }): Promise<void> {
+      const payload: Record<string, string> = {
+        email: body.email,
+        tenantId: body.tenantId,
+      }
+      if (body.clientApp) {
+        payload.clientApp = body.clientApp
+      }
       const res = await fetchFn(`${base}/auth/password-reset/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(payload),
       })
       if (!res.ok) {
         const text = await res.text()

@@ -12,6 +12,7 @@ import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.LoginUserDto;
 import com.yunyan.saasapi.web.dto.auth.RefreshRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterConfirmRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterResendRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterRequest;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.security.TenantContext;
@@ -62,6 +63,11 @@ public class AuthService {
   public void requestRegistration(RegisterRequest request, String clientIp) {
     authRateLimitService.checkRegister(clientIp, request.email());
     registrationVerificationService.requestRegistration(request);
+  }
+
+  public void resendRegistrationVerification(RegisterResendRequest request, String clientIp) {
+    authRateLimitService.checkRegister(clientIp, request.email());
+    registrationVerificationService.resendVerificationEmail(request.email(), request.tenantId());
   }
 
   @Transactional
@@ -253,7 +259,8 @@ public class AuthService {
 
   public void requestPasswordReset(PasswordResetRequest request, String clientIp) {
     authRateLimitService.checkPasswordResetRequest(clientIp, request.email(), request.tenantId());
-    passwordResetService.requestPasswordReset(request.email(), request.tenantId());
+    passwordResetService.requestPasswordReset(
+        request.email(), request.tenantId(), request.clientApp());
   }
 
   @Transactional

@@ -1,6 +1,7 @@
 package com.yunyan.saasapi.application.auth;
 
 import com.yunyan.saasapi.security.AuthException;
+import com.yunyan.saasapi.security.AccessTokenDenylist;
 import com.yunyan.saasapi.security.JwtService;
 import com.yunyan.saasapi.config.JwtProperties;
 import com.yunyan.saasapi.security.RefreshRotationGraceStore;
@@ -48,6 +49,7 @@ public class AuthService {
   private final JwtService jwtService;
   private final RefreshTokenStore refreshTokenStore;
   private final RefreshRotationGraceStore refreshRotationGraceStore;
+  private final AccessTokenDenylist accessTokenDenylist;
   private final JwtProperties jwtProperties;
   private final EmailTokenHasher emailTokenHasher;
   private final EmailVerificationTokenRepository emailVerificationTokenRepository;
@@ -141,8 +143,24 @@ public class AuthService {
     return tokens;
   }
 
-  public void logout(UUID userId) {
+  public void logout(SaasPrincipal principal) {
+    if (principal == null) {
+      return;
+    }
+    logoutSession(principal.userId(), principal.accessTokenJti(), principal.accessTokenExpiresAt());
+  }
+
+  public void logoutSession(UUID userId, String accessTokenJti, Instant accessTokenExpiresAt) {
     refreshTokenStore.findActiveJti(userId).ifPresent(jti -> refreshTokenStore.revoke(userId, jti));
+    denyAccessToken(accessTokenJti, accessTokenExpiresAt);
+  }
+
+  private void denyAccessToken(String accessTokenJti, Instant accessTokenExpiresAt) {
+    if (accessTokenJti == null || accessTokenJti.isBlank() || accessTokenExpiresAt == null) {
+      return;
+    }
+    var ttl = Duration.between(Instant.now(), accessTokenExpiresAt);
+    accessTokenDenylist.deny(accessTokenJti, ttl);
   }
 
   @Transactional
@@ -163,7 +181,7 @@ public class AuthService {
 
     userAuthRepository.updatePasswordHash(
         principal.userId(), passwordEncoder.encode(request.newPassword()));
-    logout(principal.userId());
+    logout(principal);
     securityNotificationService.notifyPasswordChanged(
         principal.userId(), principal.tenantId(), user.email());
   }

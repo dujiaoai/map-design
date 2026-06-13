@@ -39,7 +39,7 @@ pnpm smoke:saas-api
 node services/saas-api/scripts/smoke-auth.mjs
 ```
 
-覆盖：`health` → `register` → `users/me/password` → `login`（新密码）→ `login`（demo 账号）→ `users/me` → `users/me` PUT → `refresh` → `logout` → `refresh`（应 401）。
+覆盖：`health` → `register` → `users/me/password` → `login`（新密码）→ `login`（demo 账号）→ `users/me` → `users/me` PUT → `refresh` → `logout` → `users/me`（应 401）→ `refresh`（应 401）。
 
 环境变量（可选）：
 

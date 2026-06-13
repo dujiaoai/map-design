@@ -19,10 +19,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
   private final PermissionResolver permissionResolver;
+  private final AccessTokenDenylist accessTokenDenylist;
 
-  public JwtAuthFilter(JwtService jwtService, PermissionResolver permissionResolver) {
+  public JwtAuthFilter(
+      JwtService jwtService,
+      PermissionResolver permissionResolver,
+      AccessTokenDenylist accessTokenDenylist) {
     this.jwtService = jwtService;
     this.permissionResolver = permissionResolver;
+    this.accessTokenDenylist = accessTokenDenylist;
   }
 
   @Override
@@ -40,6 +45,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   private void authenticate(HttpServletRequest request, String token) {
     try {
       var parsed = jwtService.parseAccessToken(token);
+      if (parsed.jti() != null && accessTokenDenylist.isDenied(parsed.jti())) {
+        return;
+      }
       TenantContext.set(parsed.tenantId().toString());
 
       var permissionCodes = resolvePermissionCodes(parsed.permissionCodes(), parsed.roleCodes());
@@ -49,6 +57,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
           parsed.userId().toString(),
           parsed.roleCodes(),
           permissionCodes,
+          parsed.jti(),
           parsed.expiresAt());
 
       var authentication = new UsernamePasswordAuthenticationToken(

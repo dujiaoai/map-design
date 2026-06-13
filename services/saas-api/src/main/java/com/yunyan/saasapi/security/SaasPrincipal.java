@@ -17,6 +17,7 @@ public record SaasPrincipal(
     String email,
     List<String> roleCodes,
     List<String> permissionCodes,
+    String accessTokenJti,
     Instant accessTokenExpiresAt)
     implements UserDetails {
 

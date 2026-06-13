@@ -306,6 +306,10 @@ class AuthControllerTest {
         .andExpect(status().isNoContent());
 
     mockMvc
+        .perform(get("/v1/users/me").header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isUnauthorized());
+
+    mockMvc
         .perform(
             post("/v1/auth/refresh")
                 .contentType(MediaType.APPLICATION_JSON)

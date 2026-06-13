@@ -33,10 +33,12 @@ public class JwtService {
   }
 
   public IssuedToken issueAccessToken(AuthenticatedUser user) {
+    var jti = UUID.randomUUID().toString();
     var expiresAt = Instant.now().plus(properties.accessTtl());
     var token = Jwts.builder()
         .issuer(properties.issuer())
         .subject(user.id().toString())
+        .id(jti)
         .claim(CLAIM_TENANT_ID, user.tenantId().toString())
         .claim(CLAIM_ROLES, user.roleCodes())
         .claim(CLAIM_PERMISSIONS, user.permissionCodes())
@@ -45,7 +47,7 @@ public class JwtService {
         .expiration(Date.from(expiresAt))
         .signWith(secretKey)
         .compact();
-    return new IssuedToken(token, expiresAt);
+    return new IssuedToken(token, expiresAt, jti);
   }
 
   public IssuedToken issueRefreshToken(AuthenticatedUser user) {
@@ -100,6 +102,7 @@ public class JwtService {
         UUID.fromString(claims.get(CLAIM_TENANT_ID, String.class)),
         readRoles(claims),
         readPermissions(claims),
+        claims.getId(),
         claims.getExpiration().toInstant());
   }
 
@@ -145,7 +148,12 @@ public class JwtService {
   }
 
   public record ParsedAccessToken(
-      UUID userId, UUID tenantId, List<String> roleCodes, List<String> permissionCodes, Instant expiresAt) {}
+      UUID userId,
+      UUID tenantId,
+      List<String> roleCodes,
+      List<String> permissionCodes,
+      String jti,
+      Instant expiresAt) {}
 
   public record ParsedRefreshToken(
       UUID userId,

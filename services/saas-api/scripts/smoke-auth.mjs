@@ -159,6 +159,14 @@ async function main() {
   }
   passed.push('logout')
 
+  const meAfterLogout = await api('/users/me', {
+    headers: { Authorization: `Bearer ${refresh.body.accessToken}` },
+  })
+  if (meAfterLogout.status !== 401) {
+    fail('users/me-after-logout', `expected 401, got HTTP ${meAfterLogout.status}`)
+  }
+  passed.push('users/me-after-logout')
+
   const refreshAfterLogout = await api('/auth/refresh', {
     method: 'POST',
     body: { refreshToken: refresh.body.refreshToken },

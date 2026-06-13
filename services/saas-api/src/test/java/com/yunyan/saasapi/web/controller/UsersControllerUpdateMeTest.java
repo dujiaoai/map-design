@@ -91,6 +91,7 @@ class UsersControllerUpdateMeTest {
             "admin@test.local",
             List.of("TENANT_ADMIN"),
             List.of("workspace:use"),
+            null,
             Instant.ofEpochMilli(1_710_000_900_000L));
     SecurityContextHolder.getContext()
         .setAuthentication(

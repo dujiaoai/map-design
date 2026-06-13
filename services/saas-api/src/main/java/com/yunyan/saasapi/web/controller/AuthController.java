@@ -122,7 +122,10 @@ public class AuthController {
   @PostMapping("/logout")
   @Operation(
       summary = "登出",
-      description = "吊销服务端 refresh token。需 Bearer access token；前端 `@repo/auth` 在登出时携带当前 accessToken。")
+      description =
+          """
+          吊销服务端 refresh token，并将当前 Bearer access token 的 jti 写入 Redis denylist（TTL = access 剩余有效期）。
+          登出后同一 access token 不可再访问受保护接口；未登出的 access token 在过期前仍可用（stateless JWT，默认 TTL 15 分钟）。""")
   @SecurityRequirement(name = "bearerAuth")
   @ApiResponse(responseCode = "204", description = "已登出")
   @ApiResponse(
@@ -130,9 +133,7 @@ public class AuthController {
       description = "未提供有效 access token",
       content = @Content(mediaType = "application/problem+json"))
   ResponseEntity<Void> logout(@AuthenticationPrincipal SaasPrincipal principal) {
-    if (principal != null) {
-      authService.logout(principal.userId());
-    }
+    authService.logout(principal);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

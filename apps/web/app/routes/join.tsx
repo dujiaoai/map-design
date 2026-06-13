@@ -231,23 +231,26 @@ export default function JoinInviteRoute() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')?.trim() ?? ''
   const saasAuthEnabled = isSaasAuthEnabled()
+  const shouldPreview = saasAuthEnabled && Boolean(token)
   const [previewError, setPreviewError] = useState<string | null>(null)
   const [preview, setPreview] = useState<{
     tenantName: string
     roleCode: string
   } | null>(null)
-  const [previewLoading, setPreviewLoading] = useState(false)
+  const [previewLoading, setPreviewLoading] = useState(shouldPreview)
 
   useEffect(() => {
-    if (!saasAuthEnabled || !token) {
+    if (!shouldPreview) {
       setPreview(null)
       setPreviewError(null)
+      setPreviewLoading(false)
       return
     }
 
     let cancelled = false
     setPreviewLoading(true)
     setPreviewError(null)
+    setPreview(null)
 
     void auth
       .previewInviteLink(token)
@@ -269,7 +272,7 @@ export default function JoinInviteRoute() {
     return () => {
       cancelled = true
     }
-  }, [saasAuthEnabled, token])
+  }, [shouldPreview, token])
 
   return (
     <AuthPageShell
@@ -294,9 +297,7 @@ export default function JoinInviteRoute() {
           tenantName={preview.tenantName}
           roleCode={preview.roleCode}
         />
-      ) : (
-        <InvalidLinkNotice message="邀请链接无效或已过期" />
-      )}
+      ) : null}
     </AuthPageShell>
   )
 }

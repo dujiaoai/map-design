@@ -39,7 +39,9 @@ pnpm smoke:saas-api
 node services/saas-api/scripts/smoke-auth.mjs
 ```
 
-覆盖：`health` → `register` → `users/me/password` → `login`（新密码）→ `login`（demo 账号）→ `users/me` → `users/me` PUT → `refresh` → `logout` → `users/me`（应 401）→ `refresh`（应 401）。
+覆盖：`health` → `register` → `register/confirm` → `users/me/password` → `admin/users` 邀请 → `accept-invite` → `login`（demo 账号）→ `users/me` → `users/me` PUT → `refresh` → `logout` → `users/me`（应 401）→ `refresh`（应 401）。
+
+注册/邀请 token 默认从 Docker Postgres `sys_email_outbox` 读取（`SMOKE_PG_CONTAINER`，默认 `services-postgres-1`）；也可手动设置 `SMOKE_REGISTER_TOKEN`。跳过邀请：`SMOKE_SKIP_INVITE=1`。
 
 环境变量（可选）：
 
@@ -50,6 +52,9 @@ node services/saas-api/scripts/smoke-auth.mjs
 | `SMOKE_EMAIL`       | `admin@demo.local`         |
 | `SMOKE_PASSWORD`    | `password`                 |
 | `SMOKE_TENANT`      | `demo`                     |
+| `SMOKE_PG_CONTAINER` | `services-postgres-1`（从 outbox 读注册/邀请 token） |
+| `SMOKE_REGISTER_TOKEN` | 手动指定注册确认 token（跳过 DB 查询） |
+| `SMOKE_SKIP_INVITE` | `1` 跳过 admin 邀请 + accept-invite 步骤 |
 
 
 ---

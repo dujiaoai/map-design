@@ -14,7 +14,7 @@ describe('formatLoginError', () => {
   })
 
   it('maps Auth API 403 to tenant message', () => {
-    expect(formatLoginError(new Error('Auth API 403: Forbidden'))).toBe('无权访问该租户')
+    expect(formatLoginError(new Error('Auth API 403: Forbidden'))).toBe('无权访问，请联系管理员')
   })
 
   it('uses HTTP status code not body substring for 401 vs 403', () => {
@@ -26,8 +26,8 @@ describe('formatLoginError', () => {
   it('uses RFC7807 detail when present', () => {
     expect(
       formatLoginError(
-        new Error('Auth API 400: {"title":"Bad Request","detail":"tenantId is required"}'),
+        new Error('Auth API 400: {"title":"Bad Request","detail":"Tenant slug is required"}'),
       ),
-    ).toBe('tenantId is required')
+    ).toBe('该邮箱关联多个租户，请填写租户标识后再登录')
   })
 })

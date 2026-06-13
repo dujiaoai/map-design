@@ -6,6 +6,7 @@ export function formatLoginError(error: unknown): string {
     statusMessages: {
       400: '请填写租户标识后再登录',
       401: '邮箱、密码或租户不正确',
+      403: '无权访问，请联系管理员',
       429: '操作过于频繁，请稍后再试',
     },
     detailLocalizations: AUTH_API_DETAIL_LOCALIZATIONS,

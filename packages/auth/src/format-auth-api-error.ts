@@ -64,7 +64,9 @@ export function formatAuthApiError(
 export const AUTH_API_DETAIL_LOCALIZATIONS = {
   'Tenant slug is required': '该邮箱关联多个租户，请填写租户标识后再登录',
   'Tenant is suspended': '该租户已停用，请联系管理员',
+  'Tenant not found': '租户不存在，请检查租户标识（如 demo）',
   'Account is disabled': '账号已禁用，请联系管理员',
+  'Invalid email or password': '邮箱、密码或租户不正确',
   'Invite pending, check your email to set a password': '邀请待接受，请查收邮件设置密码',
   'Email not verified, check your inbox to complete registration': '邮箱未验证，请查收邮件完成注册',
   'Invalid or expired verification link': '验证链接无效或已过期',

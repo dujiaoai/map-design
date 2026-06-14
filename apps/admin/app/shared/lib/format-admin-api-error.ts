@@ -17,6 +17,7 @@ export function formatAdminApiError(error: unknown, fallback = '操作失败，�
     if (detail) return detail
     if (error.status === 403) return '无权执行此操作'
     if (error.status === 404) return '资源不存在'
+    if (error.status === 400) return '请求参数无效，请检查 UUID 等筛选条件格式'
     if (error.status === 409) {
       if (detail?.toLowerCase().includes('email')) return '该邮箱在此租户下已注册'
       if (detail?.toLowerCase().includes('slug')) return '租户 slug 已存在'

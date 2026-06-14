@@ -1,15 +1,20 @@
-import { Button, Input } from '@repo/ui'
+import { Button, Input, cn } from '@repo/ui'
 import { useQuery } from '@tanstack/react-query'
-import { useId, useState } from 'react'
+import { useCallback, useId, useState } from 'react'
 
 import {
   adminBillingWalletsQuery,
   adminWalletListSchema,
 } from '~/features/billing/lib/billing-admin-api'
+import type { BillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
+import { useBillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
+import type { BillingNavigateTarget } from '~/features/billing/lib/billing-admin-nav'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
-import { AdminField } from '~/shared/ui/admin-field'
+import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
+import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
+import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import {
   AdminDataTable,
   AdminTableBody,
@@ -19,11 +24,19 @@ import {
   AdminTableRow,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 
 const PAGE_SIZE = 20
+const LOW_BALANCE_THRESHOLD = 100
 
-export function BillingWalletsPanel() {
+export function BillingWalletsPanel({
+  filterSeed,
+  onNavigate,
+}: {
+  filterSeed?: BillingFilterSeed
+  onNavigate?: (target: BillingNavigateTarget) => void
+}) {
   const tenantIdInputId = useId()
   const userIdInputId = useId()
 
@@ -31,6 +44,20 @@ export function BillingWalletsPanel() {
   const [userId, setUserId] = useState('')
   const [filters, setFilters] = useState<{ tenantId?: string; userId?: string }>({})
   const [page, setPage] = useState(0)
+  const [filterError, setFilterError] = useState<string | null>(null)
+
+  const applySeed = useCallback((seed: BillingFilterSeed) => {
+    setTenantId(seed.tenantId ?? '')
+    setUserId(seed.userId ?? '')
+    setPage(0)
+    setFilters({
+      tenantId: seed.tenantId,
+      userId: seed.userId,
+    })
+    setFilterError(null)
+  }, [])
+
+  useBillingFilterSeed(filterSeed, applySeed)
 
   const query = useQuery({
     queryKey: billingAdminQueryKeys.wallets(filters, page),
@@ -50,18 +77,26 @@ export function BillingWalletsPanel() {
         <div>
           <h3 className="text-base font-medium">用户钱包</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            默认展示全平台钱包；可按租户或用户 UUID 缩小范围。
+            全平台个人账户积分；可按租户 / 用户 UUID 筛选，支持跳转查看充值订单。
           </p>
         </div>
         <form
           className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto]"
           onSubmit={(event) => {
             event.preventDefault()
-            setPage(0)
-            setFilters({
-              tenantId: tenantId.trim() || undefined,
-              userId: userId.trim() || undefined,
+            const nextTenantId = tenantId.trim() || undefined
+            const nextUserId = userId.trim() || undefined
+            const uuidError = validateOptionalUuidFilters({
+              '租户 ID': nextTenantId,
+              '用户 ID': nextUserId,
             })
+            if (uuidError) {
+              setFilterError(uuidError)
+              return
+            }
+            setFilterError(null)
+            setPage(0)
+            setFilters({ tenantId: nextTenantId, userId: nextUserId })
           }}
         >
           <AdminField label="租户 ID" htmlFor={tenantIdInputId}>
@@ -69,7 +104,7 @@ export function BillingWalletsPanel() {
               id={tenantIdInputId}
               value={tenantId}
               onChange={(event) => setTenantId(event.target.value)}
-              placeholder="可选"
+              placeholder="可选 UUID"
             />
           </AdminField>
           <AdminField label="用户 ID" htmlFor={userIdInputId}>
@@ -77,7 +112,7 @@ export function BillingWalletsPanel() {
               id={userIdInputId}
               value={userId}
               onChange={(event) => setUserId(event.target.value)}
-              placeholder="可选"
+              placeholder="可选 UUID"
             />
           </AdminField>
           <div className="flex items-end gap-2">
@@ -90,16 +125,20 @@ export function BillingWalletsPanel() {
                 setUserId('')
                 setPage(0)
                 setFilters({})
+                setFilterError(null)
               }}
             >
               重置
             </Button>
           </div>
         </form>
+        {filterError ? (
+          <AdminFormError message={filterError} />
+        ) : null}
       </div>
       <div className="px-2 py-2">
         {query.isLoading ? (
-          <AdminEmptyState message="加载中…" />
+          <AdminTableSkeleton columns={onNavigate ? 6 : 5} showPagination />
         ) : errorMessage ? (
           <AdminEmptyState message={errorMessage} />
         ) : query.data && query.data.items.length === 0 ? (
@@ -114,18 +153,54 @@ export function BillingWalletsPanel() {
                   <AdminTableHeaderCell>可用积分</AdminTableHeaderCell>
                   <AdminTableHeaderCell>冻结</AdminTableHeaderCell>
                   <AdminTableHeaderCell>余额</AdminTableHeaderCell>
+                  {onNavigate ? <AdminTableHeaderCell>操作</AdminTableHeaderCell> : null}
                 </AdminTableRow>
               </AdminTableHead>
               <AdminTableBody>
-                {query.data.items.map((wallet) => (
-                  <AdminTableRow key={wallet.walletId}>
-                    <AdminTableCell mono>{wallet.tenantId}</AdminTableCell>
-                    <AdminTableCell mono>{wallet.userId}</AdminTableCell>
-                    <AdminTableCell>{wallet.availableBalance}</AdminTableCell>
-                    <AdminTableCell>{wallet.frozenBalance}</AdminTableCell>
-                    <AdminTableCell>{wallet.balance}</AdminTableCell>
-                  </AdminTableRow>
-                ))}
+                {query.data.items.map((wallet) => {
+                  const isLow = wallet.availableBalance < LOW_BALANCE_THRESHOLD
+                  return (
+                    <AdminTableRow key={wallet.walletId}>
+                      <AdminTableCell>
+                        <AdminIdCell value={wallet.tenantId} label="租户 ID" />
+                      </AdminTableCell>
+                      <AdminTableCell>
+                        <AdminIdCell value={wallet.userId} label="用户 ID" />
+                      </AdminTableCell>
+                      <AdminTableCell>
+                        <span
+                          className={cn(
+                            'tabular-nums',
+                            isLow && 'font-medium text-amber-600 dark:text-amber-400',
+                          )}
+                        >
+                          {wallet.availableBalance}
+                          {isLow ? ' · 偏低' : ''}
+                        </span>
+                      </AdminTableCell>
+                      <AdminTableCell>{wallet.frozenBalance}</AdminTableCell>
+                      <AdminTableCell>{wallet.balance}</AdminTableCell>
+                      {onNavigate ? (
+                        <AdminTableCell>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              onNavigate({
+                                tab: 'orders',
+                                tenantId: wallet.tenantId,
+                                userId: wallet.userId,
+                              })
+                            }
+                          >
+                            充值订单
+                          </Button>
+                        </AdminTableCell>
+                      ) : null}
+                    </AdminTableRow>
+                  )
+                })}
               </AdminTableBody>
             </AdminDataTable>
             <AdminTablePagination

@@ -1,15 +1,19 @@
 import { Button, Input } from '@repo/ui'
 import { useQuery } from '@tanstack/react-query'
-import { useId, useState } from 'react'
+import { useCallback, useId, useState } from 'react'
 
 import {
   adminAdjustRecordListSchema,
   adminBillingAdjustRecordsQuery,
 } from '~/features/billing/lib/billing-admin-api'
+import type { BillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
+import { useBillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
-import { AdminField } from '~/shared/ui/admin-field'
+import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
+import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
+import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import {
   AdminDataTable,
   AdminTableBody,
@@ -20,6 +24,7 @@ import {
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
+import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 
 const PAGE_SIZE = 20
@@ -29,7 +34,11 @@ function formatAdjustAmount(amount: number) {
   return String(amount)
 }
 
-export function BillingAdjustRecordsPanel() {
+export function BillingAdjustRecordsPanel({
+  filterSeed,
+}: {
+  filterSeed?: BillingFilterSeed
+}) {
   const tenantIdInputId = useId()
   const userIdInputId = useId()
 
@@ -37,6 +46,20 @@ export function BillingAdjustRecordsPanel() {
   const [userId, setUserId] = useState('')
   const [filters, setFilters] = useState<{ tenantId?: string; userId?: string }>({})
   const [page, setPage] = useState(0)
+  const [filterError, setFilterError] = useState<string | null>(null)
+
+  const applySeed = useCallback((seed: BillingFilterSeed) => {
+    setTenantId(seed.tenantId ?? '')
+    setUserId(seed.userId ?? '')
+    setPage(0)
+    setFilters({
+      tenantId: seed.tenantId,
+      userId: seed.userId,
+    })
+    setFilterError(null)
+  }, [])
+
+  useBillingFilterSeed(filterSeed, applySeed)
 
   const query = useQuery({
     queryKey: billingAdminQueryKeys.adjustRecords(filters, page),
@@ -63,11 +86,19 @@ export function BillingAdjustRecordsPanel() {
           className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto]"
           onSubmit={(event) => {
             event.preventDefault()
-            setPage(0)
-            setFilters({
-              tenantId: tenantId.trim() || undefined,
-              userId: userId.trim() || undefined,
+            const nextTenantId = tenantId.trim() || undefined
+            const nextUserId = userId.trim() || undefined
+            const uuidError = validateOptionalUuidFilters({
+              '租户 ID': nextTenantId,
+              '用户 ID': nextUserId,
             })
+            if (uuidError) {
+              setFilterError(uuidError)
+              return
+            }
+            setFilterError(null)
+            setPage(0)
+            setFilters({ tenantId: nextTenantId, userId: nextUserId })
           }}
         >
           <AdminField label="租户 ID" htmlFor={tenantIdInputId}>
@@ -75,7 +106,7 @@ export function BillingAdjustRecordsPanel() {
               id={tenantIdInputId}
               value={tenantId}
               onChange={(event) => setTenantId(event.target.value)}
-              placeholder="可选"
+              placeholder="可选 UUID"
             />
           </AdminField>
           <AdminField label="用户 ID" htmlFor={userIdInputId}>
@@ -83,7 +114,7 @@ export function BillingAdjustRecordsPanel() {
               id={userIdInputId}
               value={userId}
               onChange={(event) => setUserId(event.target.value)}
-              placeholder="可选"
+              placeholder="可选 UUID"
             />
           </AdminField>
           <div className="flex items-end gap-2">
@@ -96,16 +127,18 @@ export function BillingAdjustRecordsPanel() {
                 setUserId('')
                 setPage(0)
                 setFilters({})
+                setFilterError(null)
               }}
             >
               重置
             </Button>
           </div>
         </form>
+        {filterError ? <AdminFormError message={filterError} /> : null}
       </div>
       <div className="px-2 py-2">
         {query.isLoading ? (
-          <AdminEmptyState message="加载中…" />
+          <AdminTableSkeleton columns={6} showPagination />
         ) : errorMessage ? (
           <AdminEmptyState message={errorMessage} />
         ) : query.data && query.data.items.length === 0 ? (
@@ -127,8 +160,12 @@ export function BillingAdjustRecordsPanel() {
                 {query.data.items.map((record) => (
                   <AdminTableRow key={record.id}>
                     <AdminTableCell>{formatAdminIsoDate(record.createdAt)}</AdminTableCell>
-                    <AdminTableCell mono>{record.tenantId}</AdminTableCell>
-                    <AdminTableCell mono>{record.userId}</AdminTableCell>
+                    <AdminTableCell>
+                      <AdminIdCell value={record.tenantId} label="租户 ID" />
+                    </AdminTableCell>
+                    <AdminTableCell>
+                      <AdminIdCell value={record.userId} label="用户 ID" />
+                    </AdminTableCell>
                     <AdminTableCell>
                       <span
                         className={

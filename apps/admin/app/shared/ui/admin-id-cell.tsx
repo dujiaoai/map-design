@@ -1,0 +1,23 @@
+import { CopyButton, cn } from '@repo/ui'
+
+export function AdminIdCell({
+  value,
+  label,
+  className,
+}: {
+  value: string
+  label?: string
+  className?: string
+}) {
+  const display =
+    value.length > 24 ? `${value.slice(0, 8)}…${value.slice(-4)}` : value
+
+  return (
+    <div className={cn('flex min-w-0 items-center gap-0.5', className)}>
+      <span className="truncate font-mono text-xs" title={value}>
+        {display}
+      </span>
+      <CopyButton value={value} aria-label={label ? `复制${label}` : '复制'} />
+    </div>
+  )
+}

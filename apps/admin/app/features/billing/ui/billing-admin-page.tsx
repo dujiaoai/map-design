@@ -1,4 +1,8 @@
+import { useState } from 'react'
+
+import type { AdminPackage } from '~/features/billing/lib/billing-admin-api'
 import { BillingAdjustPanel } from '~/features/billing/ui/billing-adjust-panel'
+import { BillingPackageWritePanel } from '~/features/billing/ui/billing-package-write-panel'
 import { BillingPackagesPanel } from '~/features/billing/ui/billing-packages-panel'
 import { BillingRechargeOrdersPanel } from '~/features/billing/ui/billing-recharge-orders-panel'
 import { BillingStatsSummary } from '~/features/billing/ui/billing-stats-summary'
@@ -10,6 +14,8 @@ export function BillingAdminPage() {
   const { can } = useAdminPermissions()
   const canRead = can('admin:billing:read')
   const canAdjust = can('admin:billing:adjust')
+  const canWritePackages = can('admin:billing:packages:write')
+  const [editingPackage, setEditingPackage] = useState<AdminPackage | null>(null)
 
   return (
     <div className="space-y-6">
@@ -20,7 +26,16 @@ export function BillingAdminPage() {
       {canRead ? (
         <>
           <BillingStatsSummary />
-          <BillingPackagesPanel />
+          {canWritePackages ? (
+            <BillingPackageWritePanel
+              editingPackage={editingPackage}
+              onEditPackageChange={setEditingPackage}
+            />
+          ) : null}
+          <BillingPackagesPanel
+            canWrite={canWritePackages}
+            onEditPackage={setEditingPackage}
+          />
           <div className="grid gap-6 xl:grid-cols-2">
             <BillingWalletsPanel />
             <BillingRechargeOrdersPanel />

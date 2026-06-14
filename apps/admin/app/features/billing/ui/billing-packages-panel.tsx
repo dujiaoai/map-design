@@ -1,6 +1,10 @@
+import { Button } from '@repo/ui'
 import { useQuery } from '@tanstack/react-query'
 
-import { adminPackageListSchema } from '~/features/billing/lib/billing-admin-api'
+import {
+  adminPackageListSchema,
+  type AdminPackage,
+} from '~/features/billing/lib/billing-admin-api'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import {
@@ -21,7 +25,13 @@ function formatPrice(cents: number, currency: string) {
   return `${cents} ${currency}`
 }
 
-export function BillingPackagesPanel() {
+export function BillingPackagesPanel({
+  canWrite = false,
+  onEditPackage,
+}: {
+  canWrite?: boolean
+  onEditPackage?: (pkg: AdminPackage | null) => void
+}) {
   const query = useQuery({
     queryKey: ['admin', 'billing', 'packages'],
     queryFn: async () =>
@@ -52,6 +62,7 @@ export function BillingPackagesPanel() {
                 <AdminTableHeaderCell>售价</AdminTableHeaderCell>
                 <AdminTableHeaderCell>状态</AdminTableHeaderCell>
                 <AdminTableHeaderCell>排序</AdminTableHeaderCell>
+                {canWrite ? <AdminTableHeaderCell>操作</AdminTableHeaderCell> : null}
               </AdminTableRow>
             </AdminTableHead>
             <AdminTableBody>
@@ -64,6 +75,18 @@ export function BillingPackagesPanel() {
                     <AdminStatusBadge status={pkg.status} />
                   </AdminTableCell>
                   <AdminTableCell>{pkg.sortOrder}</AdminTableCell>
+                  {canWrite ? (
+                    <AdminTableCell>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onEditPackage?.(pkg)}
+                      >
+                        编辑
+                      </Button>
+                    </AdminTableCell>
+                  ) : null}
                 </AdminTableRow>
               ))}
             </AdminTableBody>

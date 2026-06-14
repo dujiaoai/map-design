@@ -65,6 +65,35 @@ export const adminPackageListSchema = z.object({
 export type AdminBillingStats = z.infer<typeof adminBillingStatsSchema>
 export type AdminPackageList = z.infer<typeof adminPackageListSchema>
 
+export const adminPackageSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  points: z.number(),
+  priceCents: z.number(),
+  currency: z.string(),
+  status: z.string(),
+  sortOrder: z.number(),
+})
+
+export type AdminPackage = z.infer<typeof adminPackageSchema>
+
+export const adminUsageSummarySchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  productCode: z.string().nullable().optional(),
+  totalPoints: z.number(),
+  items: z.array(
+    z.object({
+      tenantId: z.string(),
+      userId: z.string(),
+      totalPoints: z.number(),
+      eventCount: z.number(),
+    }),
+  ),
+})
+
+export type AdminUsageSummary = z.infer<typeof adminUsageSummarySchema>
+
 function buildQuery(params: Record<string, string | number | undefined>) {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {
@@ -102,5 +131,15 @@ export function adminBillingRechargeOrdersQuery(params: {
     status: params.status,
     page: params.page ?? 0,
     size: params.size ?? 20,
+  })
+}
+
+export function adminBillingUsageQuery(params: {
+  tenantId?: string
+  productCode?: string
+}) {
+  return buildQuery({
+    tenantId: params.tenantId,
+    productCode: params.productCode,
   })
 }

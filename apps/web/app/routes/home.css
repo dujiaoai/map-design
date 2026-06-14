@@ -20,6 +20,13 @@ body:has(.workspace-page) {
   font-family: 'Noto Sans SC', ui-sans-serif, system-ui, sans-serif;
 }
 
+/* 浅色工作台：重映射指挥舱 surface，使 glass / atmosphere / 底栏随主题切换 */
+html:not(.dark) .workspace-page {
+  --surface-deep: var(--surface-light-canvas);
+  --surface-panel: var(--surface-light-panel);
+  --surface-elevated: var(--surface-light-elevated);
+}
+
 html.dark .workspace-page {
   background: var(--surface-deep);
   color: var(--text-on-dark);
@@ -313,6 +320,20 @@ html.dark .workspace-page .workspace-context-panel {
     0 0 0 1px rgba(255, 255, 255, 0.04) inset,
     0 8px 24px rgba(0, 0, 0, 0.32),
     0 0 20px color-mix(in srgb, var(--brand) 8%, transparent);
+}
+
+html:not(.dark) .workspace-page .map-controls-dock {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--brand) 8%, var(--border)) inset,
+    0 4px 14px rgb(15 23 42 / 0.08),
+    0 0 0 1px rgb(15 23 42 / 0.04);
+}
+
+html:not(.dark) .workspace-page .map-controls--avoiding .map-controls-dock {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--brand) 12%, var(--border)) inset,
+    0 6px 18px rgb(15 23 42 / 0.1),
+    0 0 0 1px rgb(15 23 42 / 0.05);
 }
 
 .map-controls-dock::before {
@@ -1109,6 +1130,15 @@ html.dark .workspace-page .workspace-canvas {
   );
 }
 
+html:not(.dark) .workspace-page .workspace-map-atmosphere {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--surface-light-canvas) 94%, var(--brand) 6%) 0%,
+    var(--surface-light-panel) 52%,
+    color-mix(in srgb, var(--surface-light-canvas) 98%, var(--brand) 2%) 100%
+  );
+}
+
 .workspace-map-atmosphere .cc-grid,
 .workspace-map-atmosphere .cc-grid-floor {
   position: absolute;
@@ -1137,6 +1167,14 @@ html.dark .workspace-page .workspace-canvas {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04) inset,
     0 8px 28px rgba(0, 0, 0, 0.28);
+}
+
+html:not(.dark) .workspace-page .workspace-map-hud {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-light-elevated) 96%, transparent);
+  box-shadow:
+    0 1px 2px 0 rgb(15 23 42 / 0.05),
+    0 4px 12px rgb(15 23 42 / 0.06);
 }
 
 .workspace-map-hud--compact {
@@ -1304,6 +1342,10 @@ html.dark .workspace-page .workspace-canvas {
 .workspace-map-title {
   font-size: clamp(1.125rem, 2.2vw, 1.5rem);
   font-weight: 600;
+  color: var(--foreground);
+}
+
+html.dark .workspace-page .workspace-map-title {
   color: rgba(255, 255, 255, 0.92);
 }
 
@@ -1312,6 +1354,10 @@ html.dark .workspace-page .workspace-canvas {
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+html.dark .workspace-page .workspace-map-subtitle {
   color: rgba(255, 255, 255, 0.38);
 }
 
@@ -1414,24 +1460,41 @@ html.dark .workspace-page .workspace-canvas {
 .workspace-header-title {
   font-size: 0.9375rem;
   font-weight: 600;
+  color: var(--foreground);
+}
+
+html.dark .workspace-page .workspace-header-title {
   color: rgba(255, 255, 255, 0.92);
 }
 
 .workspace-header-tagline {
   font-size: 10px;
+  color: var(--muted-foreground);
+}
+
+html.dark .workspace-page .workspace-header-tagline {
   color: rgba(255, 255, 255, 0.42);
 }
 
 .workspace-breadcrumb-active {
+  color: var(--brand-deep) !important;
+}
+
+html.dark .workspace-page .workspace-breadcrumb-active {
   color: var(--brand-light) !important;
 }
 
 .workspace-status-bar {
   position: relative;
   z-index: 2;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--background) 92%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+html.dark .workspace-page .workspace-status-bar {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   background: color-mix(in srgb, var(--surface-deep) 78%, transparent);
-  backdrop-filter: blur(16px);
 }
 
 .map-foot-scale-divider {
@@ -1469,10 +1532,20 @@ html.dark .map-foot-scale__value {
   color: color-mix(in srgb, var(--brand-light) 80%, transparent);
 }
 
+html:not(.dark) .workspace-page .workspace-status-label {
+  color: color-mix(in srgb, var(--brand-deep) 82%, transparent);
+}
+
 .workspace-tool-chip {
   border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
   background: color-mix(in srgb, var(--brand) 8%, transparent);
   color: var(--brand-soft);
+}
+
+html:not(.dark) .workspace-page .workspace-tool-chip {
+  border-color: color-mix(in srgb, var(--brand) 22%, transparent);
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+  color: var(--brand-deep);
 }
 
 .workspace-page [data-slot='sidebar-wrapper'] {
@@ -1528,6 +1601,12 @@ html:has(.workspace-page) [data-slot='sheet-content'].workspace-context-sheet[da
     0 0 0 1px rgba(255, 255, 255, 0.04) inset,
     0 12px 36px rgba(0, 0, 0, 0.38),
     0 0 28px color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+html:not(.dark) .workspace-page .workspace-l4-drawer.cc-glass-panel {
+  box-shadow:
+    0 1px 2px 0 rgb(15 23 42 / 0.05),
+    0 8px 24px rgb(15 23 42 / 0.08);
 }
 
 .workspace-context-sheet [data-slot='sheet-close'] {

@@ -20,11 +20,19 @@ import { MOCK_ACCESS_TOKEN } from '~/shared/mock/dev-auth'
 import { PasswordInput } from '~/shared/ui/password-input'
 
 import {
+  authCheckboxClassName,
+  authErrorBannerClassName,
   authFieldInputClassName,
   AuthFieldError,
   authGuestClientLoader,
+  authInlineNoticeClassName,
+  authLabelClassName,
+  authLinkClassName,
+  authMonoHintClassName,
+  authMutedTextClassName,
   authPageLinks,
   AuthPageShell,
+  authSubtleTextClassName,
 } from './auth-page-chrome'
 import type { Route } from './+types/login'
 
@@ -114,13 +122,13 @@ function SaasLoginForm() {
   return (
     <form className="login-form-fields" onSubmit={handleSubmit(onSubmit)}>
       {switchTenantReason === 'switch' ? (
-        <p className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center text-sm text-white/70">
+        <p className={authInlineNoticeClassName}>
           请重新登录以切换到租户「{switchTenantSlug || '目标租户'}」
         </p>
       ) : null}
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 0 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="login-email">
+        <label className={authLabelClassName} htmlFor="login-email">
           邮箱
         </label>
         <div className="relative">
@@ -138,7 +146,7 @@ function SaasLoginForm() {
       </div>
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 1 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="login-password">
+        <label className={authLabelClassName} htmlFor="login-password">
           密码
         </label>
         <PasswordInput
@@ -153,7 +161,7 @@ function SaasLoginForm() {
       </div>
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 2 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="login-tenant">
+        <label className={authLabelClassName} htmlFor="login-tenant">
           租户
         </label>
         <div className="relative">
@@ -177,18 +185,18 @@ function SaasLoginForm() {
           <input
             checked={rememberMe}
             type="checkbox"
-            className="size-4 cursor-pointer rounded border-white/20 accent-primary focus-visible:ring-2 focus-visible:ring-primary/30"
+            className={authCheckboxClassName}
             onChange={(event) => setRememberMe(event.target.checked)}
           />
-          <span className="text-sm text-white/55">记住密码</span>
+          <span className={authSubtleTextClassName}>记住密码</span>
         </label>
-        <Link className="shrink-0 text-sm text-brand-light hover:underline" to="/forgot-password">
+        <Link className={cn('shrink-0 text-sm', authLinkClassName)} to="/forgot-password">
           忘记密码？
         </Link>
       </div>
 
       {submitError ? (
-        <p className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90">
+        <p className={authErrorBannerClassName}>
           {submitError}
         </p>
       ) : null}
@@ -203,14 +211,14 @@ function SaasLoginForm() {
         </Button>
       </div>
 
-      <p className="text-center text-sm text-white/50">
+      <p className={cn('text-center', authMutedTextClassName)}>
         没有账号？{' '}
-        <Link className="text-brand-light hover:underline" to="/register">
+        <Link className={authLinkClassName} to="/register">
           去注册
         </Link>
       </p>
 
-      <p className="cc-mono text-center text-[11px] leading-relaxed text-white/38">
+      <p className={authMonoHintClassName}>
         SaaS API · 演示账号 admin@demo.local / demo（默认密码 password，改密后请用新密码）
       </p>
     </form>
@@ -271,7 +279,7 @@ function DevLoginForm() {
   return (
     <form className="login-form-fields" onSubmit={handleSubmit(onSubmit)}>
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 0 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="login-username">
+        <label className={authLabelClassName} htmlFor="login-username">
           账号
         </label>
         <div className="relative">
@@ -288,7 +296,7 @@ function DevLoginForm() {
       </div>
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 1 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="login-dev-password">
+        <label className={authLabelClassName} htmlFor="login-dev-password">
           密码
         </label>
         <PasswordInput
@@ -310,10 +318,10 @@ function DevLoginForm() {
           <input
             checked={rememberMe}
             type="checkbox"
-            className="size-4 cursor-pointer rounded border-white/20 accent-primary focus-visible:ring-2 focus-visible:ring-primary/30"
+            className={authCheckboxClassName}
             onChange={(event) => setRememberMe(event.target.checked)}
           />
-          <span className="text-sm text-white/55">记住密码</span>
+          <span className={authSubtleTextClassName}>记住密码</span>
         </label>
       </div>
 
@@ -327,7 +335,7 @@ function DevLoginForm() {
         </Button>
       </div>
 
-      <p className="cc-mono text-center text-[11px] leading-relaxed text-white/38">
+      <p className={authMonoHintClassName}>
         MOCK · 任意账号 / 密码均可登录（未配置 VITE_API_URL）
       </p>
     </form>

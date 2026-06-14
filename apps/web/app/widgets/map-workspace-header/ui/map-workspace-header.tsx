@@ -58,13 +58,13 @@ export function MapWorkspaceHeader({
         <SidebarTrigger className="workspace-header-trigger" />
         <Separator
           orientation="vertical"
-          className="workspace-header-divider mx-0 h-4 shrink-0 bg-border dark:bg-white/10"
+          className="workspace-header-divider mx-0 h-4 shrink-0 bg-border"
         />
 
         <Breadcrumb className="workspace-header-breadcrumb min-w-0">
           <BreadcrumbList className="flex-nowrap items-center gap-1.5 text-[13px] leading-none sm:gap-2">
             <BreadcrumbItem className="inline-flex h-8 min-w-0 max-w-[7.5rem] shrink items-center sm:max-w-[10rem]">
-              <span className="workspace-header-crumb cc-display truncate text-foreground/80 dark:text-white/70">
+              <span className="workspace-header-crumb cc-display truncate text-foreground/80">
                 云眼综合服务平台
               </span>
             </BreadcrumbItem>
@@ -116,8 +116,8 @@ function BreadcrumbTrailSegment({ label, active }: { label: string; active: bool
           className={cn(
             'workspace-header-crumb truncate',
             active
-              ? 'workspace-breadcrumb-active cc-display text-foreground dark:text-white/85'
-              : 'text-foreground/80 dark:text-white/70',
+              ? 'workspace-breadcrumb-active cc-display text-foreground'
+              : 'text-foreground/80',
           )}
         >
           {label}

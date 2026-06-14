@@ -12,11 +12,17 @@ import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
 import { PasswordInput } from '~/shared/ui/password-input'
 
 import {
+  authBodyTextClassName,
+  authErrorBannerClassName,
   authFieldInputClassName,
   AuthFieldError,
   authGuestClientLoader,
+  authLabelClassName,
+  authLinkClassName,
+  authMutedTextClassName,
   authPageLinks,
   AuthPageShell,
+  authWarningBannerClassName,
 } from './auth-page-chrome'
 import type { Route } from './+types/reset-password'
 
@@ -70,7 +76,7 @@ function ResetPasswordForm({ token }: { token: string }) {
   return (
     <form className="login-form-fields" onSubmit={handleSubmit(onSubmit)}>
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 0 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="reset-password">
+        <label className={authLabelClassName} htmlFor="reset-password">
           新密码
         </label>
         <PasswordInput
@@ -83,7 +89,7 @@ function ResetPasswordForm({ token }: { token: string }) {
       </div>
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 1 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="reset-confirm">
+        <label className={authLabelClassName} htmlFor="reset-confirm">
           确认新密码
         </label>
         <PasswordInput
@@ -95,11 +101,7 @@ function ResetPasswordForm({ token }: { token: string }) {
         <AuthFieldError message={errors.confirmPassword?.message} />
       </div>
 
-      {submitError ? (
-        <p className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90">
-          {submitError}
-        </p>
-      ) : null}
+      {submitError ? <p className={authErrorBannerClassName}>{submitError}</p> : null}
 
       <div className="login-field-group" style={{ '--field-i': 2 } as CSSProperties}>
         <Button
@@ -111,8 +113,8 @@ function ResetPasswordForm({ token }: { token: string }) {
         </Button>
       </div>
 
-      <p className="text-center text-sm text-white/50">
-        <Link className="text-brand-light hover:underline" to="/login">
+      <p className={cn('text-center', authMutedTextClassName)}>
+        <Link className={authLinkClassName} to="/login">
           返回登录
         </Link>
       </p>
@@ -123,8 +125,8 @@ function ResetPasswordForm({ token }: { token: string }) {
 function ResetPasswordUnavailable() {
   return (
     <div className="login-form-fields space-y-4">
-      <p className="text-sm leading-relaxed text-white/60">
-        重置密码需配置 <code className="text-brand-light">VITE_API_URL</code> 并启动 SaaS API。
+      <p className={authBodyTextClassName}>
+        重置密码需配置 <code className="text-brand dark:text-brand-light">VITE_API_URL</code> 并启动 SaaS API。
       </p>
       <Button className="h-11 w-full rounded-[10px]" nativeButton={false} render={<Link to="/login" />}>
         返回登录
@@ -136,11 +138,11 @@ function ResetPasswordUnavailable() {
 function MissingTokenNotice() {
   return (
     <div className="login-form-fields space-y-4">
-      <p className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100/90">
+      <p className={authWarningBannerClassName}>
         缺少重置 token，请从邮件中的完整链接打开本页。链接 1 小时内有效。
       </p>
-      <p className="text-center text-sm text-white/50">
-        <Link className="text-brand-light hover:underline" to="/forgot-password">
+      <p className={cn('text-center', authMutedTextClassName)}>
+        <Link className={authLinkClassName} to="/forgot-password">
           重新申请重置邮件
         </Link>
       </p>

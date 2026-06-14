@@ -7,9 +7,15 @@ import { formatLoginError } from '~/shared/auth/format-login-error'
 import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
 
 import {
+  authBodyTextClassName,
+  authErrorBannerClassName,
   authGuestClientLoader,
+  authLinkClassName,
+  authMutedTextClassName,
   authPageLinks,
   AuthPageShell,
+  authSuccessBannerClassName,
+  authWarningBannerClassName,
 } from './auth-page-chrome'
 import type { Route } from './+types/verify-email'
 
@@ -26,30 +32,22 @@ export async function clientLoader() {
 }
 
 function VerifyEmailPending() {
-  return (
-    <p className="text-sm text-white/70">正在验证邮箱并登录，请稍候…</p>
-  )
+  return <p className={authBodyTextClassName}>正在验证邮箱并登录，请稍候…</p>
 }
 
 function VerifyEmailSuccess() {
-  return (
-    <p className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary-foreground/90">
-      邮箱已验证，正在进入工作台…
-    </p>
-  )
+  return <p className={authSuccessBannerClassName}>邮箱已验证，正在进入工作台…</p>
 }
 
 function VerifyEmailError({ message }: { message: string }) {
   return (
     <div className="login-form-fields space-y-4">
-      <p className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90">
-        {message}
-      </p>
+      <p className={authErrorBannerClassName}>{message}</p>
       <Button className="h-11 w-full rounded-[10px]" nativeButton={false} render={<Link to="/register" />}>
         重新注册
       </Button>
-      <p className="text-center text-sm text-white/50">
-        <Link className="text-brand-light hover:underline" to="/login">
+      <p className={authMutedTextClassName}>
+        <Link className={authLinkClassName} to="/login">
           返回登录
         </Link>
       </p>
@@ -60,11 +58,11 @@ function VerifyEmailError({ message }: { message: string }) {
 function MissingTokenNotice() {
   return (
     <div className="login-form-fields space-y-4">
-      <p className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100/90">
+      <p className={authWarningBannerClassName}>
         缺少验证 token，请从注册邮件中的完整链接打开本页。
       </p>
-      <p className="text-center text-sm text-white/50">
-        <Link className="text-brand-light hover:underline" to="/register">
+      <p className={authMutedTextClassName}>
+        <Link className={authLinkClassName} to="/register">
           去注册
         </Link>
       </p>
@@ -118,8 +116,8 @@ export default function VerifyEmailRoute() {
     >
       {!saasAuthEnabled ? (
         <div className="login-form-fields space-y-4">
-          <p className="text-sm leading-relaxed text-white/60">
-            邮箱验证需配置 <code className="text-brand-light">VITE_API_URL</code> 并启动 SaaS API。
+          <p className={authBodyTextClassName}>
+            邮箱验证需配置 <code className="text-brand dark:text-brand-light">VITE_API_URL</code> 并启动 SaaS API。
           </p>
           <Button className="h-11 w-full rounded-[10px]" nativeButton={false} render={<Link to="/login" />}>
             返回登录

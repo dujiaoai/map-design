@@ -15,6 +15,8 @@ import {
 } from '@repo/ui'
 import { BadgeCheckIcon, ChevronsUpDownIcon, LogOutIcon } from 'lucide-react'
 
+import { ThemeToggle } from '~/features/theme'
+
 export function AdminHeaderActions({
   user,
   onAccountClick,
@@ -31,6 +33,7 @@ export function AdminHeaderActions({
 
   return (
     <div className={cn('flex h-8 shrink-0 items-center gap-1', className)}>
+      <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger
           render={

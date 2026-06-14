@@ -6,16 +6,72 @@ body:has(.login-page) {
   overflow: hidden;
 }
 
-/* ── 页面骨架（对齐 workspace-page 语义） ── */
+/* ── 页面骨架 ── */
 .login-page {
   --cc-px: 0.5;
   --cc-py: 0.5;
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Noto Sans SC', ui-sans-serif, system-ui, sans-serif;
+}
+
+html:not(.dark) .login-page {
+  --auth-light-canvas: #b8ced8;
+  --auth-light-paper: #c9dde5;
+  --auth-light-panel: #d5e6ed;
+  --auth-light-card: #deecf2;
+  --auth-light-ink: #0a1628;
+  --auth-light-muted: #3d5568;
+  --auth-light-line: color-mix(in srgb, var(--brand) 22%, #8fa8b4);
+  --auth-light-glow: rgba(70, 174, 184, 0.12);
+  --auth-island-bg: var(--auth-light-card);
+  --auth-island-border: color-mix(in srgb, var(--brand) 20%, #8fa8b4);
+  --auth-island-ring: color-mix(in srgb, var(--brand) 14%, transparent);
+  --auth-island-shadow:
+    0 1px 2px rgb(15 23 42 / 0.06),
+    0 6px 18px rgb(48 117 140 / 0.08);
+  --surface-deep: var(--auth-light-canvas);
+  --surface-panel: var(--auth-light-paper);
+  --surface-elevated: var(--auth-light-panel);
+  --background: var(--auth-light-card);
+  --foreground: var(--auth-light-ink);
+  --muted: color-mix(in srgb, var(--auth-light-canvas) 55%, var(--auth-light-paper));
+  --muted-foreground: var(--auth-light-muted);
+  --border: var(--auth-light-line);
+  background: var(--auth-light-canvas);
+  color: var(--auth-light-ink);
+}
+
+html.dark .login-page {
   background: var(--surface-deep);
   color: var(--text-on-dark);
-  font-family: 'Noto Sans SC', ui-sans-serif, system-ui, sans-serif;
+}
+
+.login-theme-toggle {
+  position: fixed;
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(1rem, env(safe-area-inset-right));
+  z-index: 10;
+}
+
+html:not(.dark) .login-theme-toggle [data-slot='button'],
+html:not(.dark) .login-theme-toggle button {
+  border: 1px solid var(--auth-island-border);
+  background: var(--auth-island-bg);
+  box-shadow: var(--auth-island-shadow);
+}
+
+html.dark .login-theme-toggle [data-slot='button'],
+html.dark .login-theme-toggle button {
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 72%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 4px 16px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
 }
 
 .login-layout {
@@ -31,51 +87,515 @@ body:has(.login-page) {
   }
 }
 
-/* ── 全页氛围（底图 + 指挥舱 overlay，与 workspace-map-atmosphere 同系） ── */
+/* ── 全页氛围（纯 CSS · 测绘仪器台） ── */
 .login-atmosphere {
   pointer-events: none;
   position: fixed;
   inset: 0;
   z-index: 0;
   overflow: hidden;
-  background: var(--surface-deep);
 }
 
-.login-hero-bg {
+.login-auth-canvas,
+.login-auth-contours,
+.login-auth-mesh,
+.login-atmosphere-grid,
+.login-atmosphere-grid-floor,
+.login-atmosphere-fx,
+.login-auth-divider {
   position: absolute;
   inset: 0;
-  background-color: var(--surface-deep);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
 }
 
-.login-hero-vignette {
-  position: absolute;
-  inset: 0;
+.login-auth-canvas {
+  background: var(--auth-light-canvas, var(--surface-deep));
+}
+
+html:not(.dark) .login-auth-canvas {
+  background: linear-gradient(
+    165deg,
+    #aec6d0 0%,
+    var(--auth-light-canvas) 45%,
+    #b3c9d3 100%
+  );
+}
+
+/* 浅色：去掉多层半透明装饰，避免「发蒙」 */
+html:not(.dark) .login-auth-contours,
+html:not(.dark) .login-auth-mesh,
+html:not(.dark) .login-atmosphere-grid-floor,
+html:not(.dark) .login-atmosphere .cc-aurora,
+html:not(.dark) .login-atmosphere .cc-scanline {
+  display: none;
+}
+
+html:not(.dark) .login-atmosphere-grid {
+  opacity: 0.07;
+  mask-image: radial-gradient(ellipse 80% 65% at 50% 40%, black 10%, transparent 70%);
+}
+
+html.dark .login-auth-canvas {
   background:
+    radial-gradient(
+      ellipse 58% 48% at calc(22% + var(--cc-px, 0.5) * 5%) calc(14% + var(--cc-py, 0.5) * 4%),
+      color-mix(in srgb, var(--brand) 18%, #0a1628),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 50% 42% at calc(78% - var(--cc-px, 0.5) * 4%) calc(86% + var(--cc-py, 0.5) * 3%),
+      rgba(14, 116, 144, 0.12),
+      transparent 62%
+    ),
+    linear-gradient(180deg, #050c16 0%, #07111f 42%, #0a1524 100%);
+}
+
+.login-auth-contours {
+  opacity: 0.55;
+  background:
+    repeating-radial-gradient(
+      circle at 24% 42%,
+      transparent 0,
+      transparent 47px,
+      color-mix(in srgb, var(--brand) 16%, transparent) 48px,
+      transparent 49px
+    ),
+    repeating-radial-gradient(
+      circle at 76% 62%,
+      transparent 0,
+      transparent 62px,
+      color-mix(in srgb, var(--brand) 10%, transparent) 63px,
+      transparent 64px
+    );
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, black 20%, transparent 78%);
+}
+
+html.dark .login-auth-contours {
+  opacity: 0.48;
+  background:
+    repeating-radial-gradient(
+      circle at 24% 42%,
+      transparent 0,
+      transparent 47px,
+      color-mix(in srgb, var(--brand-light) 14%, transparent) 48px,
+      transparent 49px
+    ),
+    repeating-radial-gradient(
+      circle at 76% 62%,
+      transparent 0,
+      transparent 62px,
+      color-mix(in srgb, var(--brand) 12%, transparent) 63px,
+      transparent 64px
+    );
+}
+
+.login-auth-mesh {
+  opacity: 0.55;
+  background-image:
     linear-gradient(
-      90deg,
-      rgba(7, 17, 31, 0.78) 0%,
-      rgba(7, 17, 31, 0.48) 46%,
-      rgba(7, 17, 31, 0.62) 100%
+      125deg,
+      transparent 36%,
+      color-mix(in srgb, var(--brand) 4%, transparent) 48%,
+      transparent 60%
     ),
     linear-gradient(
-      180deg,
-      rgba(7, 17, 31, 0.28) 0%,
-      transparent 22%,
-      transparent 78%,
-      rgba(7, 17, 31, 0.38) 100%
+      -35deg,
+      transparent 42%,
+      color-mix(in srgb, var(--brand-light) 3%, transparent) 50%,
+      transparent 58%
     );
+}
+
+html.dark .login-auth-mesh {
+  opacity: 0.35;
 }
 
 .login-atmosphere .cc-grid,
 .login-atmosphere .cc-grid-floor {
-  position: absolute;
   inset: 0;
 }
 
+html.dark .login-atmosphere-grid {
+  opacity: 0.22;
+}
+
+html.dark .login-atmosphere-grid-floor {
+  opacity: 0.18;
+}
+
+html.dark .login-atmosphere .cc-aurora {
+  opacity: 0.78;
+}
+
+html.dark .login-atmosphere .cc-scanline {
+  opacity: 0.28;
+}
+
+.login-auth-divider {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .login-auth-divider {
+    display: block;
+    inset: 10% auto 10% 52.38%;
+    width: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--brand) 35%, transparent) 22%,
+      color-mix(in srgb, var(--brand-light) 55%, transparent) 50%,
+      color-mix(in srgb, var(--brand) 35%, transparent) 78%,
+      transparent 100%
+    );
+    box-shadow:
+      0 0 12px color-mix(in srgb, var(--brand) 25%, transparent),
+      0 0 28px color-mix(in srgb, var(--brand-light) 12%, transparent);
+  }
+
+  html:not(.dark) .login-auth-divider {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--brand) 38%, var(--auth-light-line)) 24%,
+      color-mix(in srgb, var(--brand) 52%, #6a8896) 50%,
+      color-mix(in srgb, var(--brand) 38%, var(--auth-light-line)) 76%,
+      transparent 100%
+    );
+    box-shadow: none;
+  }
+}
+
+/* ── Auth 语义文本 ── */
+.auth-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--foreground) 82%, transparent);
+}
+
+html.dark .login-page .auth-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.auth-text-muted {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+html.dark .login-page .auth-text-muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.auth-text-subtle {
+  font-size: 0.875rem;
+  color: color-mix(in srgb, var(--muted-foreground) 95%, transparent);
+}
+
+html.dark .login-page .auth-text-subtle {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.auth-text-body {
+  font-size: 0.875rem;
+  line-height: 1.625;
+  color: color-mix(in srgb, var(--foreground) 72%, transparent);
+}
+
+html.dark .login-page .auth-text-body {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.auth-text-mono-hint {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.625;
+  color: var(--muted-foreground);
+}
+
+html.dark .login-page .auth-text-mono-hint {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.auth-inline-notice {
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 55%, transparent);
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: color-mix(in srgb, var(--foreground) 78%, transparent);
+}
+
+html.dark .login-page .auth-inline-notice {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.auth-summary-card {
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 45%, transparent);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: color-mix(in srgb, var(--foreground) 78%, transparent);
+}
+
+html.dark .login-page .auth-summary-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.auth-error-banner {
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--destructive) 35%, transparent);
+  background: color-mix(in srgb, var(--destructive) 10%, transparent);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--destructive);
+}
+
+.auth-success-banner {
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 28%, transparent);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+html.dark .login-page .auth-success-banner {
+  color: color-mix(in srgb, var(--primary-foreground) 90%, var(--text-on-dark) 10%);
+}
+
+.auth-warning-banner {
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--brand) 28%, transparent);
+  background: color-mix(in srgb, var(--brand) 8%, var(--muted));
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+html.dark .login-page .auth-warning-banner {
+  border-color: rgba(251, 191, 36, 0.3);
+  background: rgba(245, 158, 11, 0.1);
+  color: rgba(254, 243, 199, 0.95);
+}
+
+html.dark .login-page .auth-error-banner {
+  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  color: rgba(254, 202, 202, 0.95);
+}
+
+.auth-checkbox {
+  border: 1px solid var(--border);
+}
+
+html.dark .login-page .auth-checkbox {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.auth-segment-group {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
+html.dark .login-page .auth-segment-group {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.auth-segment-active {
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  color: var(--foreground);
+}
+
+html.dark .login-page .auth-segment-active {
+  background: color-mix(in srgb, var(--primary) 20%, transparent);
+  color: #fff;
+}
+
+.auth-segment-idle {
+  color: var(--muted-foreground);
+}
+
+.auth-segment-idle:hover {
+  background: color-mix(in srgb, var(--muted) 70%, transparent);
+  color: var(--foreground);
+}
+
+html.dark .login-page .auth-segment-idle {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.dark .login-page .auth-segment-idle:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+}
+
 /* ── 品牌侧 ── */
+html:not(.dark) .login-page .auth-brand-name {
+  color: var(--auth-light-ink);
+}
+
+html:not(.dark) .login-page .auth-brand-tagline,
+html:not(.dark) .login-page .auth-feature-label {
+  color: var(--auth-light-muted);
+}
+
+html:not(.dark) .login-page .auth-brand-footer {
+  color: color-mix(in srgb, var(--auth-light-muted) 88%, transparent);
+}
+
+html:not(.dark) .login-page .cc-headline-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--brand-deep) 0%,
+    var(--brand) 52%,
+    color-mix(in srgb, var(--brand-light) 75%, var(--brand-deep)) 100%
+  );
+  background-size: 120% 120%;
+  animation: cc-gradient-flow 8s ease-in-out infinite alternate;
+}
+
+html:not(.dark) .login-page .auth-brand-badge {
+  border-color: color-mix(in srgb, var(--brand) 28%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--auth-light-panel) 92%, var(--brand) 8%),
+    color-mix(in srgb, var(--brand) 12%, var(--auth-light-paper))
+  );
+  color: var(--brand-deep);
+  box-shadow: 0 1px 3px rgb(48 117 140 / 0.1);
+}
+
+html:not(.dark) .login-page .auth-brand-headline {
+  color: var(--auth-light-ink);
+  letter-spacing: -0.01em;
+}
+
+html:not(.dark) .login-page .auth-brand-desc {
+  color: var(--auth-light-muted);
+  line-height: 1.7;
+}
+
+html:not(.dark) .login-page .auth-inline-notice,
+html:not(.dark) .login-page .auth-summary-card {
+  border-color: var(--auth-light-line);
+  background: color-mix(in srgb, var(--brand) 8%, var(--auth-light-paper));
+  color: color-mix(in srgb, var(--auth-light-ink) 82%, transparent);
+}
+
+html:not(.dark) .login-page .auth-segment-group {
+  border-color: var(--auth-light-line);
+  background: var(--auth-light-canvas);
+  box-shadow: inset 0 1px 2px rgb(15 23 42 / 0.05);
+}
+
+html:not(.dark) .login-page .auth-segment-active {
+  background: var(--auth-light-card);
+  color: var(--brand-deep);
+  box-shadow:
+    0 1px 2px rgb(48 117 140 / 0.12),
+    0 0 0 1px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+html:not(.dark) .login-page .login-dev-badge {
+  border-color: color-mix(in srgb, var(--brand) 32%, transparent);
+  background: color-mix(in srgb, var(--brand) 12%, var(--auth-light-paper));
+  color: var(--brand-deep);
+  font-weight: 500;
+}
+
+html:not(.dark) .login-page .login-form-header {
+  border-bottom-color: var(--auth-light-line);
+}
+
+html:not(.dark) .login-page .auth-form-title {
+  color: var(--auth-light-ink);
+  letter-spacing: -0.015em;
+}
+
+.auth-brand-name,
+.auth-form-title {
+  color: var(--foreground);
+}
+
+html.dark .login-page .auth-brand-name,
+html.dark .login-page .auth-form-title {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.auth-brand-tagline,
+.auth-brand-desc,
+.auth-feature-label {
+  color: var(--muted-foreground);
+}
+
+html.dark .login-page .auth-brand-tagline,
+html.dark .login-page .auth-brand-desc,
+html.dark .login-page .auth-feature-label {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.dark .login-page .auth-feature-label {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.auth-brand-headline {
+  color: var(--foreground);
+}
+
+html.dark .login-page .auth-brand-headline {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.auth-brand-badge {
+  border-color: color-mix(in srgb, var(--primary) 22%, transparent);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--brand-deep);
+}
+
+html.dark .login-page .auth-brand-badge {
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--brand-soft);
+}
+
+.auth-brand-footer {
+  color: var(--muted-foreground);
+}
+
+html.dark .login-page .auth-brand-footer {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.auth-coord-readout {
+  color: var(--muted-foreground);
+}
+
+html.dark .login-page .auth-coord-readout {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.auth-coord-label {
+  color: color-mix(in srgb, var(--brand-deep) 85%, transparent);
+}
+
+html.dark .login-page .auth-coord-label {
+  color: color-mix(in srgb, var(--brand-light) 80%, transparent);
+}
+
+.auth-coord-value {
+  color: var(--foreground);
+}
+
+html.dark .login-page .auth-coord-value {
+  color: rgba(255, 255, 255, 0.85);
+}
+
 .login-brand-panel {
   position: relative;
   z-index: 1;
@@ -83,14 +603,100 @@ body:has(.login-page) {
   overflow: hidden;
 }
 
-.login-brand-inner {
+html:not(.dark) .login-brand-panel {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  background: var(--auth-light-paper);
+  border-right: 1px solid var(--auth-light-line);
+}
+
+html.dark .login-brand-panel {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--surface-panel) 42%, transparent) 0%,
+    color-mix(in srgb, var(--surface-deep) 88%, transparent) 100%
+  );
+  backdrop-filter: blur(18px);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+html:not(.dark) .login-brand-deck {
+  position: relative;
   display: flex;
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  gap: clamp(1rem, 2.5vh, 2rem);
-  padding: clamp(1.25rem, 3vh, 2.75rem) clamp(1.75rem, 5vw, 4rem);
-  padding-bottom: clamp(0.75rem, 1.5vh, 1.25rem);
+  overflow: hidden;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  isolation: isolate;
+}
+
+html.dark .login-brand-deck {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  isolation: isolate;
+}
+
+.login-brand-accent {
+  display: none;
+}
+
+html:not(.dark) .login-brand-deck .login-brand-accent,
+html.dark .login-brand-deck .login-brand-accent {
+  display: block;
+  pointer-events: none;
+  position: absolute;
+  top: 12%;
+  bottom: 12%;
+  left: 0;
+  z-index: 2;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    var(--brand) 22%,
+    var(--brand-light) 78%,
+    transparent 100%
+  );
+}
+
+html:not(.dark) .login-brand-deck .login-brand-accent {
+  box-shadow: none;
+}
+
+html.dark .login-brand-deck .login-brand-accent {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--brand) 35%, transparent);
+}
+
+html:not(.dark) .login-brand-inner {
+  padding: clamp(1.25rem, 3vh, 2rem) clamp(1.375rem, 3.5vw, 2.25rem);
+  padding-bottom: clamp(0.75rem, 1.5vh, 1rem);
+}
+
+html:not(.dark) .login-brand-footer {
+  padding: 0.75rem clamp(1.375rem, 3.5vw, 2.25rem) clamp(0.875rem, 1.8vh, 1.125rem);
+  border-top: 1px solid var(--auth-light-line);
+  background: color-mix(in srgb, var(--brand) 6%, var(--auth-light-paper));
+}
+
+html.dark .login-brand-footer {
+  padding: 0.75rem clamp(1.375rem, 3.5vw, 2.25rem) clamp(0.875rem, 1.8vh, 1.125rem);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--brand) 4%, rgba(255, 255, 255, 0.02));
 }
 
 .login-brand-main {
@@ -129,7 +735,18 @@ body:has(.login-page) {
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.38);
+}
+
+.login-brand-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vh, 2rem);
+  padding: clamp(1.25rem, 3vh, 2.75rem) clamp(1.75rem, 5vw, 4rem);
+  padding-bottom: clamp(0.75rem, 1.5vh, 1.25rem);
 }
 
 .login-brand-desc {
@@ -163,10 +780,76 @@ body:has(.login-page) {
   transition:
     border-color 0.25s ease,
     background 0.25s ease,
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease;
 }
 
-.login-feature-item:hover {
+html:not(.dark) .login-brand-deck .login-feature-item > span:first-child {
+  background: color-mix(in srgb, var(--brand) 14%, var(--auth-light-panel));
+  color: var(--brand-deep);
+}
+
+html:not(.dark) .login-brand-deck .login-feature-tile {
+  border: 1px solid var(--auth-light-line);
+  background: var(--auth-light-card);
+  box-shadow: inset 3px 0 0 0 color-mix(in srgb, var(--brand) 50%, transparent);
+}
+
+html:not(.dark) .login-brand-deck .login-feature-tile:hover {
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--auth-light-line));
+  background: color-mix(in srgb, var(--auth-light-card) 88%, var(--brand) 12%);
+  box-shadow:
+    0 2px 8px rgb(48 117 140 / 0.1),
+    inset 3px 0 0 0 var(--brand);
+  transform: translateX(4px);
+}
+
+html:not(.dark) .login-brand-deck .auth-coord-readout {
+  border-color: var(--auth-light-line);
+  background: var(--auth-light-card);
+  box-shadow: 0 1px 4px rgb(48 117 140 / 0.06);
+}
+
+html:not(.dark) .login-brand-visual {
+  opacity: 1;
+  filter: none;
+}
+
+html.dark .login-brand-deck .login-feature-item > span:first-child {
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  color: var(--brand-light);
+}
+
+html.dark .login-brand-deck .login-feature-tile {
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 72%, transparent);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 4px 16px rgba(0, 0, 0, 0.28);
+}
+
+html.dark .login-brand-deck .login-feature-tile:hover {
+  border-color: color-mix(in srgb, var(--brand) 42%, transparent);
+  transform: translateX(4px);
+}
+
+html.dark .login-brand-deck .auth-coord-readout {
+  border-color: color-mix(in srgb, var(--brand) 24%, transparent);
+  background: color-mix(in srgb, var(--surface-deep) 65%, transparent);
+}
+
+html.dark .login-page .login-feature-tile {
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 88%, transparent);
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 8px 28px rgba(0, 0, 0, 0.35),
+    0 0 24px color-mix(in srgb, var(--brand) 10%, transparent);
+}
+
+html.dark .login-feature-item:hover {
   border-color: color-mix(in srgb, var(--brand) 42%, transparent);
   transform: translateX(4px);
 }
@@ -183,6 +866,52 @@ body:has(.login-page) {
   min-height: 0;
   min-width: 0;
   overflow: hidden;
+}
+
+html:not(.dark) .login-form-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--auth-light-panel);
+}
+
+html.dark .login-form-panel {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface-deep) 92%, transparent) 0%,
+    color-mix(in srgb, #050c16 96%, transparent) 100%
+  );
+}
+
+html:not(.dark) .login-form-panel-inner {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1rem, 2.5vh, 1.5rem) clamp(1.25rem, 4vw, 2.5rem);
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+@media (min-width: 1024px) {
+  html:not(.dark) .login-form-panel-inner {
+    padding-inline: clamp(2rem, 5vw, 3.5rem);
+  }
+}
+
+html:not(.dark) .login-mobile-deck {
+  margin-bottom: 0.875rem;
+  padding: 0.875rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--auth-island-border);
+  background: var(--auth-island-bg);
+  box-shadow: var(--auth-island-shadow);
+}
+
+.login-mobile-brand,
+.login-mobile-deck {
+  margin-bottom: 1.25rem;
 }
 
 .login-form-panel-inner {
@@ -219,6 +948,49 @@ body:has(.login-page) {
   animation: login-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
 }
 
+html:not(.dark) .login-form-surface {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--auth-island-border);
+  border-radius: 16px;
+  background: var(--auth-island-bg);
+  box-shadow: var(--auth-island-shadow);
+}
+
+html:not(.dark) .login-form-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(90deg, var(--brand-deep), var(--brand), var(--brand-light));
+}
+
+html.dark .login-page .login-form-surface {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface-panel) 88%, transparent);
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 8px 28px rgba(0, 0, 0, 0.35),
+    0 0 24px color-mix(in srgb, var(--brand) 10%, transparent);
+}
+
+html.dark .login-page .login-form-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(90deg, var(--brand-deep), var(--brand), var(--brand-light));
+  opacity: 0.85;
+}
+
 @media (min-width: 1024px) {
   .login-form-card {
     max-width: 420px;
@@ -228,7 +1000,11 @@ body:has(.login-page) {
 .login-form-header {
   margin-bottom: 1.375rem;
   padding-bottom: 1.125rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border);
+}
+
+html.dark .login-page .login-form-header {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
 .login-form-fields {
@@ -262,6 +1038,15 @@ body:has(.login-page) {
 .login-field-input:-webkit-autofill:hover,
 .login-field-input:-webkit-autofill:focus,
 .login-field-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--background) inset !important;
+  -webkit-text-fill-color: var(--foreground) !important;
+  caret-color: var(--foreground);
+}
+
+html.dark .login-page .login-field-input:-webkit-autofill,
+html.dark .login-page .login-field-input:-webkit-autofill:hover,
+html.dark .login-page .login-field-input:-webkit-autofill:focus,
+html.dark .login-page .login-field-input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px var(--surface-elevated) inset !important;
   -webkit-text-fill-color: var(--text-on-dark) !important;
   caret-color: var(--text-on-dark);
@@ -284,9 +1069,13 @@ body:has(.login-page) {
 .login-dev-badge {
   border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
   background: color-mix(in srgb, var(--brand) 10%, transparent);
-  color: var(--brand-soft);
+  color: var(--brand-deep);
   font-size: 10px;
   letter-spacing: 0.06em;
+}
+
+html.dark .login-page .login-dev-badge {
+  color: var(--brand-soft);
 }
 
 @keyframes login-rise {

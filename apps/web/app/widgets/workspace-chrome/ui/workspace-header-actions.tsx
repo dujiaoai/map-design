@@ -15,6 +15,7 @@ import {
 } from '@repo/ui'
 import { BadgeCheckIcon, BellIcon, ChevronsUpDownIcon, LogOutIcon } from 'lucide-react'
 
+import { ThemeToggle } from '~/features/theme'
 import {
   WORKSPACE_CHROME_ICON_BUTTON_CLASS,
   WORKSPACE_CHROME_TEXT_BUTTON_CLASS,
@@ -41,6 +42,8 @@ export function WorkspaceHeaderActions({
 
   return (
     <div className={cn('flex shrink-0 items-center gap-1', className)}>
+      <ThemeToggle className={WORKSPACE_CHROME_ICON_BUTTON_CLASS} />
+
       <Button
         type="button"
         variant="ghost"

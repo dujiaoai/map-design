@@ -46,7 +46,7 @@ export function MapStatusBar({
   return (
     <footer
       className={cn(
-        'workspace-status-bar cc-mono text-muted-foreground flex shrink-0 items-center gap-2 px-2 text-[11px] sm:gap-3 sm:px-3 dark:text-white/55',
+        'workspace-status-bar cc-mono text-muted-foreground flex shrink-0 items-center gap-2 px-2 text-[11px] sm:gap-3 sm:px-3',
         MAP_STATUS_BAR_HEIGHT_CLASS,
         className,
       )}
@@ -57,7 +57,7 @@ export function MapStatusBar({
         <span className="flex min-w-0 items-center gap-1.5">
           <CrosshairIcon className="size-3.5 shrink-0 text-brand-light/70" aria-hidden />
           <span className="workspace-status-label hidden sm:inline">坐标</span>
-          <span className="truncate tabular-nums text-foreground/85 dark:text-white/80">
+          <span className="truncate tabular-nums text-foreground/85">
             {coords.lng.toFixed(6)}, {coords.lat.toFixed(6)}
           </span>
         </span>
@@ -76,7 +76,7 @@ export function MapStatusBar({
 
       <div className="hidden items-center gap-1.5 tabular-nums sm:flex">
         <LayersIcon className="size-3.5 shrink-0 text-brand-light/70" aria-hidden />
-        <span className="text-foreground/75 dark:text-white/70">Z{mockZoom}</span>
+        <span className="text-foreground/75">Z{mockZoom}</span>
       </div>
 
       <div className="flex min-w-0 items-center justify-end gap-2">
@@ -101,7 +101,7 @@ export function MapStatusBar({
           <span
             className={cn(
               'min-w-0 truncate rounded-md px-2 py-0.5 text-right text-[10px]',
-              statusSummary ? 'workspace-tool-chip' : 'text-muted-foreground dark:text-white/40',
+              statusSummary ? 'workspace-tool-chip' : 'text-muted-foreground',
             )}
           >
             {statusSummary ?? '就绪'}

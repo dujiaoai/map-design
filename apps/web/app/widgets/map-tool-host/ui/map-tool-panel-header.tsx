@@ -102,7 +102,7 @@ export function MapToolPanelBody({ children }: { children: ReactNode }) {
   )
 }
 
-/** 地图工具浮层外壳：复用 cc-glass-panel 浅/深主题（见 home.css） */
+/** 地图工具浮层外壳：复用 cc-glass-panel（浅色/深色见 command-center.css） */
 export function mapToolPanelShellClass(options: {
   presentation: 'movable-panel' | 'anchor'
 }): string {

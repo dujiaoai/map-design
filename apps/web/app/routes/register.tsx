@@ -14,11 +14,20 @@ import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
 import { PasswordInput } from '~/shared/ui/password-input'
 
 import {
+  authBodyTextClassName,
+  authErrorBannerClassName,
   authFieldInputClassName,
   AuthFieldError,
   authGuestClientLoader,
+  authLabelClassName,
+  authLinkClassName,
+  authMonoHintClassName,
+  authMutedTextClassName,
   authPageLinks,
   AuthPageShell,
+  authSegmentActiveClassName,
+  authSegmentGroupClassName,
+  authSegmentIdleClassName,
 } from './auth-page-chrome'
 import type { Route } from './+types/register'
 
@@ -99,9 +108,9 @@ export async function clientLoader() {
 function RegisterUnavailable() {
   return (
     <div className="login-form-fields space-y-4">
-      <p className="text-sm leading-relaxed text-white/60">
-        注册需配置 <code className="text-brand-light">VITE_API_URL</code> 并启动 SaaS API。本地开发请在根目录
-        `.env` 设置 <code className="text-brand-light">VITE_API_URL=/v1</code>。
+      <p className={authBodyTextClassName}>
+        注册需配置 <code className="text-brand dark:text-brand-light">VITE_API_URL</code> 并启动 SaaS API。本地开发请在根目录
+        `.env` 设置 <code className="text-brand dark:text-brand-light">VITE_API_URL=/v1</code>。
       </p>
       <Button className="h-11 w-full rounded-[10px]" nativeButton={false} render={<Link to="/login" />}>
         返回登录
@@ -113,16 +122,14 @@ function RegisterUnavailable() {
 function RegisterModeTabs({ mode }: { mode: RegisterMode }) {
   return (
     <div
-      className="login-field-group mb-1 grid grid-cols-2 gap-1 rounded-[10px] border border-white/10 bg-white/5 p-1"
+      className={authSegmentGroupClassName}
       role="tablist"
       aria-label="注册方式"
     >
       <Link
         className={cn(
           'rounded-[8px] px-3 py-2 text-center text-sm font-medium transition-colors',
-          mode === 'org'
-            ? 'bg-primary/20 text-white'
-            : 'text-white/55 hover:bg-white/5 hover:text-white/80',
+          mode === 'org' ? authSegmentActiveClassName : authSegmentIdleClassName,
         )}
         role="tab"
         aria-selected={mode === 'org'}
@@ -133,9 +140,7 @@ function RegisterModeTabs({ mode }: { mode: RegisterMode }) {
       <Link
         className={cn(
           'rounded-[8px] px-3 py-2 text-center text-sm font-medium transition-colors',
-          mode === 'join'
-            ? 'bg-primary/20 text-white'
-            : 'text-white/55 hover:bg-white/5 hover:text-white/80',
+          mode === 'join' ? authSegmentActiveClassName : authSegmentIdleClassName,
         )}
         role="tab"
         aria-selected={mode === 'join'}
@@ -276,7 +281,7 @@ function RegisterForm() {
         {!successMessage ? (
           <>
             <div className="login-field-group space-y-1.5" style={{ '--field-i': 0 } as CSSProperties}>
-              <label className="text-sm font-medium text-white/70" htmlFor="register-org-name">
+              <label className={authLabelClassName} htmlFor="register-org-name">
                 组织名称
               </label>
               <div className="relative">
@@ -294,7 +299,7 @@ function RegisterForm() {
             </div>
 
             <div className="login-field-group space-y-1.5" style={{ '--field-i': 1 } as CSSProperties}>
-              <label className="text-sm font-medium text-white/70" htmlFor="register-org-slug">
+              <label className={authLabelClassName} htmlFor="register-org-slug">
                 组织标识（可选）
               </label>
               <div className="relative">
@@ -312,7 +317,7 @@ function RegisterForm() {
             </div>
 
             <div className="login-field-group space-y-1.5" style={{ '--field-i': 2 } as CSSProperties}>
-              <label className="text-sm font-medium text-white/70" htmlFor="register-org-email">
+              <label className={authLabelClassName} htmlFor="register-org-email">
                 管理员邮箱
               </label>
               <div className="relative">
@@ -331,7 +336,7 @@ function RegisterForm() {
             </div>
 
             <div className="login-field-group space-y-1.5" style={{ '--field-i': 3 } as CSSProperties}>
-              <label className="text-sm font-medium text-white/70" htmlFor="register-org-display-name">
+              <label className={authLabelClassName} htmlFor="register-org-display-name">
                 显示名（可选）
               </label>
               <div className="relative">
@@ -352,7 +357,7 @@ function RegisterForm() {
             </div>
 
             <div className="login-field-group space-y-1.5" style={{ '--field-i': 4 } as CSSProperties}>
-              <label className="text-sm font-medium text-white/70" htmlFor="register-org-password">
+              <label className={authLabelClassName} htmlFor="register-org-password">
                 密码
               </label>
               <PasswordInput
@@ -368,7 +373,7 @@ function RegisterForm() {
             </div>
 
             <div className="login-field-group space-y-1.5" style={{ '--field-i': 5 } as CSSProperties}>
-              <label className="text-sm font-medium text-white/70" htmlFor="register-org-confirm-password">
+              <label className={authLabelClassName} htmlFor="register-org-confirm-password">
                 确认密码
               </label>
               <PasswordInput
@@ -393,9 +398,9 @@ function RegisterForm() {
             <p className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary-foreground/90">
               {successMessage}
             </p>
-            <p className="text-center text-sm text-white/50">
+            <p className={cn('text-center', authMutedTextClassName)}>
               未收到？{' '}
-              <Link className="text-brand-light hover:underline" to={resendHref}>
+              <Link className={authLinkClassName} to={resendHref}>
                 重发验证邮件
               </Link>
             </p>
@@ -404,13 +409,13 @@ function RegisterForm() {
 
         {submitError ? (
           <div
-            className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90"
+            className={authErrorBannerClassName}
             role="alert"
           >
             <p>{submitError}</p>
             {suggestsLogin(submitError) ? (
               <p className="mt-2">
-                <Link className="text-brand-light hover:underline" to={loginHref}>
+                <Link className={authLinkClassName} to={loginHref}>
                   去登录
                 </Link>
               </p>
@@ -430,14 +435,14 @@ function RegisterForm() {
           </div>
         ) : null}
 
-        <p className="text-center text-sm text-white/50">
+        <p className={cn('text-center', authMutedTextClassName)}>
           已有账号？{' '}
-          <Link className="text-brand-light hover:underline" to={loginHref}>
+          <Link className={authLinkClassName} to={loginHref}>
             去登录
           </Link>
         </p>
 
-        <p className="cc-mono text-center text-[11px] leading-relaxed text-white/38">
+        <p className={authMonoHintClassName}>
           创建组织 · 首个账号为 TENANT_ADMIN · 验证邮箱后登录
         </p>
       </form>
@@ -457,7 +462,7 @@ function RegisterForm() {
       {!successMessage ? (
         <>
           <div className="login-field-group space-y-1.5" style={{ '--field-i': 0 } as CSSProperties}>
-            <label className="text-sm font-medium text-white/70" htmlFor="register-email">
+            <label className={authLabelClassName} htmlFor="register-email">
               邮箱
             </label>
             <div className="relative">
@@ -476,7 +481,7 @@ function RegisterForm() {
           </div>
 
           <div className="login-field-group space-y-1.5" style={{ '--field-i': 1 } as CSSProperties}>
-            <label className="text-sm font-medium text-white/70" htmlFor="register-tenant">
+            <label className={authLabelClassName} htmlFor="register-tenant">
               团队标识
             </label>
             <div className="relative">
@@ -494,7 +499,7 @@ function RegisterForm() {
           </div>
 
           <div className="login-field-group space-y-1.5" style={{ '--field-i': 2 } as CSSProperties}>
-            <label className="text-sm font-medium text-white/70" htmlFor="register-display-name">
+            <label className={authLabelClassName} htmlFor="register-display-name">
               显示名（可选）
             </label>
             <div className="relative">
@@ -512,7 +517,7 @@ function RegisterForm() {
           </div>
 
           <div className="login-field-group space-y-1.5" style={{ '--field-i': 3 } as CSSProperties}>
-            <label className="text-sm font-medium text-white/70" htmlFor="register-password">
+            <label className={authLabelClassName} htmlFor="register-password">
               密码
             </label>
             <PasswordInput
@@ -528,7 +533,7 @@ function RegisterForm() {
           </div>
 
           <div className="login-field-group space-y-1.5" style={{ '--field-i': 4 } as CSSProperties}>
-            <label className="text-sm font-medium text-white/70" htmlFor="register-confirm-password">
+            <label className={authLabelClassName} htmlFor="register-confirm-password">
               确认密码
             </label>
             <PasswordInput
@@ -550,9 +555,9 @@ function RegisterForm() {
           <p className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary-foreground/90">
             {successMessage}
           </p>
-          <p className="text-center text-sm text-white/50">
+          <p className={cn('text-center', authMutedTextClassName)}>
             未收到？{' '}
-            <Link className="text-brand-light hover:underline" to={resendHref}>
+            <Link className={authLinkClassName} to={resendHref}>
               重发验证邮件
             </Link>
           </p>
@@ -561,13 +566,13 @@ function RegisterForm() {
 
       {submitError ? (
         <div
-          className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90"
+          className={authErrorBannerClassName}
           role="alert"
         >
           <p>{submitError}</p>
           {suggestsLogin(submitError) ? (
             <p className="mt-2">
-              <Link className="text-brand-light hover:underline" to={loginHref}>
+              <Link className={authLinkClassName} to={loginHref}>
                 去登录
               </Link>
             </p>
@@ -587,14 +592,14 @@ function RegisterForm() {
         </div>
       ) : null}
 
-      <p className="text-center text-sm text-white/50">
+      <p className={cn('text-center', authMutedTextClassName)}>
         已有账号？{' '}
-        <Link className="text-brand-light hover:underline" to={loginHref}>
+        <Link className={authLinkClassName} to={loginHref}>
           去登录
         </Link>
       </p>
 
-      <p className="cc-mono text-center text-[11px] leading-relaxed text-white/38">
+      <p className={authMonoHintClassName}>
         加入已有团队 · 默认角色 MEMBER · 需验证邮箱后登录
       </p>
     </form>

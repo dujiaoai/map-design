@@ -12,11 +12,17 @@ import { formatLoginError } from '~/shared/auth/format-login-error'
 import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
 
 import {
+  authBodyTextClassName,
+  authErrorBannerClassName,
   authFieldInputClassName,
   AuthFieldError,
   authGuestClientLoader,
+  authLabelClassName,
+  authLinkClassName,
+  authMutedTextClassName,
   authPageLinks,
   AuthPageShell,
+  authSuccessBannerClassName,
 } from './auth-page-chrome'
 import type { Route } from './+types/resend-verification'
 
@@ -87,7 +93,7 @@ function ResendVerificationForm() {
   return (
     <form className="login-form-fields" onSubmit={handleSubmit(onSubmit)}>
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 0 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="resend-email">
+        <label className={authLabelClassName} htmlFor="resend-email">
           邮箱
         </label>
         <div className="relative">
@@ -106,7 +112,7 @@ function ResendVerificationForm() {
       </div>
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 1 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="resend-tenant">
+        <label className={authLabelClassName} htmlFor="resend-tenant">
           租户标识
         </label>
         <div className="relative">
@@ -124,20 +130,13 @@ function ResendVerificationForm() {
       </div>
 
       {successMessage ? (
-        <p
-          className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary-foreground/90"
-          role="status"
-          aria-live="polite"
-        >
+        <p className={authSuccessBannerClassName} role="status" aria-live="polite">
           {successMessage}
         </p>
       ) : null}
 
       {submitError ? (
-        <p
-          className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90"
-          role="alert"
-        >
+        <p className={authErrorBannerClassName} role="alert">
           {submitError}
         </p>
       ) : null}
@@ -152,12 +151,12 @@ function ResendVerificationForm() {
         </Button>
       </div>
 
-      <p className="text-center text-sm text-white/50">
-        <Link className="text-brand-light hover:underline" to="/register">
+      <p className={cn('text-center', authMutedTextClassName)}>
+        <Link className={authLinkClassName} to="/register">
           重新注册
         </Link>
         {' · '}
-        <Link className="text-brand-light hover:underline" to="/login">
+        <Link className={authLinkClassName} to="/login">
           返回登录
         </Link>
       </p>
@@ -168,8 +167,8 @@ function ResendVerificationForm() {
 function ResendVerificationUnavailable() {
   return (
     <div className="login-form-fields space-y-4">
-      <p className="text-sm leading-relaxed text-white/60">
-        重发验证邮件需配置 <code className="text-brand-light">VITE_API_URL</code> 并启动 SaaS API。
+      <p className={authBodyTextClassName}>
+        重发验证邮件需配置 <code className="text-brand dark:text-brand-light">VITE_API_URL</code> 并启动 SaaS API。
       </p>
       <Button className="h-11 w-full rounded-[10px]" nativeButton={false} render={<Link to="/login" />}>
         返回登录

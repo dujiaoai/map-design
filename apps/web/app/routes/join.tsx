@@ -25,11 +25,18 @@ import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
 import { PasswordInput } from '~/shared/ui/password-input'
 
 import {
+  authBodyTextClassName,
+  authErrorBannerClassName,
   authFieldInputClassName,
   AuthFieldError,
   authGuestClientLoader,
+  authLabelClassName,
+  authLinkClassName,
+  authMutedTextClassName,
   authPageLinks,
   AuthPageShell,
+  authSummaryCardClassName,
+  authWarningBannerClassName,
 } from './auth-page-chrome'
 import type { Route } from './+types/join'
 
@@ -81,18 +88,18 @@ export async function clientLoader() {
 function JoinInviteSummary({ preview }: { preview: InviteLinkPreview }) {
   const roleLabel = formatTenantMemberRoleLabel(preview.roleCode)
   return (
-    <div className="login-field-group space-y-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70">
+    <div className={cn('login-field-group space-y-1', authSummaryCardClassName)}>
       <p>
-        即将加入 <span className="text-brand-light">{preview.tenantName}</span>
+        即将加入 <span className="text-brand dark:text-brand-light">{preview.tenantName}</span>
         {preview.tenantSlug ? (
           <>
             {' '}
-            (<span className="font-mono text-xs text-white/50">{preview.tenantSlug}</span>)
+            (<span className="font-mono text-xs text-muted-foreground dark:text-white/50">{preview.tenantSlug}</span>)
           </>
         ) : null}
-        ，角色为 <span className="text-brand-light">{roleLabel}</span>。
+        ，角色为 <span className="text-brand dark:text-brand-light">{roleLabel}</span>。
       </p>
-      <p className="text-xs text-white/45">
+      <p className="text-xs text-muted-foreground dark:text-white/45">
         {buildInviteLinkSubtitle(preview.expiresAt, preview.remainingUses)}
       </p>
     </div>
@@ -139,7 +146,7 @@ function JoinInviteForm({
       <JoinInviteSummary preview={preview} />
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 0 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="join-email">
+        <label className={authLabelClassName} htmlFor="join-email">
           邮箱
         </label>
         <div className="relative">
@@ -158,7 +165,7 @@ function JoinInviteForm({
       </div>
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 1 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="join-display">
+        <label className={authLabelClassName} htmlFor="join-display">
           显示名（可选）
         </label>
         <div className="relative">
@@ -176,7 +183,7 @@ function JoinInviteForm({
       </div>
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 2 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="join-password">
+        <label className={authLabelClassName} htmlFor="join-password">
           设置密码
         </label>
         <PasswordInput
@@ -192,7 +199,7 @@ function JoinInviteForm({
       </div>
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 3 } as CSSProperties}>
-        <label className="text-sm font-medium text-white/70" htmlFor="join-confirm">
+        <label className={authLabelClassName} htmlFor="join-confirm">
           确认密码
         </label>
         <PasswordInput
@@ -209,12 +216,12 @@ function JoinInviteForm({
 
       {submitError ? (
         <div className="space-y-2">
-          <p className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90">
+          <p className={authErrorBannerClassName}>
             {submitError}
           </p>
           {suggestsLoginAfterJoinError(submitError) ? (
-            <p className="text-center text-sm text-white/50">
-              <Link className="text-brand-light hover:underline" to={loginHref}>
+            <p className={cn('text-center', authMutedTextClassName)}>
+              <Link className={authLinkClassName} to={loginHref}>
                 使用该租户账号登录
               </Link>
             </p>
@@ -232,9 +239,9 @@ function JoinInviteForm({
         </Button>
       </div>
 
-      <p className="text-center text-sm text-white/50">
+      <p className={cn('text-center', authMutedTextClassName)}>
         已有账号？{' '}
-        <Link className="text-brand-light hover:underline" to={loginHref}>
+        <Link className={authLinkClassName} to={loginHref}>
           去登录
         </Link>
       </p>
@@ -245,8 +252,8 @@ function JoinInviteForm({
 function JoinInviteUnavailable() {
   return (
     <div className="login-form-fields space-y-4">
-      <p className="text-sm leading-relaxed text-white/60">
-        通过邀请链接加入需配置 <code className="text-brand-light">VITE_API_URL</code> 并启动 SaaS
+      <p className={authBodyTextClassName}>
+        通过邀请链接加入需配置 <code className="text-brand dark:text-brand-light">VITE_API_URL</code> 并启动 SaaS
         API。
       </p>
       <Button className="h-11 w-full rounded-[10px]" nativeButton={false} render={<Link to="/login" />}>
@@ -259,12 +266,12 @@ function JoinInviteUnavailable() {
 function MissingTokenNotice() {
   return (
     <div className="login-form-fields space-y-4">
-      <p className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100/90">
+      <p className={authWarningBannerClassName}>
         缺少邀请 token，请从管理员分享的完整链接打开本页。
       </p>
-      <p className="text-center text-sm text-white/50">
+      <p className={cn('text-center', authMutedTextClassName)}>
         已有账号？{' '}
-        <Link className="text-brand-light hover:underline" to="/login">
+        <Link className={authLinkClassName} to="/login">
           去登录
         </Link>
       </p>
@@ -275,12 +282,12 @@ function MissingTokenNotice() {
 function InvalidLinkNotice({ message }: { message: string }) {
   return (
     <div className="login-form-fields space-y-4">
-      <p className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200/90">
+      <p className={authErrorBannerClassName}>
         {message}
       </p>
-      <p className="text-center text-sm text-white/50">
+      <p className={cn('text-center', authMutedTextClassName)}>
         请联系管理员获取新的邀请链接，或{' '}
-        <Link className="text-brand-light hover:underline" to="/login">
+        <Link className={authLinkClassName} to="/login">
           使用已有账号登录
         </Link>
         。
@@ -363,7 +370,7 @@ export default function JoinInviteRoute() {
       ) : !inviteToken ? (
         <MissingTokenNotice />
       ) : previewLoading ? (
-        <p className="text-sm text-white/60">正在验证邀请链接…</p>
+        <p className={authBodyTextClassName}>正在验证邀请链接…</p>
       ) : previewError ? (
         <InvalidLinkNotice message={previewError} />
       ) : preview ? (

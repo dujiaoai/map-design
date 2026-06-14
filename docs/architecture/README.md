@@ -80,6 +80,7 @@ flowchart LR
 | [packages.md](./packages.md) | 共享 packages API |
 | [backend-integration.md](./backend-integration.md) | RuoYi / SaaS API 集成 |
 | [services-development-plan.md](./services-development-plan.md) | `services/` 后端开发计划与迭代任务 |
+| [billing-service.md](./billing-service.md) | 平台计费 billing-api 微服务（Sprint F） |
 | [map-workspace-ui.md](./map-workspace-ui.md) | 地图工作台 UI 载体 |
 | [map-plugin-integration.md](./map-plugin-integration.md) | 地图插件桥接 |
 | [map-plugins-catalog.md](./map-plugins-catalog.md) | 地图插件 Skill 能力目录（52 个） |

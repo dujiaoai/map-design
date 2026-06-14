@@ -15,6 +15,7 @@
 ## 已定稿
 
 - [2026-06-workspace-nav-ia.md](./2026-06-workspace-nav-ia.md) — 侧栏分段、Modify 互斥、运营 display 分流
+- [billing-credits-prd.md](./billing-credits-prd.md) — 充值/积分、用户钱包（谁充谁消费）、个人版、billing-api（Sprint F）
 
 ## 相关
 

@@ -41,7 +41,9 @@ map-design/
 ├── services/
 │   ├── pom.xml                 # Maven 父工程（仅 saas-api 模块）
 │   ├── docker-compose.dev.yml  # PostgreSQL 16 + Redis 7
-│   └── saas-api/               # 主 API 服务 (:8082)
+│   ├── saas-api/               # 主 API 服务 (:8082)
+│   ├── billing-api/            # 平台计费 (:8083) — Sprint F 规划
+│   └── billing-core/           # BillingClient 共享 jar
 ```
 
 ---
@@ -300,6 +302,33 @@ flowchart TD
 | 机库 | `/v1/uav/*` | uav-workspace |
 | 其它专题 | 按 PRD | mock-nav 已有入口 |
 
+### Sprint F · 平台计费（设计定稿 · 2026-06）
+
+**PRD：** [billing-credits-prd.md](../product/billing-credits-prd.md)  
+**架构：** [billing-service.md](./billing-service.md)
+
+| 阶段 | 服务 | 产出 |
+| --- | --- | --- |
+| F-0 | saas-api | `tenant_kind=personal`、register-personal、个人版 UI |
+| F-1 | **billing-api :8083** + billing-core | 用户钱包；saas-api **V18** 权限；signup-bonus；Nginx 分流 |
+| F-2 | billing-api | 微信/支付宝 + Webhook + 充值 UI + **Platform Admin 调账 SOP** |
+| F-3 | saas-api → billing-api | hold/confirm + **402 弹窗** + `team/usage` + smoke rule |
+| F-3+ | web | `BillingCostPreview`、低余额样式 |
+| F-4～F-6 | billing-api | 退款/通知/优惠券/对公转账 |
+
+**Maven 目标：**
+
+```
+services/
+├── billing-core/
+├── billing-api/    # :8083
+└── saas-api/       # :8082，BillingClient 消费者
+```
+
+**验收（F-1）：** compose 含 billing-api；wallet 读写；signup-bonus 幂等；V18 权限绑定正确（VIEWER 不可充值）。
+
+**验收（F-3）：** 402 弹窗；TENANT_ADMIN `team/usage`；hold TTL 自动 cancel。
+
 ---
 
 ## 六、与前端路线图对齐
@@ -313,6 +342,7 @@ flowchart TD
 | 侧栏 / 菜单 | mock-nav（无 `/v1/menus`） | Sprint C 前端 |
 | Phase C MapProvider | 插件本地，无硬依赖 | Sprint E 前可并行 UI |
 | 机库 / 地图业务数据 | `/v1/uav/*`、`/v1/layers` 等 | **Sprint E（Later）** |
+| 充值 / 积分 / 扣费 | `/v1/billing/*` → billing-api | **Sprint F**（[PRD](../product/billing-credits-prd.md)） |
 
 
 ---
@@ -349,6 +379,8 @@ flowchart TD
 | `java-auth-security`                                  | JWT / RBAC 实现清单     |
 | `java-rest-api`                                       | REST 端点与 OpenAPI 规范 |
 | `saas-auth-ruoyi`                                     | saas-web 会话迁移前端清单  |
+| [billing-service.md](./billing-service.md)            | billing-api 微服务架构     |
+| [billing-credits-prd.md](../product/billing-credits-prd.md) | Sprint F 充值/积分 PRD |
 
 ---
 

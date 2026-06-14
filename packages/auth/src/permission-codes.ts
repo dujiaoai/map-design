@@ -26,6 +26,8 @@ export const ROLE_DEFAULT_PERMISSIONS = {
     PermissionCodes.ADMIN_USERS_WRITE,
     PermissionCodes.ADMIN_ROLES_READ,
     PermissionCodes.ADMIN_ROLES_WRITE,
+    PermissionCodes.ADMIN_MEMBERS_READ,
+    PermissionCodes.ADMIN_MEMBERS_WRITE,
   ],
   [SaaSRole.TENANT_ADMIN]: [
     PermissionCodes.ADMIN_MEMBERS_READ,

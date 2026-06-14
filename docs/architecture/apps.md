@@ -78,8 +78,8 @@ pnpm --filter @repo/saas-web dev
 | 平台统计 | `GET /v1/admin/stats` |
 | 租户 CRUD + 分页 | `GET/POST/PATCH /v1/admin/tenants`；`GET /v1/admin/tenants/{id}` |
 | 租户能力 | `GET /v1/admin/feature-catalog`；`GET/PUT /v1/admin/tenants/{id}/features` |
-| 用户 CRUD + 分页 | `GET/POST/PATCH /v1/admin/users` |
-| 成员与角色 | `GET/POST/PATCH /v1/admin/tenants/{id}/members`；`PUT .../roles` |
+| 用户 CRUD + 分页 | `GET/PATCH /v1/admin/users`（成员邀请见 invite-links） |
+| 成员与角色 | `GET/PATCH /v1/admin/tenants/{id}/members`；`PUT .../roles`；邀请见 invite-links |
 | 审计日志 | `GET /v1/admin/audit-logs`（成员写操作 + crossTenant 标记） |
 | 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
 

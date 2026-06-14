@@ -13,12 +13,11 @@ export function AdminAppSidebar() {
   const session = useSession()
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const permissions = session?.user.permissions ?? []
   const { teams, activeTeamId, showTeamSwitcher, onTeamChange } = useAdminTeamSwitcher()
 
   const navMapSections = useMemo(
-    () => buildAdminNavSections(pathname, permissions),
-    [pathname, permissions],
+    () => buildAdminNavSections(pathname, session),
+    [pathname, session],
   )
 
   const teamSwitcherTeams = useMemo(() => adminTenantsToTeams(teams), [teams])

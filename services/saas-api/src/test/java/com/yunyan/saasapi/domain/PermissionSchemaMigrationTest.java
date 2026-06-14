@@ -53,7 +53,9 @@ class PermissionSchemaMigrationTest {
         .contains(
             PermissionCodes.ADMIN_TENANTS_READ,
             PermissionCodes.ADMIN_TENANTS_WRITE,
-            PermissionCodes.ADMIN_ROLES_WRITE)
+            PermissionCodes.ADMIN_ROLES_WRITE,
+            PermissionCodes.ADMIN_MEMBERS_READ,
+            PermissionCodes.ADMIN_MEMBERS_WRITE)
         .doesNotContain(PermissionCodes.WORKSPACE_MAP_WRITE);
   }
 

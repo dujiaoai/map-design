@@ -127,7 +127,7 @@
 | 能力 | 实现 |
 | --- | --- |
 | 用户列表 | `GET /v1/admin/users`（`admin:users:read`；可选 `tenantId` 过滤） |
-| 邀请成员 | `POST /v1/admin/users`（tenantId、email、password；默认角色 `MEMBER`） |
+| 邀请成员 | invite-links + join 流程（`AdminTenantInviteLinksController`） |
 | 更新用户 | `PATCH /v1/admin/users/{id}`（displayName、status） |
 | 禁用 | `status`: `active` / `disabled`；禁用后无法登录 |
 
@@ -136,7 +136,7 @@
 | 能力 | 实现 |
 | --- | --- |
 | 成员列表 | `GET /v1/admin/tenants/{id}/members`（`admin:members:read`） |
-| 邀请成员 | `POST /v1/admin/tenants/{id}/members` |
+| 邀请成员 | invite-links + join（非 `POST .../members`） |
 | 更新成员 | `PATCH /v1/admin/tenants/{id}/members/{userId}` |
 | 角色分配 | `PUT /v1/admin/tenants/{id}/members/{userId}/roles`（全量替换） |
 | 租户隔离 | `TENANT_ADMIN` 仅可操作 JWT 当前租户；Security 门控含 `admin:members:*` |
@@ -148,6 +148,14 @@
 | Docker 全栈 | `deploy/docker-compose`：postgres、redis、saas-api、saas-web、saas-admin |
 | Nginx `/v1` | 前端同源反代 → `saas-api:8082` |
 | 构建注入 | `VITE_API_URL=/v1`（`deploy/env/*.production`） |
+
+### 已完成（Sprint D+ · RBAC-P0）
+
+| 能力 | 实现 |
+| --- | --- |
+| 平台成员权限 | `V14`：`PLATFORM_ADMIN` 种子绑定 `admin:members:read/write` |
+| Admin 侧栏 | `buildAdminNavSections`：`PLATFORM_ADMIN` 可见「成员」；与路由 `canAccessAdminMembers` 一致 |
+| 联调账号 | `platform@demo.local`（仅 `PLATFORM_ADMIN`） |
 
 ### 已完成（Admin 功能完善 P0～P3 · 2026-06）
 

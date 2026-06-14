@@ -278,6 +278,16 @@ flowchart TD
 
 **Admin 功能完善（P0～P3 · 2026-06）**：在 Sprint D 基座上交付概览统计、租户详情、跨租户成员、能力管理、列表分页、`/account`、TeamSwitcher、Skeleton、404 与测试覆盖。路由与 API 见 [apps.md](./apps.md)。
 
+### Sprint D+ · RBAC 深化（2026-06）
+
+| # | 状态 | 任务 | 产出 |
+| --- | --- | --- | --- |
+| RBAC-P0 | ✅ | 门控对齐 | `V14__platform_admin_members.sql`；`PLATFORM_ADMIN` JWT 含 `admin:members:*`；Admin 侧栏 `isPlatformAdmin` 兜底；`platform@demo.local` 联调账号 |
+| RBAC-P1 | 🟡 | 平台用户角色 + 变更传播 | `PUT /v1/admin/users/{id}/roles`；角色权限保存后吊销会话 + 审计 |
+| RBAC-P2 | ⬜ | 租户自定义角色 | `sys_role` 扩展；租户角色 CRUD + 权限绑定；`PermissionResolver.resolveByRoleIds` |
+
+成员邀请主路径为 **invite-links + join**（非 `POST /v1/admin/users` / `POST .../members`）。
+
 ---
 
 ### Sprint E · Later — 业务域 API（单独排期）
@@ -366,6 +376,9 @@ flowchart TD
 | D-08 ✅ | D | 前端：Admin CRUD 页 |
 | D-09 ✅ | D | 前端：saas-web 权限门控 |
 | D-10 ✅ | D | 部署：Docker 全栈 compose |
+| RBAC-P0 ✅ | D+ | PLATFORM_ADMIN 成员权限 + Admin 侧栏门控对齐 |
+| RBAC-P1 | D+ | 平台用户角色分配 + 角色权限变更会话吊销 |
+| RBAC-P2 | D+ | 租户自定义角色与权限 CRUD |
 | E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
 
 ### 建议默认顺序（仅供参考，非强制）

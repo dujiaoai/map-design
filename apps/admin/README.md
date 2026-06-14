@@ -33,6 +33,7 @@ pnpm --filter @repo/saas-admin dev
 | 角色 | 邮箱 | 密码 | 租户 slug | 默认首页 |
 | --- | --- | --- | --- | --- |
 | 平台运营 | `admin@demo.local` | `password` | `demo` | `/` 概览 |
+| 纯平台运营 | `platform@demo.local` | `password` | `demo` | `/` 概览 |
 | 租户管理员 | `tenantadmin@demo.local` | `password` | `demo` | `/members` |
 | 普通成员 | `member@demo.local` | `password` | `demo` | 无 Admin 权限 → `/403` |
 

@@ -6,6 +6,7 @@
 --
 -- Demo credentials (for /v1/auth/login):
 --   admin@demo.local / password / demo — PLATFORM_ADMIN + TENANT_ADMIN（平台运营联调）
+--   platform@demo.local / password / demo — 仅 PLATFORM_ADMIN（纯平台侧栏联调）
 --   tenantadmin@demo.local / password / demo — 仅 TENANT_ADMIN（租户管理员 /members）
 --   member@demo.local / password / demo — MEMBER（无 admin 权限）
 
@@ -86,6 +87,29 @@ SET tenant_id = EXCLUDED.tenant_id,
     password_hash = EXCLUDED.password_hash,
     display_name = EXCLUDED.display_name,
     status = EXCLUDED.status;
+
+INSERT INTO sys_user (id, tenant_id, email, password_hash, display_name, status)
+VALUES (
+  '22222222-2222-2222-2222-222222222204',
+  '11111111-1111-1111-1111-111111111101',
+  'platform@demo.local',
+  '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG',
+  'Demo Platform Admin',
+  'active'
+)
+ON CONFLICT (id) DO UPDATE
+SET tenant_id = EXCLUDED.tenant_id,
+    email = EXCLUDED.email,
+    password_hash = EXCLUDED.password_hash,
+    display_name = EXCLUDED.display_name,
+    status = EXCLUDED.status;
+
+INSERT INTO sys_user_role (user_id, role_id)
+VALUES (
+  '22222222-2222-2222-2222-222222222204',
+  '00000000-0000-0000-0000-000000000001'  -- PLATFORM_ADMIN only
+)
+ON CONFLICT (user_id, role_id) DO NOTHING;
 
 INSERT INTO sys_user_role (user_id, role_id)
 VALUES (

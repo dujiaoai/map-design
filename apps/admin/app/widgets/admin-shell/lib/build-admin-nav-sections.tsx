@@ -1,7 +1,9 @@
 import type { NavMapSectionUi } from '@repo/ui'
 import { createElement } from 'react'
 
-import { hasAnyPermissionCodes } from '~/shared/auth/admin-access'
+import type { Session } from '@repo/auth'
+
+import { hasAnyPermissionCodes, isPlatformAdmin } from '~/shared/auth/admin-access'
 
 import { adminNavItems, type AdminNavItem } from './nav-items'
 
@@ -25,16 +27,24 @@ function toNavMainItem(item: AdminNavItem, pathname: string) {
   }
 }
 
-export function buildAdminNavSections(pathname: string, permissions: string[]): NavMapSectionUi[] {
+function canSeeAdminNavItem(item: AdminNavItem, session: Session | null): boolean {
+  if (item.to === '/account') return false
+  if (item.permissions.length === 0) return true
+  if (hasAnyPermissionCodes(session?.user.permissions ?? [], item.permissions)) return true
+  if (item.to === '/members' && isPlatformAdmin(session)) return true
+  return false
+}
+
+export function buildAdminNavSections(
+  pathname: string,
+  session: Session | null,
+): NavMapSectionUi[] {
   return ADMIN_NAV_SECTION_DEFS.map((def) => ({
     id: def.id,
     label: def.label,
     items: def.routes
       .map((route) => adminNavItems.find((item) => item.to === route))
-      .filter(
-        (item): item is AdminNavItem =>
-          Boolean(item && item.to !== '/account' && hasAnyPermissionCodes(permissions, item.permissions)),
-      )
+      .filter((item): item is AdminNavItem => Boolean(item && canSeeAdminNavItem(item, session)))
       .map((item) => toNavMainItem(item, pathname)),
   })).filter((section) => section.items.length > 0)
 }

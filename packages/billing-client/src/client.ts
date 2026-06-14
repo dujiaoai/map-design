@@ -13,7 +13,10 @@ import {
   type RechargeOrderResponse,
   type RechargePackage,
   type TeamUsageSummary,
+  type TransferRequest,
+  type TransferResponse,
   type WalletResponse,
+  transferResponseSchema,
 } from './schemas'
 
 export type BillingClientOptions = ApiClientOptions
@@ -85,6 +88,10 @@ export function createBillingClient(options: BillingClientOptions) {
       return rechargeOrderResponseSchema.parse(
         await api.post(`/recharge-orders/${encodeURIComponent(orderNo)}/cancel`),
       )
+    },
+
+    async transfer(input: TransferRequest): Promise<TransferResponse> {
+      return transferResponseSchema.parse(await api.post('/transfer', input))
     },
   }
 }

@@ -89,3 +89,25 @@ export const createRechargeOrderRequestSchema = z.object({
 })
 
 export type CreateRechargeOrderRequest = z.infer<typeof createRechargeOrderRequestSchema>
+
+export const transferRequestSchema = z.object({
+  toUserId: z.string(),
+  amount: z.number().int().positive(),
+  remark: z.string().optional(),
+  idempotencyKey: z.string(),
+})
+
+export const transferResponseSchema = z.object({
+  fromWalletId: z.string(),
+  toWalletId: z.string(),
+  fromUserId: z.string(),
+  toUserId: z.string(),
+  amount: z.number(),
+  fromBalanceAfter: z.number(),
+  toBalanceAfter: z.number(),
+  remark: z.string(),
+  idempotentReplay: z.boolean(),
+})
+
+export type TransferRequest = z.infer<typeof transferRequestSchema>
+export type TransferResponse = z.infer<typeof transferResponseSchema>

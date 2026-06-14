@@ -10,6 +10,8 @@ export {
   rechargePackageSchema,
   teamUsageItemSchema,
   teamUsageSummarySchema,
+  transferRequestSchema,
+  transferResponseSchema,
   walletResponseSchema,
 } from './src/schemas'
 export type {
@@ -21,5 +23,7 @@ export type {
   RechargePackage,
   TeamUsageItem,
   TeamUsageSummary,
+  TransferRequest,
+  TransferResponse,
   WalletResponse,
 } from './src/schemas'

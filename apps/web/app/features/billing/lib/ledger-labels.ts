@@ -4,6 +4,8 @@ const ENTRY_TYPE_LABELS: Record<string, string> = {
   debit: '扣费',
   recharge: '充值',
   refund: '退款',
+  transfer_in: '划拨收入',
+  transfer_out: '划拨支出',
 }
 
 const REMARK_LABELS: Record<string, string> = {
@@ -22,6 +24,9 @@ export function formatLedgerRemark(remark: string | null | undefined): string {
 }
 
 export function formatLedgerSignedAmount(entryType: string, amount: number): string {
-  const prefix = entryType === 'debit' ? '−' : '+'
+  if (entryType === 'transfer_out' || entryType === 'debit') {
+    return `−${Math.abs(amount).toLocaleString('zh-CN')}`
+  }
+  const prefix = amount < 0 ? '−' : '+'
   return `${prefix}${Math.abs(amount).toLocaleString('zh-CN')}`
 }

@@ -5,6 +5,7 @@ import { Link } from 'react-router'
 
 import { DevBillingSmokePanel } from '~/features/billing/ui/dev-billing-smoke-panel'
 import { BillingLedgerTable } from '~/features/billing/ui/billing-ledger-table'
+import { BillingTransferPanel } from '~/features/billing/ui/billing-transfer-panel'
 import { BillingUsageSummary } from '~/features/billing/ui/billing-usage-summary'
 import { BillingWalletCard } from '~/features/billing/ui/billing-wallet-card'
 import { RechargePackagesPanel } from '~/features/billing/ui/recharge-packages-panel'
@@ -22,6 +23,10 @@ export function BillingPageContent() {
   const canReadTeamUsage = hasPermission(
     auth.getSession()?.user.permissions,
     PermissionCodes.BILLING_USAGE_READ,
+  )
+  const canTransfer = hasPermission(
+    auth.getSession()?.user.permissions,
+    PermissionCodes.BILLING_TRANSFER_CREATE,
   )
 
   return (
@@ -46,6 +51,8 @@ export function BillingPageContent() {
       <DevBillingSmokePanel />
 
       {canRecharge ? <RechargePackagesPanel /> : null}
+
+      {canTransfer ? <BillingTransferPanel /> : null}
 
       {canReadTeamUsage ? <BillingUsageSummary /> : null}
 

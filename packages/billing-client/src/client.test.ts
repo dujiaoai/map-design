@@ -54,4 +54,41 @@ describe('createBillingClient', () => {
 
     expect(order.orderNo).toBe('RO-1')
   })
+
+  it('transfer posts payload', async () => {
+    const fetchFn = vi.fn(async (_url, init) => {
+      expect(init?.method).toBe('POST')
+      expect(JSON.parse(String(init?.body))).toEqual({
+        toUserId: '00000000-0000-0000-0000-000000000002',
+        amount: 100,
+        remark: 'team allocation',
+        idempotencyKey: 'transfer:test',
+      })
+      return Response.json({
+        fromWalletId: 'w1',
+        toWalletId: 'w2',
+        fromUserId: 'u1',
+        toUserId: '00000000-0000-0000-0000-000000000002',
+        amount: 100,
+        fromBalanceAfter: 900,
+        toBalanceAfter: 100,
+        remark: 'team allocation',
+        idempotentReplay: false,
+      })
+    })
+
+    const client = createBillingClient({
+      baseUrl: 'http://billing.test',
+      fetch: fetchFn,
+    })
+
+    const result = await client.transfer({
+      toUserId: '00000000-0000-0000-0000-000000000002',
+      amount: 100,
+      remark: 'team allocation',
+      idempotencyKey: 'transfer:test',
+    })
+
+    expect(result.amount).toBe(100)
+  })
 })

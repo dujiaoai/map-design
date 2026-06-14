@@ -107,7 +107,7 @@ export function BillingPackagesPanel({
           ) : null}
         </div>
         <div className="border-b border-border/60 px-6 py-4">
-          <div className="grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_140px]">
+          <div className="grid items-center justify-center gap-4 sm:grid-cols-[minmax(0,1fr)_140px]">
             <AdminField label="搜索代码">
               <Input
                 value={codeSearch}
@@ -116,8 +116,8 @@ export function BillingPackagesPanel({
               />
             </AdminField>
             <AdminField label="状态">
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value ?? 'all')}>
-                <SelectTrigger className="w-full">
+              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value ?? 'all')} >
+                <SelectTrigger className="w-full mb-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

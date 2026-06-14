@@ -10,6 +10,7 @@ import com.yunyan.billingapi.application.admin.AdminBillingWalletService;
 import com.yunyan.billingapi.domain.permission.PermissionCodes;
 import com.yunyan.billingapi.security.SaasPrincipal;
 import com.yunyan.billingapi.web.dto.AdminAdjustRequest;
+import com.yunyan.billingapi.web.dto.AdminAdjustRecordListResponse;
 import com.yunyan.billingapi.web.dto.AdminAdjustResponse;
 import com.yunyan.billingapi.web.dto.AdminBillingStatsResponse;
 import com.yunyan.billingapi.web.dto.AdminRefundRequest;
@@ -147,6 +148,17 @@ public class AdminBillingController {
       @PathVariable UUID tenantId,
       @Valid @RequestBody AdminAdjustRequest request) {
     return adminBillingAdjustService.adjust(principal, tenantId, request);
+  }
+
+  @GetMapping("/adjust-records")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_ADJUST + "')")
+  @Operation(summary = "平台人工调账记录列表")
+  public AdminAdjustRecordListResponse listAdjustRecords(
+      @RequestParam(required = false) UUID tenantId,
+      @RequestParam(required = false) UUID userId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return adminBillingAdjustService.listAdjustRecords(tenantId, userId, page, size);
   }
 
   @PostMapping("/recharge-orders/{orderNo}/refund")

@@ -1,6 +1,7 @@
 package com.yunyan.billingapi;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -166,6 +167,46 @@ class AdminBillingControllerTest {
         .andExpect(status().isConflict());
 
     assertThat(auditCount() - auditBefore).isZero();
+  }
+
+  @Test
+  void listAdjustRecords_returnsPlatformAdminAdjustLedger() throws Exception {
+    var tenantId = UUID.randomUUID();
+    var userId = UUID.randomUUID();
+    var adminId = UUID.randomUUID();
+    var token =
+        BillingJwtTestSupport.accessToken(
+            adminId, tenantId, List.of(PermissionCodes.ADMIN_BILLING_ADJUST));
+
+    mockMvc
+        .perform(
+            post("/v1/admin/billing/tenants/{tenantId}/adjust", tenantId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "userId",
+                            userId.toString(),
+                            "amount",
+                            88,
+                            "remark",
+                            "enterprise_prepay",
+                            "idempotencyKey",
+                            "admin-adjust:list-test-1"))))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/v1/admin/billing/adjust-records")
+                .header("Authorization", "Bearer " + token)
+                .param("tenantId", tenantId.toString())
+                .param("userId", userId.toString()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.total").value(1))
+        .andExpect(jsonPath("$.items[0].amount").value(88))
+        .andExpect(jsonPath("$.items[0].remark").value("enterprise_prepay"))
+        .andExpect(jsonPath("$.items[0].userId").value(userId.toString()));
   }
 
   private long auditCount() {

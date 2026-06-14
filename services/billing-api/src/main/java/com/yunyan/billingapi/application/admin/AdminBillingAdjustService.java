@@ -6,6 +6,8 @@ import com.yunyan.billingapi.domain.mapper.BillingLedgerMapper;
 import com.yunyan.billingapi.domain.mapper.BillingWalletMapper;
 import com.yunyan.billingapi.security.AuthException;
 import com.yunyan.billingapi.security.SaasPrincipal;
+import com.yunyan.billingapi.web.dto.AdminAdjustRecordDto;
+import com.yunyan.billingapi.web.dto.AdminAdjustRecordListResponse;
 import com.yunyan.billingapi.web.dto.AdminAdjustRequest;
 import com.yunyan.billingapi.web.dto.AdminAdjustResponse;
 import java.time.Instant;
@@ -108,5 +110,31 @@ public class AdminBillingAdjustService {
         ledger.getAmount(),
         balanceAfter,
         ledger.getRemark());
+  }
+
+  public AdminAdjustRecordListResponse listAdjustRecords(
+      UUID tenantId, UUID userId, int page, int size) {
+    var safePage = Math.max(page, 0);
+    var safeSize = Math.min(Math.max(size, 1), 100);
+    var offset = safePage * safeSize;
+
+    var rows = ledgerMapper.findAdminAdjustRecords(tenantId, userId, safeSize, offset);
+    var total = ledgerMapper.countAdminAdjustRecords(tenantId, userId);
+    var items =
+        rows.stream()
+            .map(
+                row ->
+                    new AdminAdjustRecordDto(
+                        row.getId(),
+                        row.getWalletId(),
+                        row.getTenantId(),
+                        row.getUserId(),
+                        row.getAmount() != null ? row.getAmount() : 0L,
+                        row.getBalanceAfter() != null ? row.getBalanceAfter() : 0L,
+                        row.getRemark(),
+                        row.getIdempotencyKey(),
+                        row.getCreatedAt()))
+            .toList();
+    return new AdminAdjustRecordListResponse(items, safePage, safeSize, total);
   }
 }

@@ -124,6 +124,27 @@ export const adminRefundResponseSchema = z.object({
 
 export type AdminRefundResponse = z.infer<typeof adminRefundResponseSchema>
 
+export const adminAdjustRecordListSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      walletId: z.string(),
+      tenantId: z.string(),
+      userId: z.string(),
+      amount: z.number(),
+      balanceAfter: z.number(),
+      remark: z.string(),
+      idempotencyKey: z.string(),
+      createdAt: z.string().nullable().optional(),
+    }),
+  ),
+  page: z.number(),
+  size: z.number(),
+  total: z.number(),
+})
+
+export type AdminAdjustRecordList = z.infer<typeof adminAdjustRecordListSchema>
+
 function buildQuery(params: Record<string, string | number | undefined>) {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {
@@ -171,5 +192,19 @@ export function adminBillingUsageQuery(params: {
   return buildQuery({
     tenantId: params.tenantId,
     productCode: params.productCode,
+  })
+}
+
+export function adminBillingAdjustRecordsQuery(params: {
+  tenantId?: string
+  userId?: string
+  page?: number
+  size?: number
+}) {
+  return buildQuery({
+    tenantId: params.tenantId,
+    userId: params.userId,
+    page: params.page ?? 0,
+    size: params.size ?? 20,
   })
 }

@@ -55,4 +55,37 @@ public interface BillingLedgerMapper {
 
   @Select("SELECT COUNT(*) FROM billing_ledger WHERE wallet_id = #{walletId}")
   long countByWalletId(@Param("walletId") UUID walletId);
+
+  @Select(
+      """
+      <script>
+      SELECT l.id, l.wallet_id, l.tenant_id, w.user_id, l.amount, l.balance_after,
+             l.remark, l.idempotency_key, l.created_at
+      FROM billing_ledger l
+      INNER JOIN billing_wallet w ON w.id = l.wallet_id
+      WHERE l.entry_type = 'adjust' AND l.product_code = 'platform-admin'
+      <if test="tenantId != null">AND l.tenant_id = #{tenantId}</if>
+      <if test="userId != null">AND w.user_id = #{userId}</if>
+      ORDER BY l.created_at DESC
+      LIMIT #{limit} OFFSET #{offset}
+      </script>
+      """)
+  java.util.List<AdminAdjustRecordRow> findAdminAdjustRecords(
+      @Param("tenantId") UUID tenantId,
+      @Param("userId") UUID userId,
+      @Param("limit") int limit,
+      @Param("offset") int offset);
+
+  @Select(
+      """
+      <script>
+      SELECT COUNT(*)
+      FROM billing_ledger l
+      INNER JOIN billing_wallet w ON w.id = l.wallet_id
+      WHERE l.entry_type = 'adjust' AND l.product_code = 'platform-admin'
+      <if test="tenantId != null">AND l.tenant_id = #{tenantId}</if>
+      <if test="userId != null">AND w.user_id = #{userId}</if>
+      </script>
+      """)
+  long countAdminAdjustRecords(@Param("tenantId") UUID tenantId, @Param("userId") UUID userId);
 }

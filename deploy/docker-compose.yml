@@ -40,6 +40,21 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  billing-api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.billing-api
+    image: map-design/billing-api:${TAG:-latest}
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SAAS_JWT_SECRET: ${SAAS_JWT_SECRET:-docker-only-change-me-use-32chars-min!!}
+    ports:
+      - '${BILLING_API_PORT:-8083}:8083'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
   saas-api-seed:
     image: postgres:16-alpine
     depends_on:

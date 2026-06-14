@@ -12,6 +12,8 @@
   <description>YunYan SaaS Java backend services</description>
 
   <modules>
+    <module>billing-core</module>
+    <module>billing-api</module>
     <module>saas-api</module>
   </modules>
 

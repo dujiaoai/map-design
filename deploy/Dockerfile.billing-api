@@ -1,0 +1,33 @@
+# 使用已缓存的 node:20-alpine，避免额外拉取 Docker Hub 的 maven/temurin 镜像（国内网络常见失败点）
+FROM node:20-alpine AS builder
+
+RUN apk add --no-cache maven openjdk21
+
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk
+
+WORKDIR /app
+
+COPY services/pom.xml services/pom.xml
+COPY services/billing-core/pom.xml services/billing-core/pom.xml
+COPY services/billing-core/src services/billing-core/src
+COPY services/billing-api/pom.xml services/billing-api/pom.xml
+COPY services/billing-api/src services/billing-api/src
+
+RUN mvn -f services/pom.xml -pl billing-api -am package -DskipTests -q
+
+FROM node:20-alpine AS runtime
+
+RUN apk add --no-cache openjdk21-jre-headless wget
+
+WORKDIR /app
+
+COPY --from=builder /app/services/billing-api/target/billing-api-*.jar /app/app.jar
+
+ENV SPRING_PROFILES_ACTIVE=docker
+
+EXPOSE 8083
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=90s --retries=5 \
+  CMD wget -q --spider http://127.0.0.1:8083/actuator/health || exit 1
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

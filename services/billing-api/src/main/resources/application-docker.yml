@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/saas
+    username: saas
+    password: saas
+
+server:
+  port: 8083
+
+billing:
+  jwt:
+    secret: ${SAAS_JWT_SECRET:docker-only-change-me-use-32chars-min!!}

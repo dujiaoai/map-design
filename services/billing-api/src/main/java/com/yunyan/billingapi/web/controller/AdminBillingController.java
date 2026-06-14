@@ -4,6 +4,7 @@ import com.yunyan.billingapi.application.admin.AdminBillingAdjustService;
 import com.yunyan.billingapi.application.admin.AdminBillingPackageService;
 import com.yunyan.billingapi.application.admin.AdminBillingRechargeOrderService;
 import com.yunyan.billingapi.application.admin.AdminBillingStatsService;
+import com.yunyan.billingapi.application.admin.AdminBillingUsageService;
 import com.yunyan.billingapi.application.admin.AdminBillingWalletService;
 import com.yunyan.billingapi.domain.permission.PermissionCodes;
 import com.yunyan.billingapi.security.SaasPrincipal;
@@ -12,6 +13,7 @@ import com.yunyan.billingapi.web.dto.AdminAdjustResponse;
 import com.yunyan.billingapi.web.dto.AdminBillingStatsResponse;
 import com.yunyan.billingapi.web.dto.AdminRechargeOrderListResponse;
 import com.yunyan.billingapi.web.dto.AdminRechargePackageListResponse;
+import com.yunyan.billingapi.web.dto.AdminUsageSummaryResponse;
 import com.yunyan.billingapi.web.dto.AdminWalletListResponse;
 import com.yunyan.billingapi.web.dto.CreateAdminPackageRequest;
 import com.yunyan.billingapi.web.dto.PatchAdminPackageRequest;
@@ -20,7 +22,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.time.Instant;
 import java.util.UUID;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,18 +47,21 @@ public class AdminBillingController {
   private final AdminBillingRechargeOrderService adminBillingRechargeOrderService;
   private final AdminBillingPackageService adminBillingPackageService;
   private final AdminBillingStatsService adminBillingStatsService;
+  private final AdminBillingUsageService adminBillingUsageService;
 
   public AdminBillingController(
       AdminBillingAdjustService adminBillingAdjustService,
       AdminBillingWalletService adminBillingWalletService,
       AdminBillingRechargeOrderService adminBillingRechargeOrderService,
       AdminBillingPackageService adminBillingPackageService,
-      AdminBillingStatsService adminBillingStatsService) {
+      AdminBillingStatsService adminBillingStatsService,
+      AdminBillingUsageService adminBillingUsageService) {
     this.adminBillingAdjustService = adminBillingAdjustService;
     this.adminBillingWalletService = adminBillingWalletService;
     this.adminBillingRechargeOrderService = adminBillingRechargeOrderService;
     this.adminBillingPackageService = adminBillingPackageService;
     this.adminBillingStatsService = adminBillingStatsService;
+    this.adminBillingUsageService = adminBillingUsageService;
   }
 
   @GetMapping("/stats")
@@ -62,6 +69,19 @@ public class AdminBillingController {
   @Operation(summary = "平台计费汇总统计")
   public AdminBillingStatsResponse getStats() {
     return adminBillingStatsService.getStats();
+  }
+
+  @GetMapping("/usage")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_READ + "')")
+  @Operation(summary = "平台跨租户消费汇总")
+  public AdminUsageSummaryResponse getUsage(
+      @RequestParam(required = false) UUID tenantId,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          Instant from,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          Instant to,
+      @RequestParam(required = false) String productCode) {
+    return adminBillingUsageService.getUsage(tenantId, from, to, productCode);
   }
 
   @GetMapping("/packages")

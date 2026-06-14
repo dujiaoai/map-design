@@ -9,6 +9,20 @@ public class BillingAppProperties {
 
   private final SignupBonus signupBonus = new SignupBonus();
   private final Internal internal = new Internal();
+  private final Payment payment = new Payment();
+  private final Recharge recharge = new Recharge();
+
+  @Data
+  public static class Recharge {
+    /** Pending order TTL before auto-expire (minutes). */
+    private int orderTtlMinutes = 30;
+  }
+
+  @Data
+  public static class Payment {
+    /** Enables POST .../mock-pay for sandbox recharge completion. */
+    private boolean mockEnabled = false;
+  }
 
   @Data
   public static class SignupBonus {

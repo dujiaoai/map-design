@@ -33,6 +33,10 @@ billing:
     organization: 1000
   internal:
     token: ${BILLING_INTERNAL_TOKEN:dev-billing-internal-token-change-me}
+  payment:
+    mock-enabled: ${BILLING_MOCK_PAYMENT:false}
+  recharge:
+    order-ttl-minutes: 30
 
 springdoc:
   api-docs:

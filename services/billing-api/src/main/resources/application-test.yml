@@ -18,3 +18,7 @@ billing:
     organization: 1000
   internal:
     token: test-billing-internal-token
+  payment:
+    mock-enabled: true
+  recharge:
+    order-ttl-minutes: 30

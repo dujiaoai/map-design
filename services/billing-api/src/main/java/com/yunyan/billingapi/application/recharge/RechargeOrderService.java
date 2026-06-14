@@ -1,6 +1,7 @@
 package com.yunyan.billingapi.application.recharge;
 
 import com.yunyan.billingapi.application.payment.PaymentGatewayRegistry;
+import com.yunyan.billingapi.application.tenant.TenantRechargePolicyService;
 import com.yunyan.billingapi.application.wallet.WalletService;
 import com.yunyan.billingapi.config.BillingAppProperties;
 import com.yunyan.billingapi.domain.entity.BillingLedger;
@@ -30,6 +31,7 @@ public class RechargeOrderService {
   private final BillingWalletMapper walletMapper;
   private final BillingLedgerMapper ledgerMapper;
   private final PaymentGatewayRegistry paymentGatewayRegistry;
+  private final TenantRechargePolicyService tenantRechargePolicyService;
 
   public RechargeOrderService(
       BillingAppProperties billingAppProperties,
@@ -38,7 +40,8 @@ public class RechargeOrderService {
       BillingRechargeOrderMapper orderMapper,
       BillingWalletMapper walletMapper,
       BillingLedgerMapper ledgerMapper,
-      PaymentGatewayRegistry paymentGatewayRegistry) {
+      PaymentGatewayRegistry paymentGatewayRegistry,
+      TenantRechargePolicyService tenantRechargePolicyService) {
     this.billingAppProperties = billingAppProperties;
     this.walletService = walletService;
     this.packageMapper = packageMapper;
@@ -46,10 +49,15 @@ public class RechargeOrderService {
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
     this.paymentGatewayRegistry = paymentGatewayRegistry;
+    this.tenantRechargePolicyService = tenantRechargePolicyService;
   }
 
   @Transactional
   public RechargeOrderResponse createOrder(SaasPrincipal principal, CreateRechargeOrderRequest request) {
+    if (!tenantRechargePolicyService.isSelfRechargeAllowed(principal)) {
+      throw AuthException.forbidden(
+          "Member self-recharge is disabled for this tenant; contact your administrator");
+    }
     if (!StringUtils.hasText(request.packageCode())) {
       throw AuthException.badRequest("packageCode is required");
     }

@@ -30,4 +30,8 @@ public class AuthException extends RuntimeException {
   public static AuthException conflict(String message) {
     return new AuthException(HttpStatus.CONFLICT, message);
   }
+
+  public static AuthException forbidden(String message) {
+    return new AuthException(HttpStatus.FORBIDDEN, message);
+  }
 }

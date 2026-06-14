@@ -12,7 +12,11 @@ public final class TenantFeatureCatalog {
   public static final List<Entry> ENTRIES =
       List.of(
           new Entry("custom.highway-alert", "高速预警", "高速预警图层与面板"),
-          new Entry("custom.live-share", "地图分享", "地图分享列表"));
+          new Entry("custom.live-share", "地图分享", "地图分享列表"),
+          new Entry(
+              "billing.members-recharge-disabled",
+              "关闭成员自助充值",
+              "启用后普通成员不可自助充值，需租户管理员划拨或平台调账"));
 
   public static final Set<String> CODES =
       ENTRIES.stream()

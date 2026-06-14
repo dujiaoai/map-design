@@ -16,13 +16,18 @@ final class BillingJwtTestSupport {
   private BillingJwtTestSupport() {}
 
   static String accessToken(UUID userId, UUID tenantId, List<String> permissions) {
+    return accessToken(userId, tenantId, permissions, List.of("MEMBER"));
+  }
+
+  static String accessToken(
+      UUID userId, UUID tenantId, List<String> permissions, List<String> roles) {
     var now = Instant.now();
     return Jwts.builder()
         .issuer(TEST_ISSUER)
         .subject(userId.toString())
         .claim("tenant_id", tenantId.toString())
         .claim("typ", "access")
-        .claim("roles", List.of("MEMBER"))
+        .claim("roles", roles)
         .claim("permissions", permissions)
         .claim("perm_epoch", 1)
         .issuedAt(java.util.Date.from(now))

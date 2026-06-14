@@ -17,6 +17,7 @@ export const PermissionCodes = {
   BILLING_LEDGER_READ: 'billing:ledger:read',
   BILLING_RECHARGE_CREATE: 'billing:recharge:create',
   BILLING_USAGE_READ: 'billing:usage:read',
+  BILLING_TRANSFER_CREATE: 'billing:transfer:create',
   ADMIN_BILLING_READ: 'admin:billing:read',
   ADMIN_BILLING_ADJUST: 'admin:billing:adjust',
   ADMIN_BILLING_PACKAGES_WRITE: 'admin:billing:packages:write',
@@ -49,6 +50,7 @@ export const ROLE_DEFAULT_PERMISSIONS = {
     PermissionCodes.BILLING_LEDGER_READ,
     PermissionCodes.BILLING_RECHARGE_CREATE,
     PermissionCodes.BILLING_USAGE_READ,
+    PermissionCodes.BILLING_TRANSFER_CREATE,
   ],
   [SaaSRole.MEMBER]: [
     PermissionCodes.WORKSPACE_USE,

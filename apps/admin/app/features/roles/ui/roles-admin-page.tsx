@@ -1,4 +1,3 @@
-import { Badge, Button, cn } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -14,11 +13,10 @@ import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminFormError } from '~/shared/ui/admin-field'
+import { Button, cn } from '@repo/ui'
 
-import {
-  filterPermissionsForRole,
-  PERMISSION_SCOPE_LABELS,
-} from '../lib/role-permission-rules'
+import { filterPermissionsForRole } from '../lib/role-permission-rules'
+import { RolePermissionEditor } from './role-permission-editor'
 
 export function RolesAdminPage() {
   const { can } = useAdminPermissions()
@@ -60,16 +58,6 @@ export function RolesAdminPage() {
     return filterPermissionsForRole(selectedRole.code, permissionsQuery.data.permissions)
   }, [permissionsQuery.data, selectedRole])
 
-  const groupedPermissions = useMemo(() => {
-    const groups = new Map<string, typeof availablePermissions>()
-    for (const permission of availablePermissions) {
-      const bucket = groups.get(permission.scope) ?? []
-      bucket.push(permission)
-      groups.set(permission.scope, bucket)
-    }
-    return groups
-  }, [availablePermissions])
-
   const savedCodes = useMemo(
     () => [...(rolePermissionsQuery.data?.permissions.map((item) => item.code) ?? [])].sort(),
     [rolePermissionsQuery.data?.permissions],
@@ -99,12 +87,6 @@ export function RolesAdminPage() {
     setSaveNotice(null)
   }
 
-  function togglePermission(code: string) {
-    setSelectedCodes((current) =>
-      current.includes(code) ? current.filter((item) => item !== code) : [...current, code],
-    )
-  }
-
   function handleSave() {
     if (!selectedRole) return
     mutation.mutate(selectedCodes)
@@ -114,7 +96,7 @@ export function RolesAdminPage() {
     <div className="space-y-6">
       <AdminPageHeader
         title="角色与权限"
-        description="为 SaaS 角色配置权限码；保存时将全量替换绑定关系。"
+        description="每个角色可绑定多项权限码，保存时全量替换权限集合。"
       />
       {saveNotice ? (
         <p className="rounded-lg border border-primary/30 bg-primary/8 px-4 py-3 text-sm text-primary">
@@ -162,61 +144,24 @@ export function RolesAdminPage() {
                 <div>
                   <p className="admin-display text-lg font-semibold">{selectedRole.code}</p>
                   <p className="text-sm text-muted-foreground">
-                    已选 {selectedCodes.length} 项权限
+                    权限集合 {selectedCodes.length} 项
                     {isDirty ? ' · 有未保存更改' : ''}
                   </p>
                 </div>
                 {canWrite ? (
                   <Button onClick={handleSave} disabled={mutation.isPending}>
-                    {mutation.isPending ? '保存中…' : '保存权限'}
+                    {mutation.isPending ? '保存中…' : '保存权限集合'}
                   </Button>
                 ) : null}
               </div>
 
-              <div className="space-y-6 p-5">
-                {[...groupedPermissions.entries()].map(([scope, permissions]) => (
-                  <section key={scope} className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{PERMISSION_SCOPE_LABELS[scope as keyof typeof PERMISSION_SCOPE_LABELS]}</Badge>
-                      <span className="text-xs text-muted-foreground">{scope}</span>
-                    </div>
-                    <ul className="grid gap-2 md:grid-cols-2">
-                      {permissions.map((permission) => {
-                        const checked = selectedCodes.includes(permission.code)
-                        return (
-                          <li key={permission.id}>
-                            <label
-                              className={cn(
-                                'flex cursor-pointer gap-3 rounded-lg border px-3 py-3 transition-colors',
-                                checked
-                                  ? 'border-primary/40 bg-primary/8'
-                                  : 'border-border/60 hover:bg-muted/25',
-                                !canWrite && 'cursor-default opacity-80',
-                              )}
-                            >
-                              <input
-                                type="checkbox"
-                                className="mt-0.5"
-                                checked={checked}
-                                disabled={!canWrite}
-                                onChange={() => togglePermission(permission.code)}
-                              />
-                              <span className="min-w-0">
-                                <span className="block font-mono text-xs">{permission.code}</span>
-                                <span className="mt-0.5 block text-sm">{permission.name}</span>
-                                {permission.description ? (
-                                  <span className="mt-1 block text-xs text-muted-foreground">
-                                    {permission.description}
-                                  </span>
-                                ) : null}
-                              </span>
-                            </label>
-                          </li>
-                        )
-                      })}
-                    </ul>
-                  </section>
-                ))}
+              <div className="p-5">
+                <RolePermissionEditor
+                  permissions={availablePermissions}
+                  selectedCodes={selectedCodes}
+                  onSelectedCodesChange={setSelectedCodes}
+                  readOnly={!canWrite}
+                />
               </div>
 
               <div className="border-t border-border/60 px-5 py-4">

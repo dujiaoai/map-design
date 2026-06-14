@@ -41,6 +41,7 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
   const [createOpen, setCreateOpen] = useState(false)
   const [createCode, setCreateCode] = useState('')
   const [createName, setCreateName] = useState('')
+  const [createSelectedCodes, setCreateSelectedCodes] = useState<string[]>([])
 
   const rolePermissionsQuery = useQuery({
     queryKey: adminQueryKeys.tenantRolePermissions(tenantId, selectedRole?.id ?? ''),
@@ -95,13 +96,14 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
       createTenantCustomRole(tenantId, {
         code: createCode.trim(),
         name: createName.trim(),
-        permissionCodes: [],
+        permissionCodes: createSelectedCodes,
       }),
     onSuccess: async (role) => {
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.tenantCustomRoles(tenantId) })
       setCreateOpen(false)
       setCreateCode('')
       setCreateName('')
+      setCreateSelectedCodes([])
       setSelectedRole(role)
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
@@ -116,20 +118,22 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
 
-  function togglePermission(code: string) {
-    setSelectedCodes((current) =>
-      current.includes(code) ? current.filter((item) => item !== code) : [...current, code],
-    )
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          为本租户创建自定义角色，并配置 tenant / workspace 范围权限。
+          为本租户创建自定义角色；每个角色可绑定多项权限组成权限集合。
         </p>
         {canWrite ? (
-          <Button variant="outline" size="sm" onClick={() => setCreateOpen((open) => !open)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setCreateOpen((open) => !open)
+              setCreateSelectedCodes([])
+              setFormError(null)
+            }}
+          >
             <PlusIcon className="size-3.5" />
             新建角色
           </Button>
@@ -137,32 +141,43 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
       </div>
 
       {createOpen ? (
-        <AdminPanel className="grid gap-3 p-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-          <label className="space-y-1 text-sm">
-            <span className="text-muted-foreground">角色码</span>
-            <Input
-              value={createCode}
-              onChange={(event) => setCreateCode(event.target.value)}
-              placeholder="map_editor"
-              className="font-mono"
+        <AdminPanel className="space-y-4 p-4">
+          <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+            <label className="space-y-1 text-sm">
+              <span className="text-muted-foreground">角色码</span>
+              <Input
+                value={createCode}
+                onChange={(event) => setCreateCode(event.target.value)}
+                placeholder="map_editor"
+                className="font-mono"
+              />
+            </label>
+            <label className="space-y-1 text-sm">
+              <span className="text-muted-foreground">显示名</span>
+              <Input
+                value={createName}
+                onChange={(event) => setCreateName(event.target.value)}
+                placeholder="地图编辑员"
+              />
+            </label>
+            <Button
+              onClick={() => createMutation.mutate()}
+              disabled={!createCode.trim() || !createName.trim() || createMutation.isPending}
+            >
+              创建
+            </Button>
+          </div>
+          <div>
+            <p className="mb-3 text-sm text-muted-foreground">
+              创建时即可勾选多项权限，组成该角色的权限集合（也可创建后再调整）。
+            </p>
+            <RolePermissionEditor
+              permissions={availablePermissions}
+              selectedCodes={createSelectedCodes}
+              onSelectedCodesChange={setCreateSelectedCodes}
             />
-          </label>
-          <label className="space-y-1 text-sm">
-            <span className="text-muted-foreground">显示名</span>
-            <Input
-              value={createName}
-              onChange={(event) => setCreateName(event.target.value)}
-              placeholder="地图编辑员"
-            />
-          </label>
-          <Button
-            onClick={() => createMutation.mutate()}
-            disabled={
-              !createCode.trim() || !createName.trim() || createMutation.isPending
-            }
-          >
-            创建
-          </Button>
+          </div>
+          <AdminFormError message={createMutation.isError ? formatAdminApiError(createMutation.error) : null} />
         </AdminPanel>
       ) : null}
 
@@ -241,7 +256,7 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
                         onClick={() => saveMutation.mutate(selectedCodes)}
                         disabled={saveMutation.isPending}
                       >
-                        {saveMutation.isPending ? '保存中…' : '保存权限'}
+                        {saveMutation.isPending ? '保存中…' : '保存权限集合'}
                       </Button>
                     </>
                   ) : null}
@@ -251,7 +266,7 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
                 <RolePermissionEditor
                   permissions={availablePermissions}
                   selectedCodes={selectedCodes}
-                  onToggle={togglePermission}
+                  onSelectedCodesChange={setSelectedCodes}
                   readOnly={!canWrite}
                 />
                 <AdminFormError message={formError} />

@@ -114,6 +114,59 @@ class AdminTenantRolesControllerTest {
         .andExpect(jsonPath("$.permissions", hasSize(2)));
   }
 
+  @Test
+  void updateCustomRolePermissions_withMultipleCodes_persistsAll() throws Exception {
+    var tenantAdminToken = loginAccessToken("admin@test.local");
+
+    var createBody =
+        mockMvc
+            .perform(
+                post("/v1/admin/tenants/" + TEST_TENANT_ID + "/roles")
+                    .header("Authorization", "Bearer " + tenantAdminToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            Map.of(
+                                "code",
+                                "ops_bundle",
+                                "name",
+                                "运营权限包",
+                                "permissionCodes",
+                                List.of(PermissionCodes.ADMIN_MEMBERS_READ)))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    var roleId = JsonPath.read(createBody, "$.id");
+
+    mockMvc
+        .perform(
+            put("/v1/admin/tenants/" + TEST_TENANT_ID + "/roles/" + roleId + "/permissions")
+                .header("Authorization", "Bearer " + tenantAdminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "permissionCodes",
+                            List.of(
+                                PermissionCodes.ADMIN_MEMBERS_READ,
+                                PermissionCodes.ADMIN_MEMBERS_WRITE,
+                                PermissionCodes.WORKSPACE_USE,
+                                PermissionCodes.WORKSPACE_MAP_READ,
+                                PermissionCodes.WORKSPACE_MAP_WRITE)))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.permissions", hasSize(5)));
+
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID + "/roles/" + roleId + "/permissions")
+                .header("Authorization", "Bearer " + tenantAdminToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.permissions", hasSize(5)))
+        .andExpect(jsonPath("$.permissions[*].code", hasItem(PermissionCodes.WORKSPACE_MAP_WRITE)));
+  }
+
   private String loginAccessToken(String email) throws Exception {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }

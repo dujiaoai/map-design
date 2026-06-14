@@ -15,6 +15,12 @@ export function filterPermissionsForRole(
   return permissions.filter((permission) => allowed.includes(permission.scope))
 }
 
+export function filterPermissionsForCustomRole(permissions: AdminPermission[]): AdminPermission[] {
+  return permissions.filter(
+    (permission) => permission.scope === 'tenant' || permission.scope === 'workspace',
+  )
+}
+
 export const PERMISSION_SCOPE_LABELS: Record<AdminPermission['scope'], string> = {
   platform: '平台',
   tenant: '租户',

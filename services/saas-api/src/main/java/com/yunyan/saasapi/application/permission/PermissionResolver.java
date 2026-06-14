@@ -22,10 +22,20 @@ public class PermissionResolver {
     }
     List<UUID> roleIds =
         sysRoleMapper
-            .selectList(Wrappers.<SysRole>lambdaQuery().in(SysRole::getCode, roleCodes))
+            .selectList(
+                Wrappers.<SysRole>lambdaQuery()
+                    .eq(SysRole::getTenantId, SysRole.SYSTEM_TENANT_ID)
+                    .in(SysRole::getCode, roleCodes))
             .stream()
             .map(SysRole::getId)
             .toList();
+    return resolveByRoleIds(roleIds);
+  }
+
+  public List<String> resolveByRoleIds(List<UUID> roleIds) {
+    if (roleIds == null || roleIds.isEmpty()) {
+      return List.of();
+    }
     return permissionRepository.findPermissionCodesByRoleIds(roleIds);
   }
 }

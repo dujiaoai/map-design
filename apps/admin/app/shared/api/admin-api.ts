@@ -163,6 +163,8 @@ export function updateAdminUserRoles(userId: string, roleCodes: string[]) {
 export interface AdminRoleSummary {
   id: string
   code: string
+  name?: string
+  system?: boolean
 }
 
 export interface AdminRoleListResponse {
@@ -274,6 +276,77 @@ export function updateTenantMemberRoles(
   return api.put<AdminUserSummary>(`/admin/tenants/${tenantId}/members/${userId}/roles`, {
     roleCodes,
   })
+}
+
+export interface TenantRoleSummary {
+  id: string
+  code: string
+  name: string
+  description?: string | null
+  system: boolean
+  permissionCount: number
+  memberCount: number
+}
+
+export interface TenantRoleListResponse {
+  roles: TenantRoleSummary[]
+}
+
+export interface AssignableRoleSummary {
+  id: string
+  code: string
+  name: string
+  system: boolean
+}
+
+export interface AssignableRoleListResponse {
+  roles: AssignableRoleSummary[]
+}
+
+export function fetchTenantCustomRoles(tenantId: string) {
+  return api.get<TenantRoleListResponse>(`/admin/tenants/${tenantId}/roles`)
+}
+
+export function fetchAssignableRoles(tenantId: string) {
+  return api.get<AssignableRoleListResponse>(`/admin/tenants/${tenantId}/assignable-roles`)
+}
+
+export interface CreateTenantRolePayload {
+  code: string
+  name: string
+  description?: string
+  permissionCodes?: string[]
+}
+
+export function createTenantCustomRole(tenantId: string, payload: CreateTenantRolePayload) {
+  return api.post<TenantRoleSummary>(`/admin/tenants/${tenantId}/roles`, payload)
+}
+
+export function patchTenantCustomRole(
+  tenantId: string,
+  roleId: string,
+  payload: { name?: string; description?: string },
+) {
+  return api.patch<TenantRoleSummary>(`/admin/tenants/${tenantId}/roles/${roleId}`, payload)
+}
+
+export function deleteTenantCustomRole(tenantId: string, roleId: string) {
+  return api.delete<void>(`/admin/tenants/${tenantId}/roles/${roleId}`)
+}
+
+export function fetchTenantRolePermissions(tenantId: string, roleId: string) {
+  return api.get<RolePermissionsResponse>(`/admin/tenants/${tenantId}/roles/${roleId}/permissions`)
+}
+
+export function updateTenantRolePermissions(
+  tenantId: string,
+  roleId: string,
+  permissionCodes: string[],
+) {
+  return api.put<RolePermissionsResponse>(
+    `/admin/tenants/${tenantId}/roles/${roleId}/permissions`,
+    { permissionCodes },
+  )
 }
 
 export interface SessionTenantSummary {

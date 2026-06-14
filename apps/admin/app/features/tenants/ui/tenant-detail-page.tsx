@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 
 import { MembersAdminPage } from '~/features/members/ui/members-admin-page'
+import { TenantCustomRolesPanel } from '~/features/roles/ui/tenant-custom-roles-panel'
 import { fetchAdminTenant } from '~/shared/api/admin-api'
 import { canAccessAdminMembers } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
@@ -83,6 +84,7 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
         <TabsList>
           <TabsTrigger value="info">信息</TabsTrigger>
           {canReadMembers ? <TabsTrigger value="members">成员</TabsTrigger> : null}
+          {canReadMembers ? <TabsTrigger value="custom-roles">自定义角色</TabsTrigger> : null}
           <TabsTrigger value="features">能力</TabsTrigger>
         </TabsList>
 
@@ -118,6 +120,12 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
         {canReadMembers ? (
           <TabsContent value="members" className="mt-4">
             <MembersAdminPage tenantId={tenantId} tenantName={tenant.name} embedded />
+          </TabsContent>
+        ) : null}
+
+        {canReadMembers ? (
+          <TabsContent value="custom-roles" className="mt-4">
+            <TenantCustomRolesPanel tenantId={tenantId} />
           </TabsContent>
         ) : null}
 

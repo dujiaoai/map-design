@@ -166,6 +166,15 @@
 | 审计 | `user.roles.update`、`role.permissions.update` |
 | Admin UI | Users 编辑 Sheet 平台角色开关；Roles 页保存提示 |
 
+### 已完成（Sprint D+ · RBAC-P2）
+
+| 能力 | 实现 |
+| --- | --- |
+| 租户自定义角色 | `V15` 扩展 `sys_role`；`POST/PATCH/DELETE /v1/admin/tenants/{id}/roles` |
+| 自定义角色权限 | `GET/PUT .../roles/{id}/permissions`（tenant + workspace scope） |
+| 成员分配 | `GET .../assignable-roles`；成员编辑支持系统 + 自定义角色 |
+| 权限解析 | `PermissionResolver.resolveByRoleIds`（按 role_id，避免 code 冲突） |
+
 ### 已完成（Admin 功能完善 P0～P3 · 2026-06）
 
 | 阶段 | 能力 |

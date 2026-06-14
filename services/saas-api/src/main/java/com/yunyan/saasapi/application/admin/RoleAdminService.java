@@ -38,7 +38,9 @@ public class RoleAdminService {
 
   public RoleListResponse listRoles() {
     var roles =
-        roleRepository.findAllOrdered().stream().map(RoleAdminService::toRoleSummary).toList();
+        roleRepository.findSystemRolesOrdered().stream()
+            .map(RoleAdminService::toRoleSummary)
+            .toList();
     return new RoleListResponse(roles);
   }
 
@@ -66,7 +68,7 @@ public class RoleAdminService {
             .toList();
     var requestedCodes = normalizeCodes(request.permissionCodes());
     var permissions = resolvePermissions(requestedCodes);
-    validateScopeForRole(role.getCode(), permissions);
+    validateScopeForRole(role, permissions);
 
     permissionRepository.replaceRolePermissions(
         roleId, permissions.stream().map(SysPermission::getId).toList());
@@ -119,14 +121,11 @@ public class RoleAdminService {
     return List.copyOf(normalized);
   }
 
-  private static void validateScopeForRole(String roleCode, List<SysPermission> permissions) {
+  private static void validateScopeForRole(SysRole role, List<SysPermission> permissions) {
     var allowedScopes =
-        switch (roleCode) {
-          case "PLATFORM_ADMIN" -> PLATFORM_ADMIN_SCOPES;
-          case "TENANT_ADMIN" -> TENANT_ADMIN_SCOPES;
-          case "MEMBER", "VIEWER" -> WORKSPACE_ROLE_SCOPES;
-          default -> throw AuthException.badRequest("Unsupported role: " + roleCode);
-        };
+        role.isSystemRole()
+            ? scopesForSystemRole(role.getCode())
+            : TENANT_CUSTOM_SCOPES;
 
     for (SysPermission permission : permissions) {
       if (!allowedScopes.contains(permission.getScope())) {
@@ -136,13 +135,28 @@ public class RoleAdminService {
                 + " (scope="
                 + permission.getScope()
                 + ") is not allowed for role "
-                + roleCode);
+                + role.getCode());
       }
     }
   }
 
+  private static Set<String> scopesForSystemRole(String roleCode) {
+    return switch (roleCode) {
+      case "PLATFORM_ADMIN" -> PLATFORM_ADMIN_SCOPES;
+      case "TENANT_ADMIN" -> TENANT_ADMIN_SCOPES;
+      case "MEMBER", "VIEWER" -> WORKSPACE_ROLE_SCOPES;
+      default -> throw AuthException.badRequest("Unsupported role: " + roleCode);
+    };
+  }
+
+  private static final Set<String> TENANT_CUSTOM_SCOPES = Set.of("tenant", "workspace");
+
   private static RoleSummaryDto toRoleSummary(SysRole role) {
-    return new RoleSummaryDto(role.getId().toString(), role.getCode());
+    return new RoleSummaryDto(
+        role.getId().toString(),
+        role.getCode(),
+        role.getName(),
+        Boolean.TRUE.equals(role.getIsSystem()));
   }
 
   private static PermissionDto toPermissionDto(SysPermission permission) {

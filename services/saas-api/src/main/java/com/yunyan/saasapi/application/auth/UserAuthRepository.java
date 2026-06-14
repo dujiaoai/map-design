@@ -260,6 +260,6 @@ public class UserAuthRepository {
         user.getAvatarUrl(),
         user.getPasswordHash(),
         roleCodes,
-        permissionResolver.resolveByRoleCodes(roleCodes));
+        permissionResolver.resolveByRoleIds(roleIds));
   }
 }

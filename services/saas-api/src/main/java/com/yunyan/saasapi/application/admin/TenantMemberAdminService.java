@@ -33,8 +33,6 @@ public class TenantMemberAdminService {
   private static final String PLATFORM_ADMIN = "PLATFORM_ADMIN";
   private static final String STATUS_ACTIVE = "active";
   private static final String DEFAULT_ROLE = "MEMBER";
-  private static final Set<String> ASSIGNABLE_ROLE_CODES =
-      Set.of("TENANT_ADMIN", "MEMBER", "VIEWER");
 
   private final UserRepository userRepository;
   private final TenantRepository tenantRepository;
@@ -100,7 +98,7 @@ public class TenantMemberAdminService {
           requireActiveTenant(tenantId);
           requireMemberInTenant(tenantId, userId);
 
-          var roles = resolveAssignableRoles(normalizeRoleCodes(request.roleCodes()));
+          var roles = resolveAssignableRoles(tenantId, normalizeRoleCodes(request.roleCodes()));
           userRepository.replaceUserRoles(userId, roles.stream().map(SysRole::getId).toList());
 
           userSessionRevoker.revokeActiveSessions(userId);
@@ -175,18 +173,18 @@ public class TenantMemberAdminService {
     return tenant;
   }
 
-  private List<SysRole> resolveAssignableRoles(List<String> roleCodes) {
+  private List<SysRole> resolveAssignableRoles(UUID tenantId, List<String> roleCodes) {
     var roles =
         roleCodes.stream()
             .map(
                 code ->
                     roleRepository
-                        .findByCode(code)
+                        .findRoleForTenantMember(tenantId, code)
                         .orElseThrow(
                             () -> AuthException.badRequest("Unknown role code: " + code)))
             .toList();
     for (SysRole role : roles) {
-      validateAssignableRole(role.getCode());
+      validateAssignableRole(role);
     }
     return roles;
   }
@@ -202,9 +200,9 @@ public class TenantMemberAdminService {
     return List.copyOf(normalized);
   }
 
-  private static void validateAssignableRole(String roleCode) {
-    if (!ASSIGNABLE_ROLE_CODES.contains(roleCode)) {
-      throw AuthException.badRequest("Role " + roleCode + " cannot be assigned to tenant members");
+  private static void validateAssignableRole(SysRole role) {
+    if (PLATFORM_ADMIN.equals(role.getCode())) {
+      throw AuthException.badRequest("Role PLATFORM_ADMIN cannot be assigned to tenant members");
     }
   }
 

@@ -284,7 +284,7 @@ flowchart TD
 | --- | --- | --- | --- |
 | RBAC-P0 | ✅ | 门控对齐 | `V14__platform_admin_members.sql`；`PLATFORM_ADMIN` JWT 含 `admin:members:*`；Admin 侧栏 `isPlatformAdmin` 兜底；`platform@demo.local` 联调账号 |
 | RBAC-P1 | ✅ | 平台用户角色 + 变更传播 | `PUT /v1/admin/users/{id}/roles`；角色权限保存后吊销会话 + 审计 |
-| RBAC-P2 | ⬜ | 租户自定义角色 | `sys_role` 扩展；租户角色 CRUD + 权限绑定；`PermissionResolver.resolveByRoleIds` |
+| RBAC-P2 | ✅ | 租户自定义角色 | `sys_role` 扩展；租户角色 CRUD + 权限绑定；`PermissionResolver.resolveByRoleIds` |
 
 成员邀请主路径为 **invite-links + join**（非 `POST /v1/admin/users` / `POST .../members`）。
 
@@ -378,7 +378,7 @@ flowchart TD
 | D-10 ✅ | D | 部署：Docker 全栈 compose |
 | RBAC-P0 ✅ | D+ | PLATFORM_ADMIN 成员权限 + Admin 侧栏门控对齐 |
 | RBAC-P1 ✅ | D+ | 平台用户角色分配 + 角色权限变更会话吊销 |
-| RBAC-P2 | D+ | 租户自定义角色与权限 CRUD |
+| RBAC-P2 ✅ | D+ | 租户自定义角色与权限配置 |
 | E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
 
 ### 建议默认顺序（仅供参考，非强制）

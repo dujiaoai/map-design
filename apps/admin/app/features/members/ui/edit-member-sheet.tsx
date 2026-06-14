@@ -1,6 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import {
-  Badge,
   Button,
   Input,
   Select,
@@ -15,26 +14,25 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@repo/ui'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import {
-  type AdminUserSummary,
+  fetchAssignableRoles,
   patchTenantMember,
   updateTenantMemberRoles,
+  type AdminUserSummary,
 } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 
-import { TENANT_MEMBER_ROLE_LABELS, TENANT_MEMBER_ROLES } from '../lib/member-role-labels'
-
 const schema = z.object({
   displayName: z.string().min(1, '请输入显示名').max(128),
   status: z.enum(['active', 'disabled']),
-  roleCode: z.enum(TENANT_MEMBER_ROLES),
+  roleCode: z.string().min(1, '请选择角色'),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -51,6 +49,12 @@ export function EditMemberSheet({
   onOpenChange: (open: boolean) => void
 }) {
   const queryClient = useQueryClient()
+  const assignableRolesQuery = useQuery({
+    queryKey: adminQueryKeys.assignableRoles(tenantId),
+    queryFn: () => fetchAssignableRoles(tenantId),
+    enabled: open,
+  })
+
   const {
     register,
     handleSubmit,
@@ -67,15 +71,17 @@ export function EditMemberSheet({
 
   useEffect(() => {
     if (!member) return
+    const assignable = assignableRolesQuery.data?.roles ?? []
     const primaryRole =
-      member.roles.find((role) => TENANT_MEMBER_ROLES.includes(role as (typeof TENANT_MEMBER_ROLES)[number])) ??
+      member.roles.find((role) => assignable.some((item) => item.code === role)) ??
+      assignable[0]?.code ??
       'MEMBER'
     reset({
       displayName: member.displayName,
       status: member.status === 'disabled' ? 'disabled' : 'active',
-      roleCode: primaryRole as FormValues['roleCode'],
+      roleCode: primaryRole,
     })
-  }, [member, reset])
+  }, [assignableRolesQuery.data?.roles, member, reset])
 
   const isInvited = member?.status === 'invited'
 
@@ -93,6 +99,11 @@ export function EditMemberSheet({
     },
   })
 
+  function onSubmit(values: FormValues) {
+    if (!member) return
+    mutation.mutate(values)
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md">
@@ -101,21 +112,13 @@ export function EditMemberSheet({
           <SheetDescription>{member?.email ?? '—'}</SheetDescription>
         </SheetHeader>
 
-        <form
-          className="flex flex-1 flex-col gap-4 px-4"
-          onSubmit={handleSubmit((values) => {
-            if (!member) return
-            mutation.mutate(values)
-          })}
-        >
+        <form className="flex flex-1 flex-col gap-4 px-4" onSubmit={handleSubmit(onSubmit)}>
           <AdminField label="显示名" htmlFor="edit-member-name" error={errors.displayName?.message}>
             <Input id="edit-member-name" {...register('displayName')} />
           </AdminField>
           <AdminField label="状态">
             {isInvited ? (
-              <p className="text-sm text-muted-foreground">
-                待激活（历史邮件邀请账号，请让用户通过原邮件链接完成设密）
-              </p>
+              <p className="text-sm text-muted-foreground">待激活（邀请链接注册未完成）</p>
             ) : (
               <Select
                 value={status}
@@ -131,30 +134,23 @@ export function EditMemberSheet({
               </Select>
             )}
           </AdminField>
-          <AdminField label="角色">
-            <Select
-              value={roleCode}
-              onValueChange={(value) =>
-                setValue('roleCode', (value ?? 'MEMBER') as FormValues['roleCode'])
-              }
-            >
+          <AdminField label="角色" error={errors.roleCode?.message}>
+            <Select value={roleCode} onValueChange={(value) => setValue('roleCode', value ?? '')}>
               <SelectTrigger className="w-full">
-                <SelectValue />
+                <SelectValue placeholder="选择角色" />
               </SelectTrigger>
               <SelectContent>
-                {TENANT_MEMBER_ROLES.map((role) => (
-                  <SelectItem key={role} value={role}>
-                    {TENANT_MEMBER_ROLE_LABELS[role]}
+                {(assignableRolesQuery.data?.roles ?? []).map((role) => (
+                  <SelectItem key={role.id} value={role.code}>
+                    {role.name}
+                    <span className="ml-2 font-mono text-xs text-muted-foreground">
+                      {role.code}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </AdminField>
-          {member?.roles.some((role) => role === 'PLATFORM_ADMIN') ? (
-            <Badge variant="outline" className="w-fit font-mono text-[10px]">
-              含 PLATFORM_ADMIN，角色编辑可能受限
-            </Badge>
-          ) : null}
           <AdminFormError message={mutation.isError ? formatAdminApiError(mutation.error) : null} />
           <SheetFooter className="px-0">
             <Button type="submit" disabled={!member || isSubmitting || mutation.isPending}>

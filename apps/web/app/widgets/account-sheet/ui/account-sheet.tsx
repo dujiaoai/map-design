@@ -43,7 +43,7 @@ function ProfileField({
           <CopyButton
             value={value}
             aria-label={`复制${label}`}
-            onCopied={() => toast.success('已复制用户 ID')}
+            onCopied={() => toast.success(`已复制${label}`)}
             onCopyError={() => toast.error('复制失败，请手动选中复制')}
           />
         ) : null}
@@ -99,6 +99,7 @@ export function AccountSheet({
             <>
               <div className="mb-4 rounded-lg border px-4">
                 <ProfileField label="用户 ID" value={session.user.id} copyable />
+                <ProfileField label="租户 ID" value={session.tenant?.id ?? ''} copyable />
                 <ProfileField label="邮箱" value={session.user.email} />
                 <ProfileField label="角色" value={formatSessionRoles(session.user.roles)} />
                 <ProfileField

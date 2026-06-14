@@ -81,6 +81,7 @@ export function AdminAccountSheet({
             <>
               <div className="mb-4 rounded-lg border px-4">
                 <ProfileField label="用户 ID" value={session.user.id} copyable />
+                <ProfileField label="租户 ID" value={session.tenant?.id ?? ''} copyable />
                 <ProfileField label="邮箱" value={session.user.email} />
                 <ProfileField label="角色" value={formatAdminSessionRoles(session.user.roles)} />
                 <ProfileField

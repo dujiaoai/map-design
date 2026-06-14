@@ -31,4 +31,19 @@ public interface BillingLedgerMapper {
       WHERE tenant_id = #{tenantId} AND remark = 'signup_bonus' AND entry_type = 'adjust'
       """)
   boolean existsSignupBonusForTenant(@Param("tenantId") UUID tenantId);
+
+  @Select(
+      """
+      SELECT id, wallet_id, tenant_id, entry_type, amount, balance_after,
+             product_code, remark, idempotency_key, created_at
+      FROM billing_ledger
+      WHERE wallet_id = #{walletId}
+      ORDER BY created_at DESC
+      LIMIT #{limit} OFFSET #{offset}
+      """)
+  java.util.List<BillingLedger> findByWalletId(
+      @Param("walletId") UUID walletId, @Param("limit") int limit, @Param("offset") int offset);
+
+  @Select("SELECT COUNT(*) FROM billing_ledger WHERE wallet_id = #{walletId}")
+  long countByWalletId(@Param("walletId") UUID walletId);
 }

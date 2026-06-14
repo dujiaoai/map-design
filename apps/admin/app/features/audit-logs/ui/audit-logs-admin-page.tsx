@@ -28,6 +28,7 @@ const AUDIT_ACTION_OPTIONS = [
   { value: 'member.roles.update', label: '更新角色' },
   { value: 'billing.wallet.adjust', label: '计费调账' },
   { value: 'billing.package.write', label: 'SKU 变更' },
+  { value: 'billing.recharge.refund', label: '充值退款' },
 ] as const
 
 export function AuditLogsAdminPage() {

@@ -16,6 +16,7 @@ billing:
     issuer: yunyan-saas-test
     secret: test-jwt-secret-with-at-least-32-bytes!!
     access-ttl: PT15M
+    perm-epoch: 1
   signup-bonus:
     personal: 500
     organization: 1000

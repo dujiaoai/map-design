@@ -18,6 +18,7 @@ public class JwtService {
   public static final String CLAIM_TENANT_ID = "tenant_id";
   public static final String CLAIM_ROLES = "roles";
   public static final String CLAIM_PERMISSIONS = "permissions";
+  public static final String CLAIM_PERM_EPOCH = "perm_epoch";
   public static final String CLAIM_TOKEN_TYPE = "typ";
   public static final String TYPE_ACCESS = "access";
 
@@ -35,7 +36,9 @@ public class JwtService {
     if (!TYPE_ACCESS.equals(type)) {
       throw AuthException.unauthorized("Invalid access token");
     }
-    return toParsedAccessToken(claims);
+    var parsed = toParsedAccessToken(claims);
+    ensurePermEpochValid(parsed.permEpoch());
+    return parsed;
   }
 
   private ParsedAccessToken toParsedAccessToken(Claims claims) {
@@ -44,8 +47,34 @@ public class JwtService {
         UUID.fromString(claims.get(CLAIM_TENANT_ID, String.class)),
         readRoles(claims),
         readPermissions(claims),
+        readPermEpoch(claims),
         claims.getId(),
         claims.getExpiration().toInstant());
+  }
+
+  public void ensurePermEpochValid(int tokenPermEpoch) {
+    var current = properties.effectivePermEpoch();
+    if (current <= 0) {
+      return;
+    }
+    if (tokenPermEpoch < current) {
+      throw PermEpochStaleException.create();
+    }
+  }
+
+  private int readPermEpoch(Claims claims) {
+    var epoch = claims.get(CLAIM_PERM_EPOCH);
+    if (epoch instanceof Number number) {
+      return number.intValue();
+    }
+    if (epoch instanceof String text) {
+      try {
+        return Integer.parseInt(text);
+      } catch (NumberFormatException ignored) {
+        return 0;
+      }
+    }
+    return 0;
   }
 
   @SuppressWarnings("unchecked")
@@ -84,6 +113,7 @@ public class JwtService {
       UUID tenantId,
       List<String> roleCodes,
       List<String> permissionCodes,
+      int permEpoch,
       String jti,
       Instant expiresAt) {}
 }

@@ -9,9 +9,18 @@ public record JwtProperties(
     String secret,
     Duration accessTtl,
     Duration refreshTtl,
-    Duration refreshGracePeriod) {
+    Duration refreshGracePeriod,
+    Integer permEpoch) {
 
   public Duration effectiveRefreshGracePeriod() {
     return refreshGracePeriod == null ? Duration.ofSeconds(30) : refreshGracePeriod;
+  }
+
+  /** 0 表示不校验 perm_epoch（兼容旧环境） */
+  public int effectivePermEpoch() {
+    if (permEpoch == null || permEpoch < 0) {
+      return 0;
+    }
+    return permEpoch;
   }
 }

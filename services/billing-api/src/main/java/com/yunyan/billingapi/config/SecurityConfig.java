@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yunyan.billingapi.security.AccessTokenDenylist;
 import com.yunyan.billingapi.security.InternalAuthFilter;
 import com.yunyan.billingapi.security.JwtAuthFilter;
@@ -25,8 +26,9 @@ public class SecurityConfig {
   }
 
   @Bean
-  JwtAuthFilter jwtAuthFilter(JwtService jwtService, AccessTokenDenylist accessTokenDenylist) {
-    return new JwtAuthFilter(jwtService, accessTokenDenylist);
+  JwtAuthFilter jwtAuthFilter(
+      JwtService jwtService, AccessTokenDenylist accessTokenDenylist, ObjectMapper objectMapper) {
+    return new JwtAuthFilter(jwtService, accessTokenDenylist, objectMapper);
   }
 
   @Bean

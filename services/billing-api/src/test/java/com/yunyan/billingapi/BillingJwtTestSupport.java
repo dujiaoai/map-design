@@ -24,6 +24,7 @@ final class BillingJwtTestSupport {
         .claim("typ", "access")
         .claim("roles", List.of("MEMBER"))
         .claim("permissions", permissions)
+        .claim("perm_epoch", 1)
         .issuedAt(java.util.Date.from(now))
         .expiration(java.util.Date.from(now.plus(15, ChronoUnit.MINUTES)))
         .signWith(Keys.hmacShaKeyFor(TEST_SECRET.getBytes(StandardCharsets.UTF_8)))

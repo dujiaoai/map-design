@@ -1,6 +1,7 @@
 package com.yunyan.saasapi.security;
 
 import com.yunyan.saasapi.application.permission.PermissionResolver;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,14 +21,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final PermissionResolver permissionResolver;
   private final AccessTokenDenylist accessTokenDenylist;
+  private final ObjectMapper objectMapper;
 
   public JwtAuthFilter(
       JwtService jwtService,
       PermissionResolver permissionResolver,
-      AccessTokenDenylist accessTokenDenylist) {
+      AccessTokenDenylist accessTokenDenylist,
+      ObjectMapper objectMapper) {
     this.jwtService = jwtService;
     this.permissionResolver = permissionResolver;
     this.accessTokenDenylist = accessTokenDenylist;
+    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -35,7 +39,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
     try {
-      resolveBearerToken(request).ifPresent(token -> authenticate(request, token));
+      var bearer = resolveBearerToken(request);
+      if (bearer.isPresent()) {
+        try {
+          authenticate(request, bearer.get());
+        } catch (PermEpochStaleException ex) {
+          PermEpochProblemWriter.write(response, objectMapper);
+          return;
+        }
+      }
       filterChain.doFilter(request, response);
     } finally {
       TenantContext.clear();

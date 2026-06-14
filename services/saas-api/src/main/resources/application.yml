@@ -82,6 +82,7 @@ saas:
     access-ttl: PT15M
     refresh-ttl: P7D
     refresh-grace-period: PT30S
+    perm-epoch: ${SAAS_JWT_PERM_EPOCH:2}
   cors:
     allowed-origins:
       - http://localhost:5175

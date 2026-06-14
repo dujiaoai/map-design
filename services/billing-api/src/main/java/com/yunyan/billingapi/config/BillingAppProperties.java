@@ -12,6 +12,7 @@ public class BillingAppProperties {
   private final Payment payment = new Payment();
   private final Recharge recharge = new Recharge();
   private final Hold hold = new Hold();
+  private final Refund refund = new Refund();
   private final Webhook webhook = new Webhook();
 
   @Data
@@ -26,6 +27,14 @@ public class BillingAppProperties {
     private int orderTtlMinutes = 30;
     /** Scan interval for pending order expiry job (ms). */
     private long expireScanMs = 300_000L;
+  }
+
+  @Data
+  public static class Refund {
+    /** Scan interval for stuck refunding recovery job (ms). */
+    private long recoveryScanMs = 300_000L;
+    /** Treat refunding orders older than this as stuck (minutes). */
+    private int stuckMinutes = 30;
   }
 
   @Data

@@ -43,6 +43,13 @@ public interface BillingLedgerMapper {
 
   @Select(
       """
+      SELECT COUNT(*) > 0 FROM billing_ledger
+      WHERE entry_type = 'refund' AND remark LIKE CONCAT('refund:', #{orderNo}, '%')
+      """)
+  boolean existsRefundLedgerForOrder(@Param("orderNo") String orderNo);
+
+  @Select(
+      """
       SELECT id, wallet_id, tenant_id, entry_type, amount, balance_after,
              product_code, remark, idempotency_key, created_at
       FROM billing_ledger

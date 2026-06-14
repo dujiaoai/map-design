@@ -49,6 +49,9 @@ billing:
   hold:
     ttl-minutes: 30
     expire-scan-ms: 300000
+  refund:
+    recovery-scan-ms: 300000
+    stuck-minutes: 30
 
 springdoc:
   api-docs:

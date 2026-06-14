@@ -24,18 +24,21 @@ public class AdminBillingRefundService {
   private final BillingLedgerMapper ledgerMapper;
   private final PaymentGatewayRegistry paymentGatewayRegistry;
   private final AdminAuditLogService adminAuditLogService;
+  private final AdminBillingRefundStateService refundStateService;
 
   public AdminBillingRefundService(
       BillingRechargeOrderMapper orderMapper,
       BillingWalletMapper walletMapper,
       BillingLedgerMapper ledgerMapper,
       PaymentGatewayRegistry paymentGatewayRegistry,
-      AdminAuditLogService adminAuditLogService) {
+      AdminAuditLogService adminAuditLogService,
+      AdminBillingRefundStateService refundStateService) {
     this.orderMapper = orderMapper;
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
     this.paymentGatewayRegistry = paymentGatewayRegistry;
     this.adminAuditLogService = adminAuditLogService;
+    this.refundStateService = refundStateService;
   }
 
   @Transactional
@@ -80,59 +83,64 @@ public class AdminBillingRefundService {
       throw AuthException.conflict("Order refund already in progress");
     }
 
-    var refundResult =
-        paymentGatewayRegistry
-            .require(order.getChannel())
-            .refund(
-                normalizedOrderNo,
-                order.getPriceCents() != null ? order.getPriceCents() : 0L,
-                order.getCurrency(),
-                order.getProviderTradeNo());
+    try {
+      var refundResult =
+          paymentGatewayRegistry
+              .require(order.getChannel())
+              .refund(
+                  normalizedOrderNo,
+                  order.getPriceCents() != null ? order.getPriceCents() : 0L,
+                  order.getCurrency(),
+                  order.getProviderTradeNo());
 
-    if (refundResult.async()) {
-      throw AuthException.conflict("Async refund is not supported yet");
+      if (refundResult.async()) {
+        throw AuthException.conflict("Async refund is not supported yet");
+      }
+
+      var newBalance = balance - points;
+      if (walletMapper.updateBalance(wallet.getId(), newBalance, wallet.getVersion(), now) != 1) {
+        throw AuthException.conflict("Wallet update conflict, retry");
+      }
+
+      var ledger = new BillingLedger();
+      ledger.setId(java.util.UUID.randomUUID());
+      ledger.setWalletId(wallet.getId());
+      ledger.setTenantId(order.getTenantId());
+      ledger.setEntryType("refund");
+      ledger.setAmount(-points);
+      ledger.setBalanceAfter(newBalance);
+      ledger.setProductCode(PRODUCT_CODE);
+      ledger.setRemark("refund:" + normalizedOrderNo + " " + reason);
+      ledger.setIdempotencyKey(idempotencyKey);
+      ledger.setCreatedAt(now);
+      ledgerMapper.insert(ledger);
+
+      if (orderMapper.markRefunded(order.getId(), now) != 1) {
+        throw AuthException.conflict("Order refund state conflict");
+      }
+
+      adminAuditLogService.recordBillingRefund(
+          actor,
+          order.getTenantId(),
+          order.getUserId(),
+          normalizedOrderNo,
+          points,
+          newBalance,
+          reason,
+          refundResult.providerRefundNo());
+
+      return AdminRefundResponse.applied(
+          normalizedOrderNo,
+          order.getTenantId(),
+          order.getUserId(),
+          "refunded",
+          points,
+          newBalance,
+          reason);
+    } catch (RuntimeException ex) {
+      refundStateService.revertRefunding(order.getId());
+      throw ex;
     }
-
-    var newBalance = balance - points;
-    if (walletMapper.updateBalance(wallet.getId(), newBalance, wallet.getVersion(), now) != 1) {
-      throw AuthException.conflict("Wallet update conflict, retry");
-    }
-
-    var ledger = new BillingLedger();
-    ledger.setId(java.util.UUID.randomUUID());
-    ledger.setWalletId(wallet.getId());
-    ledger.setTenantId(order.getTenantId());
-    ledger.setEntryType("refund");
-    ledger.setAmount(-points);
-    ledger.setBalanceAfter(newBalance);
-    ledger.setProductCode(PRODUCT_CODE);
-    ledger.setRemark("refund:" + normalizedOrderNo + " " + reason);
-    ledger.setIdempotencyKey(idempotencyKey);
-    ledger.setCreatedAt(now);
-    ledgerMapper.insert(ledger);
-
-    if (orderMapper.markRefunded(order.getId(), now) != 1) {
-      throw AuthException.conflict("Order refund state conflict");
-    }
-
-    adminAuditLogService.recordBillingRefund(
-        actor,
-        order.getTenantId(),
-        order.getUserId(),
-        normalizedOrderNo,
-        points,
-        newBalance,
-        reason,
-        refundResult.providerRefundNo());
-
-    return AdminRefundResponse.applied(
-        normalizedOrderNo,
-        order.getTenantId(),
-        order.getUserId(),
-        "refunded",
-        points,
-        newBalance,
-        reason);
   }
 
   private AdminRefundResponse toReplayResponse(

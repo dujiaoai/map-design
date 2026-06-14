@@ -102,6 +102,26 @@ public interface BillingRechargeOrderMapper {
       """)
   int markRefunded(@Param("id") UUID id, @Param("updatedAt") java.time.Instant updatedAt);
 
+  @Update(
+      """
+      UPDATE billing_recharge_order
+      SET status = 'paid', updated_at = #{updatedAt}
+      WHERE id = #{id} AND status = 'refunding'
+      """)
+  int revertRefunding(@Param("id") UUID id, @Param("updatedAt") java.time.Instant updatedAt);
+
+  @Select(
+      """
+      SELECT id, order_no, tenant_id, user_id, wallet_id, package_id, channel, status,
+             points, price_cents, currency, provider_trade_no, expire_at, paid_at, created_at, updated_at
+      FROM billing_recharge_order
+      WHERE status = 'refunding' AND updated_at < #{cutoff}
+      ORDER BY updated_at ASC
+      LIMIT #{limit}
+      """)
+  java.util.List<BillingRechargeOrder> findStuckRefundingOrders(
+      @Param("cutoff") java.time.Instant cutoff, @Param("limit") int limit);
+
   @Select(
       """
       <script>

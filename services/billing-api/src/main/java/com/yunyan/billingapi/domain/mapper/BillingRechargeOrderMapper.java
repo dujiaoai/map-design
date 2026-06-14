@@ -65,4 +65,42 @@ public interface BillingRechargeOrderMapper {
       WHERE id = #{id} AND status = 'pending'
       """)
   int markCancelled(@Param("id") UUID id, @Param("updatedAt") java.time.Instant updatedAt);
+
+  @Select(
+      """
+      <script>
+      SELECT id, order_no, tenant_id, user_id, wallet_id, package_id, channel, status,
+             points, price_cents, currency, provider_trade_no, expire_at, paid_at, created_at, updated_at
+      FROM billing_recharge_order
+      <where>
+        <if test="tenantId != null">AND tenant_id = #{tenantId}</if>
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="status != null and status != ''">AND status = #{status}</if>
+      </where>
+      ORDER BY created_at DESC
+      LIMIT #{limit} OFFSET #{offset}
+      </script>
+      """)
+  java.util.List<BillingRechargeOrder> findOrders(
+      @Param("tenantId") UUID tenantId,
+      @Param("userId") UUID userId,
+      @Param("status") String status,
+      @Param("limit") int limit,
+      @Param("offset") int offset);
+
+  @Select(
+      """
+      <script>
+      SELECT COUNT(*) FROM billing_recharge_order
+      <where>
+        <if test="tenantId != null">AND tenant_id = #{tenantId}</if>
+        <if test="userId != null">AND user_id = #{userId}</if>
+        <if test="status != null and status != ''">AND status = #{status}</if>
+      </where>
+      </script>
+      """)
+  long countOrders(
+      @Param("tenantId") UUID tenantId,
+      @Param("userId") UUID userId,
+      @Param("status") String status);
 }

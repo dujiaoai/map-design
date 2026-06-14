@@ -1,11 +1,13 @@
 package com.yunyan.billingapi.web.controller;
 
 import com.yunyan.billingapi.application.admin.AdminBillingAdjustService;
+import com.yunyan.billingapi.application.admin.AdminBillingRechargeOrderService;
 import com.yunyan.billingapi.application.admin.AdminBillingWalletService;
 import com.yunyan.billingapi.domain.permission.PermissionCodes;
 import com.yunyan.billingapi.security.SaasPrincipal;
 import com.yunyan.billingapi.web.dto.AdminAdjustRequest;
 import com.yunyan.billingapi.web.dto.AdminAdjustResponse;
+import com.yunyan.billingapi.web.dto.AdminRechargeOrderListResponse;
 import com.yunyan.billingapi.web.dto.AdminWalletListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,12 +32,15 @@ public class AdminBillingController {
 
   private final AdminBillingAdjustService adminBillingAdjustService;
   private final AdminBillingWalletService adminBillingWalletService;
+  private final AdminBillingRechargeOrderService adminBillingRechargeOrderService;
 
   public AdminBillingController(
       AdminBillingAdjustService adminBillingAdjustService,
-      AdminBillingWalletService adminBillingWalletService) {
+      AdminBillingWalletService adminBillingWalletService,
+      AdminBillingRechargeOrderService adminBillingRechargeOrderService) {
     this.adminBillingAdjustService = adminBillingAdjustService;
     this.adminBillingWalletService = adminBillingWalletService;
+    this.adminBillingRechargeOrderService = adminBillingRechargeOrderService;
   }
 
   @GetMapping("/wallets")
@@ -47,6 +52,18 @@ public class AdminBillingController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
     return adminBillingWalletService.listWallets(tenantId, userId, page, size);
+  }
+
+  @GetMapping("/recharge-orders")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_READ + "')")
+  @Operation(summary = "平台查询充值订单列表")
+  public AdminRechargeOrderListResponse listRechargeOrders(
+      @RequestParam(required = false) UUID tenantId,
+      @RequestParam(required = false) UUID userId,
+      @RequestParam(required = false) String status,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return adminBillingRechargeOrderService.listOrders(tenantId, userId, status, page, size);
   }
 
   @PostMapping("/tenants/{tenantId}/adjust")

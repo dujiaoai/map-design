@@ -1,9 +1,11 @@
 import { hasPermission, PermissionCodes } from '@repo/auth'
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui'
-import { ArrowLeftIcon, CreditCardIcon, ScrollTextIcon } from 'lucide-react'
+import { Button } from '@repo/ui'
+import { ArrowLeftIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { BillingLedgerTable } from '~/features/billing/ui/billing-ledger-table'
 import { BillingWalletCard } from '~/features/billing/ui/billing-wallet-card'
+import { RechargePackagesPanel } from '~/features/billing/ui/recharge-packages-panel'
 import { auth } from '~/shared/auth/client'
 
 export function BillingPageContent() {
@@ -17,7 +19,7 @@ export function BillingPageContent() {
   )
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8 sm:px-6">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6">
       <div className="flex items-center gap-3">
         <Button
           nativeButton={false}
@@ -35,45 +37,13 @@ export function BillingPageContent() {
 
       <BillingWalletCard variant="page" />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="border-border/60 bg-card/60">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <CreditCardIcon className="size-4 text-primary" />
-              充值
-            </CardTitle>
-            <CardDescription>
-              {canRecharge
-                ? '微信 / 支付宝充值套餐将在 Sprint F-2 开放。'
-                : '当前角色暂无自助充值权限，请联系租户管理员。'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button type="button" disabled className="w-full sm:w-auto">
-              即将上线
-            </Button>
-          </CardContent>
-        </Card>
+      {canRecharge ? <RechargePackagesPanel /> : null}
 
-        <Card className="border-border/60 bg-card/60">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ScrollTextIcon className="size-4 text-primary" />
-              消费流水
-            </CardTitle>
-            <CardDescription>
-              {canReadLedger
-                ? '积分入账与扣减明细将在 Sprint F-3 提供列表查询。'
-                : '当前角色无法查看流水明细。'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button type="button" variant="outline" disabled className="w-full sm:w-auto">
-              即将上线
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      {canReadLedger ? (
+        <BillingLedgerTable />
+      ) : (
+        <p className="text-muted-foreground text-sm">当前角色无法查看积分流水。</p>
+      )}
     </div>
   )
 }

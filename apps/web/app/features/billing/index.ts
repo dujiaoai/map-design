@@ -1,3 +1,6 @@
 export { BillingWalletCard } from './ui/billing-wallet-card'
+export { BillingLedgerTable } from './ui/billing-ledger-table'
+export { RechargePackagesPanel } from './ui/recharge-packages-panel'
 export { BillingPageContent } from './ui/billing-page-content'
 export { formatPoints } from './lib/format-points'
+export { formatPriceCents } from './lib/format-price'

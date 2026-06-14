@@ -18,7 +18,44 @@ export type WalletResponse = z.infer<typeof walletResponseSchema>
 export const billingQueryKeys = {
   all: ['billing'] as const,
   wallet: () => [...billingQueryKeys.all, 'wallet'] as const,
+  ledger: (page: number, size: number) =>
+    [...billingQueryKeys.all, 'ledger', page, size] as const,
+  packages: () => [...billingQueryKeys.all, 'packages'] as const,
 }
+
+export const ledgerEntrySchema = z.object({
+  id: z.string(),
+  entryType: z.string(),
+  amount: z.number(),
+  balanceAfter: z.number(),
+  productCode: z.string().nullable().optional(),
+  remark: z.string().nullable().optional(),
+  createdAt: z.string(),
+})
+
+export const ledgerListResponseSchema = z.object({
+  items: z.array(ledgerEntrySchema),
+  page: z.number(),
+  size: z.number(),
+  total: z.number(),
+})
+
+export type LedgerEntry = z.infer<typeof ledgerEntrySchema>
+export type LedgerListResponse = z.infer<typeof ledgerListResponseSchema>
+
+export const rechargePackageSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  points: z.number(),
+  priceCents: z.number(),
+  currency: z.string(),
+})
+
+export const rechargePackageListResponseSchema = z.object({
+  items: z.array(rechargePackageSchema),
+})
+
+export type RechargePackage = z.infer<typeof rechargePackageSchema>
 
 export function walletQueryOptions() {
   return queryOptions({
@@ -33,9 +70,55 @@ function canReadWallet(): boolean {
   return hasPermission(session?.user.permissions, PermissionCodes.BILLING_WALLET_READ)
 }
 
+function canReadLedger(): boolean {
+  const session = auth.getSession()
+  return hasPermission(session?.user.permissions, PermissionCodes.BILLING_LEDGER_READ)
+}
+
+function canRecharge(): boolean {
+  const session = auth.getSession()
+  return hasPermission(session?.user.permissions, PermissionCodes.BILLING_RECHARGE_CREATE)
+}
+
+export function ledgerQueryOptions(page = 0, size = 20) {
+  return queryOptions({
+    queryKey: billingQueryKeys.ledger(page, size),
+    queryFn: async () =>
+      ledgerListResponseSchema.parse(
+        await billingApi.get<LedgerListResponse>(`/ledger?page=${page}&size=${size}`),
+      ),
+    staleTime: 30_000,
+  })
+}
+
+export function packagesQueryOptions() {
+  return queryOptions({
+    queryKey: billingQueryKeys.packages(),
+    queryFn: async () =>
+      rechargePackageListResponseSchema.parse(
+        await billingApi.get<{ items: RechargePackage[] }>('/packages'),
+      ),
+    staleTime: 60_000,
+  })
+}
+
 export function useWalletQuery(enabled = true) {
   return useQuery({
     ...walletQueryOptions(),
     enabled: enabled && usesSaasSessionBootstrap() && canReadWallet(),
+  })
+}
+
+export function useLedgerQuery(page = 0, size = 20, enabled = true) {
+  return useQuery({
+    ...ledgerQueryOptions(page, size),
+    enabled: enabled && usesSaasSessionBootstrap() && canReadLedger(),
+  })
+}
+
+export function useRechargePackagesQuery(enabled = true) {
+  return useQuery({
+    ...packagesQueryOptions(),
+    enabled: enabled && usesSaasSessionBootstrap() && canRecharge(),
   })
 }

@@ -15,6 +15,7 @@
     "dev:marketing": "pnpm --filter @repo/saas-marketing dev",
     "dev:web:airace": "pnpm --filter @repo/saas-web dev:airace",
     "dev:uav": "pnpm --filter @repo/cloud-uav dev",
+    "dev:services": "node scripts/dev-services.mjs",
     "build": "node scripts/turbo-run.mjs run build",
     "build:web": "node scripts/turbo-run.mjs run build --filter=@repo/saas-web",
     "build:web:airace": "node scripts/turbo-run.mjs run build:airace --filter=@repo/saas-web",

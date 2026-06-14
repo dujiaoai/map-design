@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -94,7 +95,14 @@ public class RestBillingClient implements BillingClient {
             + "&quantity="
             + request.quantity();
 
-    return restTemplate().getForObject(url, EstimateResult.class);
+    var response =
+        restTemplate()
+            .exchange(url, HttpMethod.GET, new HttpEntity<>(internalHeaders()), EstimateResult.class);
+    var body = response.getBody();
+    if (body == null) {
+      throw new IllegalStateException("Empty estimate response from billing-api");
+    }
+    return body;
   }
 
   @Override
@@ -140,10 +148,15 @@ public class RestBillingClient implements BillingClient {
     return billingApiProperties.getBaseUrl().replaceAll("/$", "") + path;
   }
 
-  private HttpEntity<?> jsonEntity(Object body) {
+  private HttpHeaders internalHeaders() {
     var headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
     headers.set(INTERNAL_TOKEN_HEADER, billingApiProperties.getInternalToken());
+    return headers;
+  }
+
+  private HttpEntity<?> jsonEntity(Object body) {
+    var headers = internalHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
     return new HttpEntity<>(body, headers);
   }
 }

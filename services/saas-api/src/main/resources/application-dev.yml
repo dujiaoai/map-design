@@ -2,3 +2,5 @@
 saas:
   rate-limit:
     enabled: false
+  billing:
+    enabled: true

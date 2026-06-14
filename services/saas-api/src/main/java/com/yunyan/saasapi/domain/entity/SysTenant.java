@@ -19,5 +19,7 @@ public class SysTenant {
   private String plan;
   /** active | suspended */
   private String status;
+  /** organization | personal */
+  private String tenantKind;
   private Instant createdAt;
 }

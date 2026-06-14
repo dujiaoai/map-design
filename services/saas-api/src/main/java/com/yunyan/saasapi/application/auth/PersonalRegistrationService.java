@@ -8,10 +8,11 @@ import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.UserRepository;
 import com.yunyan.saasapi.domain.entity.SysTenant;
 import com.yunyan.saasapi.domain.entity.SysUser;
+import com.yunyan.saasapi.domain.tenant.PersonalTenantDefaults;
 import com.yunyan.saasapi.domain.tenant.TenantKind;
 import com.yunyan.saasapi.security.AuthException;
-import com.yunyan.saasapi.web.dto.auth.RegisterOrgRequest;
-import com.yunyan.saasapi.web.dto.auth.RegisterOrgResponse;
+import com.yunyan.saasapi.web.dto.auth.RegisterPersonalRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterPersonalResponse;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +23,9 @@ import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
-public class OrgRegistrationService {
+public class PersonalRegistrationService {
 
-  private static final String TENANT_ADMIN_ROLE = "TENANT_ADMIN";
+  private static final String MEMBER_ROLE = "MEMBER";
   private static final String DEFAULT_PLAN = "free";
 
   private final SaasAppProperties saasAppProperties;
@@ -36,50 +37,37 @@ public class OrgRegistrationService {
   private final RegistrationVerificationService registrationVerificationService;
 
   @Transactional
-  public RegisterOrgResponse requestOrgRegistration(RegisterOrgRequest request) {
-    if (!saasAppProperties.getRegistration().isAllowPublicOrgSignup()) {
-      throw AuthException.forbidden("Public organization signup is disabled");
+  public RegisterPersonalResponse requestPersonalRegistration(RegisterPersonalRequest request) {
+    if (!saasAppProperties.getRegistration().isAllowPublicPersonalSignup()) {
+      throw AuthException.forbidden("Public personal signup is disabled");
     }
 
     passwordPolicyService.validateNewPassword(request.password());
 
-    var orgName = request.orgName().trim();
-    if (!StringUtils.hasText(orgName)) {
-      throw AuthException.badRequest("Organization name is required");
-    }
-
     var normalizedEmail = EmailNormalizer.normalize(request.email());
-
-    var preferredSlug =
-        StringUtils.hasText(request.slug())
-            ? TenantSlugGenerator.normalizeSlug(request.slug())
-            : TenantSlugGenerator.slugFromOrgName(orgName);
-    if (preferredSlug == null) {
-      var at = normalizedEmail.indexOf('@');
-      if (at > 0) {
-        preferredSlug = TenantSlugGenerator.slugFromOrgName(normalizedEmail.substring(0, at));
-      }
-    }
-    if (preferredSlug == null) {
-      preferredSlug = "org-" + UUID.randomUUID().toString().substring(0, 8);
+    if (tenantRepository.hasPersonalTenantForEmail(normalizedEmail)) {
+      throw AuthException.conflict("Personal workspace already exists for this email");
     }
 
-    var slug = TenantSlugGenerator.resolveUniqueSlug(preferredSlug, tenantRepository);
+    var slug =
+        TenantSlugGenerator.resolveUniqueSlug(
+            "personal-" + UUID.randomUUID().toString().substring(0, 8), tenantRepository);
 
     var tenant = new SysTenant();
     tenant.setId(UUID.randomUUID());
-    tenant.setName(orgName);
+    tenant.setName(PersonalTenantDefaults.DISPLAY_NAME);
     tenant.setSlug(slug);
     tenant.setPlan(DEFAULT_PLAN);
     tenant.setStatus("active");
-    tenant.setTenantKind(TenantKind.ORGANIZATION);
+    tenant.setTenantKind(TenantKind.PERSONAL);
     tenant.setCreatedAt(Instant.now());
     tenantRepository.insert(tenant);
+    tenantRepository.seedFeatureCodes(tenant.getId(), PersonalTenantDefaults.FEATURE_CODES);
 
     var role =
         roleRepository
-            .findByCode(TENANT_ADMIN_ROLE)
-            .orElseThrow(() -> new IllegalStateException("Role is not seeded: " + TENANT_ADMIN_ROLE));
+            .findByCode(MEMBER_ROLE)
+            .orElseThrow(() -> new IllegalStateException("Role is not seeded: " + MEMBER_ROLE));
 
     var user = new SysUser();
     user.setId(UUID.randomUUID());
@@ -94,7 +82,7 @@ public class OrgRegistrationService {
 
     registrationVerificationService.sendRegistrationVerification(tenant, user);
 
-    return new RegisterOrgResponse(slug, orgName);
+    return new RegisterPersonalResponse(slug, PersonalTenantDefaults.DISPLAY_NAME);
   }
 
   private static String resolveDisplayName(String email, String displayName) {

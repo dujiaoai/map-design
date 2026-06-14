@@ -2,6 +2,7 @@ package com.yunyan.saasapi.application.tenant;
 
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.entity.SysTenant;
+import com.yunyan.saasapi.domain.tenant.TenantKind;
 import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.tenant.TenantFeaturesResponse;
@@ -75,11 +76,14 @@ public class TenantService {
   }
 
   private TenantSummaryDto toSummary(SysTenant tenant, boolean current) {
+    var kind =
+        tenant.getTenantKind() != null ? tenant.getTenantKind() : TenantKind.ORGANIZATION;
     return new TenantSummaryDto(
         tenant.getId().toString(),
         tenant.getName(),
         tenant.getSlug(),
         tenant.getPlan(),
+        kind,
         current);
   }
 }

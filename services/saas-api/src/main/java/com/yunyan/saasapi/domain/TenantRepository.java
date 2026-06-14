@@ -3,8 +3,10 @@ package com.yunyan.saasapi.domain;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yunyan.saasapi.application.admin.AdminListParams;
+import com.yunyan.saasapi.application.auth.EmailNormalizer;
 import com.yunyan.saasapi.domain.entity.SysTenant;
 import com.yunyan.saasapi.domain.entity.SysUser;
+import com.yunyan.saasapi.domain.tenant.TenantKind;
 import com.yunyan.saasapi.domain.mapper.SysTenantFeatureMapper;
 import com.yunyan.saasapi.domain.mapper.SysTenantMapper;
 import com.yunyan.saasapi.domain.mapper.SysUserMapper;
@@ -42,9 +44,31 @@ public class TenantRepository {
 
   public void replaceFeatureCodes(UUID tenantId, List<String> featureCodes) {
     sysTenantFeatureMapper.deleteByTenantId(tenantId);
+    seedFeatureCodes(tenantId, featureCodes);
+  }
+
+  public void seedFeatureCodes(UUID tenantId, List<String> featureCodes) {
     for (String featureCode : featureCodes) {
       sysTenantFeatureMapper.insert(tenantId, featureCode);
     }
+  }
+
+  public boolean hasPersonalTenantForEmail(String email) {
+    return TenantRlsBypass.call(() -> hasPersonalTenantForEmailWithRlsBypass(email));
+  }
+
+  private boolean hasPersonalTenantForEmailWithRlsBypass(String email) {
+    var normalizedEmail = EmailNormalizer.normalize(email);
+    var users =
+        sysUserMapper.selectList(
+            Wrappers.<SysUser>lambdaQuery().eq(SysUser::getEmail, normalizedEmail));
+    for (var user : users) {
+      var tenant = sysTenantMapper.selectById(user.getTenantId());
+      if (tenant != null && TenantKind.PERSONAL.equals(tenant.getTenantKind())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public List<SysTenant> findAllTenants() {

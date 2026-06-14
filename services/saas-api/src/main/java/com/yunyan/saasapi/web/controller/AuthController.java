@@ -15,6 +15,8 @@ import com.yunyan.saasapi.web.dto.auth.RegisterConfirmRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterResendRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterOrgRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterOrgResponse;
+import com.yunyan.saasapi.web.dto.auth.RegisterPersonalRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterPersonalResponse;
 import com.yunyan.saasapi.web.dto.auth.RegisterRequest;
 import com.yunyan.saasapi.web.support.ClientIpResolver;
 import io.swagger.v3.oas.annotations.Operation;
@@ -82,6 +84,26 @@ public class AuthController {
   RegisterOrgResponse registerOrg(
       @Valid @RequestBody RegisterOrgRequest request, HttpServletRequest httpRequest) {
     return authService.requestOrgRegistration(request, ClientIpResolver.resolve(httpRequest));
+  }
+
+  @PostMapping("/register-personal")
+  @ResponseStatus(HttpStatus.CREATED)
+  @Operation(
+      summary = "自助注册个人版",
+      description =
+          "创建 personal 租户、MEMBER 账号（unverified）并发送邮箱验证链接。需配置 saas.registration.allow-public-personal-signup=true。")
+  @ApiResponse(responseCode = "201", description = "个人空间已创建，验证邮件已发送")
+  @ApiResponse(
+      responseCode = "403",
+      description = "公开个人注册已关闭",
+      content = @Content(mediaType = "application/problem+json"))
+  @ApiResponse(
+      responseCode = "409",
+      description = "该邮箱已有个人空间或无法分配标识",
+      content = @Content(mediaType = "application/problem+json"))
+  RegisterPersonalResponse registerPersonal(
+      @Valid @RequestBody RegisterPersonalRequest request, HttpServletRequest httpRequest) {
+    return authService.requestPersonalRegistration(request, ClientIpResolver.resolve(httpRequest));
   }
 
   @PostMapping("/register/confirm")

@@ -57,6 +57,8 @@ public class SaasAppProperties {
     private Duration tokenTtl = Duration.ofHours(24);
     /** 允许 POST /v1/auth/register-org 自助创建租户 */
     private boolean allowPublicOrgSignup = true;
+    /** 允许 POST /v1/auth/register-personal 自助注册个人版 */
+    private boolean allowPublicPersonalSignup = true;
   }
 
   @Data

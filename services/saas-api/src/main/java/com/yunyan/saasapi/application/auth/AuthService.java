@@ -15,6 +15,8 @@ import com.yunyan.saasapi.web.dto.auth.RegisterConfirmRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterResendRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterOrgRequest;
 import com.yunyan.saasapi.web.dto.auth.RegisterOrgResponse;
+import com.yunyan.saasapi.web.dto.auth.RegisterPersonalRequest;
+import com.yunyan.saasapi.web.dto.auth.RegisterPersonalResponse;
 import com.yunyan.saasapi.web.dto.auth.RegisterRequest;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.security.TenantContext;
@@ -62,6 +64,7 @@ public class AuthService {
   private final PasswordResetService passwordResetService;
   private final RegistrationVerificationService registrationVerificationService;
   private final OrgRegistrationService orgRegistrationService;
+  private final PersonalRegistrationService personalRegistrationService;
   private final AuthRateLimitService authRateLimitService;
   private final SecurityNotificationService securityNotificationService;
   private final PasswordPolicyService passwordPolicyService;
@@ -75,6 +78,12 @@ public class AuthService {
   public RegisterOrgResponse requestOrgRegistration(RegisterOrgRequest request, String clientIp) {
     authRateLimitService.checkRegister(clientIp, request.email());
     return orgRegistrationService.requestOrgRegistration(request);
+  }
+
+  public RegisterPersonalResponse requestPersonalRegistration(
+      RegisterPersonalRequest request, String clientIp) {
+    authRateLimitService.checkRegister(clientIp, request.email());
+    return personalRegistrationService.requestPersonalRegistration(request);
   }
 
   public void resendRegistrationVerification(RegisterResendRequest request, String clientIp) {

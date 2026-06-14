@@ -27,6 +27,7 @@ saas:
   registration:
     token-ttl: PT24H
     allow-public-org-signup: true
+    allow-public-personal-signup: true
   auth:
     password:
       strength-enabled: false

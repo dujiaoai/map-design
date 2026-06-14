@@ -54,6 +54,7 @@ saas:
   registration:
     token-ttl: PT24H
     allow-public-org-signup: ${SAAS_ALLOW_PUBLIC_ORG_SIGNUP:true}
+    allow-public-personal-signup: ${SAAS_ALLOW_PUBLIC_PERSONAL_SIGNUP:true}
   rate-limit:
     enabled: true
     login:

@@ -48,27 +48,30 @@ public class UserAuthRepository {
     if (StringUtils.hasText(tenantSlug)) {
       return lookupForLoginInTenant(normalizedEmail, tenantSlug.trim());
     }
+    return lookupForLoginWithoutSlug(normalizedEmail);
+  }
 
-    var activeUsers = sysUserMapper.selectList(
-        Wrappers.<SysUser>lambdaQuery()
-            .eq(SysUser::getEmail, normalizedEmail)
-            .eq(SysUser::getStatus, "active"));
+  private LoginLookupResult lookupForLoginWithoutSlug(String email) {
+    var users =
+        sysUserMapper.selectList(
+            Wrappers.<SysUser>lambdaQuery().eq(SysUser::getEmail, email));
 
-    if (activeUsers.isEmpty()) {
+    if (users.isEmpty()) {
       return LoginLookupResult.notFound();
     }
-    if (activeUsers.size() > 1) {
+    if (users.size() > 1) {
       return LoginLookupResult.tenantRequired();
     }
 
-    var tenant = sysTenantMapper.selectById(activeUsers.getFirst().getTenantId());
+    var user = users.getFirst();
+    var tenant = sysTenantMapper.selectById(user.getTenantId());
     if (tenant == null) {
       return LoginLookupResult.notFound();
     }
     if (!isTenantActive(tenant)) {
       return LoginLookupResult.tenantSuspended();
     }
-    return LoginLookupResult.found(toAuthenticatedUser(activeUsers.getFirst(), tenant));
+    return resolveUserLoginStatus(user, tenant);
   }
 
   private LoginLookupResult lookupForLoginInTenant(String email, String tenantSlug) {
@@ -118,6 +121,17 @@ public class UserAuthRepository {
     }
 
     return LoginLookupResult.notFound();
+  }
+
+  private LoginLookupResult resolveUserLoginStatus(SysUser user, SysTenant tenant) {
+    return switch (user.getStatus()) {
+      case "active" -> LoginLookupResult.found(toAuthenticatedUser(user, tenant));
+      case "disabled" -> LoginLookupResult.accountDisabled(toAuthenticatedUser(user, tenant));
+      case "invited" -> LoginLookupResult.invitePending(toAuthenticatedUser(user, tenant));
+      case RegistrationVerificationService.STATUS_UNVERIFIED ->
+          LoginLookupResult.emailVerificationPending(toAuthenticatedUser(user, tenant));
+      default -> LoginLookupResult.notFound();
+    };
   }
 
   public AuthenticatedUser registerMember(

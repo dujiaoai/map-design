@@ -813,6 +813,98 @@ class AuthControllerTest {
         .andExpect(status().isOk());
   }
 
+  @Test
+  void registerPersonal_createsPersonalTenantAndMember() throws Exception {
+    var email = "personal-user-" + System.currentTimeMillis() + "@test.local";
+
+    var body =
+        mockMvc
+            .perform(
+                post("/v1/auth/register-personal")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            Map.of(
+                                "email", email,
+                                "password", "password",
+                                "displayName", "Solo User"))))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.workspaceName").value("个人空间"))
+            .andExpect(jsonPath("$.tenantSlug").isString())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    var tenantSlug = JsonPath.read(body, "$.tenantSlug");
+
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("email", email, "password", "password"))))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.detail").value("Email not verified, check your inbox to complete registration"));
+
+    var payload =
+        jdbcTemplate.queryForObject(
+            "SELECT payload_json FROM sys_email_outbox WHERE to_email = ? AND template = 'register-verification' ORDER BY created_at DESC LIMIT 1",
+            String.class,
+            email);
+    var verifyUrl = objectMapper.readTree(payload).get("verifyUrl").asText();
+    var token = verifyUrl.substring(verifyUrl.indexOf("token=") + "token=".length());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register/confirm")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("token", token))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.email").value(email))
+        .andExpect(jsonPath("$.user.roles", hasItem("MEMBER")))
+        .andExpect(jsonPath("$.user.tenant.slug").value(tenantSlug));
+
+    mockMvc
+        .perform(
+            post("/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("email", email, "password", "password"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.tenant.slug").value(tenantSlug));
+
+    var tenantKind =
+        jdbcTemplate.queryForObject(
+            "SELECT tenant_kind FROM sys_tenant WHERE slug = ?", String.class, tenantSlug);
+    assertEquals("personal", tenantKind);
+  }
+
+  @Test
+  void registerPersonal_duplicateEmail_returns409() throws Exception {
+    var email = "personal-dup-" + System.currentTimeMillis() + "@test.local";
+    var request =
+        Map.of(
+            "email", email,
+            "password", "password");
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register-personal")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/register-personal")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.detail").value("Personal workspace already exists for this email"));
+  }
+
   private String loginAndGetBody() throws Exception {
     return mockMvc
         .perform(

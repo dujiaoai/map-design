@@ -76,6 +76,9 @@ saas:
     enabled: ${SAAS_BILLING_ENABLED:false}
     base-url: ${SAAS_BILLING_API_BASE_URL:http://localhost:8083}
     internal-token: ${BILLING_INTERNAL_TOKEN:dev-billing-internal-token-change-me}
+    signup-bonus-retry:
+      scan-ms: 300000
+      max-attempts: 20
   jwt:
     issuer: yunyan-saas
     secret: ${SAAS_JWT_SECRET:dev-only-change-me-use-32chars-minimum!!}

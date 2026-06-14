@@ -16,5 +16,6 @@ public interface BillingClient {
 
   EstimateResult estimate(WalletHoldRequest request);
 
-  void grantSignupBonus(SignupBonusRequest request);
+  /** @return true when billing-api acknowledged the grant (2xx), or billing integration is disabled */
+  boolean grantSignupBonus(SignupBonusRequest request);
 }

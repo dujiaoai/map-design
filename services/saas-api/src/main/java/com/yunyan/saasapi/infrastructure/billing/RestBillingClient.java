@@ -106,21 +106,23 @@ public class RestBillingClient implements BillingClient {
   }
 
   @Override
-  public void grantSignupBonus(SignupBonusRequest request) {
+  public boolean grantSignupBonus(SignupBonusRequest request) {
     if (!billingApiProperties.isEnabled()) {
-      return;
+      return true;
     }
 
     try {
       restTemplate()
           .postForEntity(
               internalUrl("/internal/v1/billing/signup-bonus"), jsonEntity(request), Void.class);
+      return true;
     } catch (RestClientException ex) {
       log.warn(
           "Failed to grant signup bonus for tenant={} user={}: {}",
           request.tenantId(),
           request.userId(),
           ex.getMessage());
+      return false;
     }
   }
 

@@ -19,6 +19,7 @@ import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
+import { PermissionActionTreeView } from '~/shared/ui/permission-action-tree-view'
 
 import { PERMISSION_SCOPE_LABELS } from '../../roles/lib/role-permission-rules'
 
@@ -446,51 +447,49 @@ export function PermissionsAdminPage() {
                 {selectedPermissions.length === 0 ? (
                   <AdminEmptyState message="该模块暂无权限项" />
                 ) : (
-                  <ul className="space-y-2">
-                    {selectedPermissions.map((permission) => (
-                      <li
-                        key={permission.id}
-                        className="rounded-lg border border-border/60 p-3"
-                      >
-                        {editingPermission?.id === permission.id ? (
-                          <div className="space-y-3">
-                            <p className="font-mono text-xs text-muted-foreground">
-                              {permission.code}
-                            </p>
-                            <AdminField label="显示名">
-                              <Input
-                                value={editPermissionName}
-                                onChange={(event) => setEditPermissionName(event.target.value)}
-                              />
-                            </AdminField>
-                            <AdminField label="说明">
-                              <Input
-                                value={editPermissionDescription}
-                                onChange={(event) =>
-                                  setEditPermissionDescription(event.target.value)
-                                }
-                              />
-                            </AdminField>
-                            <div className="flex gap-2">
-                              <Button
-                                type="button"
-                                size="sm"
-                                disabled={patchPermissionMutation.isPending}
-                                onClick={() => patchPermissionMutation.mutate()}
-                              >
-                                保存
-                              </Button>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setEditingPermission(null)}
-                              >
-                                取消
-                              </Button>
-                            </div>
+                  <PermissionActionTreeView
+                    permissions={selectedPermissions}
+                    moduleCode={selectedModule.code}
+                    emptyMessage="无匹配权限项"
+                    renderPermission={(permission) =>
+                      editingPermission?.id === permission.id ? (
+                        <div className="space-y-3 rounded-lg border border-border/60 p-3">
+                          <p className="font-mono text-xs text-muted-foreground">{permission.code}</p>
+                          <AdminField label="显示名">
+                            <Input
+                              value={editPermissionName}
+                              onChange={(event) => setEditPermissionName(event.target.value)}
+                            />
+                          </AdminField>
+                          <AdminField label="说明">
+                            <Input
+                              value={editPermissionDescription}
+                              onChange={(event) =>
+                                setEditPermissionDescription(event.target.value)
+                              }
+                            />
+                          </AdminField>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={patchPermissionMutation.isPending}
+                              onClick={() => patchPermissionMutation.mutate()}
+                            >
+                              保存
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setEditingPermission(null)}
+                            >
+                              取消
+                            </Button>
                           </div>
-                        ) : (
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-border/60 p-3">
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div className="min-w-0">
                               <p className="font-mono text-xs">{permission.code}</p>
@@ -538,10 +537,10 @@ export function PermissionsAdminPage() {
                               </div>
                             ) : null}
                           </div>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                        </div>
+                      )
+                    }
+                  />
                 )}
               </div>
 

@@ -1,6 +1,13 @@
-import { Badge, Button, cn } from '@repo/ui'
+import { Badge, Button, cn, Input } from '@repo/ui'
+import { SearchIcon } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
 import type { AdminPermission } from '~/shared/api/admin-api'
+import {
+  filterPermissionsByQuery,
+  PERMISSION_TREE_SEARCH_THRESHOLD,
+} from '~/shared/lib/permission-action-tree'
+import { PermissionActionTreeView } from '~/shared/ui/permission-action-tree-view'
 
 import { PERMISSION_SCOPE_LABELS } from '../lib/role-permission-rules'
 import { setScopePermissionCodes, togglePermissionCode } from '../lib/role-permission-selection'
@@ -12,7 +19,7 @@ function permissionGroupKey(permission: AdminPermission) {
   return `scope:${permission.scope}`
 }
 
-function permissionGroupLabel(permission: AdminPermission, permissionsInGroup: AdminPermission[]) {
+function permissionGroupLabel(permission: AdminPermission) {
   if (permission.moduleName) return permission.moduleName
   if (permission.moduleCode) return permission.moduleCode
   return PERMISSION_SCOPE_LABELS[permission.scope]
@@ -29,8 +36,14 @@ export function RolePermissionEditor({
   onSelectedCodesChange: (codes: string[]) => void
   readOnly?: boolean
 }) {
+  const [search, setSearch] = useState('')
+  const visiblePermissions = useMemo(
+    () => filterPermissionsByQuery(permissions, search),
+    [permissions, search],
+  )
+
   const grouped = new Map<string, AdminPermission[]>()
-  for (const permission of permissions) {
+  for (const permission of visiblePermissions) {
     const key = permissionGroupKey(permission)
     const bucket = grouped.get(key) ?? []
     bucket.push(permission)
@@ -65,54 +78,74 @@ export function RolePermissionEditor({
         )}
       </div>
 
-      <div className="space-y-6">
-        {[...grouped.entries()].map(([groupKey, groupPermissions]) => {
-          const sample = groupPermissions[0]!
-          const groupCodes = groupPermissions.map((permission) => permission.code)
-          const selectedInGroup = groupCodes.filter((code) => selectedCodes.includes(code)).length
-          const allSelected = selectedInGroup === groupCodes.length
-          const isModuleGroup = groupKey.startsWith('module:')
+      {permissions.length >= PERMISSION_TREE_SEARCH_THRESHOLD ? (
+        <div className="relative">
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="搜索权限码、名称或分组…"
+            className="pl-8"
+          />
+        </div>
+      ) : null}
 
-          return (
-            <section key={groupKey} className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">{permissionGroupLabel(sample, groupPermissions)}</Badge>
-                  {isModuleGroup ? (
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {sample.moduleCode}
+      {visiblePermissions.length === 0 ? (
+        <p className="text-sm text-muted-foreground">无匹配权限</p>
+      ) : (
+        <div className="space-y-6">
+          {[...grouped.entries()].map(([groupKey, groupPermissions]) => {
+            const sample = groupPermissions[0]!
+            const groupCodes = groupPermissions.map((permission) => permission.code)
+            const selectedInGroup = groupCodes.filter((code) => selectedCodes.includes(code)).length
+            const allSelected = selectedInGroup === groupCodes.length
+            const isModuleGroup = groupKey.startsWith('module:')
+
+            return (
+              <section key={groupKey} className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{permissionGroupLabel(sample)}</Badge>
+                    {isModuleGroup ? (
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {sample.moduleCode}
+                      </span>
+                    ) : null}
+                    <Badge variant="secondary" className="text-[10px]">
+                      {PERMISSION_SCOPE_LABELS[sample.scope]}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {selectedInGroup}/{groupCodes.length}
                     </span>
-                  ) : null}
-                  <Badge variant="secondary" className="text-[10px]">
-                    {PERMISSION_SCOPE_LABELS[sample.scope]}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {selectedInGroup}/{groupCodes.length}
-                  </span>
-                </div>
-                {!readOnly ? (
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs"
-                      onClick={() =>
-                        onSelectedCodesChange(
-                          setScopePermissionCodes(selectedCodes, groupCodes, !allSelected),
-                        )
-                      }
-                    >
-                      {allSelected ? '清空本组' : '全选本组'}
-                    </Button>
                   </div>
-                ) : null}
-              </div>
-              <ul className="grid gap-2 md:grid-cols-2">
-                {groupPermissions.map((permission) => {
-                  const checked = selectedCodes.includes(permission.code)
-                  return (
-                    <li key={permission.id}>
+                  {!readOnly ? (
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() =>
+                          onSelectedCodesChange(
+                            setScopePermissionCodes(selectedCodes, groupCodes, !allSelected),
+                          )
+                        }
+                      >
+                        {allSelected ? '清空本组' : '全选本组'}
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+
+                <PermissionActionTreeView
+                  permissions={groupPermissions}
+                  moduleCode={sample.moduleCode}
+                  hideSearchBar
+                  searchQuery={search}
+                  emptyMessage="本模块无匹配权限"
+                  renderPermission={(permission) => {
+                    const checked = selectedCodes.includes(permission.code)
+                    return (
                       <label
                         className={cn(
                           'flex cursor-pointer items-start gap-3 rounded-lg border border-border/60 p-3 transition-colors',
@@ -141,14 +174,14 @@ export function RolePermissionEditor({
                           ) : null}
                         </span>
                       </label>
-                    </li>
-                  )
-                })}
-              </ul>
-            </section>
-          )
-        })}
-      </div>
+                    )
+                  }}
+                />
+              </section>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

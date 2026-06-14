@@ -13,6 +13,9 @@ import com.yunyan.billingapi.web.dto.AdminBillingStatsResponse;
 import com.yunyan.billingapi.web.dto.AdminRechargeOrderListResponse;
 import com.yunyan.billingapi.web.dto.AdminRechargePackageListResponse;
 import com.yunyan.billingapi.web.dto.AdminWalletListResponse;
+import com.yunyan.billingapi.web.dto.CreateAdminPackageRequest;
+import com.yunyan.billingapi.web.dto.PatchAdminPackageRequest;
+import com.yunyan.billingapi.web.dto.AdminRechargePackageDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +24,7 @@ import java.util.UUID;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -65,6 +69,25 @@ public class AdminBillingController {
   @Operation(summary = "平台查询全部充值 SKU（含 inactive）")
   public AdminRechargePackageListResponse listPackages() {
     return adminBillingPackageService.listPackages();
+  }
+
+  @PostMapping("/packages")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_PACKAGES_WRITE + "')")
+  @Operation(summary = "创建充值 SKU")
+  public AdminRechargePackageDto createPackage(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @Valid @RequestBody CreateAdminPackageRequest request) {
+    return adminBillingPackageService.createPackage(principal, request);
+  }
+
+  @PatchMapping("/packages/{code}")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_PACKAGES_WRITE + "')")
+  @Operation(summary = "更新充值 SKU")
+  public AdminRechargePackageDto patchPackage(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable String code,
+      @Valid @RequestBody PatchAdminPackageRequest request) {
+    return adminBillingPackageService.patchPackage(principal, code, request);
   }
 
   @GetMapping("/wallets")

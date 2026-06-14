@@ -13,7 +13,9 @@ import org.springframework.util.StringUtils;
 public class AdminAuditLogService {
 
   public static final String ACTION_BILLING_WALLET_ADJUST = "billing.wallet.adjust";
+  public static final String ACTION_BILLING_PACKAGE_WRITE = "billing.package.write";
   private static final String RESOURCE_TYPE_BILLING_WALLET = "billing_wallet";
+  private static final String RESOURCE_TYPE_BILLING_PACKAGE = "billing_package";
   private static final String PLATFORM_ADMIN = "PLATFORM_ADMIN";
   private static final int DETAIL_MAX = 512;
 
@@ -60,6 +62,27 @@ public class AdminAuditLogService {
     log.setTargetTenantId(targetTenantId);
     log.setCrossTenant(isCrossTenant(actor, targetTenantId));
     log.setDetail(detail);
+    log.setCreatedAt(Instant.now());
+    auditLogMapper.insert(log);
+  }
+
+  public void recordBillingPackageWrite(
+      SaasPrincipal actor, UUID packageId, String code, String detail) {
+    if (actor == null) {
+      return;
+    }
+
+    var log = new SysAdminAuditLog();
+    log.setId(UUID.randomUUID());
+    log.setActorUserId(actor.userId());
+    log.setActorEmail(actor.getUsername());
+    log.setActorTenantId(actor.tenantId());
+    log.setAction(ACTION_BILLING_PACKAGE_WRITE);
+    log.setResourceType(RESOURCE_TYPE_BILLING_PACKAGE);
+    log.setResourceId(packageId == null ? code : packageId.toString());
+    log.setTargetTenantId(null);
+    log.setCrossTenant(false);
+    log.setDetail(truncateDetail("code=" + code + " " + detail));
     log.setCreatedAt(Instant.now());
     auditLogMapper.insert(log);
   }

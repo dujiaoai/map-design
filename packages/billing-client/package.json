@@ -1,0 +1,22 @@
+{
+  "name": "@repo/billing-client",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Billing REST API 客户端（/v1/billing + zod schema）",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@repo/api-client": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "^3.0.5"
+  }
+}

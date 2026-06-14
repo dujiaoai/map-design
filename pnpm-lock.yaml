@@ -350,6 +350,22 @@ importers:
         specifier: ^3.0.5
         version: 3.2.6(@types/node@25.9.1)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(msw@2.14.6(@types/node@25.9.1)(typescript@5.9.3))
 
+  packages/billing-client:
+    dependencies:
+      '@repo/api-client':
+        specifier: workspace:*
+        version: link:../api-client
+      zod:
+        specifier: 'catalog:'
+        version: 4.1.12
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.5
+        version: 3.2.6(@types/node@25.9.1)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)(msw@2.14.6(@types/node@25.9.1)(typescript@5.9.3))
+
   packages/ruoyi-api:
     dependencies:
       zod:

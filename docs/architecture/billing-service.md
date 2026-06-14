@@ -76,6 +76,7 @@ services/
 | --- | --- | --- |
 | GET | `/v1/billing/team/usage` | **TENANT_ADMIN**；本租户成员消费汇总 |
 | GET | `/v1/billing/estimate` | 扣费预估（F-3+） |
+| POST | `/v1/billing/transfer` | **TENANT_ADMIN**；从操作人钱包向成员划拨（F-5） |
 
 ## Platform Admin（billing-api `/v1/admin/billing`）
 
@@ -125,7 +126,7 @@ services/
 | F-3+ | BillingCostPreview + 低余额样式 | ✅ |
 | F-5 | `packages/billing-client` TS SDK | ✅ |
 | F-4 | 退款/对账/通知/发票 | 待办 |
-| F-5 | 优惠券/用户间划拨 | 待办 |
+| F-5 | 优惠券/用户间划拨 | 划拨 API + UI ✅；优惠券待办 |
 | F-6 | 可选 billing 独立 DB + 对公转账 | 待办 |
 
 完整 PRD、API 契约、前端组件：[billing-credits-prd.md](../product/billing-credits-prd.md)

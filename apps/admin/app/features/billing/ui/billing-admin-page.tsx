@@ -42,10 +42,8 @@ export function BillingAdminPage() {
             onCreatePackage={canWritePackages ? () => setCreatePackageOpen(true) : undefined}
             onEditPackage={(pkg) => setEditingPackage(pkg)}
           />
-          <div className="grid gap-6 xl:grid-cols-2">
-            <BillingWalletsPanel />
-            <BillingRechargeOrdersPanel canRefund={canRefund} />
-          </div>
+          <BillingWalletsPanel />
+          <BillingRechargeOrdersPanel canRefund={canRefund} />
           <BillingUsagePanel />
         </>
       ) : null}

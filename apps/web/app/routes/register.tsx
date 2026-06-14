@@ -1,7 +1,7 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { authPasswordFieldSchema, isAuthPasswordStrengthRequired } from '@repo/auth'
 import { Button, cn, Input } from '@repo/ui'
-import { Building2Icon, HashIcon, LockIcon, LockKeyholeIcon, UserCircle2Icon, UserIcon } from 'lucide-react'
+import { Building2Icon, HashIcon, LockIcon, LockKeyholeIcon, UserCircle2Icon, UserIcon, UserRoundIcon } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useSearchParams } from 'react-router'
@@ -33,7 +33,7 @@ import type { Route } from './+types/register'
 
 import './login.css'
 
-type RegisterMode = 'org' | 'join'
+type RegisterMode = 'org' | 'join' | 'personal'
 
 const registerPasswordPlaceholder = isAuthPasswordStrengthRequired()
   ? '至少 8 位，含大小写字母与数字'
@@ -62,6 +62,18 @@ const registerOrgFormSchema = z
     path: ['confirmPassword'],
   })
 
+const registerPersonalFormSchema = z
+  .object({
+    email: authEmailFieldSchema,
+    password: authPasswordFieldSchema(),
+    confirmPassword: z.string().min(1, '请确认密码'),
+    displayName: z.string().trim().max(128, '显示名最多 128 个字符').optional(),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: '两次输入的密码不一致',
+    path: ['confirmPassword'],
+  })
+
 const registerJoinFormSchema = z
   .object({
     email: authEmailFieldSchema,
@@ -76,6 +88,7 @@ const registerJoinFormSchema = z
   })
 
 type RegisterOrgFormValues = z.infer<typeof registerOrgFormSchema>
+type RegisterPersonalFormValues = z.infer<typeof registerPersonalFormSchema>
 type RegisterJoinFormValues = z.infer<typeof registerJoinFormSchema>
 
 function fieldA11y(errorMessage: string | undefined, errorId: string) {
@@ -90,7 +103,9 @@ function suggestsLogin(errorMessage: string): boolean {
 }
 
 function resolveRegisterMode(searchParams: URLSearchParams): RegisterMode {
-  if (searchParams.get('mode') === 'join') return 'join'
+  const mode = searchParams.get('mode')?.trim()
+  if (mode === 'personal') return 'personal'
+  if (mode === 'join') return 'join'
   if (searchParams.get('tenant')?.trim()) return 'join'
   return 'org'
 }
@@ -122,13 +137,24 @@ function RegisterUnavailable() {
 function RegisterModeTabs({ mode }: { mode: RegisterMode }) {
   return (
     <div
-      className={authSegmentGroupClassName}
+      className={cn(authSegmentGroupClassName, 'grid-cols-3')}
       role="tablist"
       aria-label="注册方式"
     >
       <Link
         className={cn(
-          'rounded-[8px] px-3 py-2 text-center text-sm font-medium transition-colors',
+          'rounded-[8px] px-2 py-2 text-center text-sm font-medium transition-colors',
+          mode === 'personal' ? authSegmentActiveClassName : authSegmentIdleClassName,
+        )}
+        role="tab"
+        aria-selected={mode === 'personal'}
+        to="/register?mode=personal"
+      >
+        个人版
+      </Link>
+      <Link
+        className={cn(
+          'rounded-[8px] px-2 py-2 text-center text-sm font-medium transition-colors',
           mode === 'org' ? authSegmentActiveClassName : authSegmentIdleClassName,
         )}
         role="tab"
@@ -139,7 +165,7 @@ function RegisterModeTabs({ mode }: { mode: RegisterMode }) {
       </Link>
       <Link
         className={cn(
-          'rounded-[8px] px-3 py-2 text-center text-sm font-medium transition-colors',
+          'rounded-[8px] px-2 py-2 text-center text-sm font-medium transition-colors',
           mode === 'join' ? authSegmentActiveClassName : authSegmentIdleClassName,
         )}
         role="tab"
@@ -181,6 +207,16 @@ function RegisterForm() {
       password: '',
       confirmPassword: '',
       tenantId: 'demo',
+      displayName: '',
+    },
+  })
+
+  const personalForm = useForm<RegisterPersonalFormValues>({
+    resolver: standardSchemaResolver(registerPersonalFormSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
       displayName: '',
     },
   })
@@ -231,6 +267,32 @@ function RegisterForm() {
     }
   }
 
+  async function onSubmitPersonal(values: RegisterPersonalFormValues) {
+    setSubmitError(null)
+    setSuccessMessage(null)
+    setSubmittedContext(null)
+
+    try {
+      const result = await auth.registerPersonal({
+        email: values.email,
+        password: values.password,
+        displayName: values.displayName?.trim() || undefined,
+      })
+      setSubmittedContext({ email: values.email, tenantId: result.tenantSlug })
+      setSuccessMessage(
+        `个人空间「${result.workspaceName}」已创建。验证邮件已发送至 ${values.email}，请查收并点击链接完成注册。`,
+      )
+      personalForm.reset({
+        email: values.email,
+        displayName: values.displayName ?? '',
+        password: '',
+        confirmPassword: '',
+      })
+    } catch (error) {
+      setSubmitError(formatRegisterError(error))
+    }
+  }
+
   async function onSubmitJoin(values: RegisterJoinFormValues) {
     setSubmitError(null)
     setSuccessMessage(null)
@@ -263,9 +325,152 @@ function RegisterForm() {
       : '/resend-verification'
 
   const loginHref =
-    submittedContext != null
+    submittedContext != null && mode !== 'personal'
       ? `/login?tenant=${encodeURIComponent(submittedContext.tenantId)}`
       : '/login'
+
+  if (mode === 'personal') {
+    const {
+      register,
+      handleSubmit,
+      formState: { errors, isSubmitting },
+    } = personalForm
+
+    return (
+      <form className="login-form-fields" onSubmit={handleSubmit(onSubmitPersonal)}>
+        <RegisterModeTabs mode={mode} />
+
+        {!successMessage ? (
+          <>
+            <div className="login-field-group space-y-1.5" style={{ '--field-i': 0 } as CSSProperties}>
+              <label className={authLabelClassName} htmlFor="register-personal-email">
+                邮箱
+              </label>
+              <div className="relative">
+                <UserIcon className="login-field-icon pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-primary/50" />
+                <Input
+                  id="register-personal-email"
+                  autoComplete="email"
+                  className={cn(authFieldInputClassName, 'pl-9')}
+                  placeholder="solo@example.com"
+                  type="email"
+                  {...fieldA11y(errors.email?.message, 'register-personal-email-error')}
+                  {...register('email')}
+                />
+              </div>
+              <AuthFieldError id="register-personal-email-error" message={errors.email?.message} />
+            </div>
+
+            <div className="login-field-group space-y-1.5" style={{ '--field-i': 1 } as CSSProperties}>
+              <label className={authLabelClassName} htmlFor="register-personal-display-name">
+                显示名（可选）
+              </label>
+              <div className="relative">
+                <UserRoundIcon className="login-field-icon pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-primary/50" />
+                <Input
+                  id="register-personal-display-name"
+                  autoComplete="name"
+                  className={cn(authFieldInputClassName, 'pl-9')}
+                  placeholder="留空则使用邮箱前缀"
+                  {...fieldA11y(errors.displayName?.message, 'register-personal-display-name-error')}
+                  {...register('displayName')}
+                />
+              </div>
+              <AuthFieldError
+                id="register-personal-display-name-error"
+                message={errors.displayName?.message}
+              />
+            </div>
+
+            <div className="login-field-group space-y-1.5" style={{ '--field-i': 2 } as CSSProperties}>
+              <label className={authLabelClassName} htmlFor="register-personal-password">
+                密码
+              </label>
+              <PasswordInput
+                id="register-personal-password"
+                autoComplete="new-password"
+                className={authFieldInputClassName}
+                leadingIcon={<LockIcon className="size-4" />}
+                placeholder={registerPasswordPlaceholder}
+                {...fieldA11y(errors.password?.message, 'register-personal-password-error')}
+                {...register('password')}
+              />
+              <AuthFieldError id="register-personal-password-error" message={errors.password?.message} />
+            </div>
+
+            <div className="login-field-group space-y-1.5" style={{ '--field-i': 3 } as CSSProperties}>
+              <label className={authLabelClassName} htmlFor="register-personal-confirm-password">
+                确认密码
+              </label>
+              <PasswordInput
+                id="register-personal-confirm-password"
+                autoComplete="new-password"
+                className={authFieldInputClassName}
+                leadingIcon={<LockKeyholeIcon className="size-4" />}
+                placeholder="再次输入密码"
+                {...fieldA11y(errors.confirmPassword?.message, 'register-personal-confirm-password-error')}
+                {...register('confirmPassword')}
+              />
+              <AuthFieldError
+                id="register-personal-confirm-password-error"
+                message={errors.confirmPassword?.message}
+              />
+            </div>
+          </>
+        ) : null}
+
+        {successMessage ? (
+          <div className="space-y-3" role="status" aria-live="polite">
+            <p className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary-foreground/90">
+              {successMessage}
+            </p>
+            <p className={cn('text-center', authMutedTextClassName)}>
+              未收到？{' '}
+              <Link className={authLinkClassName} to={resendHref}>
+                重发验证邮件
+              </Link>
+            </p>
+          </div>
+        ) : null}
+
+        {submitError ? (
+          <div className={authErrorBannerClassName} role="alert">
+            <p>{submitError}</p>
+            {suggestsLogin(submitError) ? (
+              <p className="mt-2">
+                <Link className={authLinkClassName} to={loginHref}>
+                  去登录
+                </Link>
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {!successMessage ? (
+          <div className="login-field-group" style={{ '--field-i': 4 } as CSSProperties}>
+            <Button
+              className="mt-1 h-11 w-full rounded-[10px] text-base font-medium"
+              disabled={isSubmitting}
+              type="submit"
+            >
+              {isSubmitting ? '创建中…' : '创建个人空间并发送验证邮件'}
+            </Button>
+          </div>
+        ) : null}
+
+        <p className={cn('text-center', authMutedTextClassName)}>
+          已有账号？{' '}
+          <Link className={authLinkClassName} to={loginHref}>
+            去登录
+          </Link>
+        </p>
+
+        <p className={authMonoHintClassName}>
+          个人版 · 独立个人空间 · 验证邮箱后可直接登录（无需填写租户）
+        </p>
+      </form>
+    )
+  }
 
   if (mode === 'org') {
     const {
@@ -608,15 +813,34 @@ function RegisterForm() {
 
 export default function Register() {
   const saasAuthEnabled = isSaasAuthEnabled()
+  const [searchParams] = useSearchParams()
+  const mode = resolveRegisterMode(searchParams)
+
+  const pageCopy =
+    mode === 'personal'
+      ? {
+          brandDescription:
+            '无需加入团队即可使用地图基础能力。注册个人空间、验证邮箱后即可登录与充值（积分按个人账户）。',
+          headline: '注册个人版',
+          headlineAccent: '独立空间，开箱即用',
+          subtitle: '个人空间 · 邮箱验证',
+        }
+      : {
+          brandDescription:
+            '创建新组织并成为管理员，或通过团队标识加入已有组织。验证邮箱后即可登录。',
+          headline: '创建或加入组织',
+          headlineAccent: '开启地图工作台之旅',
+          subtitle: '自助开通 · 邮箱验证',
+        }
 
   return (
     <AuthPageShell
       badge={saasAuthEnabled ? 'SaaS API' : '未启用'}
-      brandDescription="创建新组织并成为管理员，或通过团队标识加入已有组织。验证邮箱后即可登录。"
-      headline="创建或加入组织"
-      headlineAccent="开启地图工作台之旅"
-      subtitle="自助开通 · 邮箱验证"
-      title="注册"
+      brandDescription={pageCopy.brandDescription}
+      headline={pageCopy.headline}
+      headlineAccent={pageCopy.headlineAccent}
+      subtitle={pageCopy.subtitle}
+      title={mode === 'personal' ? '注册个人版' : '注册'}
     >
       {saasAuthEnabled ? <RegisterForm /> : <RegisterUnavailable />}
     </AuthPageShell>

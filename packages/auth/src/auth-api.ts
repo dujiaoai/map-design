@@ -5,6 +5,8 @@ import type {
   RegisterCredentials,
   RegisterOrgCredentials,
   RegisterOrgResponse,
+  RegisterPersonalCredentials,
+  RegisterPersonalResponse,
   Session,
 } from './types'
 
@@ -66,6 +68,24 @@ export function createAuthApi(options: AuthApiOptions) {
       return parseJson(res)
     },
 
+    async registerPersonal(
+      credentials: RegisterPersonalCredentials,
+    ): Promise<RegisterPersonalResponse> {
+      const body: Record<string, string> = {
+        email: credentials.email,
+        password: credentials.password,
+      }
+      if (credentials.displayName?.trim()) {
+        body.displayName = credentials.displayName.trim()
+      }
+      const res = await fetchFn(`${base}/auth/register-personal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body),
+      })
+      return parseJson(res)
+    },
+
     async resendRegistrationVerification(body: {
       email: string
       tenantId: string
@@ -91,10 +111,17 @@ export function createAuthApi(options: AuthApiOptions) {
     },
 
     async login(credentials: LoginCredentials): Promise<LoginResponse> {
+      const body: Record<string, string> = {
+        email: credentials.email,
+        password: credentials.password,
+      }
+      if (credentials.tenantId?.trim()) {
+        body.tenantId = credentials.tenantId.trim()
+      }
       const res = await fetchFn(`${base}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify(body),
       })
       return parseJson(res)
     },

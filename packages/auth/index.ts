@@ -34,6 +34,8 @@ export {
   type RegisterCredentials,
   type RegisterOrgCredentials,
   type RegisterOrgResponse,
+  type RegisterPersonalCredentials,
+  type RegisterPersonalResponse,
   loginResponseSchema,
   type RedirectFn,
   SaaSRole,

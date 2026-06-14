@@ -10,6 +10,6 @@ export function tenantSummariesToTeams(items: TenantSummary[]): TeamSwitcherTeam
     id: tenant.id,
     name: tenant.name,
     logo: <TenantLogo />,
-    plan: formatTenantPlan(tenant.plan),
+    plan: tenant.kind === 'personal' ? '个人空间' : formatTenantPlan(tenant.plan),
   }))
 }

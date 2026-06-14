@@ -9,6 +9,7 @@ export const tenantSummarySchema = z.object({
   name: z.string(),
   slug: z.string(),
   plan: z.string(),
+  kind: z.enum(['organization', 'personal']).default('organization'),
   current: z.boolean(),
 })
 

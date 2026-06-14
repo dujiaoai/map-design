@@ -41,7 +41,7 @@ import './login.css'
 const saasLoginFormSchema = z.object({
   email: z.string().min(1, '请输入邮箱').email('请输入有效邮箱'),
   password: z.string().min(1, '请输入密码'),
-  tenantId: z.string().min(1, '请输入租户标识'),
+  tenantId: z.string().trim().optional(),
 })
 
 const devLoginFormSchema = z.object({
@@ -83,7 +83,7 @@ function SaasLoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<SaasLoginFormValues>({
     resolver: standardSchemaResolver(saasLoginFormSchema),
-    defaultValues: { email: '', password: '', tenantId: 'demo' },
+    defaultValues: { email: '', password: '', tenantId: '' },
   })
 
   useEffect(() => {
@@ -92,7 +92,7 @@ function SaasLoginForm() {
     reset({
       email: saved?.username ?? '',
       password: saved?.password ?? '',
-      tenantId: switchTenantSlug || saved?.tenantId || 'demo',
+      tenantId: switchTenantSlug || saved?.tenantId || '',
     })
     if (saved) {
       setRememberMe(saved.rememberMe)
@@ -103,16 +103,20 @@ function SaasLoginForm() {
     setSubmitError(null)
 
     const email = values.email.trim()
-    const tenantId = values.tenantId.trim()
+    const tenantId = values.tenantId?.trim()
 
     if (rememberMe) {
-      saveRememberLogin(email, values.password, tenantId)
+      saveRememberLogin(email, values.password, tenantId || '')
     } else {
       clearRememberLogin()
     }
 
     try {
-      await auth.login({ email, password: values.password, tenantId })
+      await auth.login({
+        email,
+        password: values.password,
+        ...(tenantId ? { tenantId } : {}),
+      })
       void navigate('/', { replace: true })
     } catch (error) {
       setSubmitError(formatLoginError(error))
@@ -162,7 +166,7 @@ function SaasLoginForm() {
 
       <div className="login-field-group space-y-1.5" style={{ '--field-i': 2 } as CSSProperties}>
         <label className={authLabelClassName} htmlFor="login-tenant">
-          租户
+          租户（个人版可留空）
         </label>
         <div className="relative">
           <Building2Icon className="login-field-icon pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-primary/50" />
@@ -170,7 +174,7 @@ function SaasLoginForm() {
             id="login-tenant"
             autoComplete="organization"
             className={cn(authFieldInputClassName, 'pl-9')}
-            placeholder="demo"
+            placeholder="团队标识；仅个人空间时留空"
             {...register('tenantId')}
           />
         </div>
@@ -214,7 +218,11 @@ function SaasLoginForm() {
       <p className={cn('text-center', authMutedTextClassName)}>
         没有账号？{' '}
         <Link className={authLinkClassName} to="/register">
-          去注册
+          创建组织
+        </Link>
+        {' · '}
+        <Link className={authLinkClassName} to="/register?mode=personal">
+          注册个人版
         </Link>
       </p>
 

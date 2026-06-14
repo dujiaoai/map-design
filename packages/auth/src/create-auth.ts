@@ -9,6 +9,8 @@ import type {
   RegisterCredentials,
   RegisterOrgCredentials,
   RegisterOrgResponse,
+  RegisterPersonalCredentials,
+  RegisterPersonalResponse,
   RedirectFn,
   SaaSRole,
   Session,
@@ -93,6 +95,13 @@ export function createAuth(options: CreateAuthOptions) {
     async registerOrg(credentials: RegisterOrgCredentials): Promise<RegisterOrgResponse> {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用组织注册接口')
       return authApi.registerOrg(credentials)
+    },
+
+    async registerPersonal(
+      credentials: RegisterPersonalCredentials,
+    ): Promise<RegisterPersonalResponse> {
+      if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用个人版注册接口')
+      return authApi.registerPersonal(credentials)
     },
 
     async resendRegistrationVerification(body: {

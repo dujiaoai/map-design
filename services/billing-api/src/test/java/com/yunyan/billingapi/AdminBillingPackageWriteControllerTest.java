@@ -1,5 +1,6 @@
 package com.yunyan.billingapi;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -32,6 +33,20 @@ class AdminBillingPackageWriteControllerTest {
   @Autowired ObjectMapper objectMapper;
 
   @Autowired SysAdminAuditLogMapper auditLogMapper;
+
+  @Test
+  void listPackages_withWriteOnlyPermission_returns200() throws Exception {
+    var tenantId = UUID.randomUUID();
+    var token =
+        BillingJwtTestSupport.accessToken(
+            tenantId, tenantId, List.of(PermissionCodes.ADMIN_BILLING_PACKAGES_WRITE));
+
+    mockMvc
+        .perform(
+            get("/v1/admin/billing/packages").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items").isArray());
+  }
 
   @Test
   void createAndPatchPackage_writesAuditLog() throws Exception {

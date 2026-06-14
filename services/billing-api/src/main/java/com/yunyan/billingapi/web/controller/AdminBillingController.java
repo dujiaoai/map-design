@@ -92,7 +92,12 @@ public class AdminBillingController {
   }
 
   @GetMapping("/packages")
-  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_READ + "')")
+  @PreAuthorize(
+      "hasAnyAuthority('"
+          + PermissionCodes.ADMIN_BILLING_READ
+          + "','"
+          + PermissionCodes.ADMIN_BILLING_PACKAGES_WRITE
+          + "')")
   @Operation(summary = "平台查询全部充值 SKU（含 inactive）")
   public AdminRechargePackageListResponse listPackages() {
     return adminBillingPackageService.listPackages();
@@ -129,7 +134,12 @@ public class AdminBillingController {
   }
 
   @GetMapping("/recharge-orders")
-  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_READ + "')")
+  @PreAuthorize(
+      "hasAnyAuthority('"
+          + PermissionCodes.ADMIN_BILLING_READ
+          + "','"
+          + PermissionCodes.ADMIN_BILLING_REFUND
+          + "')")
   @Operation(summary = "平台查询充值订单列表")
   public AdminRechargeOrderListResponse listRechargeOrders(
       @RequestParam(required = false) UUID tenantId,

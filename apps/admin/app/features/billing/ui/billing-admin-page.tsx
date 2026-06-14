@@ -35,8 +35,20 @@ export function BillingAdminPage() {
   const [editingPackage, setEditingPackage] = useState<AdminPackage | null>(null)
   const [refreshing, setRefreshing] = useState(false)
 
-  const hasAnyBillingCapability = canRead || canAdjust || canWritePackages || canRefund
-  const defaultTab = useMemo<BillingTab>(() => (canRead ? 'overview' : 'adjust'), [canRead])
+  const canViewPackages = canRead || canWritePackages
+  const canViewOrders = canRead || canRefund
+
+  const hasAnyBillingCapability =
+    canRead || canAdjust || canWritePackages || canRefund
+
+  const defaultTab = useMemo<BillingTab>(() => {
+    if (canRead) return 'overview'
+    if (canWritePackages) return 'packages'
+    if (canRefund) return 'orders'
+    if (canAdjust) return 'adjust'
+    return 'overview'
+  }, [canRead, canWritePackages, canRefund, canAdjust])
+
   const activeTab = parseBillingTab(searchParams.get('tab'), defaultTab)
 
   const filterSeed = useMemo(
@@ -122,12 +134,12 @@ export function BillingAdminPage() {
             {canRead ? (
               <>
                 <TabsTrigger value="overview">概览</TabsTrigger>
-                <TabsTrigger value="packages">充值 SKU</TabsTrigger>
                 <TabsTrigger value="wallets">用户钱包</TabsTrigger>
-                <TabsTrigger value="orders">充值订单</TabsTrigger>
                 <TabsTrigger value="usage">消费汇总</TabsTrigger>
               </>
             ) : null}
+            {canViewPackages ? <TabsTrigger value="packages">充值 SKU</TabsTrigger> : null}
+            {canViewOrders ? <TabsTrigger value="orders">充值订单</TabsTrigger> : null}
             {canAdjust ? <TabsTrigger value="adjust">人工调账</TabsTrigger> : null}
           </TabsList>
 
@@ -136,31 +148,37 @@ export function BillingAdminPage() {
               <TabsContent value="overview" className="mt-4">
                 <BillingStatsSummary onNavigate={navigateBilling} />
               </TabsContent>
-              <TabsContent value="packages" className="mt-4">
-                <BillingPackagesPanel
-                  canWrite={canWritePackages}
-                  onCreatePackage={
-                    canWritePackages ? () => setCreatePackageOpen(true) : undefined
-                  }
-                  onEditPackage={(pkg) => setEditingPackage(pkg)}
-                />
-              </TabsContent>
               <TabsContent value="wallets" className="mt-4">
                 <BillingWalletsPanel
                   filterSeed={filterSeed}
                   onNavigate={navigateBilling}
                 />
               </TabsContent>
-              <TabsContent value="orders" className="mt-4">
-                <BillingRechargeOrdersPanel
-                  canRefund={canRefund}
-                  filterSeed={filterSeed}
-                />
-              </TabsContent>
               <TabsContent value="usage" className="mt-4">
                 <BillingUsagePanel filterSeed={filterSeed} />
               </TabsContent>
             </>
+          ) : null}
+
+          {canViewPackages ? (
+            <TabsContent value="packages" className="mt-4">
+              <BillingPackagesPanel
+                canWrite={canWritePackages}
+                onCreatePackage={
+                  canWritePackages ? () => setCreatePackageOpen(true) : undefined
+                }
+                onEditPackage={(pkg) => setEditingPackage(pkg)}
+              />
+            </TabsContent>
+          ) : null}
+
+          {canViewOrders ? (
+            <TabsContent value="orders" className="mt-4">
+              <BillingRechargeOrdersPanel
+                canRefund={canRefund}
+                filterSeed={filterSeed}
+              />
+            </TabsContent>
           ) : null}
 
           {canAdjust ? (

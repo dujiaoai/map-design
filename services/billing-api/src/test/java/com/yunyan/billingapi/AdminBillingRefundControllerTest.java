@@ -94,6 +94,21 @@ class AdminBillingRefundControllerTest {
   }
 
   @Test
+  void listRechargeOrders_withRefundOnlyPermission_returns200() throws Exception {
+    var tenantId = UUID.randomUUID();
+    var token =
+        BillingJwtTestSupport.accessToken(
+            UUID.randomUUID(), tenantId, List.of(PermissionCodes.ADMIN_BILLING_REFUND));
+
+    mockMvc
+        .perform(
+            get("/v1/admin/billing/recharge-orders")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items").isArray());
+  }
+
+  @Test
   void refund_withoutPermission_returns403() throws Exception {
     var tenantId = UUID.randomUUID();
     var token =

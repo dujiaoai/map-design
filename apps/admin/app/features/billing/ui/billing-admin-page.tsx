@@ -89,7 +89,12 @@ export function BillingAdminPage() {
         actions={
           hasAnyBillingCapability ? (
             <>
-              <Button variant="outline" size="sm" render={<Link to="/audit-logs" />}>
+              <Button
+                nativeButton={false}
+                variant="outline"
+                size="sm"
+                render={<Link to="/audit-logs" />}
+              >
                 审计日志
               </Button>
               <Button

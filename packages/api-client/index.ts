@@ -8,3 +8,4 @@ export type {
 } from './src/types'
 export { ApiError } from './src/types'
 export { parsePaymentRequiredDetail } from './src/payment-required'
+export { isPermEpochStaleProblem } from './src/perm-epoch-stale'

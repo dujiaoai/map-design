@@ -32,12 +32,16 @@ export interface ApiClientOptions {
   headers?: Record<string, string>
   /** RFC 7807 402 余额不足等场景；仍抛出 ApiError 供调用方处理 */
   onPaymentRequired?: (detail: PaymentRequiredDetail) => void
+  /** refresh 成功后同步本地 session（如拉取 /users/me） */
+  onAfterAuthRefresh?: () => void
 }
 
 export interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown
   /** 内部重试标记，避免 401 无限循环 */
   _retry?: boolean
+  /** 内部重试标记，避免 perm_epoch 403 无限循环 */
+  _permRetry?: boolean
 }
 
 export interface ApiClient {

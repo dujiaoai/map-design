@@ -1,4 +1,5 @@
 import { parsePaymentRequiredDetail } from './payment-required'
+import { isPermEpochStaleProblem } from './perm-epoch-stale'
 import { type ApiClient, type ApiClientOptions, ApiError, type RequestOptions } from './types'
 
 async function parseBody(res: Response): Promise<unknown> {
@@ -62,6 +63,19 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
 
     const body = await parseBody(res)
     if (!res.ok) {
+      if (
+        res.status === 403 &&
+        isPermEpochStaleProblem(body) &&
+        options.auth?.refreshAccessToken &&
+        !init?._permRetry
+      ) {
+        const newToken = await options.auth.refreshAccessToken()
+        if (newToken) {
+          options.onAfterAuthRefresh?.()
+          return request<T>(path, { ...init, _permRetry: true })
+        }
+        options.auth.onUnauthorized?.()
+      }
       if (res.status === 402 && options.onPaymentRequired) {
         const detail = parsePaymentRequiredDetail(body)
         if (detail) options.onPaymentRequired(detail)

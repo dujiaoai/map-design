@@ -4,6 +4,7 @@ import { auth } from '~/shared/auth/client'
 import { env } from '~/shared/config/env'
 import { resolveBillingApiBaseUrl } from '~/shared/config/billing-api-base-url'
 import { handlePaymentRequired } from '~/shared/api/payment-required-bridge'
+import { handleAfterAuthRefresh } from '~/shared/api/session-refresh-bridge'
 
 export const billingApi = createApiClient({
   baseUrl: resolveBillingApiBaseUrl(env.VITE_API_URL),
@@ -14,4 +15,5 @@ export const billingApi = createApiClient({
     onUnauthorized: () => auth.clearSession(),
   },
   onPaymentRequired: handlePaymentRequired,
+  onAfterAuthRefresh: handleAfterAuthRefresh,
 })

@@ -78,4 +78,36 @@ describe('createApiClient', () => {
       requiredPoints: 1,
     })
   })
+
+  it('403 perm_epoch 过期时 refresh 并重试一次', async () => {
+    const refresh = vi.fn(async () => 'new-token')
+    const onAfterAuthRefresh = vi.fn()
+    const problem = {
+      type: 'urn:yunyan:auth:perm_epoch_stale',
+      title: 'Permissions expired',
+      status: 403,
+      detail: 'JWT perm_epoch is stale',
+    }
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify(problem), { status: 403 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true }), { status: 200 }))
+
+    const client = createApiClient({
+      baseUrl: 'https://api.test/v1',
+      fetch: fetchMock,
+      auth: {
+        getAccessToken: () => 'old-token',
+        refreshAccessToken: refresh,
+      },
+      onAfterAuthRefresh,
+    })
+
+    const data = await client.get<{ ok: boolean }>('/users/me')
+    expect(data.ok).toBe(true)
+    expect(refresh).toHaveBeenCalledOnce()
+    expect(onAfterAuthRefresh).toHaveBeenCalledOnce()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
 })

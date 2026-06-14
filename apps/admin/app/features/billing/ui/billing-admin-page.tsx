@@ -1,14 +1,27 @@
 import { BillingAdjustPanel } from '~/features/billing/ui/billing-adjust-panel'
+import { BillingRechargeOrdersPanel } from '~/features/billing/ui/billing-recharge-orders-panel'
+import { BillingWalletsPanel } from '~/features/billing/ui/billing-wallets-panel'
+import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { AdminPageHeader } from '~/shared/ui/admin-page-shell'
 
 export function BillingAdminPage() {
+  const { can } = useAdminPermissions()
+  const canRead = can('admin:billing:read')
+  const canAdjust = can('admin:billing:adjust')
+
   return (
     <div className="space-y-6">
       <AdminPageHeader
         title="计费"
-        description="平台调账 SOP：企业预付、赠送与冲正。完整订单/SKU/用量面板后续迭代。"
+        description="平台钱包查询、充值订单与人工调账（B2B 过渡 SOP）。"
       />
-      <BillingAdjustPanel />
+      {canRead ? (
+        <div className="grid gap-6 xl:grid-cols-2">
+          <BillingWalletsPanel />
+          <BillingRechargeOrdersPanel />
+        </div>
+      ) : null}
+      {canAdjust ? <BillingAdjustPanel /> : null}
     </div>
   )
 }

@@ -8,7 +8,7 @@ export function meta(_args: Route.MetaArgs) {
 }
 
 export async function clientLoader(_args: Route.ClientLoaderArgs) {
-  requireAdminPermissions(['admin:billing:adjust'])
+  requireAdminPermissions(['admin:billing:read', 'admin:billing:adjust'])
   return null
 }
 

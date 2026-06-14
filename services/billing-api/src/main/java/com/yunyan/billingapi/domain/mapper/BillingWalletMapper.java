@@ -58,4 +58,35 @@ public interface BillingWalletMapper {
       @Param("frozenBalance") long frozenBalance,
       @Param("version") int version,
       @Param("updatedAt") java.time.Instant updatedAt);
+
+  @Select(
+      """
+      <script>
+      SELECT id, tenant_id, user_id, balance, frozen_balance, version, created_at, updated_at
+      FROM billing_wallet
+      <where>
+        <if test="tenantId != null">AND tenant_id = #{tenantId}</if>
+        <if test="userId != null">AND user_id = #{userId}</if>
+      </where>
+      ORDER BY updated_at DESC
+      LIMIT #{limit} OFFSET #{offset}
+      </script>
+      """)
+  java.util.List<BillingWallet> findWallets(
+      @Param("tenantId") UUID tenantId,
+      @Param("userId") UUID userId,
+      @Param("limit") int limit,
+      @Param("offset") int offset);
+
+  @Select(
+      """
+      <script>
+      SELECT COUNT(*) FROM billing_wallet
+      <where>
+        <if test="tenantId != null">AND tenant_id = #{tenantId}</if>
+        <if test="userId != null">AND user_id = #{userId}</if>
+      </where>
+      </script>
+      """)
+  long countWallets(@Param("tenantId") UUID tenantId, @Param("userId") UUID userId);
 }

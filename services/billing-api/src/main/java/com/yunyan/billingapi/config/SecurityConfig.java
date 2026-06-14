@@ -45,6 +45,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/v1/ping").permitAll()
             .requestMatchers("/v1/billing/webhooks/**").permitAll()
             .requestMatchers("/internal/**").permitAll()
+            .requestMatchers("/v1/admin/billing/**").authenticated()
             .requestMatchers("/v1/billing/**").authenticated()
             .anyRequest().permitAll())
         .exceptionHandling(ex -> ex

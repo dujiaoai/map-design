@@ -13,6 +13,15 @@ public interface BillingLedgerMapper {
   @Select("SELECT COUNT(*) > 0 FROM billing_ledger WHERE idempotency_key = #{idempotencyKey}")
   boolean existsByIdempotencyKey(@Param("idempotencyKey") String idempotencyKey);
 
+  @Select(
+      """
+      SELECT id, wallet_id, tenant_id, entry_type, amount, balance_after,
+             product_code, remark, idempotency_key, created_at
+      FROM billing_ledger
+      WHERE idempotency_key = #{idempotencyKey}
+      """)
+  BillingLedger findByIdempotencyKey(@Param("idempotencyKey") String idempotencyKey);
+
   @Insert(
       """
       INSERT INTO billing_ledger (

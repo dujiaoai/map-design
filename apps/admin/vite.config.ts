@@ -29,6 +29,10 @@ export default defineConfig(({ mode }) => {
       port: 5181,
       strictPort: false,
       proxy: {
+        '/v1/admin/billing': {
+          target: env.VITE_BILLING_API_HOST || 'http://localhost:8083',
+          changeOrigin: true,
+        },
         '/v1/billing': {
           target: env.VITE_BILLING_API_HOST || 'http://localhost:8083',
           changeOrigin: true,

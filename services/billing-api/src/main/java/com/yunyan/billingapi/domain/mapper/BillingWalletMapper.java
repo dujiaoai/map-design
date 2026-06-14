@@ -18,6 +18,14 @@ public interface BillingWalletMapper {
       """)
   BillingWallet selectByTenantAndUser(@Param("tenantId") UUID tenantId, @Param("userId") UUID userId);
 
+  @Select(
+      """
+      SELECT id, tenant_id, user_id, balance, frozen_balance, version, created_at, updated_at
+      FROM billing_wallet
+      WHERE id = #{id}
+      """)
+  BillingWallet selectById(@Param("id") UUID id);
+
   @Insert(
       """
       INSERT INTO billing_wallet (id, tenant_id, user_id, balance, frozen_balance, version, created_at, updated_at)

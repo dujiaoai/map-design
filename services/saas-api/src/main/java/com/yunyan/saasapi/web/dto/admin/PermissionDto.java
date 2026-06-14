@@ -9,4 +9,8 @@ public record PermissionDto(
     @Schema(description = "显示名") String name,
     @Schema(description = "说明") String description,
     @Schema(description = "作用域", allowableValues = {"platform", "tenant", "workspace"})
-        String scope) {}
+        String scope,
+    @Schema(description = "所属模块 UUID") String moduleId,
+    @Schema(description = "所属模块码") String moduleCode,
+    @Schema(description = "所属模块名") String moduleName,
+    @Schema(description = "是否系统内置权限") boolean system) {}

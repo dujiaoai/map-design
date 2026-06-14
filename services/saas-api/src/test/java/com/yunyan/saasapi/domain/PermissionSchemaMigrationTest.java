@@ -3,8 +3,10 @@ package com.yunyan.saasapi.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yunyan.saasapi.domain.entity.SysPermission;
+import com.yunyan.saasapi.domain.entity.SysPermissionModule;
 import com.yunyan.saasapi.domain.entity.SysRole;
 import com.yunyan.saasapi.domain.mapper.SysPermissionMapper;
+import com.yunyan.saasapi.domain.mapper.SysPermissionModuleMapper;
 import com.yunyan.saasapi.domain.mapper.SysRoleMapper;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import java.util.List;
@@ -31,10 +33,28 @@ class PermissionSchemaMigrationTest {
   SysPermissionMapper sysPermissionMapper;
 
   @Autowired
+  SysPermissionModuleMapper sysPermissionModuleMapper;
+
+  @Autowired
   SysRoleMapper sysRoleMapper;
 
   @Autowired
   PermissionRepository permissionRepository;
+
+  @Test
+  void flyway_seedsPermissionModules() {
+    List<SysPermissionModule> modules = sysPermissionModuleMapper.selectList(null);
+    assertThat(modules).hasSize(5);
+    assertThat(modules).extracting(SysPermissionModule::getCode)
+        .contains("admin_roles", "workspace");
+  }
+
+  @Test
+  void flyway_linksSeedPermissionsToModules() {
+    List<SysPermission> permissions = sysPermissionMapper.selectList(null);
+    assertThat(permissions).allMatch(permission -> permission.getModuleId() != null);
+    assertThat(permissions).allMatch(SysPermission::getIsSystem);
+  }
 
   @Test
   void flyway_seedsPermissionCatalog() {

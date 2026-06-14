@@ -9,7 +9,7 @@ import { adminNavItems, type AdminNavItem } from './nav-items'
 
 export const ADMIN_NAV_SECTION_DEFS = [
   { id: 'platform', label: '平台', routes: ['/', '/tenants', '/users'] },
-  { id: 'collaboration', label: '协作', routes: ['/members', '/tenant-roles', '/roles'] },
+  { id: 'collaboration', label: '协作', routes: ['/members', '/tenant-roles', '/roles', '/permissions'] },
   { id: 'operations', label: '运维', routes: ['/audit-logs', '/billing', '/system'] },
 ] as const
 

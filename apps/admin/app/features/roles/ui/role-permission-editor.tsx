@@ -5,6 +5,19 @@ import type { AdminPermission } from '~/shared/api/admin-api'
 import { PERMISSION_SCOPE_LABELS } from '../lib/role-permission-rules'
 import { setScopePermissionCodes, togglePermissionCode } from '../lib/role-permission-selection'
 
+function permissionGroupKey(permission: AdminPermission) {
+  if (permission.moduleCode || permission.moduleName) {
+    return `module:${permission.moduleCode ?? permission.moduleName}`
+  }
+  return `scope:${permission.scope}`
+}
+
+function permissionGroupLabel(permission: AdminPermission, permissionsInGroup: AdminPermission[]) {
+  if (permission.moduleName) return permission.moduleName
+  if (permission.moduleCode) return permission.moduleCode
+  return PERMISSION_SCOPE_LABELS[permission.scope]
+}
+
 export function RolePermissionEditor({
   permissions,
   selectedCodes,
@@ -18,9 +31,10 @@ export function RolePermissionEditor({
 }) {
   const grouped = new Map<string, AdminPermission[]>()
   for (const permission of permissions) {
-    const bucket = grouped.get(permission.scope) ?? []
+    const key = permissionGroupKey(permission)
+    const bucket = grouped.get(key) ?? []
     bucket.push(permission)
-    grouped.set(permission.scope, bucket)
+    grouped.set(key, bucket)
   }
 
   const permissionByCode = new Map(permissions.map((permission) => [permission.code, permission]))
@@ -52,20 +66,28 @@ export function RolePermissionEditor({
       </div>
 
       <div className="space-y-6">
-        {[...grouped.entries()].map(([scope, scopePermissions]) => {
-          const scopeCodes = scopePermissions.map((permission) => permission.code)
-          const selectedInScope = scopeCodes.filter((code) => selectedCodes.includes(code)).length
-          const allSelected = selectedInScope === scopeCodes.length
+        {[...grouped.entries()].map(([groupKey, groupPermissions]) => {
+          const sample = groupPermissions[0]!
+          const groupCodes = groupPermissions.map((permission) => permission.code)
+          const selectedInGroup = groupCodes.filter((code) => selectedCodes.includes(code)).length
+          const allSelected = selectedInGroup === groupCodes.length
+          const isModuleGroup = groupKey.startsWith('module:')
 
           return (
-            <section key={scope} className="space-y-3">
+            <section key={groupKey} className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline">
-                    {PERMISSION_SCOPE_LABELS[scope as keyof typeof PERMISSION_SCOPE_LABELS]}
+                  <Badge variant="outline">{permissionGroupLabel(sample, groupPermissions)}</Badge>
+                  {isModuleGroup ? (
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {sample.moduleCode}
+                    </span>
+                  ) : null}
+                  <Badge variant="secondary" className="text-[10px]">
+                    {PERMISSION_SCOPE_LABELS[sample.scope]}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    {scope} · {selectedInScope}/{scopeCodes.length}
+                    {selectedInGroup}/{groupCodes.length}
                   </span>
                 </div>
                 {!readOnly ? (
@@ -77,7 +99,7 @@ export function RolePermissionEditor({
                       className="h-7 px-2 text-xs"
                       onClick={() =>
                         onSelectedCodesChange(
-                          setScopePermissionCodes(selectedCodes, scopeCodes, !allSelected),
+                          setScopePermissionCodes(selectedCodes, groupCodes, !allSelected),
                         )
                       }
                     >
@@ -87,7 +109,7 @@ export function RolePermissionEditor({
                 ) : null}
               </div>
               <ul className="grid gap-2 md:grid-cols-2">
-                {scopePermissions.map((permission) => {
+                {groupPermissions.map((permission) => {
                   const checked = selectedCodes.includes(permission.code)
                   return (
                     <li key={permission.id}>

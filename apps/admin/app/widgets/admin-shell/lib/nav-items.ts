@@ -57,6 +57,12 @@ export const adminNavItems: AdminNavItem[] = [
     permissions: ['admin:roles:read'],
   },
   {
+    to: '/permissions',
+    label: '权限目录',
+    icon: ShieldIcon,
+    permissions: ['admin:roles:read'],
+  },
+  {
     to: '/audit-logs',
     label: '审计',
     icon: ScrollTextIcon,

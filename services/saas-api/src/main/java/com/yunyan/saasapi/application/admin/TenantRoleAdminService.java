@@ -1,11 +1,13 @@
 package com.yunyan.saasapi.application.admin;
 
 import com.yunyan.saasapi.application.auth.UserSessionRevoker;
+import com.yunyan.saasapi.domain.PermissionModuleRepository;
 import com.yunyan.saasapi.domain.PermissionRepository;
 import com.yunyan.saasapi.domain.RoleRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.UserRepository;
 import com.yunyan.saasapi.domain.entity.SysPermission;
+import com.yunyan.saasapi.domain.entity.SysPermissionModule;
 import com.yunyan.saasapi.domain.entity.SysRole;
 import com.yunyan.saasapi.domain.entity.SysTenant;
 import com.yunyan.saasapi.security.AuthException;
@@ -24,8 +26,11 @@ import com.yunyan.saasapi.web.dto.admin.UpdateRolePermissionsRequest;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +47,7 @@ public class TenantRoleAdminService {
 
   private final RoleRepository roleRepository;
   private final PermissionRepository permissionRepository;
+  private final PermissionModuleRepository permissionModuleRepository;
   private final TenantRepository tenantRepository;
   private final UserRepository userRepository;
   private final UserSessionRevoker userSessionRevoker;
@@ -73,12 +79,13 @@ public class TenantRoleAdminService {
 
   public PermissionListResponse listAssignablePermissions(SaasPrincipal principal, UUID tenantId) {
     ensureOwnTenant(principal, tenantId);
+    var modulesById = loadModuleMap();
     var permissions =
         withTargetTenant(
             tenantId,
             () ->
                 permissionRepository.findByScopesOrdered(TENANT_CUSTOM_SCOPES).stream()
-                    .map(this::toPermissionDto)
+                    .map(permission -> PermissionCatalogAdminService.toPermissionDto(permission, modulesById))
                     .toList());
     return new PermissionListResponse(permissions);
   }
@@ -174,8 +181,11 @@ public class TenantRoleAdminService {
         tenantId,
         () -> {
           var role = requireCustomRole(tenantId, roleId);
+          var modulesById = loadModuleMap();
           var permissions =
-              permissionRepository.findByRoleId(roleId).stream().map(this::toPermissionDto).toList();
+              permissionRepository.findByRoleId(roleId).stream()
+                  .map(permission -> PermissionCatalogAdminService.toPermissionDto(permission, modulesById))
+                  .toList();
           return new RolePermissionsResponse(
               role.getId().toString(), role.getCode(), permissions);
         });
@@ -215,8 +225,11 @@ public class TenantRoleAdminService {
                   + " -> "
                   + String.join(",", requestedCodes));
 
+          var modulesById = loadModuleMap();
           var updated =
-              permissionRepository.findByRoleId(roleId).stream().map(this::toPermissionDto).toList();
+              permissionRepository.findByRoleId(roleId).stream()
+                  .map(permission -> PermissionCatalogAdminService.toPermissionDto(permission, modulesById))
+                  .toList();
           return new RolePermissionsResponse(role.getId().toString(), role.getCode(), updated);
         });
   }
@@ -319,13 +332,9 @@ public class TenantRoleAdminService {
         role.isSystemRole());
   }
 
-  private PermissionDto toPermissionDto(SysPermission permission) {
-    return new PermissionDto(
-        permission.getId().toString(),
-        permission.getCode(),
-        permission.getName(),
-        permission.getDescription(),
-        permission.getScope());
+  private Map<UUID, SysPermissionModule> loadModuleMap() {
+    return permissionModuleRepository.findAllOrdered().stream()
+        .collect(Collectors.toMap(SysPermissionModule::getId, Function.identity()));
   }
 
   private static <T> T withTargetTenant(UUID tenantId, Supplier<T> action) {

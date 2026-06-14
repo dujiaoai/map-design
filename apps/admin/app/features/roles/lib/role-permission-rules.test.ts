@@ -4,9 +4,39 @@ import { filterPermissionsForRole } from './role-permission-rules'
 
 describe('filterPermissionsForRole', () => {
   const permissions = [
-    { id: '1', code: 'admin:tenants:read', name: 'a', description: '', scope: 'platform' as const },
-    { id: '2', code: 'admin:members:read', name: 'b', description: '', scope: 'tenant' as const },
-    { id: '3', code: 'workspace:use', name: 'c', description: '', scope: 'workspace' as const },
+    {
+      id: '1',
+      code: 'admin:tenants:read',
+      name: 'a',
+      description: '',
+      scope: 'platform' as const,
+      moduleId: null,
+      moduleCode: null,
+      moduleName: null,
+      system: true,
+    },
+    {
+      id: '2',
+      code: 'admin:members:read',
+      name: 'b',
+      description: '',
+      scope: 'tenant' as const,
+      moduleId: null,
+      moduleCode: null,
+      moduleName: null,
+      system: true,
+    },
+    {
+      id: '3',
+      code: 'workspace:use',
+      name: 'c',
+      description: '',
+      scope: 'workspace' as const,
+      moduleId: null,
+      moduleCode: null,
+      moduleName: null,
+      system: true,
+    },
   ]
 
   it('keeps platform scope for PLATFORM_ADMIN', () => {

@@ -12,6 +12,7 @@ export const adminQueryKeys = {
   sessionTenants: ['admin', 'session-tenants'] as const,
   roles: ['admin', 'roles'] as const,
   permissions: ['admin', 'permissions'] as const,
+  permissionModules: ['admin', 'permission-modules'] as const,
   rolePermissions: (roleId: string) => ['admin', 'roles', roleId, 'permissions'] as const,
   members: (tenantId: string) => ['admin', 'members', tenantId] as const,
   tenantCustomRoles: (tenantId: string) => ['admin', 'tenants', tenantId, 'custom-roles'] as const,

@@ -33,6 +33,7 @@ describe('buildAdminNavSections', () => {
     const collaboration = sections.find((section) => section.id === 'collaboration')
     expect(collaboration?.items.map((item) => item.id)).toContain('/members')
     expect(collaboration?.items.map((item) => item.id)).toContain('/tenant-roles')
+    expect(collaboration?.items.map((item) => item.id)).toContain('/permissions')
   })
 
   it('hides members nav for user without members permission or platform role', () => {

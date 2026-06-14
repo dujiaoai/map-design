@@ -7,6 +7,7 @@ import com.yunyan.saasapi.domain.entity.SysRolePermission;
 import com.yunyan.saasapi.domain.mapper.SysRolePermissionMapper;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -61,6 +62,46 @@ public class PermissionRepository {
       return List.of();
     }
     return findByCodes(codes);
+  }
+
+  public List<SysPermission> findByModuleId(UUID moduleId) {
+    return sysPermissionMapper.selectList(
+        Wrappers.<SysPermission>lambdaQuery()
+            .eq(SysPermission::getModuleId, moduleId)
+            .orderByAsc(SysPermission::getCode));
+  }
+
+  public Optional<SysPermission> findById(UUID id) {
+    return Optional.ofNullable(sysPermissionMapper.selectById(id));
+  }
+
+  public boolean existsByCode(String code) {
+    return sysPermissionMapper.selectCount(
+            Wrappers.<SysPermission>lambdaQuery().eq(SysPermission::getCode, code))
+        > 0;
+  }
+
+  public long countByModuleId(UUID moduleId) {
+    return sysPermissionMapper.selectCount(
+        Wrappers.<SysPermission>lambdaQuery().eq(SysPermission::getModuleId, moduleId));
+  }
+
+  public long countRoleBindingsByPermissionId(UUID permissionId) {
+    return sysRolePermissionMapper.selectCount(
+        Wrappers.<SysRolePermission>lambdaQuery()
+            .eq(SysRolePermission::getPermissionId, permissionId));
+  }
+
+  public void insert(SysPermission permission) {
+    sysPermissionMapper.insert(permission);
+  }
+
+  public void update(SysPermission permission) {
+    sysPermissionMapper.updateById(permission);
+  }
+
+  public void deleteById(UUID permissionId) {
+    sysPermissionMapper.deleteById(permissionId);
   }
 
   public void replaceRolePermissions(UUID roleId, List<UUID> permissionIds) {

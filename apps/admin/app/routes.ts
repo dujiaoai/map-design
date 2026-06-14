@@ -14,6 +14,7 @@ export default [
     route('members', 'routes/members.tsx'),
     route('tenant-roles', 'routes/tenant-roles.tsx'),
     route('roles', 'routes/roles.tsx'),
+    route('permissions', 'routes/permissions.tsx'),
     route('account', 'routes/account.tsx'),
     route('audit-logs', 'routes/audit-logs.tsx'),
     route('billing', 'routes/billing.tsx'),

@@ -1,6 +1,7 @@
 package com.yunyan.saasapi.application.admin;
 
 import com.yunyan.saasapi.application.auth.UserSessionRevoker;
+import com.yunyan.saasapi.domain.PermissionModuleRepository;
 import com.yunyan.saasapi.domain.PermissionRepository;
 import com.yunyan.saasapi.domain.RoleRepository;
 import com.yunyan.saasapi.domain.UserRepository;
@@ -32,6 +33,7 @@ public class RoleAdminService {
 
   private final RoleRepository roleRepository;
   private final PermissionRepository permissionRepository;
+  private final PermissionModuleRepository permissionModuleRepository;
   private final UserRepository userRepository;
   private final UserSessionRevoker userSessionRevoker;
   private final AdminAuditLogService adminAuditLogService;
@@ -45,15 +47,29 @@ public class RoleAdminService {
   }
 
   public PermissionListResponse listPermissions() {
+    var modulesById =
+        permissionModuleRepository.findAllOrdered().stream()
+            .collect(java.util.stream.Collectors.toMap(
+                com.yunyan.saasapi.domain.entity.SysPermissionModule::getId,
+                java.util.function.Function.identity()));
     var permissions =
-        permissionRepository.findAllOrdered().stream().map(RoleAdminService::toPermissionDto).toList();
+        permissionRepository.findAllOrdered().stream()
+            .map(permission -> PermissionCatalogAdminService.toPermissionDto(permission, modulesById))
+            .toList();
     return new PermissionListResponse(permissions);
   }
 
   public RolePermissionsResponse getRolePermissions(UUID roleId) {
     var role = requireRole(roleId);
+    var modulesById =
+        permissionModuleRepository.findAllOrdered().stream()
+            .collect(java.util.stream.Collectors.toMap(
+                com.yunyan.saasapi.domain.entity.SysPermissionModule::getId,
+                java.util.function.Function.identity()));
     var permissions =
-        permissionRepository.findByRoleId(roleId).stream().map(RoleAdminService::toPermissionDto).toList();
+        permissionRepository.findByRoleId(roleId).stream()
+            .map(permission -> PermissionCatalogAdminService.toPermissionDto(permission, modulesById))
+            .toList();
     return toRolePermissionsResponse(role, permissions);
   }
 
@@ -74,7 +90,11 @@ public class RoleAdminService {
         roleId, permissions.stream().map(SysPermission::getId).toList());
 
     var updated =
-        permissionRepository.findByRoleId(roleId).stream().map(RoleAdminService::toPermissionDto).toList();
+        permissionRepository.findByRoleId(roleId).stream()
+            .map(
+                permission ->
+                    PermissionCatalogAdminService.toPermissionDto(permission, loadModuleMap()))
+            .toList();
     var updatedCodes = updated.stream().map(PermissionDto::code).sorted().toList();
 
     for (UUID userId : userRepository.findUserIdsByRoleId(roleId)) {
@@ -159,13 +179,12 @@ public class RoleAdminService {
         Boolean.TRUE.equals(role.getIsSystem()));
   }
 
-  private static PermissionDto toPermissionDto(SysPermission permission) {
-    return new PermissionDto(
-        permission.getId().toString(),
-        permission.getCode(),
-        permission.getName(),
-        permission.getDescription(),
-        permission.getScope());
+  private java.util.Map<UUID, com.yunyan.saasapi.domain.entity.SysPermissionModule> loadModuleMap() {
+    return permissionModuleRepository.findAllOrdered().stream()
+        .collect(
+            java.util.stream.Collectors.toMap(
+                com.yunyan.saasapi.domain.entity.SysPermissionModule::getId,
+                java.util.function.Function.identity()));
   }
 
   private static RolePermissionsResponse toRolePermissionsResponse(

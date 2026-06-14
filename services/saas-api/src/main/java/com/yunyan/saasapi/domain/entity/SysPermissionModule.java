@@ -7,8 +7,8 @@ import java.util.UUID;
 import lombok.Data;
 
 @Data
-@TableName("sys_permission")
-public class SysPermission {
+@TableName("sys_permission_module")
+public class SysPermissionModule {
 
   @TableId(type = IdType.INPUT)
   private UUID id;
@@ -22,7 +22,7 @@ public class SysPermission {
   /** platform | tenant | workspace */
   private String scope;
 
-  private UUID moduleId;
-
   private Boolean isSystem;
+
+  private Integer sortOrder;
 }

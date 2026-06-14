@@ -135,10 +135,7 @@ export function PermissionsAdminPage() {
       }),
     onSuccess: async () => {
       await refreshModules()
-      setCreatePermissionOpen(false)
-      setPermissionAction('')
-      setPermissionName('')
-      setPermissionDescription('')
+      closeCreatePermissionForm()
       setFormError(null)
       setNotice('权限项已创建。')
     },
@@ -186,6 +183,13 @@ export function PermissionsAdminPage() {
   useEffect(() => {
     syncSelectedFromQuery()
   }, [modulesQuery.data])
+
+  function closeCreatePermissionForm() {
+    setCreatePermissionOpen(false)
+    setPermissionAction('')
+    setPermissionName('')
+    setPermissionDescription('')
+  }
 
   return (
     <div className="space-y-6">
@@ -375,10 +379,20 @@ export function PermissionsAdminPage() {
                 ) : null}
               </div>
 
+              {selectedModule.system ? (
+                <p className="border-b border-border/60 bg-muted/10 px-5 py-3 text-xs text-muted-foreground">
+                  系统内置模块的权限项由迁移脚本维护，此处不可新增或删除。如需扩展能力，请先点击页头「新建模块」创建自定义模块，再在其下添加权限项。
+                </p>
+              ) : !canWrite ? (
+                <p className="border-b border-border/60 bg-muted/10 px-5 py-3 text-xs text-muted-foreground">
+                  当前账号仅有只读权限（需 admin:roles:write 才能新增权限项）。
+                </p>
+              ) : null}
+
               {createPermissionOpen && canWrite && !selectedModule.system ? (
                 <div className="space-y-3 border-b border-border/60 bg-muted/15 px-5 py-4">
                   <p className="text-xs text-muted-foreground">
-                    完整权限码 = {selectedModule.code}:&lt;动作段&gt;
+                    完整权限码 = {selectedModule.code}:&lt;动作段&gt;（动作段仅小写字母、数字、下划线，多段用冒号分隔，如 layer:read）
                   </p>
                   <div className="grid gap-3 md:grid-cols-2">
                     <AdminField label="动作段">
@@ -402,18 +416,29 @@ export function PermissionsAdminPage() {
                       />
                     </AdminField>
                   </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    disabled={
-                      createPermissionMutation.isPending ||
-                      !permissionAction.trim() ||
-                      !permissionName.trim()
-                    }
-                    onClick={() => createPermissionMutation.mutate()}
-                  >
-                    {createPermissionMutation.isPending ? '创建中…' : '创建权限项'}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={
+                        createPermissionMutation.isPending ||
+                        !permissionAction.trim() ||
+                        !permissionName.trim()
+                      }
+                      onClick={() => createPermissionMutation.mutate()}
+                    >
+                      {createPermissionMutation.isPending ? '创建中…' : '创建权限项'}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={createPermissionMutation.isPending}
+                      onClick={closeCreatePermissionForm}
+                    >
+                      取消
+                    </Button>
+                  </div>
                 </div>
               ) : null}
 

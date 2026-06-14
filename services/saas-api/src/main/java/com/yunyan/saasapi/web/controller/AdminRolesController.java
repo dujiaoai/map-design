@@ -2,6 +2,7 @@ package com.yunyan.saasapi.web.controller;
 
 import com.yunyan.saasapi.application.admin.RoleAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
+import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.PermissionListResponse;
 import com.yunyan.saasapi.web.dto.admin.RoleListResponse;
 import com.yunyan.saasapi.web.dto.admin.RolePermissionsResponse;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -54,7 +56,9 @@ public class AdminRolesController {
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_ROLES_WRITE + "')")
   @Operation(summary = "更新角色权限绑定", description = "全量替换；需与角色 scope 规则一致")
   public RolePermissionsResponse updateRolePermissions(
-      @PathVariable UUID roleId, @Valid @RequestBody UpdateRolePermissionsRequest request) {
-    return roleAdminService.updateRolePermissions(roleId, request);
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID roleId,
+      @Valid @RequestBody UpdateRolePermissionsRequest request) {
+    return roleAdminService.updateRolePermissions(principal, roleId, request);
   }
 }

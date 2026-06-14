@@ -155,11 +155,43 @@ class AdminRolesControllerTest {
         .andExpect(status().isNotFound());
   }
 
+  @Test
+  void updateRolePermissions_revokesMemberRefreshToken() throws Exception {
+    var memberLoginBody = loginBody("other@test.local", "other");
+    var refreshToken = JsonPath.read(memberLoginBody, "$.refreshToken");
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            put("/v1/admin/roles/" + MEMBER_ROLE_ID + "/permissions")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "permissionCodes",
+                            List.of(
+                                PermissionCodes.WORKSPACE_USE,
+                                PermissionCodes.WORKSPACE_MAP_READ)))))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("refreshToken", refreshToken))))
+        .andExpect(status().isUnauthorized());
+  }
+
   private String loginAccessToken(String email) throws Exception {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }
 
   private String loginBody(String email) throws Exception {
+    return loginBody(email, "test");
+  }
+
+  private String loginBody(String email, String tenantSlug) throws Exception {
     return mockMvc
         .perform(
             post("/v1/auth/login")
@@ -169,7 +201,7 @@ class AdminRolesControllerTest {
                         Map.of(
                             "email", email,
                             "password", "password",
-                            "tenantId", "test"))))
+                            "tenantId", tenantSlug))))
         .andExpect(status().isOk())
         .andReturn()
         .getResponse()

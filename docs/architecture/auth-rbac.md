@@ -157,6 +157,15 @@
 | Admin 侧栏 | `buildAdminNavSections`：`PLATFORM_ADMIN` 可见「成员」；与路由 `canAccessAdminMembers` 一致 |
 | 联调账号 | `platform@demo.local`（仅 `PLATFORM_ADMIN`） |
 
+### 已完成（Sprint D+ · RBAC-P1）
+
+| 能力 | 实现 |
+| --- | --- |
+| 平台用户角色 | `PUT /v1/admin/users/{id}/roles`（仅 `PLATFORM_ADMIN`；保留租户角色） |
+| 权限变更传播 | `RoleAdminService` 保存后吊销持有用户会话 |
+| 审计 | `user.roles.update`、`role.permissions.update` |
+| Admin UI | Users 编辑 Sheet 平台角色开关；Roles 页保存提示 |
+
 ### 已完成（Admin 功能完善 P0～P3 · 2026-06）
 
 | 阶段 | 能力 |

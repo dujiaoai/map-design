@@ -139,4 +139,16 @@ public class UserRepository {
           }
         });
   }
+
+  public List<UUID> findUserIdsByRoleId(UUID roleId) {
+    return TenantRlsBypass.call(
+        () ->
+            sysUserRoleMapper
+                .selectList(
+                    Wrappers.<SysUserRole>lambdaQuery().eq(SysUserRole::getRoleId, roleId))
+                .stream()
+                .map(SysUserRole::getUserId)
+                .distinct()
+                .toList());
+  }
 }

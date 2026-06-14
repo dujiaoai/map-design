@@ -3,9 +3,11 @@ package com.yunyan.saasapi.web.controller;
 import com.yunyan.saasapi.application.admin.AdminListParams;
 import com.yunyan.saasapi.application.admin.UserAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
+import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminUserDto;
 import com.yunyan.saasapi.web.dto.admin.AdminUserListResponse;
 import com.yunyan.saasapi.web.dto.admin.PatchUserRequest;
+import com.yunyan.saasapi.web.dto.admin.UpdateUserRolesRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,9 +16,11 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -52,5 +56,17 @@ public class AdminUsersController {
   public AdminUserDto patchUser(
       @PathVariable UUID userId, @Valid @RequestBody PatchUserRequest request) {
     return userAdminService.patchUser(userId, request);
+  }
+
+  @PutMapping("/{userId}/roles")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_USERS_WRITE + "')")
+  @Operation(
+      summary = "更新用户平台角色",
+      description = "仅可分配 PLATFORM_ADMIN；租户角色（TENANT_ADMIN/MEMBER/VIEWER）保留不变")
+  public AdminUserDto updateUserRoles(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID userId,
+      @Valid @RequestBody UpdateUserRolesRequest request) {
+    return userAdminService.updateUserRoles(principal, userId, request);
   }
 }

@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -256,6 +257,78 @@ class AdminUsersControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void updateUserRoles_grantsPlatformAdminWhileKeepingTenantAdmin() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            put("/v1/admin/users/" + TENANT_ADMIN_USER_ID + "/roles")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("roleCodes", java.util.List.of("PLATFORM_ADMIN")))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.roles", hasItem("PLATFORM_ADMIN")))
+        .andExpect(jsonPath("$.roles", hasItem("TENANT_ADMIN")));
+  }
+
+  @Test
+  void updateUserRoles_revokesPlatformAdmin() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            put("/v1/admin/users/" + TENANT_ADMIN_USER_ID + "/roles")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("roleCodes", java.util.List.of()))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.roles", hasItem("TENANT_ADMIN")))
+        .andExpect(
+            jsonPath("$.roles", org.hamcrest.Matchers.not(hasItem("PLATFORM_ADMIN"))));
+  }
+
+  @Test
+  void updateUserRoles_withTenantRole_returns400() throws Exception {
+    mockMvc
+        .perform(
+            put("/v1/admin/users/" + TENANT_ADMIN_USER_ID + "/roles")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("roleCodes", java.util.List.of("MEMBER")))))
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.detail")
+                .value(org.hamcrest.Matchers.containsString("Only platform roles")));
+  }
+
+  @Test
+  void updateUserRoles_revokesVictimRefreshToken() throws Exception {
+    var victimLoginBody = loginBody("admin@test.local");
+    var refreshToken = JsonPath.read(victimLoginBody, "$.refreshToken");
+
+    mockMvc
+        .perform(
+            put("/v1/admin/users/" + TENANT_ADMIN_USER_ID + "/roles")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("roleCodes", java.util.List.of("PLATFORM_ADMIN")))))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/v1/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("refreshToken", refreshToken))))
+        .andExpect(status().isUnauthorized());
   }
 
   private String loginAccessToken(String email) throws Exception {

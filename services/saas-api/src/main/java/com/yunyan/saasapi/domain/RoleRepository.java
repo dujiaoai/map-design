@@ -28,4 +28,11 @@ public class RoleRepository {
     return Optional.ofNullable(
         sysRoleMapper.selectOne(Wrappers.<SysRole>lambdaQuery().eq(SysRole::getCode, code)));
   }
+
+  public List<SysRole> findByCodes(List<String> codes) {
+    if (codes == null || codes.isEmpty()) {
+      return List.of();
+    }
+    return sysRoleMapper.selectList(Wrappers.<SysRole>lambdaQuery().in(SysRole::getCode, codes));
+  }
 }

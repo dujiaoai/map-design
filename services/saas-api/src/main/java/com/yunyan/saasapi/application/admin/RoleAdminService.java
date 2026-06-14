@@ -1,10 +1,13 @@
 package com.yunyan.saasapi.application.admin;
 
+import com.yunyan.saasapi.application.auth.UserSessionRevoker;
 import com.yunyan.saasapi.domain.PermissionRepository;
 import com.yunyan.saasapi.domain.RoleRepository;
+import com.yunyan.saasapi.domain.UserRepository;
 import com.yunyan.saasapi.domain.entity.SysPermission;
 import com.yunyan.saasapi.domain.entity.SysRole;
 import com.yunyan.saasapi.security.AuthException;
+import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.PermissionDto;
 import com.yunyan.saasapi.web.dto.admin.PermissionListResponse;
 import com.yunyan.saasapi.web.dto.admin.RoleListResponse;
@@ -29,6 +32,9 @@ public class RoleAdminService {
 
   private final RoleRepository roleRepository;
   private final PermissionRepository permissionRepository;
+  private final UserRepository userRepository;
+  private final UserSessionRevoker userSessionRevoker;
+  private final AdminAuditLogService adminAuditLogService;
 
   public RoleListResponse listRoles() {
     var roles =
@@ -51,8 +57,13 @@ public class RoleAdminService {
 
   @Transactional
   public RolePermissionsResponse updateRolePermissions(
-      UUID roleId, UpdateRolePermissionsRequest request) {
+      SaasPrincipal principal, UUID roleId, UpdateRolePermissionsRequest request) {
     var role = requireRole(roleId);
+    var previousCodes =
+        permissionRepository.findByRoleId(roleId).stream()
+            .map(SysPermission::getCode)
+            .sorted()
+            .toList();
     var requestedCodes = normalizeCodes(request.permissionCodes());
     var permissions = resolvePermissions(requestedCodes);
     validateScopeForRole(role.getCode(), permissions);
@@ -62,6 +73,17 @@ public class RoleAdminService {
 
     var updated =
         permissionRepository.findByRoleId(roleId).stream().map(RoleAdminService::toPermissionDto).toList();
+    var updatedCodes = updated.stream().map(PermissionDto::code).sorted().toList();
+
+    for (UUID userId : userRepository.findUserIdsByRoleId(roleId)) {
+      userSessionRevoker.revokeActiveSessions(userId);
+    }
+    adminAuditLogService.recordRolePermissionUpdate(
+        principal,
+        roleId,
+        role.getCode(),
+        "permissions " + String.join(",", previousCodes) + " -> " + String.join(",", updatedCodes));
+
     return toRolePermissionsResponse(role, updated);
   }
 

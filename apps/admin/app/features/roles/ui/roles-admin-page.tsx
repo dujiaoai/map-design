@@ -34,6 +34,7 @@ export function RolesAdminPage() {
   const [selectedRole, setSelectedRole] = useState<AdminRoleSummary | null>(null)
   const [selectedCodes, setSelectedCodes] = useState<string[]>([])
   const [formError, setFormError] = useState<string | null>(null)
+  const [saveNotice, setSaveNotice] = useState<string | null>(null)
 
   const rolePermissionsQuery = useQuery({
     queryKey: adminQueryKeys.rolePermissions(selectedRole?.id ?? ''),
@@ -85,6 +86,7 @@ export function RolesAdminPage() {
         queryKey: adminQueryKeys.rolePermissions(selectedRole!.id),
       })
       setFormError(null)
+      setSaveNotice('权限已保存。持有该角色的用户需重新登录后生效。')
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
@@ -94,6 +96,7 @@ export function RolesAdminPage() {
       return
     }
     setSelectedRole(role)
+    setSaveNotice(null)
   }
 
   function togglePermission(code: string) {
@@ -113,6 +116,11 @@ export function RolesAdminPage() {
         title="角色与权限"
         description="为 SaaS 角色配置权限码；保存时将全量替换绑定关系。"
       />
+      {saveNotice ? (
+        <p className="rounded-lg border border-primary/30 bg-primary/8 px-4 py-3 text-sm text-primary">
+          {saveNotice}
+        </p>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
         <AdminPanel className="p-2">

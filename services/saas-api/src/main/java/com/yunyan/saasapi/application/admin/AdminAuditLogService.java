@@ -55,6 +55,50 @@ public class AdminAuditLogService {
     adminAuditLogRepository.insert(log);
   }
 
+  @Transactional
+  public void recordPlatformUserAction(
+      SaasPrincipal principal, String action, UUID resourceUserId, String detail) {
+    if (principal == null) {
+      return;
+    }
+
+    var log = new SysAdminAuditLog();
+    log.setId(UUID.randomUUID());
+    log.setActorUserId(principal.userId());
+    log.setActorEmail(principal.email());
+    log.setActorTenantId(principal.tenantId());
+    log.setAction(action);
+    log.setResourceType("platform_user");
+    log.setResourceId(resourceUserId == null ? null : resourceUserId.toString());
+    log.setTargetTenantId(null);
+    log.setCrossTenant(false);
+    log.setDetail(detail);
+    log.setCreatedAt(Instant.now());
+    adminAuditLogRepository.insert(log);
+  }
+
+  @Transactional
+  public void recordRolePermissionUpdate(
+      SaasPrincipal principal, UUID roleId, String roleCode, String detail) {
+    if (principal == null) {
+      return;
+    }
+
+    var log = new SysAdminAuditLog();
+    log.setId(UUID.randomUUID());
+    log.setActorUserId(principal.userId());
+    log.setActorEmail(principal.email());
+    log.setActorTenantId(principal.tenantId());
+    log.setAction("role.permissions.update");
+    log.setResourceType("role");
+    log.setResourceId(roleId == null ? null : roleId.toString());
+    log.setTargetTenantId(null);
+    log.setCrossTenant(false);
+    log.setDetail(roleCode + ": " + detail);
+    log.setCreatedAt(Instant.now());
+    adminAuditLogRepository.insert(log);
+  }
+
   private static boolean isCrossTenant(SaasPrincipal principal, UUID targetTenantId) {
     if (!principal.roleCodes().contains(PLATFORM_ADMIN)) {
       return false;

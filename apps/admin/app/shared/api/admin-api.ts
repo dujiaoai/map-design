@@ -156,6 +156,10 @@ export function patchAdminUser(userId: string, payload: PatchUserPayload) {
   return api.patch<AdminUserSummary>(`/admin/users/${userId}`, payload)
 }
 
+export function updateAdminUserRoles(userId: string, roleCodes: string[]) {
+  return api.put<AdminUserSummary>(`/admin/users/${userId}/roles`, { roleCodes })
+}
+
 export interface AdminRoleSummary {
   id: string
   code: string

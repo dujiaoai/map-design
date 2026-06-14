@@ -56,6 +56,7 @@ export const adminRechargeOrderListSchema = z.object({
 
 export type AdminWalletList = z.infer<typeof adminWalletListSchema>
 export type AdminRechargeOrderList = z.infer<typeof adminRechargeOrderListSchema>
+export type AdminRechargeOrder = AdminRechargeOrderList['items'][number]
 
 export const adminBillingStatsSchema = z.object({
   walletCount: z.number(),

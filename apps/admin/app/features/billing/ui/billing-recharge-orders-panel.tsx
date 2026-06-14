@@ -13,6 +13,7 @@ import { useCallback, useId, useState } from 'react'
 import {
   adminBillingRechargeOrdersQuery,
   adminRechargeOrderListSchema,
+  type AdminRechargeOrder,
   RECHARGE_ORDER_STATUSES,
 } from '~/features/billing/lib/billing-admin-api'
 import type { BillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
@@ -59,7 +60,7 @@ export function BillingRechargeOrdersPanel({
     status?: string
   }>({})
   const [page, setPage] = useState(0)
-  const [refundingOrderNo, setRefundingOrderNo] = useState<string | null>(null)
+  const [refundingOrder, setRefundingOrder] = useState<AdminRechargeOrder | null>(null)
   const [filterError, setFilterError] = useState<string | null>(null)
 
   const applySeed = useCallback((seed: BillingFilterSeed) => {
@@ -140,7 +141,7 @@ export function BillingRechargeOrdersPanel({
             </AdminField>
             <AdminField label="状态">
               <Select value={status} onValueChange={(value) => setStatus(value ?? '')}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full mb-0">
                   <SelectValue placeholder="全部" />
                 </SelectTrigger>
                 <SelectContent>
@@ -226,7 +227,7 @@ export function BillingRechargeOrdersPanel({
                               type="button"
                               variant="outline"
                               size="sm"
-                              onClick={() => setRefundingOrderNo(order.orderNo)}
+                              onClick={() => setRefundingOrder(order)}
                             >
                               退款
                             </Button>
@@ -251,10 +252,10 @@ export function BillingRechargeOrdersPanel({
       </AdminPanel>
       {canRefund ? (
         <BillingRechargeRefundSheet
-          orderNo={refundingOrderNo}
-          open={refundingOrderNo !== null}
+          order={refundingOrder}
+          open={refundingOrder !== null}
           onOpenChange={(open) => {
-            if (!open) setRefundingOrderNo(null)
+            if (!open) setRefundingOrder(null)
           }}
         />
       ) : null}

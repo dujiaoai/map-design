@@ -15,6 +15,8 @@ export const adminQueryKeys = {
   rolePermissions: (roleId: string) => ['admin', 'roles', roleId, 'permissions'] as const,
   members: (tenantId: string) => ['admin', 'members', tenantId] as const,
   tenantCustomRoles: (tenantId: string) => ['admin', 'tenants', tenantId, 'custom-roles'] as const,
+  tenantAssignablePermissions: (tenantId: string) =>
+    ['admin', 'tenants', tenantId, 'assignable-permissions'] as const,
   assignableRoles: (tenantId: string) => ['admin', 'tenants', tenantId, 'assignable-roles'] as const,
   tenantRolePermissions: (tenantId: string, roleId: string) =>
     ['admin', 'tenants', tenantId, 'roles', roleId, 'permissions'] as const,

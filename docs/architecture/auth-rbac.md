@@ -172,6 +172,7 @@
 | --- | --- |
 | 租户自定义角色 | `V15` 扩展 `sys_role`；`POST/PATCH/DELETE /v1/admin/tenants/{id}/roles` |
 | 自定义角色权限 | `GET/PUT .../roles/{id}/permissions`（tenant + workspace scope） |
+| 可分配权限目录 | `GET .../assignable-permissions`（`admin:members:read`；仅 tenant/workspace） |
 | 成员分配 | `GET .../assignable-roles`；成员编辑支持系统 + 自定义角色 |
 | 权限解析 | `PermissionResolver.resolveByRoleIds`（按 role_id，避免 code 冲突） |
 

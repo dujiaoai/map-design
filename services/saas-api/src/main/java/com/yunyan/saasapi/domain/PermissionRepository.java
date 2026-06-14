@@ -24,6 +24,16 @@ public class PermissionRepository {
         Wrappers.<SysPermission>lambdaQuery().orderByAsc(SysPermission::getCode));
   }
 
+  public List<SysPermission> findByScopesOrdered(Collection<String> scopes) {
+    if (CollectionUtils.isEmpty(scopes)) {
+      return List.of();
+    }
+    return sysPermissionMapper.selectList(
+        Wrappers.<SysPermission>lambdaQuery()
+            .in(SysPermission::getScope, scopes)
+            .orderByAsc(SysPermission::getCode));
+  }
+
   public List<String> findPermissionCodesByRoleId(UUID roleId) {
     return sysPermissionMapper.selectCodesByRoleId(roleId);
   }

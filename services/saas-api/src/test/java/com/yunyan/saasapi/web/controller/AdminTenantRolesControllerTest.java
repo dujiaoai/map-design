@@ -39,6 +39,18 @@ class AdminTenantRolesControllerTest {
   @Autowired ObjectMapper objectMapper;
 
   @Test
+  void listAssignablePermissions_returnsTenantAndWorkspaceScopes() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID + "/assignable-permissions")
+                .header("Authorization", "Bearer " + loginAccessToken("admin@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.permissions", hasSize(5)))
+        .andExpect(jsonPath("$.permissions[*].code", hasItem(PermissionCodes.ADMIN_MEMBERS_READ)))
+        .andExpect(jsonPath("$.permissions[*].code", hasItem(PermissionCodes.WORKSPACE_USE)));
+  }
+
+  @Test
   void listAssignableRoles_includesSystemAndAllowsCustom() throws Exception {
     mockMvc
         .perform(

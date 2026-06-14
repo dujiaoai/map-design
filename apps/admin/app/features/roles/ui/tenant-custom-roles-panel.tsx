@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   createTenantCustomRole,
   deleteTenantCustomRole,
-  fetchAdminPermissions,
+  fetchTenantAssignablePermissions,
   fetchTenantCustomRoles,
   fetchTenantRolePermissions,
   type TenantRoleSummary,
@@ -18,7 +18,6 @@ import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminFormError } from '~/shared/ui/admin-field'
 
-import { filterPermissionsForCustomRole } from '../lib/role-permission-rules'
 import { RolePermissionEditor } from './role-permission-editor'
 
 export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
@@ -31,8 +30,8 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
     queryFn: () => fetchTenantCustomRoles(tenantId),
   })
   const permissionsQuery = useQuery({
-    queryKey: adminQueryKeys.permissions,
-    queryFn: fetchAdminPermissions,
+    queryKey: adminQueryKeys.tenantAssignablePermissions(tenantId),
+    queryFn: () => fetchTenantAssignablePermissions(tenantId),
   })
 
   const [selectedRole, setSelectedRole] = useState<TenantRoleSummary | null>(null)
@@ -63,8 +62,7 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
   }, [rolePermissionsQuery.data])
 
   const availablePermissions = useMemo(() => {
-    if (!permissionsQuery.data) return []
-    return filterPermissionsForCustomRole(permissionsQuery.data.permissions)
+    return permissionsQuery.data?.permissions ?? []
   }, [permissionsQuery.data])
 
   const savedCodes = useMemo(

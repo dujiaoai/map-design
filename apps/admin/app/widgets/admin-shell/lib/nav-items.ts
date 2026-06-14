@@ -45,8 +45,14 @@ export const adminNavItems: AdminNavItem[] = [
     permissions: ['admin:members:read'],
   },
   {
+    to: '/tenant-roles',
+    label: '自定义角色',
+    icon: ShieldIcon,
+    permissions: ['admin:members:read'],
+  },
+  {
     to: '/roles',
-    label: '角色',
+    label: '系统角色',
     icon: ShieldIcon,
     permissions: ['admin:roles:read'],
   },

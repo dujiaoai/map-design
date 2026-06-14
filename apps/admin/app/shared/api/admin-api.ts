@@ -303,6 +303,10 @@ export interface AssignableRoleListResponse {
   roles: AssignableRoleSummary[]
 }
 
+export function fetchTenantAssignablePermissions(tenantId: string) {
+  return api.get<AdminPermissionListResponse>(`/admin/tenants/${tenantId}/assignable-permissions`)
+}
+
 export function fetchTenantCustomRoles(tenantId: string) {
   return api.get<TenantRoleListResponse>(`/admin/tenants/${tenantId}/roles`)
 }

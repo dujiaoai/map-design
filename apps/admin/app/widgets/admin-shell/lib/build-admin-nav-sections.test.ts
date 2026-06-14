@@ -32,6 +32,7 @@ describe('buildAdminNavSections', () => {
 
     const collaboration = sections.find((section) => section.id === 'collaboration')
     expect(collaboration?.items.map((item) => item.id)).toContain('/members')
+    expect(collaboration?.items.map((item) => item.id)).toContain('/tenant-roles')
   })
 
   it('hides members nav for user without members permission or platform role', () => {
@@ -47,7 +48,7 @@ describe('buildAdminNavSections', () => {
     expect(collaboration?.items.map((item) => item.id) ?? []).not.toContain('/members')
   })
 
-  it('shows members nav when admin:members:read is present', () => {
+  it('shows members and custom roles nav when admin:members:read is present', () => {
     const sections = buildAdminNavSections(
       '/members',
       session({
@@ -58,5 +59,7 @@ describe('buildAdminNavSections', () => {
 
     const collaboration = sections.find((section) => section.id === 'collaboration')
     expect(collaboration?.items.map((item) => item.id)).toContain('/members')
+    expect(collaboration?.items.map((item) => item.id)).toContain('/tenant-roles')
+    expect(collaboration?.items.map((item) => item.id) ?? []).not.toContain('/roles')
   })
 })

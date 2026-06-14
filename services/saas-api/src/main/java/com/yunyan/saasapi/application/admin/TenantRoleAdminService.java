@@ -14,6 +14,7 @@ import com.yunyan.saasapi.security.TenantContext;
 import com.yunyan.saasapi.web.dto.admin.AssignableRoleDto;
 import com.yunyan.saasapi.web.dto.admin.AssignableRoleListResponse;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantRoleRequest;
+import com.yunyan.saasapi.web.dto.admin.PermissionListResponse;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantRoleRequest;
 import com.yunyan.saasapi.web.dto.admin.PermissionDto;
 import com.yunyan.saasapi.web.dto.admin.RolePermissionsResponse;
@@ -68,6 +69,18 @@ public class TenantRoleAdminService {
                     .map(this::toAssignableRole)
                     .toList());
     return new AssignableRoleListResponse(roles);
+  }
+
+  public PermissionListResponse listAssignablePermissions(SaasPrincipal principal, UUID tenantId) {
+    ensureOwnTenant(principal, tenantId);
+    var permissions =
+        withTargetTenant(
+            tenantId,
+            () ->
+                permissionRepository.findByScopesOrdered(TENANT_CUSTOM_SCOPES).stream()
+                    .map(this::toPermissionDto)
+                    .toList());
+    return new PermissionListResponse(permissions);
   }
 
   @Transactional

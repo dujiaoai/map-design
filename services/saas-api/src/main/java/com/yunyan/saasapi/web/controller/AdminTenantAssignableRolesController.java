@@ -4,6 +4,7 @@ import com.yunyan.saasapi.application.admin.TenantRoleAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AssignableRoleListResponse;
+import com.yunyan.saasapi.web.dto.admin.PermissionListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,5 +35,16 @@ public class AdminTenantAssignableRolesController {
   public AssignableRoleListResponse listAssignableRoles(
       @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
     return tenantRoleAdminService.listAssignableRoles(principal, tenantId);
+  }
+
+  @GetMapping("/assignable-permissions")
+  @PreAuthorize(
+      "hasAuthority('"
+          + PermissionCodes.ADMIN_MEMBERS_READ
+          + "') or hasAuthority('ROLE_PLATFORM_ADMIN')")
+  @Operation(summary = "列出可绑定到租户自定义角色的权限", description = "仅 tenant / workspace scope")
+  public PermissionListResponse listAssignablePermissions(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
+    return tenantRoleAdminService.listAssignablePermissions(principal, tenantId);
   }
 }

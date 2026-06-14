@@ -15,6 +15,7 @@ export default [
   layout('layouts/app-layout.tsx', [
     index('routes/home.tsx', { id: 'routes/home' }),
     route(':section/:moduleId', 'routes/home.tsx', { id: 'routes/workspace-module' }),
+    route('billing', 'routes/billing.tsx'),
     route('403', 'routes/forbidden.tsx'),
   ]),
 ] satisfies RouteConfig

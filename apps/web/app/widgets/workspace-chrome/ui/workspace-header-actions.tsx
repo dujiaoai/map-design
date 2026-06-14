@@ -13,9 +13,14 @@ import {
   DropdownMenuTrigger,
   type NavUserData,
 } from '@repo/ui'
-import { BadgeCheckIcon, BellIcon, ChevronsUpDownIcon, LogOutIcon } from 'lucide-react'
+import { hasPermission, PermissionCodes } from '@repo/auth'
+import { BadgeCheckIcon, BellIcon, ChevronsUpDownIcon, CoinsIcon, LogOutIcon } from 'lucide-react'
+import { Link } from 'react-router'
 
 import { ThemeToggle } from '~/features/theme'
+import { BillingWalletCard } from '~/features/billing'
+import { auth } from '~/shared/auth/client'
+import { usesSaasSessionBootstrap } from '~/shared/session/fetch-saas-session'
 import {
   WORKSPACE_CHROME_ICON_BUTTON_CLASS,
   WORKSPACE_CHROME_TEXT_BUTTON_CLASS,
@@ -39,9 +44,13 @@ export function WorkspaceHeaderActions({
   const displayUser = user ?? { name: '用户', email: '', avatar: '', initials: '?' }
   const initials = displayUser.initials ?? (displayUser.name.slice(0, 1).toUpperCase() || '?')
   const badgeLabel = notificationUnreadCount > 9 ? '9+' : String(notificationUnreadCount)
+  const showWallet =
+    usesSaasSessionBootstrap() &&
+    hasPermission(auth.getSession()?.user.permissions, PermissionCodes.BILLING_WALLET_READ)
 
   return (
     <div className={cn('flex shrink-0 items-center gap-1', className)}>
+      {showWallet ? <BillingWalletCard variant="compact" /> : null}
       <ThemeToggle className={WORKSPACE_CHROME_ICON_BUTTON_CLASS} />
 
       <Button
@@ -105,6 +114,12 @@ export function WorkspaceHeaderActions({
             <BadgeCheckIcon />
             账号
           </DropdownMenuItem>
+          {showWallet ? (
+            <DropdownMenuItem render={<Link to="/billing" />}>
+              <CoinsIcon />
+              积分钱包
+            </DropdownMenuItem>
+          ) : null}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onLogout}>
             <LogOutIcon />

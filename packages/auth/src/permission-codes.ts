@@ -11,7 +11,7 @@ export const PermissionCodes = {
   ADMIN_MEMBERS_READ: 'admin:members:read',
   ADMIN_MEMBERS_WRITE: 'admin:members:write',
   WORKSPACE_USE: 'workspace:use',
-  public static final String WORKSPACE_MAP_READ: 'workspace:map:read',
+  WORKSPACE_MAP_READ: 'workspace:map:read',
   WORKSPACE_MAP_WRITE: 'workspace:map:write',
   BILLING_WALLET_READ: 'billing:wallet:read',
   BILLING_LEDGER_READ: 'billing:ledger:read',

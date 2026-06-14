@@ -1,0 +1,27 @@
+@import "../../../packages/ui/src/styles/globals.css";
+
+@source "./**/*.{ts,tsx}";
+@source "../../../packages/ui/src/**/*.{ts,tsx}";
+
+@layer base {
+  body {
+    @apply antialiased;
+  }
+}
+
+.marketing-display {
+  font-family: 'Syne', 'Noto Sans SC', system-ui, sans-serif;
+}
+
+.marketing-hero-glow {
+  pointer-events: none;
+  position: absolute;
+  inset: -20% 0 auto 0;
+  height: 420px;
+  background: radial-gradient(
+    ellipse 60% 50% at 50% 0%,
+    color-mix(in oklab, var(--primary) 22%, transparent),
+    transparent 70%
+  );
+  opacity: 0.9;
+}

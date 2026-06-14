@@ -3,6 +3,8 @@ export type {
   ApiClient,
   ApiClientOptions,
   AuthHandlers,
+  PaymentRequiredDetail,
   RequestOptions,
 } from './src/types'
 export { ApiError } from './src/types'
+export { parsePaymentRequiredDetail } from './src/payment-required'

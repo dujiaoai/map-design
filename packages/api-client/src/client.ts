@@ -1,3 +1,4 @@
+import { parsePaymentRequiredDetail } from './payment-required'
 import { type ApiClient, type ApiClientOptions, ApiError, type RequestOptions } from './types'
 
 async function parseBody(res: Response): Promise<unknown> {
@@ -61,6 +62,10 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
 
     const body = await parseBody(res)
     if (!res.ok) {
+      if (res.status === 402 && options.onPaymentRequired) {
+        const detail = parsePaymentRequiredDetail(body)
+        if (detail) options.onPaymentRequired(detail)
+      }
       throw new ApiError(res.status, body)
     }
 

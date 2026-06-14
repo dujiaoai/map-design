@@ -53,4 +53,29 @@ describe('createApiClient', () => {
 
     await expect(client.get('/x')).rejects.toBeInstanceOf(ApiError)
   })
+
+  it('402 余额不足时触发 onPaymentRequired 并仍抛出 ApiError', async () => {
+    const onPaymentRequired = vi.fn()
+    const problem = {
+      type: 'urn:yunyan:billing:insufficient_balance',
+      title: 'Insufficient balance',
+      status: 402,
+      detail: 'Not enough points',
+      availableBalance: 0,
+      requiredPoints: 1,
+    }
+
+    const client = createApiClient({
+      baseUrl: 'https://api.test/v1',
+      fetch: async () => new Response(JSON.stringify(problem), { status: 402 }),
+      onPaymentRequired,
+    })
+
+    await expect(client.post('/hold')).rejects.toBeInstanceOf(ApiError)
+    expect(onPaymentRequired).toHaveBeenCalledOnce()
+    expect(onPaymentRequired.mock.calls[0]?.[0]).toMatchObject({
+      availableBalance: 0,
+      requiredPoints: 1,
+    })
+  })
 })

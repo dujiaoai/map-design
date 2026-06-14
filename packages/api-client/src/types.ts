@@ -17,11 +17,21 @@ export interface AuthHandlers {
   onUnauthorized?: () => void
 }
 
+export interface PaymentRequiredDetail {
+  type: string
+  title?: string
+  detail?: string
+  availableBalance?: number
+  requiredPoints?: number
+}
+
 export interface ApiClientOptions {
   baseUrl: string
   auth?: AuthHandlers
   fetch?: typeof fetch
   headers?: Record<string, string>
+  /** RFC 7807 402 余额不足等场景；仍抛出 ApiError 供调用方处理 */
+  onPaymentRequired?: (detail: PaymentRequiredDetail) => void
 }
 
 export interface RequestOptions extends Omit<RequestInit, 'body'> {

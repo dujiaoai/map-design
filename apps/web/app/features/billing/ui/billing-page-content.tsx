@@ -3,6 +3,7 @@ import { Button } from '@repo/ui'
 import { ArrowLeftIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { DevBillingSmokePanel } from '~/features/billing/ui/dev-billing-smoke-panel'
 import { BillingLedgerTable } from '~/features/billing/ui/billing-ledger-table'
 import { BillingWalletCard } from '~/features/billing/ui/billing-wallet-card'
 import { RechargePackagesPanel } from '~/features/billing/ui/recharge-packages-panel'
@@ -36,6 +37,8 @@ export function BillingPageContent() {
       </div>
 
       <BillingWalletCard variant="page" />
+
+      <DevBillingSmokePanel />
 
       {canRecharge ? <RechargePackagesPanel /> : null}
 

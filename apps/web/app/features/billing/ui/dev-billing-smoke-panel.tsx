@@ -1,0 +1,61 @@
+import { ApiError } from '@repo/api-client'
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui'
+import { useQueryClient } from '@tanstack/react-query'
+import { FlaskConicalIcon } from 'lucide-react'
+import { useCallback, useState } from 'react'
+
+import { formatPoints } from '~/features/billing/lib/format-points'
+import { api } from '~/shared/api/client'
+import { billingQueryKeys } from '~/shared/queries/billing-queries'
+
+type SmokeConsumeResponse = {
+  holdId: string
+  points: number
+  status: string
+}
+
+export function DevBillingSmokePanel() {
+  const queryClient = useQueryClient()
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+
+  const runSmokeConsume = useCallback(async () => {
+    setBusy(true)
+    setMessage(null)
+    try {
+      const result = await api.post<SmokeConsumeResponse>('/dev/billing/smoke-consume')
+      await queryClient.invalidateQueries({ queryKey: billingQueryKeys.all })
+      setMessage(`扣费成功：hold ${result.holdId.slice(0, 8)}…，消耗 ${formatPoints(result.points)} 点`)
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 402) {
+        setMessage('余额不足（402 弹窗应已自动弹出）')
+        return
+      }
+      setMessage(error instanceof Error ? error.message : '请求失败')
+    } finally {
+      setBusy(false)
+    }
+  }, [queryClient])
+
+  if (!import.meta.env.DEV) return null
+
+  return (
+    <Card className="border-dashed border-primary/40 bg-card/60">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <FlaskConicalIcon className="size-4 text-primary" />
+          开发冒烟：模拟扣费
+        </CardTitle>
+        <CardDescription>
+          调用 saas-api dev 接口 hold + confirm 各 1 点；需后端 dev profile 且 billing 已启用。
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <Button type="button" variant="secondary" disabled={busy} onClick={runSmokeConsume}>
+          {busy ? '扣费中…' : '执行 smoke-consume（1 点）'}
+        </Button>
+        {message ? <p className="text-muted-foreground text-sm">{message}</p> : null}
+      </CardContent>
+    </Card>
+  )
+}

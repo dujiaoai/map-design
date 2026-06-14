@@ -79,9 +79,12 @@ services:
     environment:
       RUOYI_API_UPSTREAM: ${RUOYI_API_UPSTREAM:-https://www.airace.com.cn}
       SAAS_API_UPSTREAM: http://saas-api:8082
+      BILLING_API_UPSTREAM: http://billing-api:8083
     depends_on:
       saas-api:
         condition: service_healthy
+      billing-api:
+        condition: service_started
     restart: unless-stopped
 
   saas-admin:
@@ -93,9 +96,12 @@ services:
       - '${SAAS_ADMIN_PORT:-8083}:80'
     environment:
       SAAS_API_UPSTREAM: http://saas-api:8082
+      BILLING_API_UPSTREAM: http://billing-api:8083
     depends_on:
       saas-api:
         condition: service_healthy
+      billing-api:
+        condition: service_started
     restart: unless-stopped
 
   cloud-uav:

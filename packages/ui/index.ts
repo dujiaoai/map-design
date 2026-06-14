@@ -26,4 +26,5 @@ export { SidebarBrand, type SidebarBrandProps } from './src/components/sidebar-b
 export { TeamSwitcher, type TeamSwitcherTeam } from './src/components/team-switcher'
 export { AppSidebar, type NavMapSectionUi } from './src/components/app-sidebar'
 export { ThemeModeToggle, type ThemeMode } from './src/components/theme-mode-toggle'
+export { CopyButton } from './src/components/copy-button'
 export { cn } from './src/lib/utils'

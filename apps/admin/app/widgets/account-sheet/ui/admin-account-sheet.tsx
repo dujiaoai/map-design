@@ -3,6 +3,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
+  CopyButton,
   Drawer,
   DrawerContent,
   DrawerDescription,
@@ -20,11 +21,28 @@ import {
   sessionToNavUserData,
 } from '~/shared/auth/session-display'
 
-function ProfileField({ label, value }: { label: string; value: string }) {
+function ProfileField({
+  label,
+  value,
+  copyable = false,
+}: {
+  label: string
+  value: string
+  copyable?: boolean
+}) {
   return (
     <div className="flex items-start justify-between gap-4 border-b py-3 text-sm last:border-0">
       <span className="text-muted-foreground shrink-0">{label}</span>
-      <span className="text-right font-medium break-all">{value || '-'}</span>
+      <div className="flex min-w-0 items-start justify-end gap-1">
+        <span
+          className={`text-right font-medium break-all ${copyable ? 'font-mono text-xs sm:text-sm' : ''}`}
+        >
+          {value || '-'}
+        </span>
+        {copyable && value ? (
+          <CopyButton value={value} aria-label={`复制${label}`} />
+        ) : null}
+      </div>
     </div>
   )
 }
@@ -62,7 +80,7 @@ export function AdminAccountSheet({
           {session ? (
             <>
               <div className="mb-4 rounded-lg border px-4">
-                <ProfileField label="用户 ID" value={session.user.id} />
+                <ProfileField label="用户 ID" value={session.user.id} copyable />
                 <ProfileField label="邮箱" value={session.user.email} />
                 <ProfileField label="角色" value={formatAdminSessionRoles(session.user.roles)} />
                 <ProfileField

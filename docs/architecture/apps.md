@@ -11,7 +11,7 @@
 | 路由 | React Router 7 | React Router 7 | React Router 7 |
 | 鉴权 | 公开 + 注册 | 租户 session | 平台管理员 MFA |
 | 部署 | 静态 / Edge | 静态 SPA | 内网 / VPN |
-| **状态** | 占位 README | **活跃开发** | **P0～P3 已交付** |
+| **状态** | **已 scaffold**（`/pricing`） | **活跃开发** | **P0～P3 已交付** |
 
 ## Web（`app.example.com`）
 
@@ -102,6 +102,8 @@ pnpm --filter @repo/saas-admin dev
 联调账号见 [`apps/admin/README.md`](../../apps/admin/README.md)。
 
 ## Marketing（`www.example.com`）
+
+本地开发：`pnpm dev:marketing`（`:5180`），定价页跳转 Web 注册见 `VITE_WEB_APP_URL`。
 
 ```
 /

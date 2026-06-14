@@ -5,6 +5,7 @@ import com.yunyan.billingapi.domain.entity.BillingLedger;
 import com.yunyan.billingapi.domain.mapper.BillingLedgerMapper;
 import com.yunyan.billingapi.domain.mapper.BillingWalletMapper;
 import com.yunyan.billingapi.security.AuthException;
+import com.yunyan.billingapi.security.SaasPrincipal;
 import com.yunyan.billingapi.web.dto.AdminAdjustRequest;
 import com.yunyan.billingapi.web.dto.AdminAdjustResponse;
 import java.time.Instant;
@@ -21,18 +22,22 @@ public class AdminBillingAdjustService {
   private final WalletService walletService;
   private final BillingWalletMapper walletMapper;
   private final BillingLedgerMapper ledgerMapper;
+  private final AdminAuditLogService adminAuditLogService;
 
   public AdminBillingAdjustService(
       WalletService walletService,
       BillingWalletMapper walletMapper,
-      BillingLedgerMapper ledgerMapper) {
+      BillingLedgerMapper ledgerMapper,
+      AdminAuditLogService adminAuditLogService) {
     this.walletService = walletService;
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
+    this.adminAuditLogService = adminAuditLogService;
   }
 
   @Transactional
-  public AdminAdjustResponse adjust(UUID tenantId, AdminAdjustRequest request) {
+  public AdminAdjustResponse adjust(
+      SaasPrincipal actor, UUID tenantId, AdminAdjustRequest request) {
     var idempotencyKey = request.idempotencyKey().trim();
     var existing = ledgerMapper.findByIdempotencyKey(idempotencyKey);
     if (existing != null) {
@@ -74,6 +79,16 @@ public class AdminBillingAdjustService {
     ledger.setIdempotencyKey(idempotencyKey);
     ledger.setCreatedAt(Instant.now());
     ledgerMapper.insert(ledger);
+
+    adminAuditLogService.recordBillingAdjust(
+        actor,
+        tenantId,
+        request.userId(),
+        wallet.getId(),
+        request.amount(),
+        newBalance,
+        remark,
+        idempotencyKey);
 
     return AdminAdjustResponse.applied(
         wallet.getId(), tenantId, request.userId(), request.amount(), newBalance, remark);

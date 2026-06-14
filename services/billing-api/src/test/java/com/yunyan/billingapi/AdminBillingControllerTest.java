@@ -1,10 +1,13 @@
 package com.yunyan.billingapi;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yunyan.billingapi.application.admin.AdminAuditLogService;
+import com.yunyan.billingapi.domain.mapper.SysAdminAuditLogMapper;
 import com.yunyan.billingapi.domain.permission.PermissionCodes;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +29,8 @@ class AdminBillingControllerTest {
 
   @Autowired ObjectMapper objectMapper;
 
+  @Autowired SysAdminAuditLogMapper auditLogMapper;
+
   @Test
   void adjustWallet_creditsUserWallet() throws Exception {
     var tenantId = UUID.randomUUID();
@@ -34,6 +39,7 @@ class AdminBillingControllerTest {
     var token =
         BillingJwtTestSupport.accessToken(
             adminId, tenantId, List.of(PermissionCodes.ADMIN_BILLING_ADJUST));
+    var auditBefore = auditCount();
 
     mockMvc
         .perform(
@@ -55,10 +61,12 @@ class AdminBillingControllerTest {
         .andExpect(jsonPath("$.amount").value(200))
         .andExpect(jsonPath("$.balanceAfter").value(200))
         .andExpect(jsonPath("$.idempotentReplay").value(false));
+
+    assertThat(auditCount() - auditBefore).isEqualTo(1);
   }
 
   @Test
-  void adjustWallet_idempotentReplay_returnsSameLedger() throws Exception {
+  void adjustWallet_idempotentReplay_returnsSameLedgerWithoutDuplicateAudit() throws Exception {
     var tenantId = UUID.randomUUID();
     var userId = UUID.randomUUID();
     var adminId = UUID.randomUUID();
@@ -75,6 +83,7 @@ class AdminBillingControllerTest {
             "gift",
             "idempotencyKey",
             "admin-adjust:test-2");
+    var auditBefore = auditCount();
 
     mockMvc
         .perform(
@@ -94,6 +103,8 @@ class AdminBillingControllerTest {
         .andExpect(jsonPath("$.amount").value(150))
         .andExpect(jsonPath("$.balanceAfter").value(150))
         .andExpect(jsonPath("$.idempotentReplay").value(true));
+
+    assertThat(auditCount() - auditBefore).isEqualTo(1);
   }
 
   @Test
@@ -103,6 +114,7 @@ class AdminBillingControllerTest {
     var token =
         BillingJwtTestSupport.accessToken(
             userId, tenantId, List.of(PermissionCodes.BILLING_WALLET_READ));
+    var auditBefore = auditCount();
 
     mockMvc
         .perform(
@@ -121,6 +133,8 @@ class AdminBillingControllerTest {
                             "idempotencyKey",
                             "admin-adjust:denied"))))
         .andExpect(status().isForbidden());
+
+    assertThat(auditCount() - auditBefore).isZero();
   }
 
   @Test
@@ -131,6 +145,7 @@ class AdminBillingControllerTest {
     var token =
         BillingJwtTestSupport.accessToken(
             adminId, tenantId, List.of(PermissionCodes.ADMIN_BILLING_ADJUST));
+    var auditBefore = auditCount();
 
     mockMvc
         .perform(
@@ -149,5 +164,11 @@ class AdminBillingControllerTest {
                             "idempotencyKey",
                             "admin-adjust:debit-empty"))))
         .andExpect(status().isConflict());
+
+    assertThat(auditCount() - auditBefore).isZero();
+  }
+
+  private long auditCount() {
+    return auditLogMapper.countByAction(AdminAuditLogService.ACTION_BILLING_WALLET_ADJUST);
   }
 }

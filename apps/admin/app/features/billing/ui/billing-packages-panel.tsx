@@ -39,7 +39,7 @@ export function BillingPackagesPanel({
   onEditPackage?: (pkg: AdminPackage) => void
 }) {
   const queryClient = useQueryClient()
-  const [deactivatingCode, setDeactivatingCode] = useState<string | null>(null)
+  const [pendingCode, setPendingCode] = useState<string | null>(null)
   const { confirm, confirmDialog } = useConfirmDialog()
 
   const query = useQuery({
@@ -48,12 +48,18 @@ export function BillingPackagesPanel({
       adminPackageListSchema.parse(await billingAdminApi.get('/packages')),
   })
 
-  const deactivateMutation = useMutation({
-    mutationFn: async (pkg: AdminPackage) => {
-      setDeactivatingCode(pkg.code)
+  const statusMutation = useMutation({
+    mutationFn: async ({
+      pkg,
+      status,
+    }: {
+      pkg: AdminPackage
+      status: 'active' | 'inactive'
+    }) => {
+      setPendingCode(pkg.code)
       return adminPackageSchema.parse(
         await billingAdminApi.patch(`/packages/${encodeURIComponent(pkg.code)}`, {
-          status: 'inactive',
+          status,
         }),
       )
     },
@@ -61,14 +67,12 @@ export function BillingPackagesPanel({
       await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.packages() })
     },
     onSettled: () => {
-      setDeactivatingCode(null)
+      setPendingCode(null)
     },
   })
 
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
-  const actionError = deactivateMutation.error
-    ? formatAdminApiError(deactivateMutation.error)
-    : null
+  const actionError = statusMutation.error ? formatAdminApiError(statusMutation.error) : null
 
   return (
     <>
@@ -77,7 +81,7 @@ export function BillingPackagesPanel({
         <div>
           <h3 className="text-base font-medium">充值 SKU</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            平台价目表（含 inactive）；下架后前台不再展示，历史订单不受影响。
+            平台价目表（含 inactive）；下架后前台不再展示，可快捷上架恢复。
           </p>
         </div>
         {canWrite && onCreatePackage ? (
@@ -136,21 +140,40 @@ export function BillingPackagesPanel({
                             type="button"
                             variant="outline"
                             size="sm"
-                            disabled={deactivateMutation.isPending}
+                            disabled={statusMutation.isPending}
                             onClick={async () => {
                               const confirmed = await confirm({
                                 description: `确定下架 SKU「${pkg.code}」？前台充值页将不再展示该套餐。`,
                                 confirmLabel: '下架',
                               })
                               if (!confirmed) return
-                              deactivateMutation.mutate(pkg)
+                              statusMutation.mutate({ pkg, status: 'inactive' })
                             }}
                           >
-                            {deactivatingCode === pkg.code && deactivateMutation.isPending
+                            {pendingCode === pkg.code && statusMutation.isPending
                               ? '下架中…'
                               : '下架'}
                           </Button>
-                        ) : null}
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={statusMutation.isPending}
+                            onClick={async () => {
+                              const confirmed = await confirm({
+                                description: `确定上架 SKU「${pkg.code}」？前台充值页将重新展示该套餐。`,
+                                confirmLabel: '上架',
+                              })
+                              if (!confirmed) return
+                              statusMutation.mutate({ pkg, status: 'active' })
+                            }}
+                          >
+                            {pendingCode === pkg.code && statusMutation.isPending
+                              ? '上架中…'
+                              : '上架'}
+                          </Button>
+                        )}
                       </div>
                     </AdminTableCell>
                   ) : null}

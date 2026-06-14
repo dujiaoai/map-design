@@ -26,6 +26,8 @@ const AUDIT_ACTION_OPTIONS = [
   { value: 'member.invite-link.revoke', label: '撤销邀请链接' },
   { value: 'member.update', label: '更新成员' },
   { value: 'member.roles.update', label: '更新角色' },
+  { value: 'billing.wallet.adjust', label: '计费调账' },
+  { value: 'billing.package.write', label: 'SKU 变更' },
 ] as const
 
 export function AuditLogsAdminPage() {
@@ -50,7 +52,7 @@ export function AuditLogsAdminPage() {
     <div className="space-y-6">
       <AdminPageHeader
         title="审计日志"
-        description="记录成员邀请、更新与角色分配；跨租户操作会标记 crossTenant。"
+        description="记录成员邀请、角色变更与平台计费操作（调账、SKU）；跨租户操作会标记 crossTenant。"
       />
 
       <div className="flex flex-wrap items-center gap-3">

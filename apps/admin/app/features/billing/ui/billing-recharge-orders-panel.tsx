@@ -100,7 +100,7 @@ export function BillingRechargeOrdersPanel({
             </p>
           </div>
           <form
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_140px_auto_auto]"
+            className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_140px_auto]"
             onSubmit={(event) => {
               event.preventDefault()
               const nextTenantId = tenantId.trim() || undefined
@@ -140,7 +140,7 @@ export function BillingRechargeOrdersPanel({
             </AdminField>
             <AdminField label="状态">
               <Select value={status} onValueChange={(value) => setStatus(value ?? '')}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="全部" />
                 </SelectTrigger>
                 <SelectContent>
@@ -152,11 +152,14 @@ export function BillingRechargeOrdersPanel({
                 </SelectContent>
               </Select>
             </AdminField>
-            <div className="flex items-end gap-2">
-              <Button type="submit">筛选</Button>
+            <div className="flex h-9 items-center gap-2">
+              <Button type="submit" size="sm">
+                筛选
+              </Button>
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 onClick={() => {
                   setTenantId('')
                   setUserId('')

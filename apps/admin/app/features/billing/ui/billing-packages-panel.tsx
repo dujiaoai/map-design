@@ -93,7 +93,7 @@ export function BillingPackagesPanel({
   return (
     <>
       <AdminPanel>
-        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border/60 px-6 py-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 px-6 py-5">
           <div>
             <h3 className="text-base font-medium">充值 SKU</h3>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -106,16 +106,16 @@ export function BillingPackagesPanel({
             </Button>
           ) : null}
         </div>
-        <div className="space-y-4 border-b border-border/60 px-6 py-4">
-          <div className="flex flex-wrap items-end gap-3">
-            <AdminField label="搜索代码" className="min-w-[180px] flex-1">
+        <div className="border-b border-border/60 px-6 py-4">
+          <div className="grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_140px]">
+            <AdminField label="搜索代码">
               <Input
                 value={codeSearch}
                 onChange={(event) => setCodeSearch(event.target.value)}
                 placeholder="pkg_1000"
               />
             </AdminField>
-            <AdminField label="状态" className="w-[140px]">
+            <AdminField label="状态">
               <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value ?? 'all')}>
                 <SelectTrigger className="w-full">
                   <SelectValue />

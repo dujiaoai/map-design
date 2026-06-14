@@ -13,7 +13,7 @@ import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminFormError } from '~/shared/ui/admin-field'
-import { Button, cn } from '@repo/ui'
+import { Button, cn, useConfirmDialog } from '@repo/ui'
 
 import { filterPermissionsForRole } from '../lib/role-permission-rules'
 import { RolePermissionEditor } from './role-permission-editor'
@@ -22,6 +22,7 @@ export function RolesAdminPage() {
   const { can } = useAdminPermissions()
   const canWrite = can('admin:roles:write')
   const queryClient = useQueryClient()
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const rolesQuery = useQuery({ queryKey: adminQueryKeys.roles, queryFn: fetchAdminRoles })
   const permissionsQuery = useQuery({
@@ -79,8 +80,12 @@ export function RolesAdminPage() {
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
 
-  function selectRole(role: AdminRoleSummary) {
-    if (isDirty && selectedRole && !window.confirm('当前角色权限未保存，确定切换？')) {
+  async function selectRole(role: AdminRoleSummary) {
+    if (
+      isDirty &&
+      selectedRole &&
+      !(await confirm('当前角色权限未保存，确定切换？'))
+    ) {
       return
     }
     setSelectedRole(role)
@@ -171,6 +176,7 @@ export function RolesAdminPage() {
           )}
         </AdminPanel>
       </div>
+      {confirmDialog}
     </div>
   )
 }

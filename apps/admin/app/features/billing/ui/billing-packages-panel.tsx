@@ -1,4 +1,4 @@
-import { Button } from '@repo/ui'
+import { Button, useConfirmDialog } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
@@ -40,6 +40,7 @@ export function BillingPackagesPanel({
 }) {
   const queryClient = useQueryClient()
   const [deactivatingCode, setDeactivatingCode] = useState<string | null>(null)
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const query = useQuery({
     queryKey: billingAdminQueryKeys.packages(),
@@ -70,7 +71,8 @@ export function BillingPackagesPanel({
     : null
 
   return (
-    <AdminPanel>
+    <>
+      <AdminPanel>
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border/60 px-6 py-5">
         <div>
           <h3 className="text-base font-medium">充值 SKU</h3>
@@ -135,14 +137,12 @@ export function BillingPackagesPanel({
                             variant="outline"
                             size="sm"
                             disabled={deactivateMutation.isPending}
-                            onClick={() => {
-                              if (
-                                !window.confirm(
-                                  `确定下架 SKU「${pkg.code}」？前台充值页将不再展示该套餐。`,
-                                )
-                              ) {
-                                return
-                              }
+                            onClick={async () => {
+                              const confirmed = await confirm({
+                                description: `确定下架 SKU「${pkg.code}」？前台充值页将不再展示该套餐。`,
+                                confirmLabel: '下架',
+                              })
+                              if (!confirmed) return
                               deactivateMutation.mutate(pkg)
                             }}
                           >
@@ -161,5 +161,7 @@ export function BillingPackagesPanel({
         ) : null}
       </div>
     </AdminPanel>
+      {confirmDialog}
+    </>
   )
 }

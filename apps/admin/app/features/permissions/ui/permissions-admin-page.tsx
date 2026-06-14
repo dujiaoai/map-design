@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Badge, Button, Input, cn } from '@repo/ui'
+import { Badge, Button, Input, cn, useConfirmDialog } from '@repo/ui'
 import { PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -29,6 +29,7 @@ export function PermissionsAdminPage() {
   const { can } = useAdminPermissions()
   const canWrite = can('admin:roles:write')
   const queryClient = useQueryClient()
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const modulesQuery = useQuery({
     queryKey: adminQueryKeys.permissionModules,
@@ -323,10 +324,13 @@ export function PermissionsAdminPage() {
                       variant="destructive"
                       size="sm"
                       disabled={deleteModuleMutation.isPending || selectedPermissions.length > 0}
-                      onClick={() => {
-                        if (window.confirm('确定删除该模块？须先清空模块下权限项。')) {
-                          deleteModuleMutation.mutate()
-                        }
+                      onClick={async () => {
+                        const confirmed = await confirm({
+                          description: '确定删除该模块？须先清空模块下权限项。',
+                          confirmLabel: '删除',
+                          destructive: true,
+                        })
+                        if (confirmed) deleteModuleMutation.mutate()
                       }}
                     >
                       <Trash2Icon className="size-4" />
@@ -526,8 +530,13 @@ export function PermissionsAdminPage() {
                                   variant="ghost"
                                   className="size-8 text-destructive"
                                   disabled={deletePermissionMutation.isPending}
-                                  onClick={() => {
-                                    if (window.confirm(`确定删除权限 ${permission.code}？`)) {
+                                  onClick={async () => {
+                                    const confirmed = await confirm({
+                                      description: `确定删除权限 ${permission.code}？`,
+                                      confirmLabel: '删除',
+                                      destructive: true,
+                                    })
+                                    if (confirmed) {
                                       deletePermissionMutation.mutate(permission.id)
                                     }
                                   }}
@@ -551,6 +560,7 @@ export function PermissionsAdminPage() {
           )}
         </AdminPanel>
       </div>
+      {confirmDialog}
     </div>
   )
 }

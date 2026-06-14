@@ -1,4 +1,4 @@
-import { Badge, Button, Input } from '@repo/ui'
+import { Badge, Button, Input, useConfirmDialog } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -24,6 +24,7 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
   const { can } = useAdminPermissions()
   const canWrite = can('admin:members:write') || can('admin:tenants:write')
   const queryClient = useQueryClient()
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const rolesQuery = useQuery({
     queryKey: adminQueryKeys.tenantCustomRoles(tenantId),
@@ -243,8 +244,13 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
                         variant="outline"
                         size="sm"
                         disabled={deleteMutation.isPending || selectedRole.memberCount > 0}
-                        onClick={() => {
-                          if (!window.confirm(`确定删除角色 ${selectedRole.name}？`)) return
+                        onClick={async () => {
+                          const confirmed = await confirm({
+                            description: `确定删除角色 ${selectedRole.name}？`,
+                            confirmLabel: '删除',
+                            destructive: true,
+                          })
+                          if (!confirmed) return
                           deleteMutation.mutate(selectedRole.id)
                         }}
                       >
@@ -275,6 +281,7 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
           )}
         </AdminPanel>
       </div>
+      {confirmDialog}
     </div>
   )
 }

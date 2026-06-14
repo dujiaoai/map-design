@@ -23,6 +23,8 @@ export const billingQueryKeys = {
   packages: () => [...billingQueryKeys.all, 'packages'] as const,
   teamUsage: (productCode?: string) =>
     [...billingQueryKeys.all, 'team-usage', productCode ?? 'all'] as const,
+  estimate: (productCode: string, ruleCode: string, quantity: number) =>
+    [...billingQueryKeys.all, 'estimate', productCode, ruleCode, quantity] as const,
 }
 
 export const ledgerEntrySchema = z.object({
@@ -75,6 +77,14 @@ export const teamUsageSummarySchema = z.object({
 
 export type TeamUsageItem = z.infer<typeof teamUsageItemSchema>
 export type TeamUsageSummary = z.infer<typeof teamUsageSummarySchema>
+
+export const estimateResponseSchema = z.object({
+  points: z.number(),
+  unitLabel: z.string(),
+  quantity: z.number(),
+})
+
+export type EstimateResponse = z.infer<typeof estimateResponseSchema>
 
 export function walletQueryOptions() {
   return queryOptions({
@@ -141,6 +151,27 @@ export function teamUsageQueryOptions(productCode?: string) {
   })
 }
 
+export function estimateQueryOptions(
+  productCode: string,
+  ruleCode: string,
+  quantity: number,
+) {
+  const params = new URLSearchParams({
+    productCode,
+    ruleCode,
+    quantity: String(quantity),
+  })
+
+  return queryOptions({
+    queryKey: billingQueryKeys.estimate(productCode, ruleCode, quantity),
+    queryFn: async () =>
+      estimateResponseSchema.parse(
+        await billingApi.get<EstimateResponse>(`/estimate?${params.toString()}`),
+      ),
+    staleTime: 60_000,
+  })
+}
+
 export function useWalletQuery(enabled = true) {
   return useQuery({
     ...walletQueryOptions(),
@@ -166,5 +197,17 @@ export function useTeamUsageQuery(enabled = true, productCode?: string) {
   return useQuery({
     ...teamUsageQueryOptions(productCode),
     enabled: enabled && usesSaasSessionBootstrap() && canReadTeamUsage(),
+  })
+}
+
+export function useBillingEstimateQuery(
+  productCode: string,
+  ruleCode: string,
+  quantity = 1,
+  enabled = true,
+) {
+  return useQuery({
+    ...estimateQueryOptions(productCode, ruleCode, quantity),
+    enabled: enabled && usesSaasSessionBootstrap() && canReadWallet() && Boolean(ruleCode),
   })
 }

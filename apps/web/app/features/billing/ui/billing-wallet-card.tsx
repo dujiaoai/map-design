@@ -3,6 +3,7 @@ import { CoinsIcon, WalletIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { formatPoints } from '~/features/billing/lib/format-points'
+import { isLowBalance } from '~/features/billing/lib/low-balance'
 import { useWalletQuery } from '~/shared/queries/billing-queries'
 
 export function BillingWalletCard({
@@ -52,6 +53,7 @@ export function BillingWalletCard({
   const wallet = walletQuery.data
   const available = wallet?.availableBalance ?? 0
   const frozen = wallet?.frozenBalance ?? 0
+  const lowBalance = isLowBalance(available)
 
   if (!isPage) {
     return (
@@ -61,11 +63,12 @@ export function BillingWalletCard({
         size="sm"
         className={cn(
           'h-8 gap-1.5 px-2 font-mono text-xs tabular-nums',
+          lowBalance && 'text-amber-400 hover:text-amber-300',
           className,
         )}
         render={<Link to="/billing" aria-label="查看积分钱包" />}
       >
-        <CoinsIcon className="size-3.5 text-primary" />
+        <CoinsIcon className={cn('size-3.5', lowBalance ? 'text-amber-400' : 'text-primary')} />
         <span>{formatPoints(available)}</span>
         <span className="text-muted-foreground hidden sm:inline">点</span>
       </Button>
@@ -95,6 +98,9 @@ export function BillingWalletCard({
           <p className="text-muted-foreground text-sm">
             冻结中 {formatPoints(frozen)} 点（待业务确认后将扣减或释放）
           </p>
+        ) : null}
+        {lowBalance ? (
+          <p className="text-amber-400/90 text-sm">余额偏低，建议尽快充值以免影响地图能力使用。</p>
         ) : null}
         <p className="text-muted-foreground text-xs">
           总余额 {formatPoints(wallet?.balance ?? 0)} 点

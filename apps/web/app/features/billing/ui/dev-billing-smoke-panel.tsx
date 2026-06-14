@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { FlaskConicalIcon } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
+import { BillingCostPreview } from '~/features/billing/ui/billing-cost-preview'
 import { formatPoints } from '~/features/billing/lib/format-points'
 import { api } from '~/shared/api/client'
 import { billingQueryKeys } from '~/shared/queries/billing-queries'
@@ -51,9 +52,12 @@ export function DevBillingSmokePanel() {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Button type="button" variant="secondary" disabled={busy} onClick={runSmokeConsume}>
-          {busy ? '扣费中…' : '执行 smoke-consume（1 点）'}
-        </Button>
+        <div className="flex flex-1 flex-col gap-2">
+          <BillingCostPreview ruleCode="billing.smoke.consume" />
+          <Button type="button" variant="secondary" disabled={busy} onClick={runSmokeConsume}>
+            {busy ? '扣费中…' : '执行 smoke-consume（1 点）'}
+          </Button>
+        </div>
         {message ? <p className="text-muted-foreground text-sm">{message}</p> : null}
       </CardContent>
     </Card>

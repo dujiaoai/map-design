@@ -302,19 +302,20 @@ flowchart TD
 | 机库 | `/v1/uav/*` | uav-workspace |
 | 其它专题 | 按 PRD | mock-nav 已有入口 |
 
-### Sprint F · 平台计费（设计定稿 · 2026-06）
+### Sprint F · 平台计费（F-1～F-3+、F-2 主体、F-5 SDK 已落地 · 2026-06-14）
 
 **PRD：** [billing-credits-prd.md](../product/billing-credits-prd.md)  
 **架构：** [billing-service.md](./billing-service.md)
 
-| 阶段 | 服务 | 产出 |
-| --- | --- | --- |
-| F-0 | saas-api | `tenant_kind=personal`、register-personal、个人版 UI |
-| F-1 | **billing-api :8083** + billing-core | 用户钱包；saas-api **V18** 权限；signup-bonus；Nginx 分流 |
-| F-2 | billing-api | 微信/支付宝 + Webhook + 充值 UI + **Platform Admin 调账 SOP** |
-| F-3 | saas-api → billing-api | hold/confirm + **402 弹窗** + `team/usage` + smoke rule |
-| F-3+ | web | `BillingCostPreview`、低余额样式 |
-| F-4～F-6 | billing-api | 退款/通知/优惠券/对公转账 |
+| 阶段 | 服务 | 产出 | 状态 |
+| --- | --- | --- | --- |
+| F-0 | saas-api | `tenant_kind=personal`、register-personal、个人版 UI | ✅ |
+| F-1 | **billing-api :8083** + billing-core | 用户钱包；saas-api **V18** 权限；signup-bonus；Nginx 分流 | ✅ |
+| F-2 | billing-api + admin | 微信/支付宝 Webhook 骨架 + 充值 UI + **Platform Admin 调账/SKU/订单** | ✅ 主体 |
+| F-3 | saas-api → billing-api | hold/confirm + **402 弹窗** + `team/usage` + smoke rule + perm_epoch | ✅ |
+| F-3+ | web | `BillingCostPreview`、低余额样式 | ✅ |
+| F-5 | packages/billing-client | TS SDK + saas-web 接入 | ✅ |
+| F-4～F-6 | billing-api | 退款/通知/优惠券/对公转账 | 待办 |
 
 **Maven 目标：**
 

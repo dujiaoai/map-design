@@ -1,6 +1,6 @@
 # 充值/积分功能 PRD（Sprint F · P4）
 
-> 状态：设计定稿 · 2026-06  
+> 状态：F-1～F-3+、F-2 主体、F-5 SDK **已落地**（2026-06-14）；F-4 退款/对账、F-5 划拨/优惠券、F-6 对公 **待办**  
 > 架构摘要：[billing-service.md](../architecture/billing-service.md)  
 > 后端排期：[services-development-plan.md](../architecture/services-development-plan.md) §Sprint F
 

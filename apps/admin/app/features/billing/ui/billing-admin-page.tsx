@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui'
+import { useMemo, useState } from 'react'
 
 import type { AdminPackage } from '~/features/billing/lib/billing-admin-api'
 import { BillingAdjustPanel } from '~/features/billing/ui/billing-adjust-panel'
@@ -12,6 +13,8 @@ import { BillingWalletsPanel } from '~/features/billing/ui/billing-wallets-panel
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 
+type BillingTab = 'overview' | 'packages' | 'wallets' | 'orders' | 'usage' | 'adjust'
+
 export function BillingAdminPage() {
   const { can } = useAdminPermissions()
   const canRead = can('admin:billing:read')
@@ -22,6 +25,8 @@ export function BillingAdminPage() {
   const [editingPackage, setEditingPackage] = useState<AdminPackage | null>(null)
 
   const hasAnyBillingCapability = canRead || canAdjust || canWritePackages || canRefund
+
+  const defaultTab = useMemo<BillingTab>(() => (canRead ? 'overview' : 'adjust'), [canRead])
 
   return (
     <div className="space-y-6">
@@ -34,20 +39,55 @@ export function BillingAdminPage() {
           <AdminEmptyState message="当前账号无计费相关权限（admin:billing:*）。" />
         </AdminPanel>
       ) : null}
-      {canRead ? (
-        <>
-          <BillingStatsSummary />
-          <BillingPackagesPanel
-            canWrite={canWritePackages}
-            onCreatePackage={canWritePackages ? () => setCreatePackageOpen(true) : undefined}
-            onEditPackage={(pkg) => setEditingPackage(pkg)}
-          />
-          <BillingWalletsPanel />
-          <BillingRechargeOrdersPanel canRefund={canRefund} />
-          <BillingUsagePanel />
-        </>
+      {hasAnyBillingCapability ? (
+        <Tabs defaultValue={defaultTab} className="gap-4">
+          <TabsList className="h-auto flex-wrap">
+            {canRead ? (
+              <>
+                <TabsTrigger value="overview">概览</TabsTrigger>
+                <TabsTrigger value="packages">充值 SKU</TabsTrigger>
+                <TabsTrigger value="wallets">用户钱包</TabsTrigger>
+                <TabsTrigger value="orders">充值订单</TabsTrigger>
+                <TabsTrigger value="usage">消费汇总</TabsTrigger>
+              </>
+            ) : null}
+            {canAdjust ? <TabsTrigger value="adjust">人工调账</TabsTrigger> : null}
+          </TabsList>
+
+          {canRead ? (
+            <>
+              <TabsContent value="overview" className="mt-4">
+                <BillingStatsSummary />
+              </TabsContent>
+              <TabsContent value="packages" className="mt-4">
+                <BillingPackagesPanel
+                  canWrite={canWritePackages}
+                  onCreatePackage={
+                    canWritePackages ? () => setCreatePackageOpen(true) : undefined
+                  }
+                  onEditPackage={(pkg) => setEditingPackage(pkg)}
+                />
+              </TabsContent>
+              <TabsContent value="wallets" className="mt-4">
+                <BillingWalletsPanel />
+              </TabsContent>
+              <TabsContent value="orders" className="mt-4">
+                <BillingRechargeOrdersPanel canRefund={canRefund} />
+              </TabsContent>
+              <TabsContent value="usage" className="mt-4">
+                <BillingUsagePanel />
+              </TabsContent>
+            </>
+          ) : null}
+
+          {canAdjust ? (
+            <TabsContent value="adjust" className="mt-4 space-y-6">
+              <BillingAdjustPanel />
+            </TabsContent>
+          ) : null}
+        </Tabs>
       ) : null}
-      {canAdjust ? <BillingAdjustPanel /> : null}
+
       {canWritePackages ? (
         <>
           <CreateBillingPackageSheet open={createPackageOpen} onOpenChange={setCreatePackageOpen} />

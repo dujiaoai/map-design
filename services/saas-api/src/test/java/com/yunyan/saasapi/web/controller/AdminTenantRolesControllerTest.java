@@ -45,9 +45,10 @@ class AdminTenantRolesControllerTest {
             get("/v1/admin/tenants/" + TEST_TENANT_ID + "/assignable-permissions")
                 .header("Authorization", "Bearer " + loginAccessToken("admin@test.local")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.permissions", hasSize(5)))
+        .andExpect(jsonPath("$.permissions", hasSize(9)))
         .andExpect(jsonPath("$.permissions[*].code", hasItem(PermissionCodes.ADMIN_MEMBERS_READ)))
-        .andExpect(jsonPath("$.permissions[*].code", hasItem(PermissionCodes.WORKSPACE_USE)));
+        .andExpect(jsonPath("$.permissions[*].code", hasItem(PermissionCodes.WORKSPACE_USE)))
+        .andExpect(jsonPath("$.permissions[*].code", hasItem(PermissionCodes.BILLING_WALLET_READ)));
   }
 
   @Test

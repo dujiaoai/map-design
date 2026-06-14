@@ -70,7 +70,7 @@ class AdminRolesControllerTest {
             get("/v1/admin/permissions")
                 .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.permissions", hasSize(11)))
+        .andExpect(jsonPath("$.permissions", hasSize(18)))
         .andExpect(jsonPath("$.permissions[*].code", hasItem(PermissionCodes.ADMIN_ROLES_WRITE)));
   }
 
@@ -82,8 +82,9 @@ class AdminRolesControllerTest {
                 .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.roleCode").value("MEMBER"))
-        .andExpect(jsonPath("$.permissions", hasSize(3)))
-        .andExpect(jsonPath("$.permissions[*].code", hasItem(PermissionCodes.WORKSPACE_MAP_WRITE)));
+        .andExpect(jsonPath("$.permissions", hasSize(6)))
+        .andExpect(jsonPath("$.permissions[*].code", hasItem(PermissionCodes.WORKSPACE_MAP_WRITE)))
+        .andExpect(jsonPath("$.permissions[*].code", hasItem(PermissionCodes.BILLING_WALLET_READ)));
   }
 
   @Test

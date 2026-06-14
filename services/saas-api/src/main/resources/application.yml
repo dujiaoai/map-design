@@ -72,6 +72,10 @@ saas:
       ip-window: PT1H
       email-max-attempts: 1
       email-window: PT15M
+  billing:
+    enabled: ${SAAS_BILLING_ENABLED:false}
+    base-url: ${SAAS_BILLING_API_BASE_URL:http://localhost:8083}
+    internal-token: ${BILLING_INTERNAL_TOKEN:dev-billing-internal-token-change-me}
   jwt:
     issuer: yunyan-saas
     secret: ${SAAS_JWT_SECRET:dev-only-change-me-use-32chars-minimum!!}

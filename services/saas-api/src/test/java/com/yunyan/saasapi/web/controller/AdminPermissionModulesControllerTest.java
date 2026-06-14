@@ -41,7 +41,7 @@ class AdminPermissionModulesControllerTest {
             get("/v1/admin/permission-modules")
                 .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.modules", hasSize(5)))
+        .andExpect(jsonPath("$.modules", hasSize(7)))
         .andExpect(jsonPath("$.modules[*].code", hasItem("admin_roles")));
   }
 

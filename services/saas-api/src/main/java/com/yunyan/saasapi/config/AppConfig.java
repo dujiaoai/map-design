@@ -4,5 +4,5 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties({JwtProperties.class, SaasAppProperties.class})
+@EnableConfigurationProperties({JwtProperties.class, SaasAppProperties.class, BillingApiProperties.class})
 public class AppConfig {}

@@ -4,6 +4,7 @@ import com.yunyan.saasapi.application.auth.AuthenticatedUser;
 import com.yunyan.saasapi.application.auth.EmailNormalizer;
 import com.yunyan.saasapi.application.auth.PasswordPolicyService;
 import com.yunyan.saasapi.application.auth.UserAuthRepository;
+import com.yunyan.saasapi.application.billing.SignupBonusOrchestrator;
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
 import com.yunyan.saasapi.domain.RoleRepository;
@@ -41,6 +42,7 @@ public class RegistrationVerificationService {
   private final EmailDeliveryService emailDeliveryService;
   private final SaasAppProperties saasAppProperties;
   private final PasswordPolicyService passwordPolicyService;
+  private final SignupBonusOrchestrator signupBonusOrchestrator;
 
   @Transactional
   public void requestRegistration(RegisterRequest request) {
@@ -114,9 +116,12 @@ public class RegistrationVerificationService {
     userRepository.update(user);
     emailVerificationTokenRepository.consume(token.getId());
 
-    return userAuthRepository
-        .findById(user.getId())
-        .orElseThrow(() -> new IllegalStateException("User not found after registration confirm"));
+    var authUser =
+        userAuthRepository
+            .findById(user.getId())
+            .orElseThrow(() -> new IllegalStateException("User not found after registration confirm"));
+    signupBonusOrchestrator.tryGrantSignupBonus(authUser);
+    return authUser;
   }
 
   /** 对待验证账号重发验证邮件；不存在或非 unverified 时静默忽略（防枚举）。 */

@@ -1,9 +1,13 @@
 package com.yunyan.billingapi.config;
 
+import com.yunyan.billingapi.security.AccessTokenDenylist;
+import com.yunyan.billingapi.security.InternalAuthFilter;
 import com.yunyan.billingapi.security.JwtAuthFilter;
+import com.yunyan.billingapi.security.JwtService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -12,10 +16,22 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
   @Bean
-  SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter)
+  InternalAuthFilter internalAuthFilter(BillingAppProperties billingAppProperties) {
+    return new InternalAuthFilter(billingAppProperties);
+  }
+
+  @Bean
+  JwtAuthFilter jwtAuthFilter(JwtService jwtService, AccessTokenDenylist accessTokenDenylist) {
+    return new JwtAuthFilter(jwtService, accessTokenDenylist);
+  }
+
+  @Bean
+  SecurityFilterChain securityFilterChain(
+      HttpSecurity http, JwtAuthFilter jwtAuthFilter, InternalAuthFilter internalAuthFilter)
       throws Exception {
     return http
         .csrf(csrf -> csrf.disable())
@@ -25,6 +41,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
                 .permitAll()
             .requestMatchers(HttpMethod.GET, "/v1/ping").permitAll()
+            .requestMatchers("/internal/**").permitAll()
             .requestMatchers("/v1/billing/**").authenticated()
             .anyRequest().permitAll())
         .exceptionHandling(ex -> ex
@@ -32,6 +49,7 @@ public class SecurityConfig {
             .accessDeniedHandler((req, res, e) -> res.sendError(403)))
         .httpBasic(basic -> basic.disable())
         .formLogin(form -> form.disable())
+        .addFilterBefore(internalAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .build();
   }

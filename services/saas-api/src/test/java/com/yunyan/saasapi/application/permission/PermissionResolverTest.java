@@ -22,7 +22,10 @@ class PermissionResolverTest {
         .containsExactlyInAnyOrder(
             PermissionCodes.WORKSPACE_USE,
             PermissionCodes.WORKSPACE_MAP_READ,
-            PermissionCodes.WORKSPACE_MAP_WRITE);
+            PermissionCodes.WORKSPACE_MAP_WRITE,
+            PermissionCodes.BILLING_WALLET_READ,
+            PermissionCodes.BILLING_LEDGER_READ,
+            PermissionCodes.BILLING_RECHARGE_CREATE);
   }
 
   @Test

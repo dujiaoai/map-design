@@ -24,4 +24,16 @@ public interface BillingWalletMapper {
       VALUES (#{id}, #{tenantId}, #{userId}, #{balance}, #{frozenBalance}, #{version}, #{createdAt}, #{updatedAt})
       """)
   void insert(BillingWallet wallet);
+
+  @org.apache.ibatis.annotations.Update(
+      """
+      UPDATE billing_wallet
+      SET balance = #{balance}, version = version + 1, updated_at = #{updatedAt}
+      WHERE id = #{id} AND version = #{version}
+      """)
+  int updateBalance(
+      @Param("id") UUID id,
+      @Param("balance") long balance,
+      @Param("version") int version,
+      @Param("updatedAt") java.time.Instant updatedAt);
 }

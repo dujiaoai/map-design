@@ -22,6 +22,8 @@ billing:
     organization: 1000
   internal:
     token: test-billing-internal-token
+  webhook:
+    token: test-billing-webhook-token
   payment:
     mock-enabled: true
   recharge:

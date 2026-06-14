@@ -34,6 +34,8 @@ billing:
     organization: 1000
   internal:
     token: ${BILLING_INTERNAL_TOKEN:dev-billing-internal-token-change-me}
+  webhook:
+    token: ${BILLING_WEBHOOK_TOKEN:dev-billing-webhook-token-change-me}
   payment:
     mock-enabled: ${BILLING_MOCK_PAYMENT:false}
   recharge:

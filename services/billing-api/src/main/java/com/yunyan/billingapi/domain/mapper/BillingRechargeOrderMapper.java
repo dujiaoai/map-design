@@ -35,6 +35,15 @@ public interface BillingRechargeOrderMapper {
       @Param("tenantId") UUID tenantId,
       @Param("userId") UUID userId);
 
+  @Select(
+      """
+      SELECT id, order_no, tenant_id, user_id, wallet_id, package_id, channel, status,
+             points, price_cents, currency, provider_trade_no, expire_at, paid_at, created_at, updated_at
+      FROM billing_recharge_order
+      WHERE order_no = #{orderNo}
+      """)
+  BillingRechargeOrder findByOrderNo(@Param("orderNo") String orderNo);
+
   @Update(
       """
       UPDATE billing_recharge_order

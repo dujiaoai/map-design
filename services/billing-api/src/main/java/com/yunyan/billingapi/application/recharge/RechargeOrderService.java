@@ -12,6 +12,7 @@ import com.yunyan.billingapi.domain.mapper.BillingWalletMapper;
 import com.yunyan.billingapi.security.AuthException;
 import com.yunyan.billingapi.security.SaasPrincipal;
 import com.yunyan.billingapi.web.dto.CreateRechargeOrderRequest;
+import com.yunyan.billingapi.web.dto.PaymentWebhookPayload;
 import com.yunyan.billingapi.web.dto.RechargeOrderResponse;
 import java.time.Instant;
 import java.util.UUID;
@@ -122,16 +123,51 @@ public class RechargeOrderService {
     if (order.getExpireAt() != null && order.getExpireAt().isBefore(Instant.now())) {
       throw AuthException.conflict("Order expired");
     }
+    return settlePendingOrder(order, order.getProviderTradeNo());
+  }
 
-    var wallet = walletMapper.selectByTenantAndUser(principal.tenantId(), principal.userId());
+  @Transactional
+  public void completeWebhookPayment(String expectedChannel, PaymentWebhookPayload payload) {
+    if (!payload.success()) {
+      return;
+    }
+    var order = orderMapper.findByOrderNo(payload.orderNo().trim());
+    if (order == null) {
+      throw AuthException.notFound("Recharge order not found");
+    }
+    if (!expectedChannel.equals(order.getChannel())) {
+      throw AuthException.badRequest("Order channel mismatch");
+    }
+    if ("paid".equals(order.getStatus())) {
+      return;
+    }
+    if (!"pending".equals(order.getStatus())) {
+      throw AuthException.conflict("Order is not pending");
+    }
+    if (order.getExpireAt() != null && order.getExpireAt().isBefore(Instant.now())) {
+      throw AuthException.conflict("Order expired");
+    }
+    var providerTradeNo =
+        StringUtils.hasText(payload.providerTradeNo())
+            ? payload.providerTradeNo().trim()
+            : order.getProviderTradeNo();
+    settlePendingOrder(order, providerTradeNo);
+  }
+
+  private RechargeOrderResponse settlePendingOrder(
+      BillingRechargeOrder order, String providerTradeNo) {
+    var wallet = walletMapper.selectByTenantAndUser(order.getTenantId(), order.getUserId());
     if (wallet == null) {
       throw AuthException.notFound("Wallet not found");
     }
 
     var now = Instant.now();
-    var updated =
-        orderMapper.markPaid(order.getId(), "paid", order.getProviderTradeNo(), now, now);
+    var tradeNo = StringUtils.hasText(providerTradeNo) ? providerTradeNo : order.getProviderTradeNo();
+    var updated = orderMapper.markPaid(order.getId(), "paid", tradeNo, now, now);
     if (updated == 0) {
+      if ("paid".equals(order.getStatus())) {
+        return toResponse(order, null, wallet.getBalance());
+      }
       throw AuthException.conflict("Order already processed");
     }
 
@@ -139,8 +175,7 @@ public class RechargeOrderService {
     var currentBalance = wallet.getBalance() != null ? wallet.getBalance() : 0L;
     var newBalance = currentBalance + points;
     var balanceUpdated =
-        walletMapper.updateBalance(
-            wallet.getId(), newBalance, wallet.getVersion(), now);
+        walletMapper.updateBalance(wallet.getId(), newBalance, wallet.getVersion(), now);
     if (balanceUpdated == 0) {
       throw AuthException.conflict("Wallet update conflict, retry");
     }
@@ -150,7 +185,7 @@ public class RechargeOrderService {
       var ledger = new BillingLedger();
       ledger.setId(UUID.randomUUID());
       ledger.setWalletId(wallet.getId());
-      ledger.setTenantId(principal.tenantId());
+      ledger.setTenantId(order.getTenantId());
       ledger.setEntryType("recharge");
       ledger.setAmount(points);
       ledger.setBalanceAfter(newBalance);
@@ -163,6 +198,7 @@ public class RechargeOrderService {
 
     order.setStatus("paid");
     order.setPaidAt(now);
+    order.setProviderTradeNo(tradeNo);
     return toResponse(order, null, newBalance);
   }
 

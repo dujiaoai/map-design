@@ -43,6 +43,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
                 .permitAll()
             .requestMatchers(HttpMethod.GET, "/v1/ping").permitAll()
+            .requestMatchers("/v1/billing/webhooks/**").permitAll()
             .requestMatchers("/internal/**").permitAll()
             .requestMatchers("/v1/billing/**").authenticated()
             .anyRequest().permitAll())

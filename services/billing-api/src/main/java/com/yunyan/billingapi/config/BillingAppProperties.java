@@ -12,6 +12,13 @@ public class BillingAppProperties {
   private final Payment payment = new Payment();
   private final Recharge recharge = new Recharge();
   private final Hold hold = new Hold();
+  private final Webhook webhook = new Webhook();
+
+  @Data
+  public static class Webhook {
+    /** Shared token for payment provider callbacks (skeleton; replace with signature verify). */
+    private String token = "dev-billing-webhook-token-change-me";
+  }
 
   @Data
   public static class Recharge {

@@ -2,13 +2,15 @@ import type { LucideIcon } from 'lucide-react'
 import {
   Building2Icon,
   CreditCardIcon,
+  KeyRoundIcon,
   LayoutDashboardIcon,
   ScrollTextIcon,
   SettingsIcon,
-  ShieldIcon,
+  ShieldCheckIcon,
+  ShieldPlusIcon,
   SlidersHorizontalIcon,
-  UserRoundCogIcon,
   UsersIcon,
+  UsersRoundIcon,
 } from 'lucide-react'
 
 export interface AdminNavItem {
@@ -41,25 +43,25 @@ export const adminNavItems: AdminNavItem[] = [
   {
     to: '/members',
     label: '成员',
-    icon: UserRoundCogIcon,
+    icon: UsersRoundIcon,
     permissions: ['admin:members:read'],
   },
   {
     to: '/tenant-roles',
     label: '自定义角色',
-    icon: ShieldIcon,
+    icon: ShieldPlusIcon,
     permissions: ['admin:members:read'],
   },
   {
     to: '/roles',
     label: '系统角色',
-    icon: ShieldIcon,
+    icon: ShieldCheckIcon,
     permissions: ['admin:roles:read'],
   },
   {
     to: '/permissions',
     label: '权限目录',
-    icon: ShieldIcon,
+    icon: KeyRoundIcon,
     permissions: ['admin:roles:read'],
   },
   {

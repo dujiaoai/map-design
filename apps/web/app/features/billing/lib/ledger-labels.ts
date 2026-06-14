@@ -16,7 +16,9 @@ export function formatLedgerEntryType(entryType: string): string {
 
 export function formatLedgerRemark(remark: string | null | undefined): string {
   if (!remark) return '—'
-  return REMARK_LABELS[remark] ?? remark
+  if (REMARK_LABELS[remark]) return REMARK_LABELS[remark]
+  if (remark.startsWith('recharge:')) return '在线充值'
+  return remark
 }
 
 export function formatLedgerSignedAmount(entryType: string, amount: number): string {

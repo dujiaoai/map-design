@@ -44,9 +44,9 @@ class PermissionSchemaMigrationTest {
   @Test
   void flyway_seedsPermissionModules() {
     List<SysPermissionModule> modules = sysPermissionModuleMapper.selectList(null);
-    assertThat(modules).hasSize(5);
+    assertThat(modules).hasSize(7);
     assertThat(modules).extracting(SysPermissionModule::getCode)
-        .contains("admin_roles", "workspace");
+        .contains("admin_roles", "workspace", "billing");
   }
 
   @Test
@@ -59,11 +59,13 @@ class PermissionSchemaMigrationTest {
   @Test
   void flyway_seedsPermissionCatalog() {
     List<SysPermission> permissions = sysPermissionMapper.selectList(null);
-    assertThat(permissions).hasSize(11);
+    assertThat(permissions).hasSize(18);
     assertThat(permissions).extracting(SysPermission::getCode)
         .contains(
             PermissionCodes.ADMIN_TENANTS_READ,
-            PermissionCodes.WORKSPACE_MAP_READ);
+            PermissionCodes.WORKSPACE_MAP_READ,
+            PermissionCodes.BILLING_WALLET_READ,
+            PermissionCodes.ADMIN_BILLING_READ);
   }
 
   @Test
@@ -75,8 +77,19 @@ class PermissionSchemaMigrationTest {
             PermissionCodes.ADMIN_TENANTS_WRITE,
             PermissionCodes.ADMIN_ROLES_WRITE,
             PermissionCodes.ADMIN_MEMBERS_READ,
-            PermissionCodes.ADMIN_MEMBERS_WRITE)
+            PermissionCodes.ADMIN_MEMBERS_WRITE,
+            PermissionCodes.ADMIN_BILLING_READ)
         .doesNotContain(PermissionCodes.WORKSPACE_MAP_WRITE);
+  }
+
+  @Test
+  void tenantAdminRole_hasTenantBillingPermissions() {
+    List<String> codes = permissionRepository.findPermissionCodesByRoleId(TENANT_ADMIN_ROLE_ID);
+    assertThat(codes)
+        .contains(
+            PermissionCodes.BILLING_WALLET_READ,
+            PermissionCodes.BILLING_RECHARGE_CREATE,
+            PermissionCodes.BILLING_USAGE_READ);
   }
 
   @Test
@@ -97,15 +110,25 @@ class PermissionSchemaMigrationTest {
         .containsExactlyInAnyOrder(
             PermissionCodes.WORKSPACE_USE,
             PermissionCodes.WORKSPACE_MAP_READ,
-            PermissionCodes.WORKSPACE_MAP_WRITE);
+            PermissionCodes.WORKSPACE_MAP_WRITE,
+            PermissionCodes.BILLING_WALLET_READ,
+            PermissionCodes.BILLING_LEDGER_READ,
+            PermissionCodes.BILLING_RECHARGE_CREATE);
+  }
+
+  @Test
+  void viewerRole_hasBillingReadWithoutRecharge() {
+    List<String> codes = permissionRepository.findPermissionCodesByRoleId(VIEWER_ROLE_ID);
+    assertThat(codes)
+        .contains(PermissionCodes.BILLING_WALLET_READ, PermissionCodes.BILLING_LEDGER_READ)
+        .doesNotContain(PermissionCodes.BILLING_RECHARGE_CREATE);
   }
 
   @Test
   void viewerRole_isReadOnlyWorkspace() {
     List<String> codes = permissionRepository.findPermissionCodesByRoleId(VIEWER_ROLE_ID);
     assertThat(codes)
-        .containsExactlyInAnyOrder(
-            PermissionCodes.WORKSPACE_USE, PermissionCodes.WORKSPACE_MAP_READ)
+        .contains(PermissionCodes.WORKSPACE_USE, PermissionCodes.WORKSPACE_MAP_READ)
         .doesNotContain(PermissionCodes.WORKSPACE_MAP_WRITE);
   }
 

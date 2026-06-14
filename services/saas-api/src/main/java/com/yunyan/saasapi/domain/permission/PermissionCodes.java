@@ -15,6 +15,14 @@ public final class PermissionCodes {
   public static final String WORKSPACE_MAP_READ = "workspace:map:read";
   public static final String WORKSPACE_MAP_WRITE = "workspace:map:write";
 
+  public static final String BILLING_WALLET_READ = "billing:wallet:read";
+  public static final String BILLING_LEDGER_READ = "billing:ledger:read";
+  public static final String BILLING_RECHARGE_CREATE = "billing:recharge:create";
+  public static final String BILLING_USAGE_READ = "billing:usage:read";
+  public static final String ADMIN_BILLING_READ = "admin:billing:read";
+  public static final String ADMIN_BILLING_ADJUST = "admin:billing:adjust";
+  public static final String ADMIN_BILLING_PACKAGES_WRITE = "admin:billing:packages:write";
+
   /** Platform-scoped permissions; any one grants access to `/v1/admin/**` (D-02). */
   public static final String[] PLATFORM_ADMIN_AUTHORITIES = {
     ADMIN_TENANTS_READ,
@@ -22,7 +30,10 @@ public final class PermissionCodes {
     ADMIN_USERS_READ,
     ADMIN_USERS_WRITE,
     ADMIN_ROLES_READ,
-    ADMIN_ROLES_WRITE
+    ADMIN_ROLES_WRITE,
+    ADMIN_BILLING_READ,
+    ADMIN_BILLING_ADJUST,
+    ADMIN_BILLING_PACKAGES_WRITE
   };
 
   /** Tenant-scoped permissions for `/v1/admin/**` member routes (D-06). */

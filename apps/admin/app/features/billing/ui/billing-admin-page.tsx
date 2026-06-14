@@ -6,6 +6,7 @@ import { BillingPackageWritePanel } from '~/features/billing/ui/billing-package-
 import { BillingPackagesPanel } from '~/features/billing/ui/billing-packages-panel'
 import { BillingRechargeOrdersPanel } from '~/features/billing/ui/billing-recharge-orders-panel'
 import { BillingStatsSummary } from '~/features/billing/ui/billing-stats-summary'
+import { BillingUsagePanel } from '~/features/billing/ui/billing-usage-panel'
 import { BillingWalletsPanel } from '~/features/billing/ui/billing-wallets-panel'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { AdminPageHeader } from '~/shared/ui/admin-page-shell'
@@ -40,6 +41,7 @@ export function BillingAdminPage() {
             <BillingWalletsPanel />
             <BillingRechargeOrdersPanel />
           </div>
+          <BillingUsagePanel />
         </>
       ) : null}
       {canAdjust ? <BillingAdjustPanel /> : null}

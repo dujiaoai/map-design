@@ -14,12 +14,16 @@ import com.yunyan.billingapi.security.AuthException;
 import com.yunyan.billingapi.web.dto.HoldResponse;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @Service
 public class HoldService {
+
+  private static final Pattern CODE_PATTERN =
+      Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$");
 
   private final BillingAppProperties billingAppProperties;
   private final WalletService walletService;
@@ -211,11 +215,33 @@ public class HoldService {
     if (!StringUtils.hasText(request.productCode()) || !StringUtils.hasText(request.ruleCode())) {
       throw AuthException.badRequest("productCode and ruleCode are required");
     }
+    validateCode("productCode", request.productCode());
+    validateCode("ruleCode", request.ruleCode());
     if (request.quantity() <= 0) {
       throw AuthException.badRequest("quantity must be positive");
     }
+    var holdProps = billingAppProperties.getHold();
+    if (request.quantity() > holdProps.getMaxQuantity()) {
+      throw AuthException.badRequest(
+          "quantity exceeds maximum " + holdProps.getMaxQuantity());
+    }
     if (!StringUtils.hasText(request.idempotencyKey())) {
       throw AuthException.badRequest("idempotencyKey is required");
+    }
+    var idempotencyKey = request.idempotencyKey().trim();
+    if (idempotencyKey.length() > holdProps.getIdempotencyKeyMaxLength()) {
+      throw AuthException.badRequest("idempotencyKey too long");
+    }
+    if (StringUtils.hasText(request.bizRef())
+        && request.bizRef().length() > holdProps.getBizRefMaxLength()) {
+      throw AuthException.badRequest("bizRef too long");
+    }
+  }
+
+  private void validateCode(String field, String value) {
+    var trimmed = value.trim();
+    if (!CODE_PATTERN.matcher(trimmed).matches()) {
+      throw AuthException.badRequest(field + " has invalid format");
     }
   }
 
@@ -240,9 +266,16 @@ public class HoldService {
     }
 
     var pointsPerUnit = rule.getPointsPerUnit() != null ? rule.getPointsPerUnit() : 0L;
+    if (pointsPerUnit > 0 && request.quantity() > Long.MAX_VALUE / pointsPerUnit) {
+      throw AuthException.badRequest("quantity too large for rule");
+    }
     var points = pointsPerUnit * request.quantity();
     if (points <= 0) {
       throw AuthException.badRequest("Computed points must be positive");
+    }
+    var maxPoints = billingAppProperties.getHold().getMaxPointsPerHold();
+    if (points > maxPoints) {
+      throw AuthException.badRequest("Computed points exceed maximum per hold");
     }
     return new ResolvedRule(rule, points);
   }

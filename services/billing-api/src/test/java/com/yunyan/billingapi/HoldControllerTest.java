@@ -163,6 +163,74 @@ class HoldControllerTest {
         .andExpect(jsonPath("$.availableBalance").value(500));
   }
 
+  @Test
+  void hold_withZeroQuantity_returns400() throws Exception {
+    var tenantId = UUID.randomUUID();
+    var userId = UUID.randomUUID();
+
+    mockMvc
+        .perform(
+            post("/internal/v1/billing/hold")
+                .header(InternalAuthFilter.INTERNAL_TOKEN_HEADER, INTERNAL_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        new WalletHoldRequest(
+                            tenantId,
+                            userId,
+                            "map-workspace",
+                            "billing.smoke.consume",
+                            0,
+                            "bad-qty:" + tenantId,
+                            null))))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void hold_withBlankIdempotencyKey_returns400() throws Exception {
+    var tenantId = UUID.randomUUID();
+    var userId = UUID.randomUUID();
+
+    mockMvc
+        .perform(
+            post("/internal/v1/billing/hold")
+                .header(InternalAuthFilter.INTERNAL_TOKEN_HEADER, INTERNAL_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "tenantId",
+                            tenantId.toString(),
+                            "userId",
+                            userId.toString(),
+                            "productCode",
+                            "map-workspace",
+                            "ruleCode",
+                            "billing.smoke.consume",
+                            "quantity",
+                            1,
+                            "idempotencyKey",
+                            "   "))))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void estimate_withZeroQuantity_returns400() throws Exception {
+    var tenantId = UUID.randomUUID();
+    var userId = UUID.randomUUID();
+
+    mockMvc
+        .perform(
+            get("/internal/v1/billing/estimate")
+                .header(InternalAuthFilter.INTERNAL_TOKEN_HEADER, INTERNAL_TOKEN)
+                .param("tenantId", tenantId.toString())
+                .param("userId", userId.toString())
+                .param("productCode", "map-workspace")
+                .param("ruleCode", "billing.smoke.consume")
+                .param("quantity", "0"))
+        .andExpect(status().isBadRequest());
+  }
+
   private void grantSignupBonus(UUID tenantId, UUID userId) throws Exception {
     mockMvc
         .perform(

@@ -40,6 +40,14 @@ public class BillingAppProperties {
   @Data
   public static class Hold {
     private int ttlMinutes = 30;
+    /** Max quantity per hold request (abuse guard). */
+    private long maxQuantity = 10_000L;
+    /** Max computed points debited per hold (aligns with adjust cap). */
+    private long maxPointsPerHold = 1_000_000L;
+    /** Max idempotency key length after trim. */
+    private int idempotencyKeyMaxLength = 128;
+    /** Max bizRef length. */
+    private int bizRefMaxLength = 256;
   }
 
   @Data

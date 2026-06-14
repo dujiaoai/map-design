@@ -2,6 +2,7 @@ package com.yunyan.billingapi.web.advice;
 
 import com.yunyan.billingapi.application.hold.InsufficientBalanceException;
 import com.yunyan.billingapi.security.AuthException;
+import jakarta.validation.ConstraintViolationException;
 import java.util.Map;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class BillingApiExceptionHandler {
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  ResponseEntity<Map<String, String>> handleConstraintViolation(
+      ConstraintViolationException exception) {
+    var message =
+        exception.getConstraintViolations().stream()
+            .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+            .findFirst()
+            .orElse("Validation failed");
+    return ResponseEntity.badRequest().body(Map.of("message", message));
+  }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException exception) {

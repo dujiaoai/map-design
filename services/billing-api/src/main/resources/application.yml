@@ -49,6 +49,10 @@ billing:
   hold:
     ttl-minutes: 30
     expire-scan-ms: 300000
+    max-quantity: 10000
+    max-points-per-hold: 1000000
+    idempotency-key-max-length: 128
+    biz-ref-max-length: 256
   refund:
     recovery-scan-ms: 300000
     stuck-minutes: 30

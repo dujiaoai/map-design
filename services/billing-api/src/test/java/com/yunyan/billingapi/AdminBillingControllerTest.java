@@ -170,6 +170,35 @@ class AdminBillingControllerTest {
   }
 
   @Test
+  void adjustWallet_excessiveAmount_returns400() throws Exception {
+    var tenantId = UUID.randomUUID();
+    var userId = UUID.randomUUID();
+    var adminId = UUID.randomUUID();
+    var token =
+        BillingJwtTestSupport.accessToken(
+            adminId, tenantId, List.of(PermissionCodes.ADMIN_BILLING_ADJUST));
+
+    mockMvc
+        .perform(
+            post("/v1/admin/billing/tenants/{tenantId}/adjust", tenantId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "userId",
+                            userId.toString(),
+                            "amount",
+                            2_000_000,
+                            "remark",
+                            "too large",
+                            "idempotencyKey",
+                            "admin-adjust:too-large"))))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").exists());
+  }
+
+  @Test
   void listAdjustRecords_returnsPlatformAdminAdjustLedger() throws Exception {
     var tenantId = UUID.randomUUID();
     var userId = UUID.randomUUID();

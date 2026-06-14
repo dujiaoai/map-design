@@ -66,7 +66,7 @@ class PaymentWebhookControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writeValueAsString(
-                        new PaymentWebhookPayload(orderNo, "wx_trade_123", true))))
+                        new PaymentWebhookPayload(orderNo, "wx_trade_123", true, 4900L))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.code").value("SUCCESS"));
 
@@ -74,6 +74,46 @@ class PaymentWebhookControllerTest {
         .perform(get("/v1/billing/wallet").header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.balance").value(500));
+  }
+
+  @Test
+  void wechatWebhook_amountMismatch_returns400() throws Exception {
+    var tenantId = UUID.randomUUID();
+    var userId = UUID.randomUUID();
+    var token =
+        BillingJwtTestSupport.accessToken(
+            userId,
+            tenantId,
+            List.of(
+                PermissionCodes.BILLING_WALLET_READ,
+                PermissionCodes.BILLING_RECHARGE_CREATE));
+
+    var createBody =
+        mockMvc
+            .perform(
+                post("/v1/billing/recharge-orders")
+                    .header("Authorization", "Bearer " + token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            Map.of("packageCode", "starter_500", "channel", "wechat"))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    var orderNo = objectMapper.readTree(createBody).get("orderNo").asText();
+
+    mockMvc
+        .perform(
+            post("/v1/billing/webhooks/wechat")
+                .header(PaymentWebhookService.WEBHOOK_TOKEN_HEADER, WEBHOOK_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        new PaymentWebhookPayload(orderNo, "wx_trade_123", true, 1L))))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").value("Payment amount mismatch"));
   }
 
   @Test
@@ -85,7 +125,7 @@ class PaymentWebhookControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writeValueAsString(
-                        new PaymentWebhookPayload("RO-NOPE", "wx_trade_123", true))))
+                        new PaymentWebhookPayload("RO-NOPE", "wx_trade_123", true, 4900L))))
         .andExpect(status().isUnauthorized());
   }
 }

@@ -5,11 +5,22 @@ import com.yunyan.billingapi.security.AuthException;
 import java.util.Map;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class BillingApiExceptionHandler {
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException exception) {
+    var message =
+        exception.getBindingResult().getFieldErrors().stream()
+            .map(error -> error.getField() + ": " + error.getDefaultMessage())
+            .findFirst()
+            .orElse("Validation failed");
+    return ResponseEntity.badRequest().body(Map.of("message", message));
+  }
 
   @ExceptionHandler(AuthException.class)
   ResponseEntity<Map<String, String>> handleAuthException(AuthException exception) {

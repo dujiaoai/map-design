@@ -168,6 +168,13 @@ public class RechargeOrderService {
     if (order.getExpireAt() != null && order.getExpireAt().isBefore(Instant.now())) {
       throw AuthException.conflict("Order expired");
     }
+    if (payload.priceCents() == null) {
+      throw AuthException.badRequest("priceCents is required for successful payment webhook");
+    }
+    var orderPrice = order.getPriceCents() != null ? order.getPriceCents() : 0L;
+    if (!payload.priceCents().equals(orderPrice)) {
+      throw AuthException.badRequest("Payment amount mismatch");
+    }
     var providerTradeNo =
         StringUtils.hasText(payload.providerTradeNo())
             ? payload.providerTradeNo().trim()

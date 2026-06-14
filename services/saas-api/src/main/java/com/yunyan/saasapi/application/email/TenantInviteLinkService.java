@@ -15,7 +15,6 @@ import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.web.dto.auth.InviteLinkPreviewResponse;
 import com.yunyan.saasapi.web.dto.auth.JoinViaInviteLinkRequest;
 import java.time.Instant;
-import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,8 +28,7 @@ public class TenantInviteLinkService {
 
   private static final String STATUS_ACTIVE = "active";
   private static final String DEFAULT_ROLE = "MEMBER";
-  private static final Set<String> ASSIGNABLE_ROLE_CODES =
-      Set.of("TENANT_ADMIN", "MEMBER", "VIEWER");
+  private static final String PLATFORM_ADMIN = "PLATFORM_ADMIN";
 
   private final TenantInviteLinkRepository tenantInviteLinkRepository;
   private final TenantRepository tenantRepository;
@@ -71,8 +69,11 @@ public class TenantInviteLinkService {
 
     var role =
         roleRepository
-            .findByCode(link.getRoleCode())
-            .orElseThrow(() -> new IllegalStateException("Role is not seeded: " + link.getRoleCode()));
+            .findRoleForTenantMember(tenant.getId(), link.getRoleCode())
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        "Assignable role not found for tenant: " + link.getRoleCode()));
 
     var user = new com.yunyan.saasapi.domain.entity.SysUser();
     user.setId(UUID.randomUUID());
@@ -115,11 +116,14 @@ public class TenantInviteLinkService {
     return Instant.now().plus(defaultTtl);
   }
 
-  public String resolveRoleCode(String roleCode) {
+  public String resolveRoleCode(UUID tenantId, String roleCode) {
     var resolved = StringUtils.hasText(roleCode) ? roleCode.trim() : DEFAULT_ROLE;
-    if (!ASSIGNABLE_ROLE_CODES.contains(resolved)) {
+    if (PLATFORM_ADMIN.equals(resolved)) {
       throw AuthException.badRequest("Role " + resolved + " cannot be assigned via invite link");
     }
+    roleRepository
+        .findRoleForTenantMember(tenantId, resolved)
+        .orElseThrow(() -> AuthException.badRequest("Unknown or unsupported role: " + resolved));
     return resolved;
   }
 

@@ -9,12 +9,13 @@ import {
   SelectValue,
 } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import {
   createTenantInviteLink,
   revokeTenantInviteLink,
+  fetchAssignableRoles,
   fetchTenantInviteLinks,
 } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
@@ -25,14 +26,12 @@ import { formatAdminDate } from '~/shared/ui/admin-status-badge'
 import {
   formatInviteLinkExpiry,
   formatInviteLinkUses,
+  formatMemberRoleLabel,
   INVITE_LINK_STATUS_LABELS,
-  TENANT_MEMBER_ROLE_LABELS,
-  TENANT_MEMBER_ROLES,
-  type TenantMemberRole,
 } from '../lib/member-role-labels'
 
 type CreateLinkFormValues = {
-  roleCode: TenantMemberRole
+  roleCode: string
   label?: string
   maxUses?: number | ''
   expiresInHours?: number | ''
@@ -47,6 +46,21 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
     queryKey: adminQueryKeys.inviteLinks(tenantId),
     queryFn: () => fetchTenantInviteLinks(tenantId),
   })
+
+  const assignableRolesQuery = useQuery({
+    queryKey: adminQueryKeys.assignableRoles(tenantId),
+    queryFn: () => fetchAssignableRoles(tenantId),
+  })
+
+  const roleLabels = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const role of assignableRolesQuery.data?.roles ?? []) {
+      map.set(role.code, role.name)
+    }
+    return map
+  }, [assignableRolesQuery.data?.roles])
+
+  const defaultRoleCode = assignableRolesQuery.data?.roles[0]?.code ?? 'MEMBER'
 
   const {
     register,
@@ -66,6 +80,14 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
 
   const roleCode = watch('roleCode')
 
+  useEffect(() => {
+    const roles = assignableRolesQuery.data?.roles ?? []
+    if (!roles.length) return
+    if (!roles.some((role) => role.code === roleCode)) {
+      setValue('roleCode', roles[0]!.code)
+    }
+  }, [assignableRolesQuery.data?.roles, roleCode, setValue])
+
   const createMutation = useMutation({
     mutationFn: (values: CreateLinkFormValues) =>
       createTenantInviteLink(tenantId, {
@@ -77,7 +99,7 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.inviteLinks(tenantId) })
       setCreatedInviteUrl(data.inviteUrl)
-      reset({ roleCode: 'MEMBER', label: '', maxUses: '', expiresInHours: '' })
+      reset({ roleCode: defaultRoleCode, label: '', maxUses: '', expiresInHours: '' })
     },
   })
 
@@ -112,17 +134,16 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
         <AdminField label="默认角色">
           <Select
             value={roleCode}
-            onValueChange={(value) =>
-              setValue('roleCode', (value ?? 'MEMBER') as TenantMemberRole)
-            }
+            onValueChange={(value) => setValue('roleCode', value ?? defaultRoleCode)}
           >
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue placeholder="选择角色" />
             </SelectTrigger>
             <SelectContent>
-              {TENANT_MEMBER_ROLES.map((role) => (
-                <SelectItem key={role} value={role}>
-                  {TENANT_MEMBER_ROLE_LABELS[role]}
+              {(assignableRolesQuery.data?.roles ?? []).map((role) => (
+                <SelectItem key={role.id} value={role.code}>
+                  {role.name}
+                  <span className="ml-2 font-mono text-xs text-muted-foreground">{role.code}</span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -189,7 +210,7 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="outline" className="font-mono text-[10px]">
-                      {TENANT_MEMBER_ROLE_LABELS[link.roleCode]}
+                      {formatMemberRoleLabel(link.roleCode, roleLabels.get(link.roleCode))}
                     </Badge>
                     <Badge
                       variant={link.status === 'active' ? 'default' : 'secondary'}

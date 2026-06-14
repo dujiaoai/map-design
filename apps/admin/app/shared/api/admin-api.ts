@@ -217,7 +217,7 @@ export function fetchTenantMembers(tenantId: string) {
 
 export interface TenantInviteLinkSummary {
   id: string
-  roleCode: 'TENANT_ADMIN' | 'MEMBER' | 'VIEWER'
+  roleCode: string
   label: string | null
   maxUses: number | null
   useCount: number
@@ -232,7 +232,7 @@ export interface TenantInviteLinkListResponse {
 }
 
 export interface CreateTenantInviteLinkPayload {
-  roleCode?: 'TENANT_ADMIN' | 'MEMBER' | 'VIEWER'
+  roleCode?: string
   label?: string
   maxUses?: number
   expiresInHours?: number

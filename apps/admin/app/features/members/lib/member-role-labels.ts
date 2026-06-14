@@ -8,6 +8,11 @@ export const TENANT_MEMBER_ROLE_LABELS: Record<TenantMemberRole, string> = {
   VIEWER: '只读查看者',
 }
 
+export function formatMemberRoleLabel(roleCode: string, roleName?: string | null): string {
+  if (roleName) return roleName
+  return TENANT_MEMBER_ROLE_LABELS[roleCode as TenantMemberRole] ?? roleCode
+}
+
 export const INVITE_LINK_STATUS_LABELS = {
   active: '有效',
   expired: '已过期',

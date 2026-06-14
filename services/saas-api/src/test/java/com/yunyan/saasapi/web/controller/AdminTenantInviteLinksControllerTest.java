@@ -88,6 +88,32 @@ class AdminTenantInviteLinksControllerTest {
   }
 
   @Test
+  void createInviteLink_withCustomRole_returns201() throws Exception {
+    var token = loginAccessToken("admin@test.local");
+
+    mockMvc
+        .perform(
+            post("/v1/admin/tenants/" + TEST_TENANT_ID + "/roles")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("code", "map_editor", "name", "地图编辑员", "permissionCodes", java.util.List.of()))))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/v1/admin/tenants/" + TEST_TENANT_ID + "/invite-links")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("roleCode", "map_editor", "label", "编辑组链接"))))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.link.roleCode").value("map_editor"));
+  }
+
+  @Test
   void createInviteLink_withoutToken_returns401() throws Exception {
     mockMvc
         .perform(

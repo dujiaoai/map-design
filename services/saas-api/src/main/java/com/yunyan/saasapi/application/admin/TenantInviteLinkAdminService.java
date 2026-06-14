@@ -56,7 +56,7 @@ public class TenantInviteLinkAdminService {
             tenantId,
             () -> {
               requireActiveTenant(tenantId);
-              var roleCode = tenantInviteLinkService.resolveRoleCode(request.roleCode());
+              var roleCode = tenantInviteLinkService.resolveRoleCode(tenantId, request.roleCode());
               var rawToken = tenantInviteLinkService.generateRawToken();
 
               var link = new SysTenantInviteLink();

@@ -1,6 +1,6 @@
 # 充值/积分功能 PRD（Sprint F · P4）
 
-> 状态：F-1～F-3+、F-2 主体、F-5 划拨/members_can_recharge **已落地**（2026-06-14）；F-4 退款/对账、F-5 优惠券、F-6 对公 **待办**  
+> 状态：F-1～F-3+、F-2/F-5 主体、F-4 退款骨架 **已落地**（2026-06-14）；F-4 对账/通知/发票、F-5 优惠券、F-6 对公 **待办**  
 > 架构摘要：[billing-service.md](../architecture/billing-service.md)  
 > 后端排期：[services-development-plan.md](../architecture/services-development-plan.md) §Sprint F
 
@@ -342,7 +342,8 @@ flowchart LR
 
 ### F-4 · 运营财务
 
-- 退款/对账；通知；发票
+- **充值退款**（骨架 ✅）：`POST /v1/admin/billing/recharge-orders/{orderNo}/refund`（`admin:billing:refund`）；`paid`→`refunding`→`refunded`；扣回积分 + mock 网关原路退；审计 `billing.recharge.refund`
+- 对账；通知；发票
 
 ### F-5 · 增长管控
 

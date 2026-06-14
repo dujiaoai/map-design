@@ -1,6 +1,6 @@
 # 平台计费服务（billing-api）
 
-> 状态：F-1～F-3+、F-2 主体、F-5 SDK **已落地**（2026-06-14）；F-4 退款/对账、F-5 划拨/优惠券、F-6 对公 **待办** · 产品细节见 [billing-credits-prd.md](../product/billing-credits-prd.md)
+> 状态：F-1～F-3+、F-2 主体、F-4 退款骨架、F-5 SDK **已落地**（2026-06-14）；F-4 对账/通知/发票、F-5 优惠券、F-6 对公 **待办** · 产品细节见 [billing-credits-prd.md](../product/billing-credits-prd.md)
 
 ## 定位
 
@@ -90,6 +90,7 @@ services/
 | GET | `/wallets` | `admin:billing:read` |
 | GET | `/recharge-orders` | `admin:billing:read` |
 | POST | `/tenants/{tenantId}/adjust` | `admin:billing:adjust` |
+| POST | `/recharge-orders/{orderNo}/refund` | `admin:billing:refund` |
 
 调账与 SKU 变更写入共用 PG 的 `sys_admin_audit_log`（`billing.wallet.adjust`、`billing.package.write`），由 saas-api `GET /v1/admin/audit-logs` 统一查询。
 
@@ -125,7 +126,7 @@ services/
 | F-3 | 跨服务 hold/confirm + 402 弹窗 + team/usage + estimate | ✅ |
 | F-3+ | BillingCostPreview + 低余额样式 | ✅ |
 | F-5 | `packages/billing-client` TS SDK | ✅ |
-| F-4 | 退款/对账/通知/发票 | 待办 |
+| F-4 | 退款/对账/通知/发票 | 充值退款 API 骨架 ✅；对账/通知/发票待办 |
 | F-5 | 优惠券/用户间划拨 | 划拨 API + UI ✅；members_can_recharge ✅；优惠券待办 |
 | F-6 | 可选 billing 独立 DB + 对公转账 | 待办 |
 

@@ -1,6 +1,7 @@
 package com.yunyan.billingapi.domain.mapper;
 
 import com.yunyan.billingapi.domain.entity.BillingConsumptionRecord;
+import com.yunyan.billingapi.domain.projection.TeamUsageRow;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -66,4 +67,28 @@ public interface BillingConsumptionRecordMapper {
       """)
   List<BillingConsumptionRecord> findExpiredHolds(
       @Param("now") Instant now, @Param("limit") int limit);
+
+  @Select(
+      """
+      <script>
+      SELECT user_id AS userId,
+             COALESCE(SUM(points), 0) AS totalPoints,
+             COUNT(*) AS eventCount
+      FROM billing_consumption_record
+      WHERE tenant_id = #{tenantId}
+        AND status = 'confirmed'
+        AND created_at &gt;= #{from}
+        AND created_at &lt; #{to}
+      <if test="productCode != null and productCode != ''">
+        AND product_code = #{productCode}
+      </if>
+      GROUP BY user_id
+      ORDER BY totalPoints DESC
+      </script>
+      """)
+  List<TeamUsageRow> aggregateTeamUsage(
+      @Param("tenantId") UUID tenantId,
+      @Param("from") Instant from,
+      @Param("to") Instant to,
+      @Param("productCode") String productCode);
 }

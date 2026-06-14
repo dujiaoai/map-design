@@ -21,6 +21,8 @@ export const billingQueryKeys = {
   ledger: (page: number, size: number) =>
     [...billingQueryKeys.all, 'ledger', page, size] as const,
   packages: () => [...billingQueryKeys.all, 'packages'] as const,
+  teamUsage: (productCode?: string) =>
+    [...billingQueryKeys.all, 'team-usage', productCode ?? 'all'] as const,
 }
 
 export const ledgerEntrySchema = z.object({
@@ -57,6 +59,23 @@ export const rechargePackageListResponseSchema = z.object({
 
 export type RechargePackage = z.infer<typeof rechargePackageSchema>
 
+export const teamUsageItemSchema = z.object({
+  userId: z.string(),
+  totalPoints: z.number(),
+  eventCount: z.number(),
+})
+
+export const teamUsageSummarySchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  productCode: z.string().nullable().optional(),
+  totalPoints: z.number(),
+  items: z.array(teamUsageItemSchema),
+})
+
+export type TeamUsageItem = z.infer<typeof teamUsageItemSchema>
+export type TeamUsageSummary = z.infer<typeof teamUsageSummarySchema>
+
 export function walletQueryOptions() {
   return queryOptions({
     queryKey: billingQueryKeys.wallet(),
@@ -78,6 +97,11 @@ function canReadLedger(): boolean {
 function canRecharge(): boolean {
   const session = auth.getSession()
   return hasPermission(session?.user.permissions, PermissionCodes.BILLING_RECHARGE_CREATE)
+}
+
+function canReadTeamUsage(): boolean {
+  const session = auth.getSession()
+  return hasPermission(session?.user.permissions, PermissionCodes.BILLING_USAGE_READ)
 }
 
 export function ledgerQueryOptions(page = 0, size = 20) {
@@ -102,6 +126,21 @@ export function packagesQueryOptions() {
   })
 }
 
+export function teamUsageQueryOptions(productCode?: string) {
+  const params = new URLSearchParams()
+  if (productCode) params.set('productCode', productCode)
+  const query = params.toString()
+
+  return queryOptions({
+    queryKey: billingQueryKeys.teamUsage(productCode),
+    queryFn: async () =>
+      teamUsageSummarySchema.parse(
+        await billingApi.get<TeamUsageSummary>(`/team/usage${query ? `?${query}` : ''}`),
+      ),
+    staleTime: 60_000,
+  })
+}
+
 export function useWalletQuery(enabled = true) {
   return useQuery({
     ...walletQueryOptions(),
@@ -120,5 +159,12 @@ export function useRechargePackagesQuery(enabled = true) {
   return useQuery({
     ...packagesQueryOptions(),
     enabled: enabled && usesSaasSessionBootstrap() && canRecharge(),
+  })
+}
+
+export function useTeamUsageQuery(enabled = true, productCode?: string) {
+  return useQuery({
+    ...teamUsageQueryOptions(productCode),
+    enabled: enabled && usesSaasSessionBootstrap() && canReadTeamUsage(),
   })
 }

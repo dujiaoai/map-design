@@ -3,6 +3,7 @@ import { Button } from '@repo/ui'
 import { ArrowLeftIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { canMemberSelfRecharge } from '~/features/billing/lib/member-recharge-policy'
 import { DevBillingSmokePanel } from '~/features/billing/ui/dev-billing-smoke-panel'
 import { BillingLedgerTable } from '~/features/billing/ui/billing-ledger-table'
 import { BillingTransferPanel } from '~/features/billing/ui/billing-transfer-panel'
@@ -10,12 +11,18 @@ import { BillingUsageSummary } from '~/features/billing/ui/billing-usage-summary
 import { BillingWalletCard } from '~/features/billing/ui/billing-wallet-card'
 import { RechargePackagesPanel } from '~/features/billing/ui/recharge-packages-panel'
 import { auth } from '~/shared/auth/client'
+import { useEnabledTenantFeatures } from '~/features/team-switcher'
 
 export function BillingPageContent() {
-  const canRecharge = hasPermission(
-    auth.getSession()?.user.permissions,
+  const session = auth.getSession()
+  const enabledTenantFeatures = useEnabledTenantFeatures()
+  const canRechargePermission = hasPermission(
+    session?.user.permissions,
     PermissionCodes.BILLING_RECHARGE_CREATE,
   )
+  const canRecharge =
+    canRechargePermission &&
+    canMemberSelfRecharge(session?.user, enabledTenantFeatures)
   const canReadLedger = hasPermission(
     auth.getSession()?.user.permissions,
     PermissionCodes.BILLING_LEDGER_READ,
@@ -51,6 +58,11 @@ export function BillingPageContent() {
       <DevBillingSmokePanel />
 
       {canRecharge ? <RechargePackagesPanel /> : null}
+      {canRechargePermission && !canRecharge ? (
+        <p className="text-muted-foreground rounded-xl border border-border/60 bg-card p-5 text-sm">
+          当前租户已关闭成员自助充值。请联系租户管理员划拨积分，或通过平台申请企业预付。
+        </p>
+      ) : null}
 
       {canTransfer ? <BillingTransferPanel /> : null}
 

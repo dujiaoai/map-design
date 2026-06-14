@@ -10,13 +10,15 @@ function AdminShellLayout({ children }: { children: React.ReactNode }) {
   const { accountOpen, setAccountOpen } = useAdminChrome()
 
   return (
-    <div className="admin-shell min-h-svh bg-background text-foreground">
+    <div className="admin-shell h-dvh overflow-hidden bg-background text-foreground">
       <div className="admin-shell-grid" aria-hidden="true" />
-      <SidebarProvider className="relative z-10 min-h-svh">
+      <SidebarProvider className="relative z-10 flex h-full min-h-0 w-full">
         <AdminAppSidebar />
-        <SidebarInset className="flex min-h-svh flex-col">
+        <SidebarInset className="flex h-full min-h-0 flex-col overflow-hidden">
           <AdminShellHeader />
-          <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8 md:px-10 md:py-10">{children}</div>
+          <div className="admin-scroll-area min-h-0 flex-1 w-full">
+            <div className="admin-shell-main-inner">{children}</div>
+          </div>
         </SidebarInset>
       </SidebarProvider>
       <AdminAccountSheet open={accountOpen} onOpenChange={setAccountOpen} />

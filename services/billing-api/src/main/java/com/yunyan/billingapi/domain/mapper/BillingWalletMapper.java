@@ -89,4 +89,10 @@ public interface BillingWalletMapper {
       </script>
       """)
   long countWallets(@Param("tenantId") UUID tenantId, @Param("userId") UUID userId);
+
+  @Select("SELECT COUNT(*) FROM billing_wallet")
+  long countAll();
+
+  @Select("SELECT COALESCE(SUM(balance), 0) FROM billing_wallet")
+  long sumBalance();
 }

@@ -103,4 +103,11 @@ public interface BillingRechargeOrderMapper {
       @Param("tenantId") UUID tenantId,
       @Param("userId") UUID userId,
       @Param("status") String status);
+
+  @Select("SELECT COUNT(*) FROM billing_recharge_order WHERE status = #{status}")
+  long countByStatus(@Param("status") String status);
+
+  @Select(
+      "SELECT COALESCE(SUM(price_cents), 0) FROM billing_recharge_order WHERE status = 'paid'")
+  long sumPaidPriceCents();
 }

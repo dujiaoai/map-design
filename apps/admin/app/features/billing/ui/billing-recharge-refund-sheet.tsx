@@ -135,10 +135,16 @@ export function BillingRechargeRefundSheet({
               })
               if (!confirmed) return
 
+              const idempotencyKey = idempotencyKeyRef.current
+              if (!idempotencyKey) {
+                setValidationError('幂等键未就绪，请关闭后重试')
+                return
+              }
+
               mutation.mutate({
                 orderNo: order.orderNo,
                 reason: trimmed,
-                idempotencyKey: createRefundIdempotencyKey(order.orderNo),
+                idempotencyKey,
               })
             }}
           >

@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.web.advice;
 
+import com.yunyan.saasapi.application.billing.BillingInsufficientBalanceException;
 import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.ratelimit.RateLimitException;
 import java.util.List;
@@ -15,6 +16,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+  @ExceptionHandler(BillingInsufficientBalanceException.class)
+  ResponseEntity<ProblemDetail> handleInsufficientBalance(
+      BillingInsufficientBalanceException ex) {
+    var problem = ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getMessage());
+    problem.setTitle("Insufficient balance");
+    problem.setType(java.net.URI.create("urn:yunyan:billing:insufficient_balance"));
+    problem.setProperty("availableBalance", ex.getAvailableBalance());
+    problem.setProperty("requiredPoints", ex.getRequiredPoints());
+    return ResponseEntity.status(ex.getStatus()).body(problem);
+  }
 
   @ExceptionHandler(AuthException.class)
   ResponseEntity<ProblemDetail> handleAuth(AuthException ex) {

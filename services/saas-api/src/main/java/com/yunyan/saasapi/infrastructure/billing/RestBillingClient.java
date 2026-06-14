@@ -1,7 +1,10 @@
 package com.yunyan.saasapi.infrastructure.billing;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yunyan.billing.BillingClient;
 import com.yunyan.billing.dto.EstimateResult;
+import com.yunyan.billing.dto.HoldResponse;
 import com.yunyan.billing.dto.SignupBonusRequest;
 import com.yunyan.billing.dto.WalletHoldRequest;
 import com.yunyan.saasapi.config.BillingApiProperties;
@@ -13,6 +16,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -25,25 +29,72 @@ public class RestBillingClient implements BillingClient {
 
   private final BillingApiProperties billingApiProperties;
   private final RestTemplateBuilder restTemplateBuilder;
+  private final ObjectMapper objectMapper;
 
   @Override
   public Optional<String> hold(WalletHoldRequest request) {
-    throw new UnsupportedOperationException("hold not implemented yet");
+    if (!billingApiProperties.isEnabled()) {
+      throw new IllegalStateException("Billing is disabled (saas.billing.enabled=false)");
+    }
+
+    try {
+      var response =
+          restTemplate()
+              .postForEntity(internalUrl("/internal/v1/billing/hold"), jsonEntity(request), HoldResponse.class);
+      var body = response.getBody();
+      return body == null ? Optional.empty() : Optional.ofNullable(body.holdId());
+    } catch (HttpStatusCodeException ex) {
+      if (ex.getStatusCode().value() == 402) {
+        return Optional.empty();
+      }
+      throw ex;
+    }
   }
 
   @Override
   public void confirm(String holdId) {
-    throw new UnsupportedOperationException("confirm not implemented yet");
+    if (!billingApiProperties.isEnabled()) {
+      return;
+    }
+    restTemplate()
+        .postForEntity(
+            internalUrl("/internal/v1/billing/hold/" + holdId + "/confirm"),
+            jsonEntity(null),
+            Void.class);
   }
 
   @Override
   public void cancel(String holdId) {
-    throw new UnsupportedOperationException("cancel not implemented yet");
+    if (!billingApiProperties.isEnabled()) {
+      return;
+    }
+    restTemplate()
+        .postForEntity(
+            internalUrl("/internal/v1/billing/hold/" + holdId + "/cancel"),
+            jsonEntity(null),
+            Void.class);
   }
 
   @Override
   public EstimateResult estimate(WalletHoldRequest request) {
-    throw new UnsupportedOperationException("estimate not implemented yet");
+    if (!billingApiProperties.isEnabled()) {
+      throw new IllegalStateException("Billing is disabled (saas.billing.enabled=false)");
+    }
+
+    var url =
+        internalUrl("/internal/v1/billing/estimate")
+            + "?tenantId="
+            + request.tenantId()
+            + "&userId="
+            + request.userId()
+            + "&productCode="
+            + request.productCode()
+            + "&ruleCode="
+            + request.ruleCode()
+            + "&quantity="
+            + request.quantity();
+
+    return restTemplate().getForObject(url, EstimateResult.class);
   }
 
   @Override
@@ -52,17 +103,10 @@ public class RestBillingClient implements BillingClient {
       return;
     }
 
-    var restTemplate = restTemplateBuilder.build();
-    var headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
-    headers.set(INTERNAL_TOKEN_HEADER, billingApiProperties.getInternalToken());
-
-    var url =
-        billingApiProperties.getBaseUrl().replaceAll("/$", "")
-            + "/internal/v1/billing/signup-bonus";
-
     try {
-      restTemplate.postForEntity(url, new HttpEntity<>(request, headers), Void.class);
+      restTemplate()
+          .postForEntity(
+              internalUrl("/internal/v1/billing/signup-bonus"), jsonEntity(request), Void.class);
     } catch (RestClientException ex) {
       log.warn(
           "Failed to grant signup bonus for tenant={} user={}: {}",
@@ -70,5 +114,36 @@ public class RestBillingClient implements BillingClient {
           request.userId(),
           ex.getMessage());
     }
+  }
+
+  public Optional<BillingHoldProblem> parseHoldProblem(HttpStatusCodeException ex) {
+    if (ex.getStatusCode().value() != 402) {
+      return Optional.empty();
+    }
+    try {
+      JsonNode root = objectMapper.readTree(ex.getResponseBodyAsString());
+      var available = root.path("availableBalance").asLong(0L);
+      var required = root.path("requiredPoints").asLong(0L);
+      return Optional.of(new BillingHoldProblem(available, required));
+    } catch (Exception parseError) {
+      return Optional.of(new BillingHoldProblem(0L, 0L));
+    }
+  }
+
+  public record BillingHoldProblem(long availableBalance, long requiredPoints) {}
+
+  private RestTemplate restTemplate() {
+    return restTemplateBuilder.build();
+  }
+
+  private String internalUrl(String path) {
+    return billingApiProperties.getBaseUrl().replaceAll("/$", "") + path;
+  }
+
+  private HttpEntity<?> jsonEntity(Object body) {
+    var headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.set(INTERNAL_TOKEN_HEADER, billingApiProperties.getInternalToken());
+    return new HttpEntity<>(body, headers);
   }
 }

@@ -12,6 +12,7 @@
     "dev": "turbo run dev --filter=@repo/saas-web --filter=@repo/saas-admin",
     "dev:web": "pnpm --filter @repo/saas-web dev",
     "dev:admin": "pnpm --filter @repo/saas-admin dev",
+    "dev:marketing": "pnpm --filter @repo/saas-marketing dev",
     "dev:web:airace": "pnpm --filter @repo/saas-web dev:airace",
     "dev:uav": "pnpm --filter @repo/cloud-uav dev",
     "build": "node scripts/turbo-run.mjs run build",

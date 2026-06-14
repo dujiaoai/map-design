@@ -1,6 +1,7 @@
 package com.yunyan.billingapi.web.controller;
 
 import com.yunyan.billingapi.application.admin.AdminBillingAdjustService;
+import com.yunyan.billingapi.application.admin.AdminBillingPackageService;
 import com.yunyan.billingapi.application.admin.AdminBillingRechargeOrderService;
 import com.yunyan.billingapi.application.admin.AdminBillingWalletService;
 import com.yunyan.billingapi.domain.permission.PermissionCodes;
@@ -8,6 +9,7 @@ import com.yunyan.billingapi.security.SaasPrincipal;
 import com.yunyan.billingapi.web.dto.AdminAdjustRequest;
 import com.yunyan.billingapi.web.dto.AdminAdjustResponse;
 import com.yunyan.billingapi.web.dto.AdminRechargeOrderListResponse;
+import com.yunyan.billingapi.web.dto.AdminRechargePackageListResponse;
 import com.yunyan.billingapi.web.dto.AdminWalletListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -33,14 +35,24 @@ public class AdminBillingController {
   private final AdminBillingAdjustService adminBillingAdjustService;
   private final AdminBillingWalletService adminBillingWalletService;
   private final AdminBillingRechargeOrderService adminBillingRechargeOrderService;
+  private final AdminBillingPackageService adminBillingPackageService;
 
   public AdminBillingController(
       AdminBillingAdjustService adminBillingAdjustService,
       AdminBillingWalletService adminBillingWalletService,
-      AdminBillingRechargeOrderService adminBillingRechargeOrderService) {
+      AdminBillingRechargeOrderService adminBillingRechargeOrderService,
+      AdminBillingPackageService adminBillingPackageService) {
     this.adminBillingAdjustService = adminBillingAdjustService;
     this.adminBillingWalletService = adminBillingWalletService;
     this.adminBillingRechargeOrderService = adminBillingRechargeOrderService;
+    this.adminBillingPackageService = adminBillingPackageService;
+  }
+
+  @GetMapping("/packages")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_READ + "')")
+  @Operation(summary = "平台查询全部充值 SKU（含 inactive）")
+  public AdminRechargePackageListResponse listPackages() {
+    return adminBillingPackageService.listPackages();
   }
 
   @GetMapping("/wallets")

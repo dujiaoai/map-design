@@ -25,4 +25,12 @@ public interface BillingRechargePackageMapper {
       WHERE code = #{code} AND status = 'active'
       """)
   BillingRechargePackage findActiveByCode(@Param("code") String code);
+
+  @Select(
+      """
+      SELECT id, code, points, price_cents, currency, status, sort_order, created_at
+      FROM billing_recharge_package
+      ORDER BY sort_order ASC, points ASC
+      """)
+  List<BillingRechargePackage> findAllPackages();
 }

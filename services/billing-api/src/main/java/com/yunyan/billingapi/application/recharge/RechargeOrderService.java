@@ -119,6 +119,19 @@ public class RechargeOrderService {
     return toResponse(order, null, wallet.getBalance());
   }
 
+  /** Marks pending orders past {@code expire_at} as expired. Returns count updated. */
+  @Transactional
+  public int expirePendingOrders(int batchSize) {
+    var expired = orderMapper.findExpiredPendingOrders(Instant.now(), batchSize);
+    var count = 0;
+    for (var order : expired) {
+      if (orderMapper.markExpired(order.getId(), Instant.now()) > 0) {
+        count++;
+      }
+    }
+    return count;
+  }
+
   @Transactional
   public RechargeOrderResponse completeMockPayment(SaasPrincipal principal, String orderNo) {
     if (!billingAppProperties.getPayment().isMockEnabled()) {

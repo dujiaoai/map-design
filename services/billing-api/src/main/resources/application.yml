@@ -45,6 +45,7 @@ billing:
     mock-enabled: ${BILLING_MOCK_PAYMENT:false}
   recharge:
     order-ttl-minutes: 30
+    expire-scan-ms: 300000
   hold:
     ttl-minutes: 30
     expire-scan-ms: 300000

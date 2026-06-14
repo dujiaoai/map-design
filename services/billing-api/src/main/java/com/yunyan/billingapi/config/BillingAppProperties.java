@@ -24,6 +24,8 @@ public class BillingAppProperties {
   public static class Recharge {
     /** Pending order TTL before auto-expire (minutes). */
     private int orderTtlMinutes = 30;
+    /** Scan interval for pending order expiry job (ms). */
+    private long expireScanMs = 300_000L;
   }
 
   @Data

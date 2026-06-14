@@ -10,6 +10,7 @@ public final class PermissionCodes {
   public static final String ADMIN_BILLING_READ = "admin:billing:read";
   public static final String ADMIN_BILLING_ADJUST = "admin:billing:adjust";
   public static final String ADMIN_BILLING_PACKAGES_WRITE = "admin:billing:packages:write";
+  public static final String ADMIN_BILLING_REFUND = "admin:billing:refund";
 
   private PermissionCodes() {}
 }

@@ -17,4 +17,10 @@ public class MockPaymentGateway implements PaymentGateway {
     var payUrl = "mock://billing/recharge/" + orderNo;
     return new PaymentCreateResult(tradeNo, payUrl);
   }
+
+  @Override
+  public PaymentRefundResult refund(
+      String orderNo, long priceCents, String currency, String providerTradeNo) {
+    return new PaymentRefundResult("mock-refund-" + orderNo, false);
+  }
 }

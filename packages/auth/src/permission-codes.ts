@@ -21,6 +21,7 @@ export const PermissionCodes = {
   ADMIN_BILLING_READ: 'admin:billing:read',
   ADMIN_BILLING_ADJUST: 'admin:billing:adjust',
   ADMIN_BILLING_PACKAGES_WRITE: 'admin:billing:packages:write',
+  ADMIN_BILLING_REFUND: 'admin:billing:refund',
 } as const
 
 export type PermissionCode = (typeof PermissionCodes)[keyof typeof PermissionCodes]
@@ -39,6 +40,7 @@ export const ROLE_DEFAULT_PERMISSIONS = {
     PermissionCodes.ADMIN_BILLING_READ,
     PermissionCodes.ADMIN_BILLING_ADJUST,
     PermissionCodes.ADMIN_BILLING_PACKAGES_WRITE,
+    PermissionCodes.ADMIN_BILLING_REFUND,
   ],
   [SaaSRole.TENANT_ADMIN]: [
     PermissionCodes.ADMIN_MEMBERS_READ,

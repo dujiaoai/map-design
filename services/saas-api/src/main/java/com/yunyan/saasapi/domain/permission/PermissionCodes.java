@@ -23,6 +23,7 @@ public final class PermissionCodes {
   public static final String ADMIN_BILLING_READ = "admin:billing:read";
   public static final String ADMIN_BILLING_ADJUST = "admin:billing:adjust";
   public static final String ADMIN_BILLING_PACKAGES_WRITE = "admin:billing:packages:write";
+  public static final String ADMIN_BILLING_REFUND = "admin:billing:refund";
 
   /** Platform-scoped permissions; any one grants access to `/v1/admin/**` (D-02). */
   public static final String[] PLATFORM_ADMIN_AUTHORITIES = {
@@ -34,7 +35,8 @@ public final class PermissionCodes {
     ADMIN_ROLES_WRITE,
     ADMIN_BILLING_READ,
     ADMIN_BILLING_ADJUST,
-    ADMIN_BILLING_PACKAGES_WRITE
+    ADMIN_BILLING_PACKAGES_WRITE,
+    ADMIN_BILLING_REFUND
   };
 
   /** Tenant-scoped permissions for `/v1/admin/**` member routes (D-06). */

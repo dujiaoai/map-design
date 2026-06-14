@@ -66,6 +66,22 @@ public interface BillingRechargeOrderMapper {
       """)
   int markCancelled(@Param("id") UUID id, @Param("updatedAt") java.time.Instant updatedAt);
 
+  @Update(
+      """
+      UPDATE billing_recharge_order
+      SET status = 'refunding', updated_at = #{updatedAt}
+      WHERE id = #{id} AND status = 'paid'
+      """)
+  int markRefunding(@Param("id") UUID id, @Param("updatedAt") java.time.Instant updatedAt);
+
+  @Update(
+      """
+      UPDATE billing_recharge_order
+      SET status = 'refunded', updated_at = #{updatedAt}
+      WHERE id = #{id} AND status = 'refunding'
+      """)
+  int markRefunded(@Param("id") UUID id, @Param("updatedAt") java.time.Instant updatedAt);
+
   @Select(
       """
       <script>

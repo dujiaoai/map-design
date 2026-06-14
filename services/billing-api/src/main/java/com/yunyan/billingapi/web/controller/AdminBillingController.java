@@ -3,6 +3,7 @@ package com.yunyan.billingapi.web.controller;
 import com.yunyan.billingapi.application.admin.AdminBillingAdjustService;
 import com.yunyan.billingapi.application.admin.AdminBillingPackageService;
 import com.yunyan.billingapi.application.admin.AdminBillingRechargeOrderService;
+import com.yunyan.billingapi.application.admin.AdminBillingRefundService;
 import com.yunyan.billingapi.application.admin.AdminBillingStatsService;
 import com.yunyan.billingapi.application.admin.AdminBillingUsageService;
 import com.yunyan.billingapi.application.admin.AdminBillingWalletService;
@@ -11,6 +12,8 @@ import com.yunyan.billingapi.security.SaasPrincipal;
 import com.yunyan.billingapi.web.dto.AdminAdjustRequest;
 import com.yunyan.billingapi.web.dto.AdminAdjustResponse;
 import com.yunyan.billingapi.web.dto.AdminBillingStatsResponse;
+import com.yunyan.billingapi.web.dto.AdminRefundRequest;
+import com.yunyan.billingapi.web.dto.AdminRefundResponse;
 import com.yunyan.billingapi.web.dto.AdminRechargeOrderListResponse;
 import com.yunyan.billingapi.web.dto.AdminRechargePackageListResponse;
 import com.yunyan.billingapi.web.dto.AdminUsageSummaryResponse;
@@ -48,6 +51,7 @@ public class AdminBillingController {
   private final AdminBillingPackageService adminBillingPackageService;
   private final AdminBillingStatsService adminBillingStatsService;
   private final AdminBillingUsageService adminBillingUsageService;
+  private final AdminBillingRefundService adminBillingRefundService;
 
   public AdminBillingController(
       AdminBillingAdjustService adminBillingAdjustService,
@@ -55,13 +59,15 @@ public class AdminBillingController {
       AdminBillingRechargeOrderService adminBillingRechargeOrderService,
       AdminBillingPackageService adminBillingPackageService,
       AdminBillingStatsService adminBillingStatsService,
-      AdminBillingUsageService adminBillingUsageService) {
+      AdminBillingUsageService adminBillingUsageService,
+      AdminBillingRefundService adminBillingRefundService) {
     this.adminBillingAdjustService = adminBillingAdjustService;
     this.adminBillingWalletService = adminBillingWalletService;
     this.adminBillingRechargeOrderService = adminBillingRechargeOrderService;
     this.adminBillingPackageService = adminBillingPackageService;
     this.adminBillingStatsService = adminBillingStatsService;
     this.adminBillingUsageService = adminBillingUsageService;
+    this.adminBillingRefundService = adminBillingRefundService;
   }
 
   @GetMapping("/stats")
@@ -141,5 +147,15 @@ public class AdminBillingController {
       @PathVariable UUID tenantId,
       @Valid @RequestBody AdminAdjustRequest request) {
     return adminBillingAdjustService.adjust(principal, tenantId, request);
+  }
+
+  @PostMapping("/recharge-orders/{orderNo}/refund")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_REFUND + "')")
+  @Operation(summary = "平台对已支付充值订单发起退款（扣回积分 + 原路退款的网关骨架）")
+  public AdminRefundResponse refundRechargeOrder(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable String orderNo,
+      @Valid @RequestBody AdminRefundRequest request) {
+    return adminBillingRefundService.refundOrder(principal, orderNo, request);
   }
 }

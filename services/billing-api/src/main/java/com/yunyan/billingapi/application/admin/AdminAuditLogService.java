@@ -14,8 +14,10 @@ public class AdminAuditLogService {
 
   public static final String ACTION_BILLING_WALLET_ADJUST = "billing.wallet.adjust";
   public static final String ACTION_BILLING_PACKAGE_WRITE = "billing.package.write";
+  public static final String ACTION_BILLING_REFUND = "billing.recharge.refund";
   private static final String RESOURCE_TYPE_BILLING_WALLET = "billing_wallet";
   private static final String RESOURCE_TYPE_BILLING_PACKAGE = "billing_package";
+  private static final String RESOURCE_TYPE_BILLING_ORDER = "billing_recharge_order";
   private static final String PLATFORM_ADMIN = "PLATFORM_ADMIN";
   private static final int DETAIL_MAX = 512;
 
@@ -83,6 +85,49 @@ public class AdminAuditLogService {
     log.setTargetTenantId(null);
     log.setCrossTenant(false);
     log.setDetail(truncateDetail("code=" + code + " " + detail));
+    log.setCreatedAt(Instant.now());
+    auditLogMapper.insert(log);
+  }
+
+  public void recordBillingRefund(
+      SaasPrincipal actor,
+      UUID targetTenantId,
+      UUID targetUserId,
+      String orderNo,
+      long points,
+      long balanceAfter,
+      String reason,
+      String providerRefundNo) {
+    if (actor == null) {
+      return;
+    }
+
+    var detail =
+        truncateDetail(
+            "orderNo="
+                + orderNo
+                + " points="
+                + points
+                + " balanceAfter="
+                + balanceAfter
+                + " userId="
+                + targetUserId
+                + " providerRefundNo="
+                + providerRefundNo
+                + " reason="
+                + reason);
+
+    var log = new SysAdminAuditLog();
+    log.setId(UUID.randomUUID());
+    log.setActorUserId(actor.userId());
+    log.setActorEmail(actor.getUsername());
+    log.setActorTenantId(actor.tenantId());
+    log.setAction(ACTION_BILLING_REFUND);
+    log.setResourceType(RESOURCE_TYPE_BILLING_ORDER);
+    log.setResourceId(orderNo);
+    log.setTargetTenantId(targetTenantId);
+    log.setCrossTenant(isCrossTenant(actor, targetTenantId));
+    log.setDetail(detail);
     log.setCreatedAt(Instant.now());
     auditLogMapper.insert(log);
   }

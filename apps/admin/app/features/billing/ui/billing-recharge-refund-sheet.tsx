@@ -11,7 +11,7 @@ import {
   useConfirmDialog,
 } from '@repo/ui'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 import type { AdminRechargeOrder } from '~/features/billing/lib/billing-admin-api'
 import { adminRefundResponseSchema } from '~/features/billing/lib/billing-admin-api'
@@ -21,10 +21,6 @@ import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
-
-function createRefundIdempotencyKey(orderNo: string) {
-  return `admin-refund:${orderNo}:${crypto.randomUUID()}`
-}
 
 export function BillingRechargeRefundSheet({
   order,
@@ -40,9 +36,11 @@ export function BillingRechargeRefundSheet({
   const reasonInputId = useId()
   const [reason, setReason] = useState('')
   const [validationError, setValidationError] = useState<string | null>(null)
+  const idempotencyKeyRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (open) {
+    if (open && order?.orderNo) {
+      idempotencyKeyRef.current = `admin-refund:${order.orderNo}:${crypto.randomUUID()}`
       setReason('')
       setValidationError(null)
     }

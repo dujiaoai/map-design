@@ -10,7 +10,7 @@ import {
   useConfirmDialog,
 } from '@repo/ui'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { z } from 'zod'
 
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
@@ -33,10 +33,6 @@ export type BillingAdjustResult = z.infer<typeof adjustResponseSchema>
 
 const MAX_ADJUST_ABS_POINTS = 1_000_000
 
-function createIdempotencyKey() {
-  return `admin-adjust:${crypto.randomUUID()}`
-}
-
 export function BillingAdjustSheet({
   open,
   onOpenChange,
@@ -58,6 +54,13 @@ export function BillingAdjustSheet({
   const [amount, setAmount] = useState('')
   const [remark, setRemark] = useState('')
   const [validationError, setValidationError] = useState<string | null>(null)
+  const idempotencyKeyRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (open) {
+      idempotencyKeyRef.current = `admin-adjust:${crypto.randomUUID()}`
+    }
+  }, [open])
 
   useEffect(() => {
     if (!open) {
@@ -151,12 +154,18 @@ export function BillingAdjustSheet({
               })
               if (!confirmed) return
 
+              const idempotencyKey = idempotencyKeyRef.current
+              if (!idempotencyKey) {
+                setValidationError('幂等键未就绪，请关闭后重试')
+                return
+              }
+
               mutation.mutate({
                 tenantId: trimmedTenantId,
                 userId: trimmedUserId,
                 amount: parsedAmount,
                 remark: trimmedRemark,
-                idempotencyKey: createIdempotencyKey(),
+                idempotencyKey,
               })
             }}
           >

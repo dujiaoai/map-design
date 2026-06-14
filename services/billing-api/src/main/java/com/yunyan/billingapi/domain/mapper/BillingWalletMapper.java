@@ -36,4 +36,18 @@ public interface BillingWalletMapper {
       @Param("balance") long balance,
       @Param("version") int version,
       @Param("updatedAt") java.time.Instant updatedAt);
+
+  @org.apache.ibatis.annotations.Update(
+      """
+      UPDATE billing_wallet
+      SET balance = #{balance}, frozen_balance = #{frozenBalance},
+          version = version + 1, updated_at = #{updatedAt}
+      WHERE id = #{id} AND version = #{version}
+      """)
+  int updateBalances(
+      @Param("id") UUID id,
+      @Param("balance") long balance,
+      @Param("frozenBalance") long frozenBalance,
+      @Param("version") int version,
+      @Param("updatedAt") java.time.Instant updatedAt);
 }

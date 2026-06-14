@@ -11,11 +11,17 @@ public class BillingAppProperties {
   private final Internal internal = new Internal();
   private final Payment payment = new Payment();
   private final Recharge recharge = new Recharge();
+  private final Hold hold = new Hold();
 
   @Data
   public static class Recharge {
     /** Pending order TTL before auto-expire (minutes). */
     private int orderTtlMinutes = 30;
+  }
+
+  @Data
+  public static class Hold {
+    private int ttlMinutes = 30;
   }
 
   @Data

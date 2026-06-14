@@ -40,6 +40,31 @@ export const adminRechargeOrderListSchema = z.object({
 export type AdminWalletList = z.infer<typeof adminWalletListSchema>
 export type AdminRechargeOrderList = z.infer<typeof adminRechargeOrderListSchema>
 
+export const adminBillingStatsSchema = z.object({
+  walletCount: z.number(),
+  totalBalance: z.number(),
+  paidRechargeOrderCount: z.number(),
+  paidRechargeGmvCents: z.number(),
+  pendingRechargeOrderCount: z.number(),
+})
+
+export const adminPackageListSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      code: z.string(),
+      points: z.number(),
+      priceCents: z.number(),
+      currency: z.string(),
+      status: z.string(),
+      sortOrder: z.number(),
+    }),
+  ),
+})
+
+export type AdminBillingStats = z.infer<typeof adminBillingStatsSchema>
+export type AdminPackageList = z.infer<typeof adminPackageListSchema>
+
 function buildQuery(params: Record<string, string | number | undefined>) {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {

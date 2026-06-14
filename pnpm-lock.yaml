@@ -199,6 +199,9 @@ importers:
       '@repo/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@repo/billing-client':
+        specifier: workspace:*
+        version: link:../../packages/billing-client
       '@repo/ruoyi-api':
         specifier: workspace:*
         version: link:../../packages/ruoyi-api

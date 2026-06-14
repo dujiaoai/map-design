@@ -22,7 +22,7 @@ describe('createBillingClient', () => {
 
     expect(wallet.balance).toBe(500)
     expect(fetchFn).toHaveBeenCalledWith(
-      'http://billing.test/v1/billing/wallet',
+      'http://billing.test/wallet',
       expect.objectContaining({ method: 'GET' }),
     )
   })

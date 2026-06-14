@@ -22,13 +22,12 @@ export type BillingClient = ReturnType<typeof createBillingClient>
 
 export function createBillingClient(options: BillingClientOptions) {
   const api = createApiClient(options)
-  const prefix = '/v1/billing'
 
   return {
     api,
 
     async getWallet(): Promise<WalletResponse> {
-      return walletResponseSchema.parse(await api.get(`${prefix}/wallet`))
+      return walletResponseSchema.parse(await api.get('/wallet'))
     },
 
     async getLedger(page = 0, size = 20): Promise<LedgerListResponse> {
@@ -36,13 +35,11 @@ export function createBillingClient(options: BillingClientOptions) {
         page: String(page),
         size: String(size),
       })
-      return ledgerListResponseSchema.parse(
-        await api.get(`${prefix}/ledger?${params.toString()}`),
-      )
+      return ledgerListResponseSchema.parse(await api.get(`/ledger?${params.toString()}`))
     },
 
     async listPackages(): Promise<{ items: RechargePackage[] }> {
-      return rechargePackageListResponseSchema.parse(await api.get(`${prefix}/packages`))
+      return rechargePackageListResponseSchema.parse(await api.get('/packages'))
     },
 
     async getTeamUsage(productCode?: string): Promise<TeamUsageSummary> {
@@ -50,7 +47,7 @@ export function createBillingClient(options: BillingClientOptions) {
       if (productCode) params.set('productCode', productCode)
       const query = params.toString()
       return teamUsageSummarySchema.parse(
-        await api.get(`${prefix}/team/usage${query ? `?${query}` : ''}`),
+        await api.get(`/team/usage${query ? `?${query}` : ''}`),
       )
     },
 
@@ -64,16 +61,14 @@ export function createBillingClient(options: BillingClientOptions) {
         ruleCode,
         quantity: String(quantity),
       })
-      return estimateResponseSchema.parse(
-        await api.get(`${prefix}/estimate?${params.toString()}`),
-      )
+      return estimateResponseSchema.parse(await api.get(`/estimate?${params.toString()}`))
     },
 
     async createRechargeOrder(
       input: CreateRechargeOrderRequest,
     ): Promise<RechargeOrderResponse> {
       return rechargeOrderResponseSchema.parse(
-        await api.post(`${prefix}/recharge-orders`, {
+        await api.post('/recharge-orders', {
           packageCode: input.packageCode,
           channel: input.channel ?? 'mock',
         }),
@@ -82,17 +77,13 @@ export function createBillingClient(options: BillingClientOptions) {
 
     async mockPayRechargeOrder(orderNo: string): Promise<RechargeOrderResponse> {
       return rechargeOrderResponseSchema.parse(
-        await api.post(
-          `${prefix}/recharge-orders/${encodeURIComponent(orderNo)}/mock-pay`,
-        ),
+        await api.post(`/recharge-orders/${encodeURIComponent(orderNo)}/mock-pay`),
       )
     },
 
     async cancelRechargeOrder(orderNo: string): Promise<RechargeOrderResponse> {
       return rechargeOrderResponseSchema.parse(
-        await api.post(
-          `${prefix}/recharge-orders/${encodeURIComponent(orderNo)}/cancel`,
-        ),
+        await api.post(`/recharge-orders/${encodeURIComponent(orderNo)}/cancel`),
       )
     },
   }

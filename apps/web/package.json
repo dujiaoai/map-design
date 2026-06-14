@@ -30,6 +30,7 @@
     "@react-router/node": "7.16.0",
     "@repo/api-client": "workspace:*",
     "@repo/auth": "workspace:*",
+    "@repo/billing-client": "workspace:*",
     "@repo/ruoyi-api": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "^5.62.0",

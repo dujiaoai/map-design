@@ -72,7 +72,12 @@ export const adminNavItems: AdminNavItem[] = [
     to: '/billing',
     label: '计费',
     icon: CreditCardIcon,
-    permissions: ['admin:tenants:read'],
+    permissions: [
+      'admin:billing:read',
+      'admin:billing:adjust',
+      'admin:billing:packages:write',
+      'admin:billing:refund',
+    ],
   },
   {
     to: '/system',

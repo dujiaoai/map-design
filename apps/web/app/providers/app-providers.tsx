@@ -1,5 +1,5 @@
 import { SessionProvider, TenantProvider } from '@repo/auth'
-import { TooltipProvider } from '@repo/ui'
+import { Toaster, TooltipProvider } from '@repo/ui'
 import { QueryClientProvider } from '@tanstack/react-query'
 
 import { InsufficientBalanceProvider } from '~/features/billing/model/insufficient-balance-provider'
@@ -14,7 +14,10 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
             <TooltipProvider>
-              <InsufficientBalanceProvider>{children}</InsufficientBalanceProvider>
+              <InsufficientBalanceProvider>
+                {children}
+                <Toaster richColors closeButton />
+              </InsufficientBalanceProvider>
             </TooltipProvider>
           </ThemeProvider>
         </QueryClientProvider>

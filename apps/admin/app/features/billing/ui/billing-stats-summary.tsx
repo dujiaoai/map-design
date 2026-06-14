@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { adminBillingStatsSchema } from '~/features/billing/lib/billing-admin-api'
+import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
@@ -11,7 +12,7 @@ function formatGmv(cents: number) {
 
 export function BillingStatsSummary() {
   const query = useQuery({
-    queryKey: ['admin', 'billing', 'stats'],
+    queryKey: billingAdminQueryKeys.stats(),
     queryFn: async () =>
       adminBillingStatsSchema.parse(await billingAdminApi.get('/stats')),
   })

@@ -1,4 +1,5 @@
 import { BillingAdminPage } from '~/features/billing/ui/billing-admin-page'
+import { BILLING_ACCESS_PERMISSIONS } from '~/features/billing/lib/billing-admin-api'
 import { requireAdminPermissions } from '~/shared/auth/require-admin-permissions'
 
 import type { Route } from './+types/billing'
@@ -8,7 +9,7 @@ export function meta(_args: Route.MetaArgs) {
 }
 
 export async function clientLoader(_args: Route.ClientLoaderArgs) {
-  requireAdminPermissions(['admin:billing:read', 'admin:billing:adjust'])
+  requireAdminPermissions([...BILLING_ACCESS_PERMISSIONS])
   return null
 }
 

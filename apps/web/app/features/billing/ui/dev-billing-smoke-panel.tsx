@@ -4,8 +4,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { FlaskConicalIcon } from 'lucide-react'
 import { useCallback, useState } from 'react'
 
+import { showBillingChargeSuccessToast } from '~/features/billing/lib/show-billing-charge-success-toast'
 import { BillingCostPreview } from '~/features/billing/ui/billing-cost-preview'
-import { formatPoints } from '~/features/billing/lib/format-points'
 import { api } from '~/shared/api/client'
 import { billingQueryKeys } from '~/shared/queries/billing-queries'
 
@@ -18,21 +18,21 @@ type SmokeConsumeResponse = {
 export function DevBillingSmokePanel() {
   const queryClient = useQueryClient()
   const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const runSmokeConsume = useCallback(async () => {
     setBusy(true)
-    setMessage(null)
+    setErrorMessage(null)
     try {
       const result = await api.post<SmokeConsumeResponse>('/dev/billing/smoke-consume')
       await queryClient.invalidateQueries({ queryKey: billingQueryKeys.all })
-      setMessage(`扣费成功：hold ${result.holdId.slice(0, 8)}…，消耗 ${formatPoints(result.points)} 点`)
+      showBillingChargeSuccessToast({ points: result.points, holdId: result.holdId })
     } catch (error) {
       if (error instanceof ApiError && error.status === 402) {
-        setMessage('余额不足（402 弹窗应已自动弹出）')
+        setErrorMessage('余额不足（402 弹窗应已自动弹出）')
         return
       }
-      setMessage(error instanceof Error ? error.message : '请求失败')
+      setErrorMessage(error instanceof Error ? error.message : '请求失败')
     } finally {
       setBusy(false)
     }
@@ -58,7 +58,7 @@ export function DevBillingSmokePanel() {
             {busy ? '扣费中…' : '执行 smoke-consume（1 点）'}
           </Button>
         </div>
-        {message ? <p className="text-muted-foreground text-sm">{message}</p> : null}
+        {errorMessage ? <p className="text-destructive text-sm">{errorMessage}</p> : null}
       </CardContent>
     </Card>
   )

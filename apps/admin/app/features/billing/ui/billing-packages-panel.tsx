@@ -5,6 +5,7 @@ import {
   adminPackageListSchema,
   type AdminPackage,
 } from '~/features/billing/lib/billing-admin-api'
+import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import {
@@ -27,13 +28,15 @@ function formatPrice(cents: number, currency: string) {
 
 export function BillingPackagesPanel({
   canWrite = false,
+  onCreatePackage,
   onEditPackage,
 }: {
   canWrite?: boolean
-  onEditPackage?: (pkg: AdminPackage | null) => void
+  onCreatePackage?: () => void
+  onEditPackage?: (pkg: AdminPackage) => void
 }) {
   const query = useQuery({
-    queryKey: ['admin', 'billing', 'packages'],
+    queryKey: billingAdminQueryKeys.packages(),
     queryFn: async () =>
       adminPackageListSchema.parse(await billingAdminApi.get('/packages')),
   })
@@ -42,9 +45,16 @@ export function BillingPackagesPanel({
 
   return (
     <AdminPanel>
-      <div className="border-b border-border/60 px-6 py-5">
-        <h3 className="text-base font-medium">充值 SKU</h3>
-        <p className="mt-1 text-sm text-muted-foreground">平台价目表（含 inactive）。</p>
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border/60 px-6 py-5">
+        <div>
+          <h3 className="text-base font-medium">充值 SKU</h3>
+          <p className="mt-1 text-sm text-muted-foreground">平台价目表（含 inactive）。</p>
+        </div>
+        {canWrite && onCreatePackage ? (
+          <Button type="button" size="sm" onClick={onCreatePackage}>
+            新建 SKU
+          </Button>
+        ) : null}
       </div>
       <div className="px-2 py-2">
         {query.isLoading ? (

@@ -6,6 +6,7 @@ import {
   adminBillingWalletsQuery,
   adminWalletListSchema,
 } from '~/features/billing/lib/billing-admin-api'
+import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField } from '~/shared/ui/admin-field'
@@ -32,14 +33,13 @@ export function BillingWalletsPanel() {
   const [page, setPage] = useState(0)
 
   const query = useQuery({
-    queryKey: ['admin', 'billing', 'wallets', filters, page],
+    queryKey: billingAdminQueryKeys.wallets(filters, page),
     queryFn: async () =>
       adminWalletListSchema.parse(
         await billingAdminApi.get(
           `/wallets${adminBillingWalletsQuery({ ...filters, page, size: PAGE_SIZE })}`,
         ),
       ),
-    enabled: Boolean(filters.tenantId || filters.userId),
   })
 
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
@@ -50,11 +50,11 @@ export function BillingWalletsPanel() {
         <div>
           <h3 className="text-base font-medium">用户钱包</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            按租户或用户 UUID 查询积分余额（至少填写一项）。
+            默认展示全平台钱包；可按租户或用户 UUID 缩小范围。
           </p>
         </div>
         <form
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]"
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto]"
           onSubmit={(event) => {
             event.preventDefault()
             setPage(0)
@@ -69,7 +69,7 @@ export function BillingWalletsPanel() {
               id={tenantIdInputId}
               value={tenantId}
               onChange={(event) => setTenantId(event.target.value)}
-              placeholder="tenant UUID"
+              placeholder="可选"
             />
           </AdminField>
           <AdminField label="用户 ID" htmlFor={userIdInputId}>
@@ -77,18 +77,28 @@ export function BillingWalletsPanel() {
               id={userIdInputId}
               value={userId}
               onChange={(event) => setUserId(event.target.value)}
-              placeholder="user UUID"
+              placeholder="可选"
             />
           </AdminField>
-          <div className="flex items-end">
-            <Button type="submit">查询</Button>
+          <div className="flex items-end gap-2">
+            <Button type="submit">筛选</Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setTenantId('')
+                setUserId('')
+                setPage(0)
+                setFilters({})
+              }}
+            >
+              重置
+            </Button>
           </div>
         </form>
       </div>
       <div className="px-2 py-2">
-        {!filters.tenantId && !filters.userId ? (
-          <AdminEmptyState message="输入租户或用户 ID 后查询钱包。" />
-        ) : query.isLoading ? (
+        {query.isLoading ? (
           <AdminEmptyState message="加载中…" />
         ) : errorMessage ? (
           <AdminEmptyState message={errorMessage} />
@@ -99,6 +109,7 @@ export function BillingWalletsPanel() {
             <AdminDataTable>
               <AdminTableHead>
                 <AdminTableRow>
+                  <AdminTableHeaderCell>租户 ID</AdminTableHeaderCell>
                   <AdminTableHeaderCell>用户 ID</AdminTableHeaderCell>
                   <AdminTableHeaderCell>可用积分</AdminTableHeaderCell>
                   <AdminTableHeaderCell>冻结</AdminTableHeaderCell>
@@ -108,6 +119,7 @@ export function BillingWalletsPanel() {
               <AdminTableBody>
                 {query.data.items.map((wallet) => (
                   <AdminTableRow key={wallet.walletId}>
+                    <AdminTableCell mono>{wallet.tenantId}</AdminTableCell>
                     <AdminTableCell mono>{wallet.userId}</AdminTableCell>
                     <AdminTableCell>{wallet.availableBalance}</AdminTableCell>
                     <AdminTableCell>{wallet.frozenBalance}</AdminTableCell>

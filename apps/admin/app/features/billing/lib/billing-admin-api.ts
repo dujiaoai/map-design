@@ -1,5 +1,22 @@
 import { z } from 'zod'
 
+/** 进入 /billing 或侧栏「计费」所需任一权限 */
+export const BILLING_ACCESS_PERMISSIONS = [
+  'admin:billing:read',
+  'admin:billing:adjust',
+  'admin:billing:packages:write',
+  'admin:billing:refund',
+] as const
+
+export const RECHARGE_ORDER_STATUSES = [
+  { value: 'all', label: '全部' },
+  { value: 'pending', label: '待支付' },
+  { value: 'paid', label: '已支付' },
+  { value: 'cancelled', label: '已取消' },
+  { value: 'refunded', label: '已退款' },
+  { value: 'expired', label: '已过期' },
+] as const
+
 export const adminWalletListSchema = z.object({
   items: z.array(
     z.object({
@@ -93,6 +110,19 @@ export const adminUsageSummarySchema = z.object({
 })
 
 export type AdminUsageSummary = z.infer<typeof adminUsageSummarySchema>
+
+export const adminRefundResponseSchema = z.object({
+  orderNo: z.string(),
+  tenantId: z.string(),
+  userId: z.string(),
+  status: z.string(),
+  pointsRefunded: z.number(),
+  walletBalanceAfter: z.number(),
+  reason: z.string(),
+  idempotentReplay: z.boolean(),
+})
+
+export type AdminRefundResponse = z.infer<typeof adminRefundResponseSchema>
 
 function buildQuery(params: Record<string, string | number | undefined>) {
   const search = new URLSearchParams()

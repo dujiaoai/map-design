@@ -3,6 +3,7 @@ import { queryOptions, useQuery } from '@tanstack/react-query'
 
 import { billingClient } from '~/shared/api/billing-client'
 import { auth } from '~/shared/auth/client'
+import { rechargeOrderPollInterval } from '~/features/billing/lib/recharge-order-poll-interval'
 import { usesSaasSessionBootstrap } from '~/shared/session/fetch-saas-session'
 
 export {
@@ -51,6 +52,8 @@ export const billingQueryKeys = {
   wireTransfers: (page: number, size: number) =>
     [...billingQueryKeys.all, 'wire-transfers', page, size] as const,
   rechargeLedgerOrders: () => [...billingQueryKeys.all, 'recharge-ledger-orders'] as const,
+  rechargeOrder: (orderNo: string) =>
+    [...billingQueryKeys.all, 'recharge-order', orderNo] as const,
 }
 
 export function walletQueryOptions() {
@@ -135,6 +138,22 @@ export function useRechargePackagesQuery(enabled = true) {
   return useQuery({
     ...packagesQueryOptions(),
     enabled: enabled && usesSaasSessionBootstrap() && canRecharge(),
+  })
+}
+
+export function rechargeOrderQueryOptions(orderNo: string) {
+  return queryOptions({
+    queryKey: billingQueryKeys.rechargeOrder(orderNo),
+    queryFn: () => billingClient.getRechargeOrder(orderNo),
+    staleTime: 0,
+  })
+}
+
+export function useRechargeOrderQuery(orderNo: string | undefined, enabled = true) {
+  return useQuery({
+    ...rechargeOrderQueryOptions(orderNo ?? ''),
+    enabled: enabled && usesSaasSessionBootstrap() && canRecharge() && Boolean(orderNo),
+    refetchInterval: (query) => rechargeOrderPollInterval(query.state.data?.status),
   })
 }
 

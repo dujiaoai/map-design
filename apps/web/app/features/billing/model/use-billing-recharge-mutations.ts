@@ -1,5 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import type { CreateRechargeOrderRequest } from '@repo/billing-client'
+
 import { billingClient } from '~/shared/api/billing-client'
 import { billingQueryKeys } from '~/shared/queries/billing-queries'
 
@@ -13,8 +15,7 @@ export function useCreateRechargeOrderMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (input: { packageCode: string; channel?: string }) =>
-      billingClient.createRechargeOrder(input),
+    mutationFn: (input: CreateRechargeOrderRequest) => billingClient.createRechargeOrder(input),
     onSuccess: () => invalidateBillingQueries(queryClient),
   })
 }

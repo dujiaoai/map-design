@@ -13,7 +13,8 @@ import {
   SelectValue,
   Skeleton,
 } from '@repo/ui'
-import { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useEffect, useMemo, useState } from 'react'
 
 import {
   defaultPaySceneForChannel,
@@ -35,7 +36,7 @@ import {
 } from '~/features/billing/model/use-billing-recharge-mutations'
 import { formatPoints } from '~/features/billing/lib/format-points'
 import { formatPriceCents } from '~/features/billing/lib/format-price'
-import { useRechargePackagesQuery } from '~/shared/queries/billing-queries'
+import { billingQueryKeys, useRechargeOrderQuery, useRechargePackagesQuery } from '~/shared/queries/billing-queries'
 
 const PACKAGE_LABELS: Record<string, string> = {
   starter_500: '体验包',
@@ -49,6 +50,7 @@ export function RechargePackagesPanel({
   onPaidOrder?: (orderNo: string) => void
 }) {
   const packagesQuery = useRechargePackagesQuery()
+  const queryClient = useQueryClient()
   const createOrder = useCreateRechargeOrderMutation()
   const mockPay = useMockPayRechargeOrderMutation()
   const cancelOrder = useCancelRechargeOrderMutation()
@@ -60,6 +62,38 @@ export function RechargePackagesPanel({
   const [actionError, setActionError] = useState<string | null>(null)
 
   const paySceneOptions = useMemo(() => payScenesForChannel(channel), [channel])
+
+  const onlineOrderNo =
+    pendingOrder && pendingOrder.channel !== 'mock' && pendingOrder.status === 'pending'
+      ? pendingOrder.orderNo
+      : undefined
+
+  const orderPoll = useRechargeOrderQuery(onlineOrderNo)
+
+  useEffect(() => {
+    const polled = orderPoll.data
+    if (!polled || !pendingOrder || polled.orderNo !== pendingOrder.orderNo) {
+      return
+    }
+    if (polled.status === 'paid') {
+      const paidOrderNo = polled.orderNo
+      setPendingOrder(null)
+      setPaidMessage(`充值成功，当前可用 ${formatPoints(polled.walletBalance)} 点。`)
+      setActionError(null)
+      onPaidOrder?.(paidOrderNo)
+      void queryClient.invalidateQueries({ queryKey: billingQueryKeys.all })
+      return
+    }
+    if (polled.status === 'expired') {
+      setPendingOrder(null)
+      setActionError('订单已过期，请重新下单。')
+      return
+    }
+    if (polled.status === 'cancelled') {
+      setPendingOrder(null)
+      setActionError('订单已取消。')
+    }
+  }, [orderPoll.data, pendingOrder, onPaidOrder, queryClient])
 
   function handleChannelChange(nextChannel: RechargeChannel) {
     setChannel(nextChannel)
@@ -275,6 +309,12 @@ export function RechargePackagesPanel({
               {pendingPayLaunch ? (
                 <p className="text-muted-foreground mt-2 text-xs">
                   {rechargePayLaunchHint(pendingPayLaunch)}
+                </p>
+              ) : null}
+              {onlineOrderNo ? (
+                <p className="text-muted-foreground mt-2 text-xs">
+                  支付完成后将自动刷新余额（约每 3 秒检测）。
+                  {orderPoll.isFetching ? ' 正在等待支付结果…' : null}
                 </p>
               ) : null}
             </div>

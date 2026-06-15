@@ -1,6 +1,6 @@
 # 充值/积分功能 PRD（Sprint F · P4）
 
-> 状态：F-1～F-3+、F-2/F-5 主体、F-4 退款骨架 **已落地**（2026-06-14）；**安全/限流/观测加固** ✅（2026-06-15）；F-4 对账/通知/发票、F-5 优惠券、F-6 对公 **待办**  
+> 状态：F-1～F-3+、F-2/F-5 主体、F-4 运营财务骨架 **已落地**（2026-06-15）；**安全/限流/观测加固** ✅（2026-06-15）；F-5 优惠券、F-6 对公 **待办**  
 > 架构摘要：[billing-service.md](../architecture/billing-service.md)  
 > 后端排期：[services-development-plan.md](../architecture/services-development-plan.md) §Sprint F
 
@@ -379,7 +379,13 @@ flowchart LR
 - **充值退款**（骨架 ✅）：`POST /v1/admin/billing/recharge-orders/{orderNo}/refund`（`admin:billing:refund`）；`paid`→`refunding`→`refunded`；扣回积分 + mock 网关原路退；审计 `billing.recharge.refund`
 - **日对账**（骨架 ✅）：`GET /v1/admin/billing/reconciliation/daily?date=`（UTC 自然日；对比 paid 订单 vs `recharge` 流水、refunded 订单 vs `refund` 流水）
 - **站内通知**（骨架 ✅）：`GET/POST /v1/billing/notifications*`；低余额 crossing + 充值退款触发；saas-web 通知抽屉合并展示
-- 发票
+- **发票**（骨架 ✅）：
+  - 表 `billing_invoice_request`；状态 `pending` / `issued` / `rejected`；类型 `personal` / `enterprise`
+  - 用户：`POST /v1/billing/invoices`（`billing:recharge:create`）；仅 **已支付** 充值订单；`dedupe_key=invoice:{orderNo}` 幂等
+  - 用户：`GET /v1/billing/invoices` 分页列表
+  - Admin：`GET /v1/admin/billing/invoices`（`admin:billing:read`）；`POST .../{id}/issue`、`POST .../{id}/reject`（`admin:billing:adjust`）
+  - saas-web：`/billing` 充值发票 Tab + 充值成功后快捷申请；Admin「发票申请」Tab
+  - **不含**电子发票平台对接、PDF 附件、邮件自动发送（后续迭代）
 
 ### F-5 · 增长管控
 

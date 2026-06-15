@@ -18,6 +18,7 @@ import {
   AdminTableRow,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
@@ -44,8 +45,9 @@ const BILLING_PERMISSIONS = [
 ] as const
 
 export function AuditLogsAdminPage() {
-  const { canAny } = useAdminPermissions()
+  const { can, canAny } = useAdminPermissions()
   const canViewBilling = canAny([...BILLING_PERMISSIONS])
+  const canReadTenants = can('admin:tenants:read')
   const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
   const [actionFilter, setActionFilter] = useState<string>('all')
   const [crossTenantOnly, setCrossTenantOnly] = useState(false)
@@ -127,7 +129,7 @@ export function AuditLogsAdminPage() {
 
       <AdminPanel className="p-0">
         {query.isLoading ? (
-          <AdminTableSkeleton columns={5} showPagination />
+          <AdminTableSkeleton columns={6} showPagination />
         ) : query.isError ? (
           <AdminEmptyState message="加载失败，请刷新重试" />
         ) : !query.data?.logs.length ? (
@@ -141,12 +143,13 @@ export function AuditLogsAdminPage() {
                   <AdminTableHeaderCell>操作人</AdminTableHeaderCell>
                   <AdminTableHeaderCell>动作</AdminTableHeaderCell>
                   <AdminTableHeaderCell>详情</AdminTableHeaderCell>
+                  <AdminTableHeaderCell>目标租户</AdminTableHeaderCell>
                   <AdminTableHeaderCell>跨租户</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
               <AdminTableBody>
                 {query.data.logs.map((log) => (
-                  <AuditLogRow key={log.id} log={log} />
+                  <AuditLogRow key={log.id} log={log} canReadTenants={canReadTenants} />
                 ))}
               </AdminTableBody>
             </AdminDataTable>
@@ -163,7 +166,13 @@ export function AuditLogsAdminPage() {
   )
 }
 
-function AuditLogRow({ log }: { log: AdminAuditLogEntry }) {
+function AuditLogRow({
+  log,
+  canReadTenants,
+}: {
+  log: AdminAuditLogEntry
+  canReadTenants: boolean
+}) {
   const billingLink = buildAuditBillingLink(log.action, log.targetTenantId)
 
   return (
@@ -184,6 +193,23 @@ function AuditLogRow({ log }: { log: AdminAuditLogEntry }) {
         ) : null}
       </AdminTableCell>
       <AdminTableCell className="max-w-md truncate">{log.detail ?? '—'}</AdminTableCell>
+      <AdminTableCell>
+        {log.targetTenantId ? (
+          <div className="space-y-1">
+            <AdminIdCell value={log.targetTenantId} label="租户" />
+            {canReadTenants ? (
+              <Link
+                to={`/tenants/${log.targetTenantId}?tab=info`}
+                className="text-xs text-primary underline-offset-4 hover:underline"
+              >
+                租户详情
+              </Link>
+            ) : null}
+          </div>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </AdminTableCell>
       <AdminTableCell>
         {log.crossTenant ? (
           <Badge variant="outline" className="font-mono text-[10px]">

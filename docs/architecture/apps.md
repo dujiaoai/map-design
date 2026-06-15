@@ -77,7 +77,7 @@ pnpm --filter @repo/saas-web dev
 | `/members` | 成员管理；`?tenantId=`（平台可跨租户，租户管理员仅本租户） |
 | `/roles` | 角色与权限配置（未保存切换确认） |
 | `/account` | 当前账号资料（`PUT /users/me`）与改密 |
-| `/audit-logs` | 成员操作审计日志（`GET /v1/admin/audit-logs`）；计费动作可跳转 `/billing?tab=` |
+| `/audit-logs` | 成员操作审计日志（`GET /v1/admin/audit-logs`）；计费动作可跳转 `/billing?tab=`；支持「仅计费」筛选与目标租户链接 |
 | `/billing` | 平台计费运营（SKU/调账/退款/对账/发票/对公） |
 | `/system` | 平台配置只读摘要（`GET /v1/admin/system/flags`） |
 | `/403` | 无运营权限 |

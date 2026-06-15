@@ -1,9 +1,12 @@
 import { Badge, Button } from '@repo/ui'
+import { useSession } from '@repo/auth'
 import { useQuery } from '@tanstack/react-query'
 import { PencilIcon } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router'
 
 import { fetchAdminTenant, fetchTenantMembers, type AdminUserSummary } from '~/shared/api/admin-api'
+import { isPlatformAdmin } from '~/shared/auth/admin-access'
 import {
   useAdminTableFilterState,
   useFilteredAdminRows,
@@ -39,6 +42,10 @@ export function MembersAdminPage({
 }) {
   const { can, session } = useAdminPermissions()
   const canWrite = can('admin:members:write') || can('admin:tenants:write')
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const showTenantClear =
+    !embedded && isPlatformAdmin(session) && Boolean(searchParams.get('tenantId'))
 
   const [inviteOpen, setInviteOpen] = useState(false)
   const [editingMember, setEditingMember] = useState<AdminUserSummary | null>(null)
@@ -98,6 +105,7 @@ export function MembersAdminPage({
           tenantLabel={tenantContextLabel}
           showMembersLink={false}
           showUsersLink
+          onClear={showTenantClear ? () => void navigate('/members') : undefined}
         />
       ) : null}
 

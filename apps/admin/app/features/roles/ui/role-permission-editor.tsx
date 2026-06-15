@@ -1,8 +1,9 @@
 import { Badge, Button, Checkbox, cn, Input } from '@repo/ui'
 import { SearchIcon } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import type { AdminPermission } from '~/shared/api/admin-api'
+import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import {
   filterPermissionsByQuery,
   PERMISSION_TREE_SEARCH_THRESHOLD,
@@ -37,6 +38,8 @@ export function RolePermissionEditor({
   readOnly?: boolean
 }) {
   const [search, setSearch] = useState('')
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  useAdminListSearchShortcut(searchInputRef)
   const visiblePermissions = useMemo(
     () => filterPermissionsByQuery(permissions, search),
     [permissions, search],
@@ -79,14 +82,27 @@ export function RolePermissionEditor({
       </div>
 
       {permissions.length >= PERMISSION_TREE_SEARCH_THRESHOLD ? (
-        <div className="relative">
-          <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="relative max-w-md">
+          <SearchIcon
+            className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
           <Input
+            ref={searchInputRef}
+            type="search"
+            role="searchbox"
+            aria-label="搜索权限码、名称或分组"
+            aria-keyshortcuts="/"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="搜索权限码、名称或分组…"
-            className="pl-8"
+            className={cn('pl-8', search ? 'pr-9' : 'pr-14')}
           />
+          {!search ? (
+            <kbd className="pointer-events-none absolute top-1/2 right-2 hidden -translate-y-1/2 rounded border border-border/70 bg-muted/30 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
+              /
+            </kbd>
+          ) : null}
         </div>
       ) : null}
 

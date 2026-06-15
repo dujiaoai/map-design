@@ -84,11 +84,19 @@ interface MapPluginBridge {
 
 ### 当前状态
 
-- **`MapPluginBridgeProvider`**：宿主侧注入 `createRegistryMapPluginBridge`（可传 `toolLoaders`）
+- **`MapPluginBridgeProvider`**：宿主侧注入 `createRegistryMapPluginBridge`（默认 `createDefaultMapPluginBridgeOptions()`）
+- **`map-plugin-tool-loaders.ts`**：`VITE_MAP_PLUGIN_LOADERS=true` 时按 registry lazy import `@haoxuan/map-plugins/{slug}/lazyEntry`
 - **`MapToolLifecycleSync`**：仅 store → bridge 同步，不再重复注入
-- 默认 registry bridge（DEV 下 console.debug；未知 id 警告）
+- 未启用 loader 时：registry bridge DEV console.debug；未知 id 警告
 - `setMapPluginBridge()` 供 MapProvider 在 loader 就绪后覆盖注入
 - `map-plugin-registry.ts` 维护已知 `pluginToolId` 列表
+
+**packages-map 联调环境变量：**
+
+| 变量 | 默认 | 说明 |
+| --- | --- | --- |
+| `VITE_MAP_PLUGIN_LOADERS` | （未设） | `true` 启用 registry lazy loader |
+| `VITE_MAP_PLUGINS_BASE` | `@haoxuan/map-plugins` | lazyEntry 模块前缀 |
 
 ### 接入步骤（Phase C）
 

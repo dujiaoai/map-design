@@ -1,4 +1,5 @@
 export { createNavSelectHandler } from './lib/handle-nav-select'
+export { createDefaultMapPluginBridgeOptions } from './lib/create-default-map-plugin-bridge-options'
 export {
   createRegistryMapPluginBridge,
   type MapPluginDrawerLoader,
@@ -32,6 +33,15 @@ export {
   isKnownPluginToolId,
   isKnownPluginToolIdInRegistry,
 } from './lib/map-plugin-registry'
+export {
+  mapPluginToolIdToSlug,
+  resolveMapPluginLazyEntryPath,
+} from './lib/map-plugin-lazy-entry-paths'
+export {
+  createMapPluginDrawerLoaders,
+  createMapPluginToolLoaders,
+  isMapPluginLoadersEnabled,
+} from './lib/map-plugin-tool-loaders'
 export {
   buildWorkspaceSearchParams,
   parseWorkspaceUrl,

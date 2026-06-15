@@ -4,6 +4,7 @@ import com.yunyan.billingapi.application.admin.AdminBillingAdjustService;
 import com.yunyan.billingapi.application.admin.AdminBillingLedgerService;
 import com.yunyan.billingapi.application.admin.AdminBillingPackageService;
 import com.yunyan.billingapi.application.admin.AdminBillingRechargeOrderService;
+import com.yunyan.billingapi.application.admin.AdminBillingReconciliationService;
 import com.yunyan.billingapi.application.admin.AdminBillingRefundService;
 import com.yunyan.billingapi.application.admin.AdminBillingStatsService;
 import com.yunyan.billingapi.application.admin.AdminBillingUsageService;
@@ -16,6 +17,7 @@ import com.yunyan.billingapi.web.dto.AdminAdjustRequest;
 import com.yunyan.billingapi.web.dto.AdminLedgerListResponse;
 import com.yunyan.billingapi.web.dto.AdminAdjustResponse;
 import com.yunyan.billingapi.web.dto.AdminBillingStatsResponse;
+import com.yunyan.billingapi.web.dto.AdminReconciliationDailyResponse;
 import com.yunyan.billingapi.web.dto.AdminRefundRequest;
 import com.yunyan.billingapi.web.dto.AdminRefundResponse;
 import com.yunyan.billingapi.web.dto.AdminRechargeOrderListResponse;
@@ -30,6 +32,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,6 +61,7 @@ public class AdminBillingController {
   private final AdminBillingStatsService adminBillingStatsService;
   private final AdminBillingUsageService adminBillingUsageService;
   private final AdminBillingRefundService adminBillingRefundService;
+  private final AdminBillingReconciliationService adminBillingReconciliationService;
   private final BillingRateLimitService billingRateLimitService;
 
   public AdminBillingController(
@@ -68,6 +73,7 @@ public class AdminBillingController {
       AdminBillingStatsService adminBillingStatsService,
       AdminBillingUsageService adminBillingUsageService,
       AdminBillingRefundService adminBillingRefundService,
+      AdminBillingReconciliationService adminBillingReconciliationService,
       BillingRateLimitService billingRateLimitService) {
     this.adminBillingAdjustService = adminBillingAdjustService;
     this.adminBillingLedgerService = adminBillingLedgerService;
@@ -77,6 +83,7 @@ public class AdminBillingController {
     this.adminBillingStatsService = adminBillingStatsService;
     this.adminBillingUsageService = adminBillingUsageService;
     this.adminBillingRefundService = adminBillingRefundService;
+    this.adminBillingReconciliationService = adminBillingReconciliationService;
     this.billingRateLimitService = billingRateLimitService;
   }
 
@@ -191,6 +198,16 @@ public class AdminBillingController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
     return adminBillingAdjustService.listAdjustRecords(tenantId, userId, page, size);
+  }
+
+  @GetMapping("/reconciliation/daily")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_READ + "')")
+  @Operation(summary = "日对账：充值订单 vs 积分流水（UTC 自然日）")
+  public AdminReconciliationDailyResponse getDailyReconciliation(
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate date) {
+    var reportDate = date != null ? date : LocalDate.now(ZoneOffset.UTC).minusDays(1);
+    return adminBillingReconciliationService.getDailyReport(reportDate);
   }
 
   @PostMapping("/recharge-orders/{orderNo}/refund")

@@ -132,4 +132,28 @@ public interface BillingLedgerMapper {
       @Param("tenantId") UUID tenantId,
       @Param("userId") UUID userId,
       @Param("entryType") String entryType);
+
+  @Select(
+      """
+      SELECT COUNT(*) AS count,
+             COALESCE(SUM(amount), 0) AS points,
+             0 AS gmv_cents
+      FROM billing_ledger
+      WHERE entry_type = 'recharge'
+        AND created_at >= #{from} AND created_at < #{to}
+      """)
+  BillingReconciliationSummary summarizeRechargeLedgerInRange(
+      @Param("from") java.time.Instant from, @Param("to") java.time.Instant to);
+
+  @Select(
+      """
+      SELECT COUNT(*) AS count,
+             COALESCE(SUM(ABS(amount)), 0) AS points,
+             0 AS gmv_cents
+      FROM billing_ledger
+      WHERE entry_type = 'refund'
+        AND created_at >= #{from} AND created_at < #{to}
+      """)
+  BillingReconciliationSummary summarizeRefundLedgerInRange(
+      @Param("from") java.time.Instant from, @Param("to") java.time.Instant to);
 }

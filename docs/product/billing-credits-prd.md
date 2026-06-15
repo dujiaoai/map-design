@@ -240,6 +240,7 @@ EstimateResult estimate(SaasPrincipal principal, String productCode, String rule
 | GET/POST/PATCH | `/v1/admin/billing/packages` | SKU CRUD |
 | GET | `/v1/admin/billing/recharge-orders` | 全平台订单 |
 | GET | `/v1/admin/billing/stats` | 平台汇总统计 |
+| GET | `/v1/admin/billing/reconciliation/daily` | `?date` UTC 日对账（订单 vs 流水） |
 | GET | `/v1/admin/billing/usage` | `?tenantId&…` 跨租户用量（PLATFORM_ADMIN） |
 
 ### 4.3 Webhook（无 JWT）
@@ -376,7 +377,8 @@ flowchart LR
 ### F-4 · 运营财务
 
 - **充值退款**（骨架 ✅）：`POST /v1/admin/billing/recharge-orders/{orderNo}/refund`（`admin:billing:refund`）；`paid`→`refunding`→`refunded`；扣回积分 + mock 网关原路退；审计 `billing.recharge.refund`
-- 对账；通知；发票
+- **日对账**（骨架 ✅）：`GET /v1/admin/billing/reconciliation/daily?date=`（UTC 自然日；对比 paid 订单 vs `recharge` 流水、refunded 订单 vs `refund` 流水）
+- 通知；发票
 
 ### F-5 · 增长管控
 

@@ -166,4 +166,29 @@ public interface BillingRechargeOrderMapper {
   @Select(
       "SELECT COALESCE(SUM(price_cents), 0) FROM billing_recharge_order WHERE status = 'paid'")
   long sumPaidPriceCents();
+
+  @Select(
+      """
+      SELECT COUNT(*) AS count,
+             COALESCE(SUM(points), 0) AS points,
+             COALESCE(SUM(price_cents), 0) AS gmv_cents
+      FROM billing_recharge_order
+      WHERE paid_at IS NOT NULL
+        AND paid_at >= #{from} AND paid_at < #{to}
+        AND status IN ('paid', 'refunding', 'refunded')
+      """)
+  BillingReconciliationSummary summarizePaidOrdersInRange(
+      @Param("from") java.time.Instant from, @Param("to") java.time.Instant to);
+
+  @Select(
+      """
+      SELECT COUNT(*) AS count,
+             COALESCE(SUM(points), 0) AS points,
+             COALESCE(SUM(price_cents), 0) AS gmv_cents
+      FROM billing_recharge_order
+      WHERE status = 'refunded'
+        AND updated_at >= #{from} AND updated_at < #{to}
+      """)
+  BillingReconciliationSummary summarizeRefundedOrdersInRange(
+      @Param("from") java.time.Instant from, @Param("to") java.time.Instant to);
 }

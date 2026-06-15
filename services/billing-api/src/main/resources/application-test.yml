@@ -32,3 +32,5 @@ billing:
     order-ttl-minutes: 30
   hold:
     ttl-minutes: 30
+  rate-limit:
+    enabled: false

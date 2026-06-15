@@ -2,8 +2,11 @@ package com.yunyan.billingapi.web.advice;
 
 import com.yunyan.billingapi.application.hold.InsufficientBalanceException;
 import com.yunyan.billingapi.security.AuthException;
+import com.yunyan.billingapi.security.ratelimit.RateLimitException;
 import jakarta.validation.ConstraintViolationException;
 import java.util.Map;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -32,6 +35,18 @@ public class BillingApiExceptionHandler {
             .findFirst()
             .orElse("Validation failed");
     return ResponseEntity.badRequest().body(Map.of("message", message));
+  }
+
+  @ExceptionHandler(RateLimitException.class)
+  ResponseEntity<ProblemDetail> handleRateLimit(RateLimitException exception) {
+    var problem =
+        ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, exception.getMessage());
+    problem.setTitle("Too many requests");
+    problem.setType(java.net.URI.create("urn:yunyan:billing:rate_limit"));
+    var retryAfter = Math.max(1, exception.getRetryAfter().getSeconds());
+    return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+        .header(HttpHeaders.RETRY_AFTER, String.valueOf(retryAfter))
+        .body(problem);
   }
 
   @ExceptionHandler(AuthException.class)

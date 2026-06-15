@@ -14,6 +14,28 @@ public class BillingAppProperties {
   private final Hold hold = new Hold();
   private final Refund refund = new Refund();
   private final Webhook webhook = new Webhook();
+  private final RateLimit rateLimit = new RateLimit();
+
+  @Data
+  public static class RateLimit {
+    private boolean enabled = true;
+    private WebhookRateLimit webhook = new WebhookRateLimit();
+    private AdminRateLimit admin = new AdminRateLimit();
+  }
+
+  @Data
+  public static class WebhookRateLimit {
+    private int ipMaxAttempts = 120;
+    private java.time.Duration ipWindow = java.time.Duration.ofMinutes(1);
+  }
+
+  @Data
+  public static class AdminRateLimit {
+    private int adjustMaxAttempts = 30;
+    private java.time.Duration adjustWindow = java.time.Duration.ofHours(1);
+    private int refundMaxAttempts = 10;
+    private java.time.Duration refundWindow = java.time.Duration.ofHours(1);
+  }
 
   @Data
   public static class Webhook {

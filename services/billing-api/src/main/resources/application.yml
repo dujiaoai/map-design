@@ -58,6 +58,16 @@ billing:
   refund:
     recovery-scan-ms: 300000
     stuck-minutes: 30
+  rate-limit:
+    enabled: true
+    webhook:
+      ip-max-attempts: 120
+      ip-window: PT1M
+    admin:
+      adjust-max-attempts: 30
+      adjust-window: PT1H
+      refund-max-attempts: 10
+      refund-window: PT1H
 
 springdoc:
   api-docs:

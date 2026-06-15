@@ -1,9 +1,11 @@
 package com.yunyan.billingapi.web.controller;
 
 import com.yunyan.billingapi.application.payment.PaymentWebhookService;
+import com.yunyan.billingapi.application.ratelimit.BillingRateLimitService;
 import com.yunyan.billingapi.web.dto.PaymentWebhookPayload;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Map;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,9 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class PaymentWebhookController {
 
   private final PaymentWebhookService paymentWebhookService;
+  private final BillingRateLimitService billingRateLimitService;
 
-  public PaymentWebhookController(PaymentWebhookService paymentWebhookService) {
+  public PaymentWebhookController(
+      PaymentWebhookService paymentWebhookService,
+      BillingRateLimitService billingRateLimitService) {
     this.paymentWebhookService = paymentWebhookService;
+    this.billingRateLimitService = billingRateLimitService;
   }
 
   @PostMapping("/wechat")
@@ -28,8 +34,10 @@ public class PaymentWebhookController {
   public Map<String, String> wechat(
       @RequestHeader(value = PaymentWebhookService.WEBHOOK_TOKEN_HEADER, required = false)
           String token,
-      @Valid @RequestBody PaymentWebhookPayload payload) {
+      @Valid @RequestBody PaymentWebhookPayload payload,
+      HttpServletRequest request) {
     paymentWebhookService.verifyToken(token);
+    billingRateLimitService.checkWebhook(request);
     paymentWebhookService.handleWechat(payload);
     return Map.of("code", "SUCCESS");
   }
@@ -39,8 +47,10 @@ public class PaymentWebhookController {
   public Map<String, String> alipay(
       @RequestHeader(value = PaymentWebhookService.WEBHOOK_TOKEN_HEADER, required = false)
           String token,
-      @Valid @RequestBody PaymentWebhookPayload payload) {
+      @Valid @RequestBody PaymentWebhookPayload payload,
+      HttpServletRequest request) {
     paymentWebhookService.verifyToken(token);
+    billingRateLimitService.checkWebhook(request);
     paymentWebhookService.handleAlipay(payload);
     return Map.of("code", "SUCCESS");
   }

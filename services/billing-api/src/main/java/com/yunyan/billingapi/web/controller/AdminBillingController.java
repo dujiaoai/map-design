@@ -7,6 +7,7 @@ import com.yunyan.billingapi.application.admin.AdminBillingRefundService;
 import com.yunyan.billingapi.application.admin.AdminBillingStatsService;
 import com.yunyan.billingapi.application.admin.AdminBillingUsageService;
 import com.yunyan.billingapi.application.admin.AdminBillingWalletService;
+import com.yunyan.billingapi.application.ratelimit.BillingRateLimitService;
 import com.yunyan.billingapi.domain.permission.PermissionCodes;
 import com.yunyan.billingapi.security.SaasPrincipal;
 import com.yunyan.billingapi.web.dto.AdminAdjustRequest;
@@ -53,6 +54,7 @@ public class AdminBillingController {
   private final AdminBillingStatsService adminBillingStatsService;
   private final AdminBillingUsageService adminBillingUsageService;
   private final AdminBillingRefundService adminBillingRefundService;
+  private final BillingRateLimitService billingRateLimitService;
 
   public AdminBillingController(
       AdminBillingAdjustService adminBillingAdjustService,
@@ -61,7 +63,8 @@ public class AdminBillingController {
       AdminBillingPackageService adminBillingPackageService,
       AdminBillingStatsService adminBillingStatsService,
       AdminBillingUsageService adminBillingUsageService,
-      AdminBillingRefundService adminBillingRefundService) {
+      AdminBillingRefundService adminBillingRefundService,
+      BillingRateLimitService billingRateLimitService) {
     this.adminBillingAdjustService = adminBillingAdjustService;
     this.adminBillingWalletService = adminBillingWalletService;
     this.adminBillingRechargeOrderService = adminBillingRechargeOrderService;
@@ -69,6 +72,7 @@ public class AdminBillingController {
     this.adminBillingStatsService = adminBillingStatsService;
     this.adminBillingUsageService = adminBillingUsageService;
     this.adminBillingRefundService = adminBillingRefundService;
+    this.billingRateLimitService = billingRateLimitService;
   }
 
   @GetMapping("/stats")
@@ -157,6 +161,7 @@ public class AdminBillingController {
       @AuthenticationPrincipal SaasPrincipal principal,
       @PathVariable UUID tenantId,
       @Valid @RequestBody AdminAdjustRequest request) {
+    billingRateLimitService.checkAdminAdjust(principal.userId());
     return adminBillingAdjustService.adjust(principal, tenantId, request);
   }
 
@@ -178,6 +183,7 @@ public class AdminBillingController {
       @AuthenticationPrincipal SaasPrincipal principal,
       @PathVariable String orderNo,
       @Valid @RequestBody AdminRefundRequest request) {
+    billingRateLimitService.checkAdminRefund(principal.userId());
     return adminBillingRefundService.refundOrder(principal, orderNo, request);
   }
 }

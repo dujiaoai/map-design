@@ -6,6 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  useConfirmDialog,
 } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Building2Icon } from 'lucide-react'
@@ -58,6 +59,7 @@ export function BillingWireTransfersPanel({
   const { can } = useAdminPermissions()
   const canAdjust = can('admin:billing:adjust')
   const queryClient = useQueryClient()
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const tenantIdInputId = useId()
   const userIdInputId = useId()
@@ -125,6 +127,16 @@ export function BillingWireTransfersPanel({
 
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
 
+  async function handleApprove(item: AdminWireTransfer) {
+    const confirmed = await confirm({
+      title: '确认审核入账',
+      description: `${item.companyName}\n${formatBillingPrice(item.amountCents, 'CNY')} · ${item.points.toLocaleString('zh-CN')} 点\n入账至申请人个人账户。`,
+      confirmLabel: '确认入账',
+    })
+    if (!confirmed) return
+    await approveMutation.mutateAsync(item.id)
+  }
+
   function applyFilters() {
     const validation = validateOptionalUuidFilters({
       '租户 ID': tenantId,
@@ -144,7 +156,8 @@ export function BillingWireTransfersPanel({
   }
 
   return (
-    <div className="space-y-4">
+    <>
+      <div className="space-y-4">
       <AdminPanel>
         <AdminPanelHeader
           icon={Building2Icon}
@@ -275,7 +288,7 @@ export function BillingWireTransfersPanel({
                               size="sm"
                               variant="outline"
                               disabled={actingId === item.id}
-                              onClick={() => void approveMutation.mutateAsync(item.id)}
+                              onClick={() => void handleApprove(item)}
                             >
                               审核入账
                             </Button>
@@ -317,6 +330,8 @@ export function BillingWireTransfersPanel({
           }}
         />
       ) : null}
-    </div>
+      </div>
+      {confirmDialog}
+    </>
   )
 }

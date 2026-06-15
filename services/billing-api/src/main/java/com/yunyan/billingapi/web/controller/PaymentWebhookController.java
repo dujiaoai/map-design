@@ -43,40 +43,35 @@ public class PaymentWebhookController {
   }
 
   @PostMapping("/wechat")
-  @Operation(summary = "微信支付回调（JSON + Token；可选 HMAC 验签）")
+  @Operation(summary = "微信支付回调（Token + 可选 HMAC / WeChat V3 RSA 验签）")
   public Map<String, String> wechat(
       @RequestHeader(value = PaymentWebhookService.WEBHOOK_TOKEN_HEADER, required = false)
           String token,
-      @RequestHeader(value = PaymentWebhookSignatureService.SIGNATURE_HEADER, required = false)
-          String signature,
       @RequestBody String rawBody,
       HttpServletRequest request)
       throws Exception {
-    return handleWebhook(PaymentWebhookChannels.WECHAT, token, signature, rawBody, request);
+    return handleWebhook(PaymentWebhookChannels.WECHAT, token, rawBody, request);
   }
 
   @PostMapping("/alipay")
-  @Operation(summary = "支付宝回调（JSON + Token；可选 HMAC 验签）")
+  @Operation(summary = "支付宝回调（Token + 可选 HMAC / Alipay RSA 验签）")
   public Map<String, String> alipay(
       @RequestHeader(value = PaymentWebhookService.WEBHOOK_TOKEN_HEADER, required = false)
           String token,
-      @RequestHeader(value = PaymentWebhookSignatureService.SIGNATURE_HEADER, required = false)
-          String signature,
       @RequestBody String rawBody,
       HttpServletRequest request)
       throws Exception {
-    return handleWebhook(PaymentWebhookChannels.ALIPAY, token, signature, rawBody, request);
+    return handleWebhook(PaymentWebhookChannels.ALIPAY, token, rawBody, request);
   }
 
   private Map<String, String> handleWebhook(
       String channel,
       String token,
-      String signature,
       String rawBody,
       HttpServletRequest request)
       throws Exception {
     paymentWebhookService.verifyToken(token);
-    paymentWebhookSignatureService.verifyIfEnabled(channel, rawBody, signature);
+    paymentWebhookSignatureService.verifyIfEnabled(channel, rawBody, request);
     billingRateLimitService.checkWebhook(request);
     var payload = objectMapper.readValue(rawBody, PaymentWebhookPayload.class);
     validatePayload(payload);

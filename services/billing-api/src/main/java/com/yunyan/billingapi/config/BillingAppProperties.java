@@ -57,12 +57,19 @@ public class BillingAppProperties {
   public static class Webhook {
     /** Shared token for payment provider callbacks (dev/skeleton fallback when signature verify off). */
     private String token = "dev-billing-webhook-token-change-me";
-    /** When true, require {@link com.yunyan.billingapi.application.payment.PaymentWebhookSignatureService} HMAC header. */
+    /** When true, require channel-specific webhook signature verification. */
     private boolean signatureVerifyEnabled = false;
-    /** HMAC secret for WeChat callback skeleton verify. */
+    /** hmac (default), wechat_v3, alipay_rsa */
+    private String wechatSignatureMode = "hmac";
+    private String alipaySignatureMode = "hmac";
+    /** HMAC secret for WeChat callback dev verify. */
     private String wechatSignSecret = "";
-    /** HMAC secret for Alipay callback skeleton verify. */
+    /** HMAC secret for Alipay callback dev verify. */
     private String alipaySignSecret = "";
+    /** PEM platform public key for WeChat Pay API v3 notify verify. */
+    private String wechatPlatformPublicKeyPem = "";
+    /** PEM Alipay public key for notify RSA verify. */
+    private String alipayPublicKeyPem = "";
   }
 
   @Data

@@ -7,8 +7,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yunyan.billingapi.application.payment.PaymentWebhookService;
 import com.yunyan.billingapi.application.payment.PaymentWebhookSignatureService;
+import com.yunyan.billingapi.application.payment.RsaSignatureSupport;
 import com.yunyan.billingapi.domain.permission.PermissionCodes;
 import com.yunyan.billingapi.web.dto.PaymentWebhookPayload;
+import java.security.KeyPair;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -18,28 +20,33 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@TestPropertySource(
-    properties = {
-      "billing.webhook.signature-verify-enabled=true",
-      "billing.webhook.wechat-sign-secret=test-wechat-sign-secret"
-    })
-class PaymentWebhookSignatureTest {
+class PaymentWebhookAlipayRsaSignatureTest {
 
   private static final String WEBHOOK_TOKEN = "test-billing-webhook-token";
-  private static final String SIGN_SECRET = "test-wechat-sign-secret";
+  private static final KeyPair RSA_KEY_PAIR = BillingWebhookRsaTestSupport.generateRsaKeyPair();
 
   @Autowired MockMvc mockMvc;
 
   @Autowired ObjectMapper objectMapper;
 
+  @DynamicPropertySource
+  static void webhookProperties(DynamicPropertyRegistry registry) {
+    registry.add("billing.webhook.signature-verify-enabled", () -> "true");
+    registry.add("billing.webhook.alipay-signature-mode", () -> "alipay_rsa");
+    registry.add(
+        "billing.webhook.alipay-public-key-pem",
+        () -> BillingWebhookRsaTestSupport.toPublicKeyPem(RSA_KEY_PAIR));
+  }
+
   @Test
-  void wechatWebhook_validSignature_creditsWallet() throws Exception {
+  void alipayWebhook_validRsaSignature_creditsWallet() throws Exception {
     var tenantId = UUID.randomUUID();
     var userId = UUID.randomUUID();
     var token =
@@ -58,7 +65,7 @@ class PaymentWebhookSignatureTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         objectMapper.writeValueAsString(
-                            Map.of("packageCode", "starter_500", "channel", "wechat"))))
+                            Map.of("packageCode", "starter_500", "channel", "alipay"))))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse()
@@ -67,14 +74,14 @@ class PaymentWebhookSignatureTest {
     var orderNo = objectMapper.readTree(createBody).get("orderNo").asText();
     var rawBody =
         objectMapper.writeValueAsString(
-            new PaymentWebhookPayload(orderNo, "wx_trade_sig", true, 4900L));
-    var signature = PaymentWebhookSignatureService.signHmacSha256Hex(SIGN_SECRET, rawBody);
+            new PaymentWebhookPayload(orderNo, "alipay_trade_1", true, 4900L));
+    var signature = RsaSignatureSupport.signSha256Rsa(RSA_KEY_PAIR.getPrivate(), rawBody);
 
     mockMvc
         .perform(
-            post("/v1/billing/webhooks/wechat")
+            post("/v1/billing/webhooks/alipay")
                 .header(PaymentWebhookService.WEBHOOK_TOKEN_HEADER, WEBHOOK_TOKEN)
-                .header(PaymentWebhookSignatureService.SIGNATURE_HEADER, signature)
+                .header(PaymentWebhookSignatureService.ALIPAY_SIGNATURE_HEADER, signature)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(rawBody))
         .andExpect(status().isOk())
@@ -82,35 +89,19 @@ class PaymentWebhookSignatureTest {
   }
 
   @Test
-  void wechatWebhook_invalidSignature_returns401() throws Exception {
+  void alipayWebhook_invalidRsaSignature_returns401() throws Exception {
     var rawBody =
         objectMapper.writeValueAsString(
-            new PaymentWebhookPayload("RO-NOPE", "wx_trade_sig", true, 4900L));
+            new PaymentWebhookPayload("RO-ALIPAY-1", "alipay_trade_1", true, 4900L));
 
     mockMvc
         .perform(
-            post("/v1/billing/webhooks/wechat")
+            post("/v1/billing/webhooks/alipay")
                 .header(PaymentWebhookService.WEBHOOK_TOKEN_HEADER, WEBHOOK_TOKEN)
-                .header(PaymentWebhookSignatureService.SIGNATURE_HEADER, "deadbeef")
+                .header(PaymentWebhookSignatureService.ALIPAY_SIGNATURE_HEADER, "invalid")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(rawBody))
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.detail").value("Invalid webhook signature"));
-  }
-
-  @Test
-  void wechatWebhook_missingSignature_returns401() throws Exception {
-    var rawBody =
-        objectMapper.writeValueAsString(
-            new PaymentWebhookPayload("RO-NOPE", "wx_trade_sig", true, 4900L));
-
-    mockMvc
-        .perform(
-            post("/v1/billing/webhooks/wechat")
-                .header(PaymentWebhookService.WEBHOOK_TOKEN_HEADER, WEBHOOK_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(rawBody))
-        .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.detail").value("Missing webhook signature"));
+        .andExpect(jsonPath("$.detail").value("Invalid Alipay webhook signature"));
   }
 }

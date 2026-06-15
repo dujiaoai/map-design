@@ -1,4 +1,4 @@
-import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useConfirmDialog } from '@repo/ui'
+import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast, useConfirmDialog } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
@@ -79,10 +79,11 @@ export function BillingPackagesPanel({
         }),
       )
     },
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({
         queryKey: [...billingAdminQueryKeys.all, 'packages'],
       })
+      toast.success(variables.status === 'active' ? 'SKU 已上架' : 'SKU 已下架')
     },
     onSettled: () => {
       setPendingCode(null)

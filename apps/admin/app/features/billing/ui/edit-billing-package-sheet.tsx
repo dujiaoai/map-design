@@ -12,6 +12,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
+  toast,
 } from '@repo/ui'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useId, useState } from 'react'
@@ -62,6 +63,7 @@ export function EditBillingPackageSheet({
         queryKey: [...billingAdminQueryKeys.all, 'packages'],
       })
       onOpenChange(false)
+      toast.success('SKU 已更新')
     },
   })
 

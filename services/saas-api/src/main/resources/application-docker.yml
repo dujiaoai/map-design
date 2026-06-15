@@ -14,6 +14,10 @@ server:
 saas:
   jwt:
     secret: ${SAAS_JWT_SECRET:docker-only-change-me-use-32chars-min!!}
+  billing:
+    enabled: ${SAAS_BILLING_ENABLED:true}
+    base-url: ${SAAS_BILLING_API_BASE_URL:http://billing-api:8083}
+    internal-token: ${BILLING_INTERNAL_TOKEN:docker-billing-internal-token-change-me}
   auth:
     password:
       strength-enabled: true

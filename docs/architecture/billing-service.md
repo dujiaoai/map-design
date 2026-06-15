@@ -119,9 +119,10 @@ services/
 
 | 文件 | 变更 |
 | --- | --- |
-| [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | 新增 `billing-api`、`BILLING_API_PORT=8083` |
+| [deploy/docker-compose.yml](../../deploy/docker-compose.yml) | `billing-api` + 验签/限流 env；默认 `BILLING_API_PORT=8085` |
 | [deploy/nginx/saas-web.conf.template](../../deploy/nginx/saas-web.conf.template) | `location ^~ /v1/billing` → billing-api |
-| [deploy/.env.docker.example](../../deploy/.env.docker.example) | `BILLING_API_UPSTREAM`、`BILLING_INTERNAL_TOKEN` |
+| [deploy/.env.docker.example](../../deploy/.env.docker.example) | `BILLING_INTERNAL_TOKEN`、Webhook 验签、限流、mock-pay |
+| [docs/runbooks/docker-deployment.md](../runbooks/docker-deployment.md) | §4.3 billing 运行时环境变量 |
 | apps/web、apps/admin vite.config | `/v1/billing` 代理 → 8083 |
 
 ## 迭代索引

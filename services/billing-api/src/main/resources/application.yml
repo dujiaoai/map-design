@@ -43,6 +43,13 @@ billing:
       - saas-api
   webhook:
     token: ${BILLING_WEBHOOK_TOKEN:dev-billing-webhook-token-change-me}
+    signature-verify-enabled: ${BILLING_WEBHOOK_SIGNATURE_VERIFY_ENABLED:false}
+    wechat-signature-mode: ${BILLING_WEBHOOK_WECHAT_SIGNATURE_MODE:hmac}
+    alipay-signature-mode: ${BILLING_WEBHOOK_ALIPAY_SIGNATURE_MODE:hmac}
+    wechat-sign-secret: ${BILLING_WEBHOOK_WECHAT_SIGN_SECRET:}
+    alipay-sign-secret: ${BILLING_WEBHOOK_ALIPAY_SIGN_SECRET:}
+    wechat-platform-public-key-pem: ${BILLING_WEBHOOK_WECHAT_PLATFORM_PUBLIC_KEY_PEM:}
+    alipay-public-key-pem: ${BILLING_WEBHOOK_ALIPAY_PUBLIC_KEY_PEM:}
   payment:
     mock-enabled: ${BILLING_MOCK_PAYMENT:false}
   recharge:
@@ -58,8 +65,11 @@ billing:
   refund:
     recovery-scan-ms: 300000
     stuck-minutes: 30
+  low-balance:
+    enabled: ${BILLING_LOW_BALANCE_ENABLED:true}
+    threshold: ${BILLING_LOW_BALANCE_THRESHOLD:50}
   rate-limit:
-    enabled: true
+    enabled: ${BILLING_RATE_LIMIT_ENABLED:true}
     webhook:
       ip-max-attempts: 120
       ip-window: PT1M

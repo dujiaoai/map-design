@@ -149,8 +149,30 @@ docker build -f deploy/Dockerfile.cloud-uav \
 | --- | --- | --- |
 | `RUOYI_API_UPSTREAM` | `https://www.airace.com.cn` | saas-web `/YunYanApi` 反代目标（**不含**路径后缀） |
 | `SAAS_API_UPSTREAM` | `http://saas-api:8082` | saas-web / saas-admin `/v1` 反代目标（compose 内网） |
+| `BILLING_API_UPSTREAM` | `http://billing-api:8083` | `/v1/billing*` 反代至 billing-api（compose 内网） |
 
 Cloud UAV 静态服务无运行时 env。
+
+### 4.3 运行时（billing-api / saas-api 容器）
+
+compose 通过 [`deploy/.env.docker.example`](../../deploy/.env.docker.example) 注入；**`BILLING_INTERNAL_TOKEN` 须在 saas-api 与 billing-api 一致**。
+
+| 变量 | 默认（compose） | 说明 |
+| --- | --- | --- |
+| `BILLING_INTERNAL_TOKEN` | `docker-billing-internal-token-change-me` | saas-api → billing-api m2m |
+| `SAAS_BILLING_ENABLED` | `true` | docker profile 启用 BillingClient |
+| `SAAS_BILLING_API_BASE_URL` | `http://billing-api:8083` | saas-api 内网地址 |
+| `BILLING_WEBHOOK_TOKEN` | 见 example | Webhook 骨架 Token |
+| `BILLING_WEBHOOK_SIGNATURE_VERIFY_ENABLED` | `false` | 生产建议 `true` |
+| `BILLING_WEBHOOK_WECHAT_SIGNATURE_MODE` | `hmac` | `hmac` / `wechat_v3` |
+| `BILLING_WEBHOOK_ALIPAY_SIGNATURE_MODE` | `hmac` | `hmac` / `alipay_rsa` |
+| `BILLING_WEBHOOK_*_SECRET` / `*_PUBLIC_KEY_PEM` | 空 | 验签密钥；PEM 可用 `\n` 单行 |
+| `BILLING_MOCK_PAYMENT` | `true` | compose 演示 mock-pay；**生产 false** |
+| `BILLING_RATE_LIMIT_ENABLED` | `true` | Webhook/充值/Admin 限流 |
+| `BILLING_LOW_BALANCE_THRESHOLD` | `50` | 低余额 Micrometer crossing |
+| `BILLING_API_PORT` | `8085` | 宿主机直连调试（避免与 Admin `:8083` 冲突） |
+
+冒烟（验签模式）：`node services/billing-api/scripts/smoke-billing.mjs`（见 PRD §2.4）。
 
 ---
 
@@ -203,6 +225,7 @@ docker compose up -d --build
 | 运营后台 | http://localhost:8083/login |
 | 运营后台 API 反代 | http://localhost:8083/v1/admin/ping |
 | SaaS API（直连调试） | http://localhost:8082/actuator/health |
+| Billing API（直连调试） | http://localhost:8085/actuator/health |
 | Cloud UAV registry | http://localhost:8081/yunyan-cloud-uav/assets/registry.js |
 | 统一网关（可选 profile） | http://localhost:9080 |
 

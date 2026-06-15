@@ -383,7 +383,8 @@ flowchart LR
 ### F-2.5 · 移动支付（P1）
 
 - **骨架 ✅**：Provider `stub`/`live`；微信 Native/H5/JSAPI、支付宝 WAP 占位 payUrl；live 凭证 env；查单 Job（回调丢失补偿，待接官方 SDK）
-- **待办**：接入 WeChat Pay API v3 / Alipay OpenAPI 正式 SDK；saas-web 按 `payScene` 调起 H5/JSAPI
+- saas-web `/billing` 充值页可选渠道与 payScene；H5 链接「前往支付」新窗口调起
+- **待办**：接入 WeChat Pay API v3 / Alipay OpenAPI 正式 SDK；微信 JSAPI 内嵌调起
 
 ### F-4 · 运营财务
 

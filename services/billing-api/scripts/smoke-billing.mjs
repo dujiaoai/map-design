@@ -55,6 +55,29 @@ function fail(step, detail) {
   process.exit(1)
 }
 
+function formatInternalMembershipFailure(step, result) {
+  const status = result.status
+  const bodyText =
+    result.body === null || result.body === undefined
+      ? '(empty body)'
+      : JSON.stringify(result.body)
+  let hint = ''
+  if (status === 401 && (result.body === null || result.body === '')) {
+    hint =
+      ' — saas-api 可能未重启到含 /internal/v1/membership 的版本；请 `pnpm dev:services` 重启后再试'
+  } else if (
+    status === 401 &&
+    typeof result.body === 'object' &&
+    result.body?.detail === 'Invalid internal token'
+  ) {
+    hint =
+      ' — BILLING_INTERNAL_TOKEN 与 saas-api billing.internal-token 不一致（默认 dev-billing-internal-token-change-me）'
+  } else if (status === 404) {
+    hint = ' — saas-api 缺少 InternalMembership 端点，请拉取最新代码并重启'
+  }
+  return `HTTP ${status} ${bodyText}${hint}`
+}
+
 function signHmacSha256Hex(secret, message) {
   return crypto.createHmac('sha256', secret).update(message).digest('hex')
 }
@@ -170,7 +193,7 @@ async function main() {
     { headers: internalAuth },
   )
   if (!membershipCheck.ok || membershipCheck.body?.member !== true) {
-    fail('membership-check', `HTTP ${membershipCheck.status} ${JSON.stringify(membershipCheck.body)}`)
+    fail('membership-check', formatInternalMembershipFailure('membership-check', membershipCheck))
   }
   passed.push('membership-check')
 
@@ -178,7 +201,10 @@ async function main() {
     headers: internalAuth,
   })
   if (!syncEvents.ok || !Array.isArray(syncEvents.body?.items)) {
-    fail('membership-sync-events', `HTTP ${syncEvents.status} ${JSON.stringify(syncEvents.body)}`)
+    fail(
+      'membership-sync-events',
+      formatInternalMembershipFailure('membership-sync-events', syncEvents),
+    )
   }
   passed.push('membership-sync-events')
 

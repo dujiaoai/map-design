@@ -25,6 +25,7 @@ import {
 } from '~/features/billing/lib/payment-channel-options'
 import {
   classifyRechargePayLaunch,
+  isWeChatInAppBrowser,
   openRechargePayUrl,
   rechargePayLaunchHint,
 } from '~/features/billing/lib/open-recharge-pay-url'
@@ -95,6 +96,21 @@ export function RechargePackagesPanel({
     }
   }, [orderPoll.data, pendingOrder, onPaidOrder, queryClient])
 
+  useEffect(() => {
+    if (!pendingOrder?.payUrl) {
+      return
+    }
+    const launch = classifyRechargePayLaunch(pendingOrder.payUrl, pendingOrder.payScene)
+    if (launch !== 'weixin-jsapi' || !isWeChatInAppBrowser()) {
+      return
+    }
+    void openRechargePayUrl(pendingOrder.payUrl, pendingOrder.payScene).then((opened) => {
+      if (!opened) {
+        setActionError('微信内支付调起失败，请点击下方按钮重试。')
+      }
+    })
+  }, [pendingOrder?.orderNo, pendingOrder?.payUrl, pendingOrder?.payScene])
+
   function handleChannelChange(nextChannel: RechargeChannel) {
     setChannel(nextChannel)
     const nextDefault = defaultPaySceneForChannel(nextChannel)
@@ -133,11 +149,11 @@ export function RechargePackagesPanel({
     }
   }
 
-  function handleOpenPayUrl() {
+  async function handleOpenPayUrl() {
     if (!pendingOrder?.payUrl) return
-    const opened = openRechargePayUrl(pendingOrder.payUrl)
+    const opened = await openRechargePayUrl(pendingOrder.payUrl, pendingOrder.payScene)
     if (!opened) {
-      setActionError('当前支付链接无法在新窗口打开，请复制下方链接手动访问。')
+      setActionError('当前支付链接无法打开，请复制下方链接或更换支付方式。')
     }
   }
 
@@ -164,7 +180,7 @@ export function RechargePackagesPanel({
       <CardHeader>
         <CardTitle className="text-base">充值套餐</CardTitle>
         <CardDescription>
-          积分将进入您个人账户。可选择沙箱 mock、微信或支付宝（H5/扫码占位链路；正式 SDK 接入后自动调起）。
+          积分将进入您个人账户。可选择沙箱 mock、微信或支付宝；微信 JSAPI 在微信内置浏览器中自动调起。
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -324,8 +340,12 @@ export function RechargePackagesPanel({
                   模拟支付完成
                 </Button>
               ) : pendingPayLaunch === 'http' ? (
-                <Button type="button" disabled={isBusy} onClick={handleOpenPayUrl}>
+                <Button type="button" disabled={isBusy} onClick={() => void handleOpenPayUrl()}>
                   前往支付
+                </Button>
+              ) : pendingPayLaunch === 'weixin-jsapi' ? (
+                <Button type="button" disabled={isBusy} onClick={() => void handleOpenPayUrl()}>
+                  调起微信支付
                 </Button>
               ) : null}
               <Button

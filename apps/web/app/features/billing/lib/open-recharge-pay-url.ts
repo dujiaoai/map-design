@@ -1,3 +1,9 @@
+import {
+  invokeWechatJsapiPay,
+  isWeChatInAppBrowser,
+  parseWechatJsapiPayUrl,
+} from './wechat-jsapi-pay'
+
 export type RechargePayLaunchKind = 'http' | 'weixin-native' | 'weixin-jsapi' | 'unsupported'
 
 export function classifyRechargePayLaunch(
@@ -7,22 +13,44 @@ export function classifyRechargePayLaunch(
   if (/^https?:\/\//i.test(payUrl)) {
     return 'http'
   }
+  if (payUrl.startsWith('weixin://jsapi?')) {
+    return 'weixin-jsapi'
+  }
   if (payUrl.startsWith('weixin://')) {
     return payScene === 'jsapi' ? 'weixin-jsapi' : 'weixin-native'
   }
   return 'unsupported'
 }
 
-export function canOpenRechargePayUrl(payUrl: string): boolean {
-  return /^https?:\/\//i.test(payUrl)
+export function canOpenRechargePayUrl(payUrl: string, payScene?: string | null): boolean {
+  const kind = classifyRechargePayLaunch(payUrl, payScene)
+  if (kind === 'http') {
+    return true
+  }
+  if (kind === 'weixin-jsapi') {
+    return parseWechatJsapiPayUrl(payUrl) !== null && isWeChatInAppBrowser()
+  }
+  return false
 }
 
-export function openRechargePayUrl(payUrl: string): boolean {
-  if (!canOpenRechargePayUrl(payUrl)) {
-    return false
+export async function openRechargePayUrl(
+  payUrl: string,
+  payScene?: string | null,
+): Promise<boolean> {
+  const kind = classifyRechargePayLaunch(payUrl, payScene)
+  if (kind === 'http') {
+    window.open(payUrl, '_blank', 'noopener,noreferrer')
+    return true
   }
-  window.open(payUrl, '_blank', 'noopener,noreferrer')
-  return true
+  if (kind === 'weixin-jsapi') {
+    const params = parseWechatJsapiPayUrl(payUrl)
+    if (!params) {
+      return false
+    }
+    const result = await invokeWechatJsapiPay(params)
+    return result === 'ok' || result === 'cancel'
+  }
+  return false
 }
 
 export function rechargePayLaunchHint(kind: RechargePayLaunchKind): string {
@@ -32,8 +60,12 @@ export function rechargePayLaunchHint(kind: RechargePayLaunchKind): string {
     case 'weixin-native':
       return '请使用微信扫描 payUrl 中的链接或使用微信客户端完成 Native 扫码支付。'
     case 'weixin-jsapi':
-      return 'JSAPI 支付需在微信内置浏览器中打开；正式 SDK 接入后将自动调起微信支付。'
+      return isWeChatInAppBrowser()
+        ? '已识别微信内置浏览器；下单后将自动调起微信支付，也可点击下方按钮重试。'
+        : 'JSAPI 支付需在微信内置浏览器中打开本页后再下单。'
     default:
       return '当前 payUrl 无法自动调起，请按运维提供的说明完成支付。'
   }
 }
+
+export { isWeChatInAppBrowser } from './wechat-jsapi-pay'

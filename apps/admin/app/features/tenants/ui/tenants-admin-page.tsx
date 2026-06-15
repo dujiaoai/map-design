@@ -72,6 +72,12 @@ export function TenantsAdminPage() {
     [searchInput, statusFilter, setSearchInput],
   )
 
+  function clearTenantFilters() {
+    setSearchInput('')
+    setStatusFilter('all')
+    setPage(1)
+  }
+
   return (
     <div className="space-y-6 admin-stagger">
       <AdminPageHeader
@@ -113,7 +119,14 @@ export function TenantsAdminPage() {
         ) : !query.data?.tenants.length ? (
           <AdminEmptyState message="暂无租户" />
         ) : !filteredTenants.length ? (
-          <AdminEmptyState message="无匹配租户" />
+          <AdminEmptyState
+            message="无匹配租户"
+            action={
+              <Button type="button" variant="outline" size="sm" onClick={clearTenantFilters}>
+                清除筛选
+              </Button>
+            }
+          />
         ) : (
           <>
             <AdminDataTable>

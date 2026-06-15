@@ -134,7 +134,14 @@ export function MembersAdminPage({
         ) : !membersQuery.data?.members.length ? (
           <AdminEmptyState message="暂无成员" />
         ) : !filteredMembers.length ? (
-          <AdminEmptyState message="无匹配成员" />
+          <AdminEmptyState
+            message="无匹配成员"
+            action={
+              <Button type="button" variant="outline" size="sm" onClick={filter.resetFilters}>
+                清除筛选
+              </Button>
+            }
+          />
         ) : (
           <AdminDataTable>
             <AdminTableHead>

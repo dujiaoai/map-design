@@ -1,16 +1,21 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 export interface AdminTableFilterState {
   search: string
   setSearch: (value: string) => void
   status: string
   setStatus: (value: string) => void
+  resetFilters: () => void
 }
 
 export function useAdminTableFilterState(defaultStatus = 'all'): AdminTableFilterState {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState(defaultStatus)
-  return { search, setSearch, status, setStatus }
+  const resetFilters = useCallback(() => {
+    setSearch('')
+    setStatus(defaultStatus)
+  }, [defaultStatus])
+  return { search, setSearch, status, setStatus, resetFilters }
 }
 
 function normalizeSearch(value: string): string {

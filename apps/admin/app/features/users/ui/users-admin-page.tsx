@@ -78,6 +78,13 @@ export function UsersAdminPage() {
 
   const total = usersQuery.data?.total ?? usersQuery.data?.users.length ?? 0
 
+  function clearUserFilters() {
+    setSearchInput('')
+    setStatusFilter('all')
+    setPage(1)
+    setSearchParams({})
+  }
+
   return (
     <div className="space-y-6 admin-stagger">
       <AdminPageHeader
@@ -155,7 +162,14 @@ export function UsersAdminPage() {
         ) : !usersQuery.data?.users.length ? (
           <AdminEmptyState message="暂无用户" />
         ) : !filteredUsers.length ? (
-          <AdminEmptyState message="无匹配用户" />
+          <AdminEmptyState
+            message="无匹配用户"
+            action={
+              <Button type="button" variant="outline" size="sm" onClick={clearUserFilters}>
+                清除筛选
+              </Button>
+            }
+          />
         ) : (
           <>
             <AdminDataTable>

@@ -1,14 +1,14 @@
 import { Separator, SidebarTrigger } from '@repo/ui'
 import { useLocation } from 'react-router'
 
-import { resolveAdminPageTitle } from '../lib/resolve-admin-page-title'
+import { useAdminShellTitle } from '../lib/use-admin-shell-title'
 import { useAdminChrome } from '../model/admin-chrome-context'
 import { AdminHeaderActions } from './admin-header-actions'
 
 export function AdminShellHeader() {
   const { pathname } = useLocation()
   const { user, openAccount, handleLogout } = useAdminChrome()
-  const pageTitle = resolveAdminPageTitle(pathname)
+  const pageTitle = useAdminShellTitle(pathname)
 
   return (
     <header className="admin-shell-header flex h-12 shrink-0 items-center gap-2 border-b border-border/60 px-2 sm:px-3">

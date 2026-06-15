@@ -7,6 +7,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
+  toast,
   useConfirmDialog,
 } from '@repo/ui'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -96,6 +97,9 @@ export function BillingAdjustSheet({
       await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.all })
       onSuccess?.(data)
       onOpenChange(false)
+      toast.success('调账成功', {
+        description: `余额 ${data.balanceAfter.toLocaleString('zh-CN')} 点`,
+      })
     },
   })
 

@@ -1,8 +1,8 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import type { Session } from '@repo/auth'
-import { Button, Input } from '@repo/ui'
+import { Button, Input, toast } from '@repo/ui'
 import { useMutation } from '@tanstack/react-query'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 
 import {
@@ -37,7 +37,6 @@ function FormField({
 }
 
 export function ProfileForm({ session }: { session: Session }) {
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const {
     register,
     handleSubmit,
@@ -75,7 +74,7 @@ export function ProfileForm({ session }: { session: Session }) {
       return updated
     },
     onSuccess: () => {
-      setSuccessMessage('修改成功')
+      toast.success('资料已更新')
     },
   })
 
@@ -95,7 +94,6 @@ export function ProfileForm({ session }: { session: Session }) {
       <FormField label="邮箱">
         <Input readOnly type="email" value={session.user.email} />
       </FormField>
-      {successMessage ? <p className="text-sm text-primary">{successMessage}</p> : null}
       {submitError ? <p className="text-destructive text-sm">{submitError}</p> : null}
       <div className="flex gap-2 pt-2">
         <Button type="submit" disabled={isSubmitting || mutation.isPending}>

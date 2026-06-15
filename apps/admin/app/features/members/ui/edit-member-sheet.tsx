@@ -13,6 +13,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
+  toast,
 } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
@@ -96,6 +97,7 @@ export function EditMemberSheet({
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.members(tenantId) })
       onOpenChange(false)
+      toast.success('成员已更新')
     },
   })
 

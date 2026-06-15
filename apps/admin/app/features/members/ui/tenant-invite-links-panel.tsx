@@ -7,6 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  toast,
 } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
@@ -102,6 +103,7 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.inviteLinks(tenantId) })
       setCreatedInviteUrl(data.inviteUrl)
       reset({ roleCode: defaultRoleCode, label: '', maxUses: '', expiresInHours: '' })
+      toast.success('邀请链接已创建', { description: '请立即复制链接，token 仅显示一次。' })
     },
   })
 
@@ -109,6 +111,7 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
     mutationFn: (linkId: string) => revokeTenantInviteLink(tenantId, linkId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.inviteLinks(tenantId) })
+      toast.success('邀请链接已撤销')
     },
   })
 

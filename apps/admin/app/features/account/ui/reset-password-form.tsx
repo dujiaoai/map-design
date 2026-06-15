@@ -1,7 +1,7 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import { Button } from '@repo/ui'
+import { Button, toast } from '@repo/ui'
 import { useMutation } from '@tanstack/react-query'
-import { useState, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 
 import {
@@ -37,7 +37,6 @@ function FormField({
 }
 
 export function ResetPasswordForm() {
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const {
     register,
     handleSubmit,
@@ -54,7 +53,9 @@ export function ResetPasswordForm() {
     onSuccess: () => {
       auth.clearRefreshToken()
       reset()
-      setSuccessMessage('密码已更新；refresh token 已失效，下次请用新密码登录')
+      toast.success('密码已更新', {
+        description: 'Refresh token 已失效，下次请用新密码登录。',
+      })
     },
   })
 
@@ -71,7 +72,6 @@ export function ResetPasswordForm() {
       <FormField label="确认密码" error={errors.confirmPassword?.message}>
         <PasswordInput autoComplete="new-password" {...register('confirmPassword')} />
       </FormField>
-      {successMessage ? <p className="text-sm text-primary">{successMessage}</p> : null}
       {submitError ? <p className="text-destructive text-sm">{submitError}</p> : null}
       <div className="flex gap-2 pt-2">
         <Button type="submit" disabled={isSubmitting || mutation.isPending}>

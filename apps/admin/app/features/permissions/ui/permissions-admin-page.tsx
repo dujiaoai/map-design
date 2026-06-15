@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Badge, Button, Input, cn, useConfirmDialog } from '@repo/ui'
+import { Badge, Button, Input, cn, toast, useConfirmDialog } from '@repo/ui'
 import { PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -42,7 +42,6 @@ export function PermissionsAdminPage() {
 
   const [selectedModule, setSelectedModule] = useState<AdminPermissionModule | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
 
   const [createModuleOpen, setCreateModuleOpen] = useState(false)
   const [moduleCode, setModuleCode] = useState('')
@@ -102,7 +101,7 @@ export function PermissionsAdminPage() {
       setModuleName('')
       setModuleDescription('')
       setFormError(null)
-      setNotice('模块已创建，可在下方添加权限项。')
+      toast.success('模块已创建', { description: '可在下方添加权限项。' })
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
@@ -116,7 +115,7 @@ export function PermissionsAdminPage() {
     onSuccess: async () => {
       await refreshModules()
       setFormError(null)
-      setNotice('模块信息已保存。')
+      toast.success('模块信息已保存')
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
@@ -127,7 +126,7 @@ export function PermissionsAdminPage() {
       setSelectedModule(null)
       await refreshModules()
       setFormError(null)
-      setNotice('模块已删除。')
+      toast.success('模块已删除')
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
@@ -143,7 +142,7 @@ export function PermissionsAdminPage() {
       await refreshModules()
       closeCreatePermissionForm()
       setFormError(null)
-      setNotice('权限项已创建。')
+      toast.success('权限项已创建')
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
@@ -158,7 +157,7 @@ export function PermissionsAdminPage() {
       await refreshModules()
       setEditingPermission(null)
       setFormError(null)
-      setNotice('权限项已更新。')
+      toast.success('权限项已更新')
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
@@ -168,14 +167,13 @@ export function PermissionsAdminPage() {
     onSuccess: async () => {
       await refreshModules()
       setFormError(null)
-      setNotice('权限项已删除。')
+      toast.success('权限项已删除')
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
 
   function selectModule(module: AdminPermissionModule) {
     setSelectedModule(module)
-    setNotice(null)
     setEditingPermission(null)
     setCreatePermissionOpen(false)
   }
@@ -212,12 +210,6 @@ export function PermissionsAdminPage() {
           ) : null
         }
       />
-
-      {notice ? (
-        <p className="rounded-lg border border-primary/30 bg-primary/8 px-4 py-3 text-sm text-primary">
-          {notice}
-        </p>
-      ) : null}
 
       {createModuleOpen && canWrite ? (
         <AdminPanel className="space-y-4 p-5">

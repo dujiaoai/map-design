@@ -194,7 +194,7 @@ export function PermissionsAdminPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 admin-stagger">
       <AdminPageHeader
         eyebrow="RBAC"
         title="权限目录"

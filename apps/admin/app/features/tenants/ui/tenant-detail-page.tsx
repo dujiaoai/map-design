@@ -79,7 +79,7 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
 
   if (tenantQuery.isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 admin-stagger">
         <AdminDetailSkeleton />
       </div>
     )
@@ -105,7 +105,7 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 admin-stagger">
       <Button
         variant="ghost"
         size="sm"

@@ -8,7 +8,7 @@ export function TenantCustomRolesPage({ tenantId }: { tenantId: string }) {
   const resolvedTenantName = session?.tenant?.name ?? '当前租户'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 admin-stagger">
       <AdminPageHeader
         eyebrow="RBAC"
         title="自定义角色"

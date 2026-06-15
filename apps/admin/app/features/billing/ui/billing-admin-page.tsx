@@ -99,7 +99,7 @@ export function BillingAdminPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 admin-stagger">
       <AdminPageHeader
         eyebrow="Billing"
         title="计费"

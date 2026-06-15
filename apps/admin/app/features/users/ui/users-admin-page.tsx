@@ -71,7 +71,7 @@ export function UsersAdminPage() {
   const total = usersQuery.data?.total ?? usersQuery.data?.users.length ?? 0
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 admin-stagger">
       <AdminPageHeader
         eyebrow="Users"
         title="用户"

@@ -66,7 +66,7 @@ export function TenantsAdminPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 admin-stagger">
       <AdminPageHeader
         eyebrow="Tenants"
         title="租户"

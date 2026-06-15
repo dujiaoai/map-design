@@ -50,7 +50,7 @@ export function AuditLogsAdminPage() {
   const total = query.data?.total ?? query.data?.logs.length ?? 0
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 admin-stagger">
       <AdminPageHeader
         eyebrow="Operations"
         title="审计日志"

@@ -166,5 +166,5 @@ export function MembersAdminPage({
     return <div className="space-y-4">{content}</div>
   }
 
-  return <div className="space-y-6">{content}</div>
+  return <div className="space-y-6 admin-stagger">{content}</div>
 }

@@ -39,6 +39,7 @@ const AUDIT_ACTION_OPTIONS = [
 ] as const
 
 const AUDIT_BILLING_SEARCH = 'billing.'
+const AUDIT_MEMBER_SEARCH = 'member.'
 
 const BILLING_PERMISSIONS = [
   'admin:billing:read',
@@ -69,12 +70,13 @@ export function AuditLogsAdminPage() {
 
   const total = query.data?.total ?? query.data?.logs.length ?? 0
   const billingOnlyActive = searchInput.trim() === AUDIT_BILLING_SEARCH
+  const memberOnlyActive = searchInput.trim() === AUDIT_MEMBER_SEARCH
 
-  function toggleBillingOnly() {
-    if (billingOnlyActive) {
+  function toggleAuditPrefixFilter(prefix: string) {
+    if (searchInput.trim() === prefix) {
       setSearchInput('')
     } else {
-      setSearchInput(AUDIT_BILLING_SEARCH)
+      setSearchInput(prefix)
       setActionFilter('all')
     }
     setPage(1)
@@ -115,7 +117,7 @@ export function AuditLogsAdminPage() {
           onValueChange={(value) => {
             if (value == null) return
             setActionFilter(value)
-            if (value !== 'all' && billingOnlyActive) {
+            if (value !== 'all' && (billingOnlyActive || memberOnlyActive)) {
               setSearchInput('')
             }
             setPage(1)
@@ -137,11 +139,19 @@ export function AuditLogsAdminPage() {
             type="button"
             variant={billingOnlyActive ? 'secondary' : 'outline'}
             size="sm"
-            onClick={toggleBillingOnly}
+            onClick={() => toggleAuditPrefixFilter(AUDIT_BILLING_SEARCH)}
           >
             仅计费
           </Button>
         ) : null}
+        <Button
+          type="button"
+          variant={memberOnlyActive ? 'secondary' : 'outline'}
+          size="sm"
+          onClick={() => toggleAuditPrefixFilter(AUDIT_MEMBER_SEARCH)}
+        >
+          仅成员
+        </Button>
         <label className="text-muted-foreground flex items-center gap-2 text-sm">
           <input
             type="checkbox"

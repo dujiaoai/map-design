@@ -13,6 +13,7 @@ import {
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { BillingAdjustPanel } from '~/features/billing/ui/billing-adjust-panel'
 import { BillingCouponsPanel } from '~/features/billing/ui/billing-coupons-panel'
+import { BillingFilterSeedBanner } from '~/features/billing/ui/billing-filter-seed-banner'
 import { CreateBillingPackageSheet } from '~/features/billing/ui/create-billing-package-sheet'
 import { EditBillingPackageSheet } from '~/features/billing/ui/edit-billing-package-sheet'
 import { BillingWireTransfersPanel } from '~/features/billing/ui/billing-wire-transfers-panel'
@@ -98,6 +99,18 @@ export function BillingAdminPage() {
     }
   }
 
+  function clearFilterSeed() {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('tenantId')
+        next.delete('userId')
+        return next
+      },
+      { replace: true },
+    )
+  }
+
   return (
     <div className="space-y-6 admin-stagger">
       <AdminPageHeader
@@ -129,6 +142,13 @@ export function BillingAdminPage() {
           ) : null
         }
       />
+      {filterSeed.tenantId || filterSeed.userId ? (
+        <BillingFilterSeedBanner
+          tenantId={filterSeed.tenantId}
+          userId={filterSeed.userId}
+          onClear={clearFilterSeed}
+        />
+      ) : null}
       {!hasAnyBillingCapability ? (
         <AdminPanel>
           <AdminEmptyState message="当前账号无计费相关权限（admin:billing:*）。" />

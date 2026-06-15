@@ -84,7 +84,11 @@ export function RolesAdminPage() {
     if (
       isDirty &&
       selectedRole &&
-      !(await confirm('当前角色权限未保存，确定切换？'))
+      !(await confirm({
+        title: '放弃未保存更改',
+        description: '当前角色权限未保存，确定切换？',
+        confirmLabel: '切换角色',
+      }))
     ) {
       return
     }

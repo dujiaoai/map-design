@@ -167,7 +167,7 @@ sequenceDiagram
 
 - **业务校验**：`priceCents` 与订单一致；幂等 `providerTradeNo` / 订单状态；同事务入账
 - **限流**：Webhook 按来源 IP 令牌桶（默认 120/min）；超限 **429** + `Retry-After`
-- **冒烟**：`services/billing-api/scripts/smoke-billing.mjs` 覆盖充值入账、**微信 OAuth config 探活**、发票申请与 Admin 开票、优惠券兑换、对公转账审核；Webhook 验签 `BILLING_WEBHOOK_SIGNATURE_MODE=off|hmac|wechat_v3|alipay_rsa`；live 联调见 [billing-live-payment-sop.md](../runbooks/billing-live-payment-sop.md)
+- **冒烟**：`services/billing-api/scripts/smoke-billing.mjs` 覆盖充值入账、**微信 OAuth config 探活**、**对公收款账户 config 探活**、发票申请与 Admin 开票、优惠券兑换、对公转账审核；Webhook 验签 `BILLING_WEBHOOK_SIGNATURE_MODE=off|hmac|wechat_v3|alipay_rsa`；live 联调见 [billing-live-payment-sop.md](../runbooks/billing-live-payment-sop.md)
 
 ### 2.5 限流与滥用防护（billing-api）
 
@@ -419,9 +419,10 @@ flowchart LR
 - **对公转账**（骨架 ✅）：
   - 表 `billing_wire_transfer_request`；状态 `pending` / `credited` / `rejected`
   - 用户：`POST/GET /v1/billing/wire-transfers`（`billing:recharge:create`）
+  - **平台收款账户**：`GET /v1/billing/wire-transfers/platform-account`；配置项 `billing.wire-transfer.platform-account.*`（`enabled` + 户名/开户行/账号/附言建议）；未配置时 `enabled=false`，前端回退「联系销售」
   - Admin：`GET /v1/admin/billing/wire-transfers`；`POST .../{id}/approve`（入账 `wire_transfer` 流水）、`POST .../{id}/reject`（`admin:billing:adjust`）
-  - saas-web 企业预付申请；Admin「对公转账」Tab
-  - **不含**平台收款账户配置、汇款自动认款；独立 DB 见 [billing-service.md](../architecture/billing-service.md) §独立 PostgreSQL
+  - saas-web 企业预付申请 + 收款账户展示；Admin「对公转账」Tab
+  - **不含**汇款自动认款；独立 DB 见 [billing-service.md](../architecture/billing-service.md) §独立 PostgreSQL
 - 可选 billing 独立 DB（骨架 ✅）：`docker-compose.billing-db.yml` + `sync-membership-mirror.sh`；实时 CDC 待办
 
 ---

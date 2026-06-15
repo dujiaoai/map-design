@@ -12,7 +12,12 @@ import { canAccessAdminOverview } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
-import { AdminPageHeader, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
+import {
+  AdminConfigRow,
+  AdminPageHeader,
+  AdminPanel,
+  AdminPanelHeader,
+} from '~/shared/ui/admin-page-shell'
 import { AdminStatusPill } from '~/shared/ui/admin-status-pill'
 
 import type { Route } from './+types/dashboard'
@@ -133,51 +138,62 @@ export default function DashboardRoute() {
       <div className="grid gap-4 md:grid-cols-2">
         <AdminPanel>
           <AdminPanelHeader icon={ShieldCheckIcon} title="当前会话" />
-          <dl className="space-y-2 px-4 py-4 text-sm md:px-5">
-            <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">用户</dt>
-              <dd className="truncate font-medium">{session?.user.email}</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">租户</dt>
-              <dd>{session?.tenant?.name ?? '—'}</dd>
-            </div>
-            <div className="flex flex-wrap justify-end gap-1.5 pt-1">
-              {(session?.user.roles ?? []).map((role) => (
-                <Badge key={role} variant="secondary">
-                  {role}
-                </Badge>
-              ))}
-            </div>
-          </dl>
+          <AdminConfigRow label="用户" value={session?.user.email ?? '—'} />
+          <AdminConfigRow label="租户" value={session?.tenant?.name ?? '—'} />
+          <AdminConfigRow
+            label="角色"
+            value={
+              session?.user.roles.length ? (
+                <span className="flex flex-wrap justify-end gap-1.5">
+                  {session.user.roles.map((role) => (
+                    <Badge key={role} variant="secondary">
+                      {role}
+                    </Badge>
+                  ))}
+                </span>
+              ) : (
+                '—'
+              )
+            }
+          />
         </AdminPanel>
 
         <AdminPanel>
           <AdminPanelHeader icon={ActivityIcon} title="Admin API 自检" />
-          <div className="space-y-2 px-4 py-4 text-sm md:px-5">
-            {pingQuery.isLoading ? (
-              <p className="text-muted-foreground">正在请求 GET /v1/admin/ping …</p>
-            ) : null}
-            {pingQuery.isError ? (
-              <p className="text-destructive">无法连接 admin API，请确认 saas-api 已启动。</p>
-            ) : null}
-            {pingQuery.data ? (
-              <dl className="space-y-2">
-                <div className="flex justify-between gap-4">
-                  <dt className="text-muted-foreground">status</dt>
-                  <dd className="font-mono text-xs">{pingQuery.data.status}</dd>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <dt className="text-muted-foreground">authenticated</dt>
-                  <dd className="font-mono text-xs">{String(pingQuery.data.authenticated)}</dd>
-                </div>
-                <div className="flex justify-between gap-4">
-                  <dt className="text-muted-foreground">platformAdmin</dt>
-                  <dd className="font-mono text-xs">{String(pingQuery.data.platformAdmin)}</dd>
-                </div>
-              </dl>
-            ) : null}
-          </div>
+          {pingQuery.isLoading ? (
+            <p className="px-4 py-4 text-sm text-muted-foreground md:px-5">
+              正在请求 GET /v1/admin/ping …
+            </p>
+          ) : null}
+          {pingQuery.isError ? (
+            <p className="px-4 py-4 text-sm text-destructive md:px-5">
+              无法连接 admin API，请确认 saas-api 已启动。
+            </p>
+          ) : null}
+          {pingQuery.data ? (
+            <>
+              <AdminConfigRow
+                label="status"
+                value={<span className="font-mono text-xs">{pingQuery.data.status}</span>}
+              />
+              <AdminConfigRow
+                label="authenticated"
+                value={
+                  <span className="font-mono text-xs">
+                    {String(pingQuery.data.authenticated)}
+                  </span>
+                }
+              />
+              <AdminConfigRow
+                label="platformAdmin"
+                value={
+                  <span className="font-mono text-xs">
+                    {String(pingQuery.data.platformAdmin)}
+                  </span>
+                }
+              />
+            </>
+          ) : null}
         </AdminPanel>
       </div>
 

@@ -170,7 +170,7 @@ compose 通过 [`deploy/.env.docker.example`](../../deploy/.env.docker.example) 
 | `BILLING_MOCK_PAYMENT` | `true` | compose 演示 mock-pay；**生产 false** |
 | `BILLING_RATE_LIMIT_ENABLED` | `true` | Webhook/充值/Admin 限流 |
 | `BILLING_LOW_BALANCE_THRESHOLD` | `50` | 低余额 Micrometer crossing |
-| `BILLING_TENANT_RLS_ENABLED` | `true` | billing 租户表 PostgreSQL RLS（`migration-postgresql`） |
+| `BILLING_TENANT_RLS_ENABLED` | `true` | billing 租户表 PostgreSQL RLS（`migration-postgresql`）；见 [billing-tenant-rls.md](../architecture/supplements/billing-tenant-rls.md) |
 | `BILLING_API_PORT` | `8085` | 宿主机直连调试（避免与 Admin `:8083` 冲突） |
 
 冒烟（充值 + 发票/优惠券/对公 + 验签模式）：`node services/billing-api/scripts/smoke-billing.mjs`（见 PRD §2.4）。

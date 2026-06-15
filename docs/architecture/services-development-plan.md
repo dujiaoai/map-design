@@ -319,7 +319,7 @@ flowchart TD
 | F-4 | billing-api + admin | 退款/日对账/站内通知/发票申请 | ✅ 骨架 |
 | F-5 | billing-api + web/admin | 优惠券兑换 + 用户间划拨 + billing-client | ✅ 骨架 |
 | F-6 | billing-api + admin/web | 对公转账预付申请与审核入账；membership copy/api/cdc + push | ✅ 骨架；独立 DB 可选 compose ✅ |
-| sec | billing-api + saas-api + admin | Webhook/Caller/RFC7807/Job/CDC push·HMAC/Admin 分页/冒烟 24 步（mock） | ✅；落地索引见 [billing-service.md](./billing-service.md) §Sprint F 安全与稳定性改进 |
+| sec | billing-api + saas-api + admin | Webhook/Caller/RFC7807/Job/CDC push·HMAC/Admin 分页/**PostgreSQL RLS**/冒烟 24 步（mock） | ✅；落地索引见 [billing-service.md](./billing-service.md) §Sprint F 安全与稳定性改进、[billing-tenant-rls.md](./supplements/billing-tenant-rls.md) |
 
 **Maven 目标：**
 

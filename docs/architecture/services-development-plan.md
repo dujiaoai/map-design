@@ -280,6 +280,8 @@ flowchart TD
 
 **Admin 功能完善（P0～P3 · 2026-06）**：在 Sprint D 基座上交付概览统计、租户详情、跨租户成员、能力管理、列表分页、`/account`、TeamSwitcher、Skeleton、404 与测试覆盖。路由与 API 见 [apps.md](./apps.md)。
 
+**Admin 运维 UX（P4 / P4+ · 2026-06）**：工业深色控制台壳、Health 条（flags + ping）、计费审核 Sheet、审计/用户/计费/租户跨页导航、`AdminTenantContextBanner`。详见 [apps/admin/README.md](../../apps/admin/README.md)。
+
 ### Sprint D+ · RBAC 深化（2026-06）
 
 | # | 状态 | 任务 | 产出 |

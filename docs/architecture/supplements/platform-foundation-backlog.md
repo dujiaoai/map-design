@@ -91,16 +91,15 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 ## FND-06 · Admin `/system`（平台配置）
 
-**现状**：`routes/system.tsx` 为 ComingSoon。
+**现状**：✅ 已交付（2026-06）。`/system` 只读 flags + Health 条（含 `GET /v1/admin/ping`）。**P4 / P4+ 运维 UX**（控制台壳、计费 Sheet、跨页导航等）见 [apps/admin/README.md](../../../apps/admin/README.md) 与 [apps.md](../apps.md)。
 
-**P4 最小范围（建议）**：
-
-| 能力 | API / UI | 说明 |
+| 能力 | API / UI | 状态 |
 | --- | --- | --- |
-| 功能开关只读 | `GET /v1/admin/system/flags` | 公开注册开关、密码强度、rate-limit 等 |
-| 邮件/SMTP 状态 | 配置摘要（无密钥） | 邀请/验证/重置是否可用 |
-| 计费模式摘要 | 只读链接 → Admin `/billing` | provider-mode、mock-pay 禁用状态 |
-| 运维链接 | 文档 / runbook 外链 | smoke、compose、RLS 说明 |
+| 功能开关只读 | `GET /v1/admin/system/flags` | ✅ |
+| 邮件/SMTP 状态 | 配置摘要（无密钥） | ✅ |
+| 计费模式摘要 | 只读 + 链接 → Admin `/billing` | ✅ |
+| 运维链接 | runbook 路径列表 | ✅ |
+| Admin API 探活 | Health 条 ping 信号 | ✅ |
 
 **不含**：动态改生产密钥、全量 Spring 配置 CRUD（安全边界另议）。
 

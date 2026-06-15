@@ -61,7 +61,7 @@ public class RechargeOrderService {
     if (!StringUtils.hasText(request.packageCode())) {
       throw AuthException.badRequest("packageCode is required");
     }
-    var channel = StringUtils.hasText(request.channel()) ? request.channel().trim() : "mock";
+    var channel = resolvePaymentChannel(request.channel());
 
     var pkg = packageMapper.findActiveByCode(request.packageCode().trim());
     if (pkg == null) {
@@ -244,6 +244,24 @@ public class RechargeOrderService {
       throw AuthException.conflict("Order is not pending");
     }
     return order;
+  }
+
+  private String resolvePaymentChannel(String requestedChannel) {
+    if (StringUtils.hasText(requestedChannel)) {
+      var channel = requestedChannel.trim();
+      assertMockChannelAllowed(channel);
+      return channel;
+    }
+    if (billingAppProperties.getPayment().isMockEnabled()) {
+      return "mock";
+    }
+    throw AuthException.badRequest("channel is required when mock payment is disabled");
+  }
+
+  private void assertMockChannelAllowed(String channel) {
+    if ("mock".equals(channel) && !billingAppProperties.getPayment().isMockEnabled()) {
+      throw AuthException.badRequest("Mock payment channel is disabled");
+    }
   }
 
   private RechargeOrderResponse toResponse(

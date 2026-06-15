@@ -1,4 +1,4 @@
-import { CopyButton, cn } from '@repo/ui'
+import { CopyButton, cn, toast } from '@repo/ui'
 
 export function AdminIdCell({
   value,
@@ -17,7 +17,12 @@ export function AdminIdCell({
       <span className="truncate font-mono text-xs" title={value}>
         {display}
       </span>
-      <CopyButton value={value} aria-label={label ? `复制${label}` : '复制'} />
+      <CopyButton
+        value={value}
+        aria-label={label ? `复制${label}` : '复制'}
+        onCopied={() => toast.success(label ? `${label}已复制` : '已复制到剪贴板')}
+        onCopyError={() => toast.error('复制失败')}
+      />
     </div>
   )
 }

@@ -32,19 +32,19 @@ flowchart TB
     Host["MapToolHost (浮层)"]
     Drawer["MapImportDrawer (L4 条带)"]
     Vaul["AccountSheet / NotificationSheet"]
-    Canvas["MapPlaceholder"]
+    Canvas["MapProvider (#map-canvas-host)"]
   end
 
-  subgraph plugins [Map Plugins — 待接入]
-    MapProvider["MapProvider (packages-map)"]
+  subgraph plugins [Map Plugins — packages-map 联调]
+    SdkMap["packages-map MapProvider / SDK"]
     ToolPlugins["map-plugins lazy entries"]
   end
 
   NavMain --> Handler --> Store
   Store --> ui
   Handler --> Bridge
-  Bridge --> MapProvider
-  MapProvider --> ToolPlugins
+  Bridge --> SdkMap
+  SdkMap --> ToolPlugins
   UrlSync --> Store
   Registry --> Bridge
 ```
@@ -82,15 +82,27 @@ interface MapPluginBridge {
 | `showDrawerTool` | 侧栏选中 `drawerTool` 类菜单 |
 | `hideDrawerTool` | 关闭 L4 条带 |
 
-### 当前状态
+### 当前状态（Phase C 宿主壳 ✅ · packages-map SDK 待联调）
 
-- **`MapPluginBridgeProvider`**：宿主侧注入 `createRegistryMapPluginBridge`（默认 `createDefaultMapPluginBridgeOptions()`）
-- **`map-plugin-tool-loaders.ts`**：`VITE_MAP_PLUGIN_LOADERS=true` 时按 registry lazy import `@haoxuan/map-plugins/{slug}/lazyEntry`
-- **`modify-panels.ts`**：`createModifyPanelsHost().closeSiblingExcept(pluginToolId)` 对齐 Modify 互斥组
-- **`MapToolLifecycleSync`**：仅 store → bridge 同步，不再重复注入
-- 未启用 loader 时：registry bridge DEV console.debug；未知 id 警告
-- `setMapPluginBridge()` 供 MapProvider 在 loader 就绪后覆盖注入
-- `map-plugin-registry.ts` 维护已知 `pluginToolId` 列表
+| 组件 | 路径 | 说明 |
+| --- | --- | --- |
+| `MapProvider` | `widgets/map-canvas/ui/map-provider.tsx` | 暴露 `#map-canvas-host` 挂载点；内嵌 `MapPlaceholder` HUD |
+| `MapPluginBridgeProvider` | `features/map-workspace/ui/map-plugin-bridge-provider.tsx` | 注入 `createRegistryMapPluginBridge` |
+| `MapToolLifecycleSync` | 同上 feature | store → bridge 同步，不重复注入 |
+| `modify-panels.ts` | `createModifyPanelsHost().closeSiblingExcept` | Modify 互斥组 |
+| `map-plugin-tool-loaders.ts` | `VITE_MAP_PLUGIN_LOADERS=true` 时 lazy import | `@haoxuan/map-plugins/{slug}/lazyEntry` |
+| `mock-workspace-content` | `entities/mock-workspace-content/` | 侧栏 module / mapTool / drawer / 机库 Dock **高保真 mock 已全覆盖** |
+
+**Bridge 与 SDK 就绪分离：**
+
+| API | 含义 |
+| --- | --- |
+| `setMapPluginBridge()` | 注入 bridge（插件启停分发） |
+| `markMapSdkMounted()` | packages-map 在 canvas 挂载完成后调用；触发 `map-engine-ready` |
+| `isMapEngineReady()` | `mapSdkMounted \|\| VITE_MAP_ENGINE_READY=true` |
+| `isMapPluginBridgeAttached()` | bridge 已注入（≠ SDK 已挂载） |
+
+未启用 loader 时：registry bridge 在 DEV 下 `console.debug`；未知 `pluginToolId` 警告。
 
 **packages-map 联调环境变量：**
 
@@ -98,14 +110,16 @@ interface MapPluginBridge {
 | --- | --- | --- |
 | `VITE_MAP_PLUGIN_LOADERS` | （未设） | `true` 启用 registry lazy loader |
 | `VITE_MAP_PLUGINS_BASE` | `@haoxuan/map-plugins` | lazyEntry 模块前缀 |
+| `VITE_MAP_ENGINE_READY` | （未设） | `true` 跳过 SDK 挂载信号（本地 DEV 隐藏 HUD） |
 
-### 接入步骤（Phase C）
+### 接入步骤（packages-map 联调）
 
-1. MapProvider 挂载后 `<MapPluginBridgeProvider bridgeOptions={{ toolLoaders }} />` 或调用 `setMapPluginBridge(realBridge)`
-2. `realBridge.startMapTool` 内部 lazy import 对应 map-plugin entry（packages-map）
-3. 插件通过 MapProvider API 在地图上绘制/交互
-4. `stopMapTool` 清理插件状态与地图 overlay
-5. URL 深链：`workspace-url.ts` 已支持 `?tool=` 参数，bridge 需响应 restore
+1. 在父 monorepo 将 `packages-map` 依赖链入 `apps/web`
+2. packages-map `MapProvider` 初始化 `#map-canvas-host`（`MAP_CANVAS_MOUNT_ID`）后调用 `markMapSdkMounted()`
+3. 设 `VITE_MAP_PLUGIN_LOADERS=true`；按需覆盖 `VITE_MAP_PLUGINS_BASE`
+4. `realBridge.startMapTool` 经 lazy loader import 对应 map-plugin entry
+5. `stopMapTool` / `hideDrawerTool` 清理 overlay 与插件 runtime
+6. URL 深链：`workspace-url.ts` 已支持 `?tool=`；bridge 须能 restore 同一 `pluginToolId`
 
 ## Plugin Registry
 

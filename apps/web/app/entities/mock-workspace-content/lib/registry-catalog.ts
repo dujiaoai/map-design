@@ -14,6 +14,10 @@ export const REGISTERED_MOCK_MODULE_IDS = [
   'property-view',
   'my-favorites',
   'flight-ledger',
+  'flight-ai-alerts',
+  'custom-highway-alert',
+  'custom-live-share',
+  'video-monitor',
   'view-project',
 ] as const
 

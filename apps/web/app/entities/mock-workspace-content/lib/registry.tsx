@@ -10,7 +10,10 @@ import type {
 } from '../model/types'
 import { FallbackDrawerToolContent } from '../ui/drawers/fallback-drawer-tool-content'
 import { GlobalSearchDrawerContent } from '../ui/drawers/global-search-drawer-content'
+import { CustomHighwayAlertModuleContent } from '../ui/modules/custom-highway-alert-module-content'
+import { CustomLiveShareModuleContent } from '../ui/modules/custom-live-share-module-content'
 import { FallbackModuleContent } from '../ui/modules/fallback-module-content'
+import { FlightAiAlertsModuleContent } from '../ui/modules/flight-ai-alerts-module-content'
 import { FlightLedgerModuleContent } from '../ui/modules/flight-ledger-module-content'
 import { LegendModuleContent } from '../ui/modules/legend-module-content'
 import { MyFavoritesModuleContent } from '../ui/modules/my-favorites-module-content'
@@ -19,6 +22,7 @@ import { ScenicSpotsModuleContent } from '../ui/modules/scenic-spots-module-cont
 import { SpatialAnalysisModuleContent } from '../ui/modules/spatial-analysis-module-content'
 import { ThematicModuleContent } from '../ui/modules/thematic-module-content'
 import { ViewProjectModuleContent } from '../ui/modules/view-project-module-content'
+import { VideoMonitorModuleContent } from '../ui/modules/video-monitor-module-content'
 import { FallbackToolContent } from '../ui/tools/fallback-tool-content'
 import { MeasureDistanceToolContent } from '../ui/tools/measure-distance-tool-content'
 import { PlotPointToolContent } from '../ui/tools/plot-point-tool-content'
@@ -44,6 +48,10 @@ const MOCK_MODULE_REGISTRY: Record<string, MockModuleContentComponent> = {
   'property-view': PropertyViewModuleContent,
   'my-favorites': MyFavoritesModuleContent,
   'flight-ledger': FlightLedgerModuleContent,
+  'flight-ai-alerts': FlightAiAlertsModuleContent,
+  'custom-highway-alert': CustomHighwayAlertModuleContent,
+  'custom-live-share': CustomLiveShareModuleContent,
+  'video-monitor': VideoMonitorModuleContent,
   'view-project': ViewProjectModuleContent,
 }
 

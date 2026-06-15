@@ -11,7 +11,7 @@
 | 路由 | React Router 7 | React Router 7 | React Router 7 |
 | 鉴权 | 公开 + 注册 | 租户 session | 平台管理员 MFA |
 | 部署 | 静态 / Edge | 静态 SPA | 内网 / VPN |
-| **状态** | **已 scaffold**（`/pricing`） | **活跃开发** | **P0～P3 已交付** |
+| **状态** | **已 scaffold**（`/pricing`） | **活跃开发** | **P0～P4 运维 UX 已交付** |
 
 ## Web（`app.example.com`）
 
@@ -45,10 +45,18 @@
 pnpm --filter @repo/saas-web dev
 ```
 
-## Admin（`admin.example.com`）· P0～P3 ✅
+## Admin（`admin.example.com`）· P0～P4 ✅
 
-**状态**：第一期 MVP 已交付（2026-06）。`PLATFORM_ADMIN` 负责全平台运营；`TENANT_ADMIN`（具备 `admin:members:*`）可管理本租户成员。  
+**状态**：第一期 MVP + 运维控制台 UX 已交付（2026-06）。`PLATFORM_ADMIN` 负责全平台运营；`TENANT_ADMIN`（具备 `admin:members:*`）可管理本租户成员。  
 **注意**：≠ `apps/yunyan-admin`（若依 Vue 后台）。
+
+### P4 运维 UX（前端）
+
+- 深色网格壳 + Syne 标题 + stagger 列表入场
+- `/system` Health 条（flags + `GET /v1/admin/ping`）
+- 租户详情 `?tab=`、快捷跳转用户/计费；顶栏动态租户名
+- 列表页描述展示服务端 total；概览快捷入口 + 刷新
+- 403/404/`ErrorBoundary` 统一运维错误页；账号 Drawer 面板化
 
 ### 角色与默认落点
 
@@ -93,10 +101,11 @@ pnpm --filter @repo/saas-web dev
 
 | 状态 | 项 |
 | --- | --- |
+| ✅ | P4 运维控制台 UX（见上） |
 | ✅ | `/audit-logs` 列表 + `sys_admin_audit_log` + 成员写操作落库 |
 | ✅ | `/billing` 计费运营 Tab（对接 billing-api `/v1/admin/billing`） |
 | ✅ | `/system` 平台配置只读页（`GET /v1/admin/system/flags`） |
-| Later | impersonation、Admin MFA |
+| Later | impersonation、Admin MFA（FND-07） |
 
 开发：
 

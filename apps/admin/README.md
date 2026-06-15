@@ -56,12 +56,13 @@ pnpm --filter @repo/saas-admin dev
 | `/403` | 无运营权限 | — |
 | `*` | 404 友好页 | — |
 
-## 已实现能力（P0～P3）
+## 已实现能力（P0～P3 + P4 运维 UX）
 
 - **P0**：平台统计卡片、三列表客户端筛选、`TENANT_ADMIN` 落点 `/members`
 - **P1**：租户详情、跨租户成员、`GET/PUT` 租户能力
 - **P2**：租户/用户服务端分页、`/account`、侧栏 TeamSwitcher（remember-login）
-- **P3**：列表/详情 Skeleton、全局 404、`pnpm validate`（Vitest 32 项）
+- **P3**：列表/详情 Skeleton、全局 404、`pnpm validate`（Vitest）
+- **P4 运维控制台 UX**：工业深色网格壳、Health 条（含 ping）、列表 stagger 入场、租户详情 URL Tab、快捷入口、403/404 统一错误页
 
 ## 验证
 

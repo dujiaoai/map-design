@@ -136,7 +136,7 @@ services/
 | F-3+ | BillingCostPreview + 低余额样式 | ✅ |
 | F-5 | `packages/billing-client` TS SDK | ✅ |
 | F-4 | 退款/对账/通知/发票 | 退款 ✅；日对账 ✅；站内通知 ✅；发票申请骨架 ✅（无电子票对接） |
-| F-5 | 优惠券/用户间划拨 | 划拨 API + UI ✅；members_can_recharge ✅；优惠券待办 |
+| F-5 | 优惠券/用户间划拨 | 划拨 API + UI ✅；members_can_recharge ✅；优惠券兑换骨架 ✅ |
 | F-6 | 可选 billing 独立 DB + 对公转账 | 待办 |
 | sec | Webhook 验签/限流、Caller 白名单、RFC7807、Micrometer、Admin ledger | ✅ 2026-06-15 |
 

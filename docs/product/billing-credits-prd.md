@@ -389,8 +389,13 @@ flowchart LR
 
 ### F-5 · 增长管控
 
-- 优惠券；充值策略；`members_can_recharge`（默认 **true**；**false** 时成员仅能通过 **Platform Admin 调账** 或 **TENANT_ADMIN 划拨** 获得积分）
-- `POST /v1/admin/billing/transfer`（TENANT_ADMIN → 成员，P2）；`packages/billing-client`
+- **优惠券**（骨架 ✅）：
+  - 表 `billing_coupon` / `billing_coupon_redemption`；Admin CRUD（`admin:billing:packages:write`）
+  - 用户：`POST /v1/billing/coupons/redeem`（`billing:wallet:read`）；赠送积分 + `coupon` 流水；每用户幂等
+  - saas-web `/billing` 兑换面板；Admin「优惠券」Tab
+  - **不含**充值下单抵扣、叠加使用规则引擎（后续迭代）
+- 充值策略；`members_can_recharge`（默认 **true**；**false** 时成员仅能通过 **Platform Admin 调账** 或 **TENANT_ADMIN 划拨** 获得积分）✅
+- `POST /v1/billing/transfer`（TENANT_ADMIN → 成员）✅；`packages/billing-client` ✅
 
 ### F-6 · 企业采购
 

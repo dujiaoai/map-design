@@ -63,7 +63,7 @@ export function SystemAdminPage() {
 
   if (query.isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 admin-stagger">
         <AdminPageHeader
           eyebrow="Platform"
           title="系统"
@@ -76,7 +76,7 @@ export function SystemAdminPage() {
 
   if (query.isError || !query.data) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 admin-stagger">
         <AdminPageHeader
           eyebrow="Platform"
           title="系统"
@@ -102,7 +102,7 @@ export function SystemAdminPage() {
   const profileLabel = flags.runtime.activeProfiles.join(', ') || 'default'
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 admin-stagger">
       <AdminPageHeader
         eyebrow="Platform"
         title="系统"

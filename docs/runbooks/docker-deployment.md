@@ -172,7 +172,7 @@ compose 通过 [`deploy/.env.docker.example`](../../deploy/.env.docker.example) 
 | `BILLING_LOW_BALANCE_THRESHOLD` | `50` | 低余额 Micrometer crossing |
 | `BILLING_API_PORT` | `8085` | 宿主机直连调试（避免与 Admin `:8083` 冲突） |
 
-冒烟（验签模式）：`node services/billing-api/scripts/smoke-billing.mjs`（见 PRD §2.4）。
+冒烟（充值 + 发票/优惠券/对公 + 验签模式）：`node services/billing-api/scripts/smoke-billing.mjs`（见 PRD §2.4）。
 
 ---
 

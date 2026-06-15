@@ -302,7 +302,7 @@ flowchart TD
 | 机库 | `/v1/uav/*` | uav-workspace |
 | 其它专题 | 按 PRD | mock-nav 已有入口 |
 
-### Sprint F · 平台计费（F-1～F-3+、F-2 主体、F-5 SDK 已落地 · 2026-06-14）
+### Sprint F · 平台计费（F-1～F-6 骨架已落地 · 2026-06-15）
 
 **PRD：** [billing-credits-prd.md](../product/billing-credits-prd.md)  
 **架构：** [billing-service.md](./billing-service.md)
@@ -315,7 +315,9 @@ flowchart TD
 | F-3 | saas-api → billing-api | hold/confirm + **402 弹窗** + `team/usage` + smoke rule + perm_epoch | ✅ |
 | F-3+ | web | `BillingCostPreview`、低余额样式 | ✅ |
 | F-5 | packages/billing-client | TS SDK + saas-web 接入 | ✅ |
-| F-4～F-6 | billing-api | 退款/通知/优惠券/对公转账 | 待办 |
+| F-4 | billing-api + admin | 退款/日对账/站内通知/发票申请 | ✅ 骨架 |
+| F-5 | billing-api + web/admin | 优惠券兑换 + 用户间划拨 + billing-client | ✅ 骨架 |
+| F-6 | billing-api + admin/web | 对公转账预付申请与审核入账 | ✅ 骨架；独立 DB 待办 |
 
 **Maven 目标：**
 

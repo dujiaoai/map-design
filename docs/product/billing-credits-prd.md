@@ -156,7 +156,7 @@ sequenceDiagram
 
 - **业务校验**：`priceCents` 与订单一致；幂等 `providerTradeNo` / 订单状态；同事务入账
 - **限流**：Webhook 按来源 IP 令牌桶（默认 120/min）；超限 **429** + `Retry-After`
-- **冒烟**：`services/billing-api/scripts/smoke-billing.mjs` 支持 `BILLING_WEBHOOK_SIGNATURE_MODE=off|hmac|wechat_v3|alipay_rsa`
+- **冒烟**：`services/billing-api/scripts/smoke-billing.mjs` 覆盖充值入账、发票申请与 Admin 开票、优惠券兑换、对公转账审核；Webhook 验签 `BILLING_WEBHOOK_SIGNATURE_MODE=off|hmac|wechat_v3|alipay_rsa`
 
 ### 2.5 限流与滥用防护（billing-api）
 

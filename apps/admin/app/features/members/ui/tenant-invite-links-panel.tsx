@@ -43,7 +43,6 @@ type CreateLinkFormValues = {
 export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
   const queryClient = useQueryClient()
   const [createdInviteUrl, setCreatedInviteUrl] = useState<string | null>(null)
-  const [copyHint, setCopyHint] = useState<string | null>(null)
 
   const linksQuery = useQuery({
     queryKey: adminQueryKeys.inviteLinks(tenantId),
@@ -118,11 +117,10 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
   async function copyInviteUrl(url: string) {
     try {
       await navigator.clipboard.writeText(url)
-      setCopyHint('已复制到剪贴板')
+      toast.success('已复制到剪贴板')
     } catch {
-      setCopyHint('复制失败，请手动选中链接复制')
+      toast.error('复制失败，请手动选中链接复制')
     }
-    window.setTimeout(() => setCopyHint(null), 1600)
   }
 
   return (
@@ -193,7 +191,6 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
               关闭
             </Button>
           </div>
-          {copyHint ? <p className="text-xs text-primary">{copyHint}</p> : null}
         </div>
       ) : null}
 

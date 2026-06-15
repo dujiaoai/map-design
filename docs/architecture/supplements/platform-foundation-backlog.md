@@ -67,7 +67,7 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 | 阶段 | 表 | 说明 |
 | --- | --- | --- |
-| FND-04a | `map_layer` | 首个租户业务表 RLS + `SaasTenantLineHandler` |
+| FND-04a | `map_layer` | ✅ RLS + MyBatis 租户白名单 |
 | FND-04b | 后续业务表 | 新表 Flyway 后追加 `migration-postgresql/V*__rls_<table>.sql` |
 
 新增租户表 checklist：

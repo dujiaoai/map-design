@@ -43,7 +43,7 @@
 
 | 服务 | RLS 表 | 迁移 | 说明 |
 | --- | --- | --- | --- |
-| saas-api | `sys_user` | `V5__rls.sql` | `TenantRlsDataSource` 设置会话变量 |
+| saas-api | `sys_user`、`map_layer` | `V5__rls.sql`、`V6__map_layer_rls.sql` | `TenantRlsDataSource` 设置会话变量 |
 | billing-api | `billing_*`、镜像表 | `V12__billing_tenant_rls.sql` | internal/admin/webhook/Job 走 Bypass |
 
 会话变量（两服务一致）：

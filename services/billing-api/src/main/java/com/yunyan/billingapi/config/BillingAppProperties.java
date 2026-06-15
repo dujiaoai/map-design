@@ -39,8 +39,14 @@ public class BillingAppProperties {
 
   @Data
   public static class Webhook {
-    /** Shared token for payment provider callbacks (skeleton; replace with signature verify). */
+    /** Shared token for payment provider callbacks (dev/skeleton fallback when signature verify off). */
     private String token = "dev-billing-webhook-token-change-me";
+    /** When true, require {@link com.yunyan.billingapi.application.payment.PaymentWebhookSignatureService} HMAC header. */
+    private boolean signatureVerifyEnabled = false;
+    /** HMAC secret for WeChat callback skeleton verify. */
+    private String wechatSignSecret = "";
+    /** HMAC secret for Alipay callback skeleton verify. */
+    private String alipaySignSecret = "";
   }
 
   @Data

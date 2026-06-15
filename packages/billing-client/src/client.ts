@@ -103,6 +103,12 @@ export function createBillingClient(options: BillingClientOptions) {
       )
     },
 
+    async getRechargeOrder(orderNo: string): Promise<RechargeOrderResponse> {
+      return rechargeOrderResponseSchema.parse(
+        await api.get(`/recharge-orders/${encodeURIComponent(orderNo)}`),
+      )
+    },
+
     async transfer(input: TransferRequest): Promise<TransferResponse> {
       return transferResponseSchema.parse(await api.post('/transfer', input))
     },

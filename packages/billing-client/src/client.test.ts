@@ -39,8 +39,10 @@ describe('createBillingClient', () => {
         status: 'pending',
         channel: 'mock',
         points: 500,
+        listPriceCents: 4900,
         priceCents: 4900,
         currency: 'CNY',
+        couponDiscountCents: 0,
         walletBalance: 500,
       })
     })
@@ -53,6 +55,33 @@ describe('createBillingClient', () => {
     const order = await client.createRechargeOrder({ packageCode: 'starter_500' })
 
     expect(order.orderNo).toBe('RO-1')
+  })
+
+  it('getRechargeOrder fetches order status', async () => {
+    const fetchFn = vi.fn(async (url, init) => {
+      expect(url).toBe('http://billing.test/recharge-orders/RO-1')
+      expect(init?.method).toBe('GET')
+      return Response.json({
+        orderNo: 'RO-1',
+        status: 'paid',
+        channel: 'wechat',
+        points: 500,
+        listPriceCents: 4900,
+        priceCents: 4900,
+        currency: 'CNY',
+        couponDiscountCents: 0,
+        walletBalance: 1000,
+      })
+    })
+
+    const client = createBillingClient({
+      baseUrl: 'http://billing.test',
+      fetch: fetchFn,
+    })
+
+    const order = await client.getRechargeOrder('RO-1')
+
+    expect(order.status).toBe('paid')
   })
 
   it('transfer posts payload', async () => {

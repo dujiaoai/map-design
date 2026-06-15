@@ -95,4 +95,41 @@ public interface BillingLedgerMapper {
       </script>
       """)
   long countAdminAdjustRecords(@Param("tenantId") UUID tenantId, @Param("userId") UUID userId);
+
+  @Select(
+      """
+      <script>
+      SELECT l.id, l.wallet_id, l.tenant_id, w.user_id, l.entry_type, l.amount, l.balance_after,
+             l.product_code, l.remark, l.created_at
+      FROM billing_ledger l
+      INNER JOIN billing_wallet w ON w.id = l.wallet_id
+      WHERE l.tenant_id = #{tenantId}
+      <if test="userId != null">AND w.user_id = #{userId}</if>
+      <if test="entryType != null">AND l.entry_type = #{entryType}</if>
+      ORDER BY l.created_at DESC
+      LIMIT #{limit} OFFSET #{offset}
+      </script>
+      """)
+  java.util.List<AdminLedgerRecordRow> findAdminLedgerRecords(
+      @Param("tenantId") UUID tenantId,
+      @Param("userId") UUID userId,
+      @Param("entryType") String entryType,
+      @Param("limit") int limit,
+      @Param("offset") int offset);
+
+  @Select(
+      """
+      <script>
+      SELECT COUNT(*)
+      FROM billing_ledger l
+      INNER JOIN billing_wallet w ON w.id = l.wallet_id
+      WHERE l.tenant_id = #{tenantId}
+      <if test="userId != null">AND w.user_id = #{userId}</if>
+      <if test="entryType != null">AND l.entry_type = #{entryType}</if>
+      </script>
+      """)
+  long countAdminLedgerRecords(
+      @Param("tenantId") UUID tenantId,
+      @Param("userId") UUID userId,
+      @Param("entryType") String entryType);
 }

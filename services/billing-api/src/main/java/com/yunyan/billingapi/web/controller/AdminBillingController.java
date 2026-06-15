@@ -1,6 +1,7 @@
 package com.yunyan.billingapi.web.controller;
 
 import com.yunyan.billingapi.application.admin.AdminBillingAdjustService;
+import com.yunyan.billingapi.application.admin.AdminBillingLedgerService;
 import com.yunyan.billingapi.application.admin.AdminBillingPackageService;
 import com.yunyan.billingapi.application.admin.AdminBillingRechargeOrderService;
 import com.yunyan.billingapi.application.admin.AdminBillingRefundService;
@@ -10,8 +11,9 @@ import com.yunyan.billingapi.application.admin.AdminBillingWalletService;
 import com.yunyan.billingapi.application.ratelimit.BillingRateLimitService;
 import com.yunyan.billingapi.domain.permission.PermissionCodes;
 import com.yunyan.billingapi.security.SaasPrincipal;
-import com.yunyan.billingapi.web.dto.AdminAdjustRequest;
 import com.yunyan.billingapi.web.dto.AdminAdjustRecordListResponse;
+import com.yunyan.billingapi.web.dto.AdminAdjustRequest;
+import com.yunyan.billingapi.web.dto.AdminLedgerListResponse;
 import com.yunyan.billingapi.web.dto.AdminAdjustResponse;
 import com.yunyan.billingapi.web.dto.AdminBillingStatsResponse;
 import com.yunyan.billingapi.web.dto.AdminRefundRequest;
@@ -48,6 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminBillingController {
 
   private final AdminBillingAdjustService adminBillingAdjustService;
+  private final AdminBillingLedgerService adminBillingLedgerService;
   private final AdminBillingWalletService adminBillingWalletService;
   private final AdminBillingRechargeOrderService adminBillingRechargeOrderService;
   private final AdminBillingPackageService adminBillingPackageService;
@@ -58,6 +61,7 @@ public class AdminBillingController {
 
   public AdminBillingController(
       AdminBillingAdjustService adminBillingAdjustService,
+      AdminBillingLedgerService adminBillingLedgerService,
       AdminBillingWalletService adminBillingWalletService,
       AdminBillingRechargeOrderService adminBillingRechargeOrderService,
       AdminBillingPackageService adminBillingPackageService,
@@ -66,6 +70,7 @@ public class AdminBillingController {
       AdminBillingRefundService adminBillingRefundService,
       BillingRateLimitService billingRateLimitService) {
     this.adminBillingAdjustService = adminBillingAdjustService;
+    this.adminBillingLedgerService = adminBillingLedgerService;
     this.adminBillingWalletService = adminBillingWalletService;
     this.adminBillingRechargeOrderService = adminBillingRechargeOrderService;
     this.adminBillingPackageService = adminBillingPackageService;
@@ -152,6 +157,18 @@ public class AdminBillingController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size) {
     return adminBillingRechargeOrderService.listOrders(tenantId, userId, status, page, size);
+  }
+
+  @GetMapping("/tenants/{tenantId}/ledger")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_READ + "')")
+  @Operation(summary = "平台查询租户积分流水")
+  public AdminLedgerListResponse listLedger(
+      @PathVariable UUID tenantId,
+      @RequestParam(required = false) UUID userId,
+      @RequestParam(required = false) String entryType,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return adminBillingLedgerService.listLedger(tenantId, userId, entryType, page, size);
   }
 
   @PostMapping("/tenants/{tenantId}/adjust")

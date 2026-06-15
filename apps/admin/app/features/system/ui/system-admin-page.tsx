@@ -86,6 +86,11 @@ export function SystemAdminPage() {
           <AdminEmptyState
             icon={ServerIcon}
             message="无法加载系统配置，请确认 saas-api 可达且具备 admin:tenants:read。"
+            onRetry={() => {
+              void query.refetch()
+              void pingQuery.refetch()
+            }}
+            isRetrying={query.isFetching || pingQuery.isFetching}
           />
         </AdminPanel>
       </div>

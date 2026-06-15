@@ -1,11 +1,13 @@
 package com.yunyan.saasapi.web.controller;
 
 import com.yunyan.saasapi.application.admin.AdminStatsService;
+import com.yunyan.saasapi.application.admin.AdminSystemFlagsService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
 import com.yunyan.saasapi.web.dto.admin.FeatureCatalogResponse;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminStatsResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminSystemFlagsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
   private final AdminStatsService adminStatsService;
+  private final AdminSystemFlagsService adminSystemFlagsService;
   private final TenantFeatureAdminService tenantFeatureAdminService;
 
   @GetMapping("/ping")
@@ -65,5 +68,15 @@ public class AdminController {
   @Operation(summary = "租户能力码目录", description = "可开通模块能力列表，与 saas-web tenantFeature 对齐")
   public FeatureCatalogResponse featureCatalog() {
     return tenantFeatureAdminService.getCatalog();
+  }
+
+  @GetMapping("/system/flags")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(
+      summary = "平台配置摘要（只读）",
+      description = "注册开关、邮件、限流、RLS、billing 集成等运行态摘要；不含密钥。")
+  public AdminSystemFlagsResponse systemFlags() {
+    return adminSystemFlagsService.getFlags();
   }
 }

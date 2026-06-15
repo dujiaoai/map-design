@@ -92,6 +92,27 @@ class AdminControllerTest {
   }
 
   @Test
+  void systemFlags_withoutToken_returnsUnauthorized() throws Exception {
+    mockMvc.perform(get("/v1/admin/system/flags")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void systemFlags_withPlatformAdmin_returnsReadOnlySummary() throws Exception {
+    var accessToken = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(get("/v1/admin/system/flags").header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.registration.allowPublicOrgSignup").isBoolean())
+        .andExpect(jsonPath("$.registration.allowPublicPersonalSignup").isBoolean())
+        .andExpect(jsonPath("$.mail.enabled").isBoolean())
+        .andExpect(jsonPath("$.rateLimit.enabled").isBoolean())
+        .andExpect(jsonPath("$.tenantRls.enabled").isBoolean())
+        .andExpect(jsonPath("$.billing.integrationEnabled").isBoolean())
+        .andExpect(jsonPath("$.runtime.activeProfiles").isArray());
+  }
+
+  @Test
   void login_withPlatformAdmin_returnsPlatformPermissions() throws Exception {
     var loginBody = loginBody("platform@test.local");
 

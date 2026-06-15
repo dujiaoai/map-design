@@ -52,7 +52,7 @@ pnpm --filter @repo/saas-admin dev
 | `/account` | 账号资料与改密 | 已登录 |
 | `/billing` | 计费（规划中占位页） |
 | `/audit-logs` | 审计日志列表 | `admin:tenants:read` |
-| `/system` | 系统（规划中占位页） |
+| `/system` | 平台配置只读摘要（`GET /v1/admin/system/flags`） |
 | `/403` | 无运营权限 | — |
 | `*` | 404 友好页 | — |
 

@@ -367,7 +367,7 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | FND-03 | 计费 live 退款 / runbook 生产化 | ✅ |
 | FND-04 | saas-api RLS 扩展（`map_layer` 起） | ✅ |
 | FND-05 | 可观测性最小集（MDC + billing 探活） | ✅ |
-| FND-06 | Admin `/system` 平台配置 | 待做 |
+| FND-06 | Admin `/system` 平台配置 | ✅ |
 | FND-07 | OAuth2/OIDC、MFA、impersonation | Later |
 
 **仍不做（本阶段）**：Sprint E 地图/机库/专题业务 API。

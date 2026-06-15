@@ -22,6 +22,43 @@ export function fetchAdminStats() {
   return api.get<AdminStatsResponse>('/admin/stats')
 }
 
+export interface AdminSystemFlagsResponse {
+  registration: {
+    allowPublicOrgSignup: boolean
+    allowPublicPersonalSignup: boolean
+    registrationTokenTtl: string
+  }
+  auth: {
+    passwordStrengthEnabled: boolean
+  }
+  mail: {
+    enabled: boolean
+    fromAddress: string
+    outboundReady: boolean
+  }
+  rateLimit: {
+    enabled: boolean
+    loginIpMaxAttempts: number
+    loginAccountMaxAttempts: number
+  }
+  tenantRls: {
+    enabled: boolean
+  }
+  billing: {
+    integrationEnabled: boolean
+    baseUrl: string
+    membershipPushEnabled: boolean
+  }
+  runtime: {
+    activeProfiles: string[]
+    jwtPermEpoch: number
+  }
+}
+
+export function fetchAdminSystemFlags() {
+  return api.get<AdminSystemFlagsResponse>('/admin/system/flags')
+}
+
 export interface AdminTenantSummary {
   id: string
   name: string

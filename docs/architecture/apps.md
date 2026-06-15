@@ -71,7 +71,7 @@ pnpm --filter @repo/saas-web dev
 | `/account` | 当前账号资料（`PUT /users/me`）与改密 |
 | `/audit-logs` | 成员操作审计日志（`GET /v1/admin/audit-logs`） |
 | `/billing` | 平台计费运营（SKU/调账/退款/对账/发票/对公） |
-| `/system` | 系统配置（FND-06 规划中 · ComingSoon） |
+| `/system` | 平台配置只读摘要（`GET /v1/admin/system/flags`） |
 | `/403` | 无运营权限 |
 | `*` | 404 友好页（按会话返回概览或登录） |
 
@@ -95,7 +95,7 @@ pnpm --filter @repo/saas-web dev
 | --- | --- |
 | ✅ | `/audit-logs` 列表 + `sys_admin_audit_log` + 成员写操作落库 |
 | ✅ | `/billing` 计费运营 Tab（对接 billing-api `/v1/admin/billing`） |
-| FND-06 | `/system` 平台配置只读摘要 |
+| ✅ | `/system` 平台配置只读页（`GET /v1/admin/system/flags`） |
 | Later | impersonation、Admin MFA |
 
 开发：

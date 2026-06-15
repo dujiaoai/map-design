@@ -23,4 +23,5 @@ export const adminQueryKeys = {
     ['admin', 'tenants', tenantId, 'roles', roleId, 'permissions'] as const,
   inviteLinks: (tenantId: string) => ['admin', 'invite-links', tenantId] as const,
   auditLogs: (params?: AdminListQuery) => ['admin', 'audit-logs', params ?? {}] as const,
+  systemFlags: ['admin', 'system-flags'] as const,
 }

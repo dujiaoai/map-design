@@ -37,6 +37,8 @@ const AUDIT_ACTION_OPTIONS = [
   { value: 'billing.recharge.refund', label: '充值退款' },
 ] as const
 
+const AUDIT_BILLING_SEARCH = 'billing.'
+
 const BILLING_PERMISSIONS = [
   'admin:billing:read',
   'admin:billing:adjust',
@@ -64,6 +66,17 @@ export function AuditLogsAdminPage() {
   })
 
   const total = query.data?.total ?? query.data?.logs.length ?? 0
+  const billingOnlyActive = searchInput.trim() === AUDIT_BILLING_SEARCH
+
+  function toggleBillingOnly() {
+    if (billingOnlyActive) {
+      setSearchInput('')
+    } else {
+      setSearchInput(AUDIT_BILLING_SEARCH)
+      setActionFilter('all')
+    }
+    setPage(1)
+  }
 
   return (
     <div className="space-y-6 admin-stagger">
@@ -100,6 +113,9 @@ export function AuditLogsAdminPage() {
           onValueChange={(value) => {
             if (value == null) return
             setActionFilter(value)
+            if (value !== 'all' && billingOnlyActive) {
+              setSearchInput('')
+            }
             setPage(1)
           }}
         >
@@ -114,6 +130,16 @@ export function AuditLogsAdminPage() {
             ))}
           </SelectContent>
         </Select>
+        {canViewBilling ? (
+          <Button
+            type="button"
+            variant={billingOnlyActive ? 'secondary' : 'outline'}
+            size="sm"
+            onClick={toggleBillingOnly}
+          >
+            仅计费
+          </Button>
+        ) : null}
         <label className="text-muted-foreground flex items-center gap-2 text-sm">
           <input
             type="checkbox"

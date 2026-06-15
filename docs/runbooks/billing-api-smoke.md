@@ -39,6 +39,8 @@ node services/billing-api/scripts/smoke-billing.mjs
 
 成功输出：`billing smoke OK (24 steps): ...`（mock 渠道）
 
+**PostgreSQL RLS：** dev/docker 默认 `billing.tenant-rls.enabled=true`（`BILLING_TENANT_RLS_ENABLED`）。24 步通过即覆盖 JWT 租户路径与 internal/admin bypass；详见 [billing-tenant-rls.md](../architecture/supplements/billing-tenant-rls.md)。`membership-check` 401 空 body 时多为 saas-api 未重启到含 `/internal/v1/membership` 的版本。
+
 Live 支付凭证与 JSAPI OAuth 联调见 [billing-live-payment-sop.md](./billing-live-payment-sop.md)。
 
 ### 环境变量（可选）

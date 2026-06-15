@@ -192,6 +192,10 @@ public class BillingAppProperties {
   @Data
   public static class MembershipSync {
     private boolean enabled = false;
+    /** local (jdbc mirror / shared PG) or api (saas-api internal REST). */
+    private String source = "local";
+    /** saas-api origin, e.g. http://localhost:8082 — required when source=api. */
+    private String saasApiBaseUrl = "";
     /** Scan interval for mirror sync job (ms). */
     private long scanMs = 300_000L;
     private final SaasDatasource saas = new SaasDatasource();

@@ -1,6 +1,6 @@
 import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import { PencilIcon } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 
 import { fetchAdminTenants, fetchAdminUsers, type AdminUserSummary } from '~/shared/api/admin-api'
@@ -31,11 +31,17 @@ export function UsersAdminPage() {
   const canWrite = can('admin:users:write')
   const [searchParams, setSearchParams] = useSearchParams()
   const tenantFilterId = searchParams.get('tenantId') ?? undefined
+  const qFromUrl = searchParams.get('q') ?? ''
 
   const [editingUser, setEditingUser] = useState<AdminUserSummary | null>(null)
   const [statusFilter, setStatusFilter] = useState('all')
 
-  const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
+  const { searchInput, setSearchInput, page, setPage, queryParams } =
+    useAdminPagedListState(qFromUrl)
+
+  useEffect(() => {
+    setSearchInput(qFromUrl)
+  }, [qFromUrl, setSearchInput])
 
   const tenantsQuery = useAdminPagedQuery({
     queryKey: adminQueryKeys.tenantsAll,

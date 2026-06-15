@@ -9,8 +9,8 @@ export interface AdminListQueryParams {
 
 export const ADMIN_LIST_PAGE_SIZE = 20
 
-export function useAdminPagedListState() {
-  const [searchInput, setSearchInput] = useState('')
+export function useAdminPagedListState(initialSearch = '') {
+  const [searchInput, setSearchInput] = useState(initialSearch)
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
 

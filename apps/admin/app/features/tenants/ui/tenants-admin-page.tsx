@@ -1,5 +1,5 @@
 import { Button } from '@repo/ui'
-import { EyeIcon, PencilIcon, UsersIcon } from 'lucide-react'
+import { EyeIcon, CreditCardIcon, PencilIcon, UsersIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 
@@ -27,9 +27,15 @@ import { CreateTenantSheet } from './create-tenant-sheet'
 import { EditTenantSheet } from './edit-tenant-sheet'
 
 export function TenantsAdminPage() {
-  const { can } = useAdminPermissions()
+  const { can, canAny } = useAdminPermissions()
   const canWrite = can('admin:tenants:write')
   const canReadUsers = can('admin:users:read')
+  const canViewBilling = canAny([
+    'admin:billing:read',
+    'admin:billing:adjust',
+    'admin:billing:packages:write',
+    'admin:billing:refund',
+  ])
 
   const [createOpen, setCreateOpen] = useState(false)
   const [editingTenant, setEditingTenant] = useState<AdminTenantSummary | null>(null)
@@ -149,6 +155,21 @@ export function TenantsAdminPage() {
                           >
                             <UsersIcon className="size-3.5" />
                             用户
+                          </Button>
+                        ) : null}
+                        {canViewBilling ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            nativeButton={false}
+                            render={
+                              <Link
+                                to={`/billing?tab=wallets&tenantId=${encodeURIComponent(tenant.id)}`}
+                              />
+                            }
+                          >
+                            <CreditCardIcon className="size-3.5" />
+                            计费
                           </Button>
                         ) : null}
                         {canWrite ? (

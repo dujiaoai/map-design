@@ -82,6 +82,16 @@ export function AuditLogsAdminPage() {
     setPage(1)
   }
 
+  function clearAuditFilters() {
+    setSearchInput('')
+    setActionFilter('all')
+    setCrossTenantOnly(false)
+    setPage(1)
+  }
+
+  const hasAuditFilters =
+    actionFilter !== 'all' || crossTenantOnly || searchInput.trim().length > 0
+
   return (
     <div className="space-y-6 admin-stagger">
       <AdminPageHeader
@@ -175,7 +185,18 @@ export function AuditLogsAdminPage() {
             isRetrying={query.isFetching}
           />
         ) : !query.data?.logs.length ? (
-          <AdminEmptyState message="暂无审计记录" />
+          hasAuditFilters ? (
+            <AdminEmptyState
+              message="无匹配审计记录"
+              action={
+                <Button type="button" variant="outline" size="sm" onClick={clearAuditFilters}>
+                  清除筛选
+                </Button>
+              }
+            />
+          ) : (
+            <AdminEmptyState message="暂无审计记录" />
+          )
         ) : (
           <>
             <AdminDataTable>

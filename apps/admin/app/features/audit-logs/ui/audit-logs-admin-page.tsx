@@ -1,6 +1,6 @@
 import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import { CreditCardIcon } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
 import { buildAuditBillingLink } from '~/features/audit-logs/lib/audit-log-billing-nav'
@@ -9,6 +9,7 @@ import { fetchAdminAuditLogs, type AdminAuditLogEntry } from '~/shared/api/admin
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
+import { sortAdminTableRows, useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import {
@@ -18,6 +19,7 @@ import {
   AdminTableHead,
   AdminTableHeaderCell,
   AdminTableRow,
+  AdminTableSortHeaderCell,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
@@ -42,6 +44,8 @@ const AUDIT_ACTION_OPTIONS = [
 const AUDIT_BILLING_SEARCH = 'billing.'
 const AUDIT_MEMBER_SEARCH = 'member.'
 
+type AuditSortKey = 'createdAt' | 'actorEmail' | 'action'
+
 const BILLING_PERMISSIONS = [
   'admin:billing:read',
   'admin:billing:adjust',
@@ -57,6 +61,7 @@ export function AuditLogsAdminPage() {
   const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
   const searchInputRef = useRef<HTMLInputElement>(null)
   useAdminListSearchShortcut(searchInputRef)
+  const { sort, toggleSort } = useAdminTableSort<AuditSortKey>()
   const [actionFilter, setActionFilter] = useState<string>('all')
   const [crossTenantOnly, setCrossTenantOnly] = useState(false)
 
@@ -94,6 +99,16 @@ export function AuditLogsAdminPage() {
 
   const hasAuditFilters =
     actionFilter !== 'all' || crossTenantOnly || searchInput.trim().length > 0
+
+  const sortedLogs = useMemo(
+    () =>
+      sortAdminTableRows(query.data?.logs ?? [], sort, {
+        createdAt: (log) => log.createdAt,
+        actorEmail: (log) => log.actorEmail.toLowerCase(),
+        action: (log) => log.action.toLowerCase(),
+      }),
+    [query.data?.logs, sort],
+  )
 
   return (
     <div className="space-y-6 admin-stagger">
@@ -206,16 +221,31 @@ export function AuditLogsAdminPage() {
             <AdminDataTable>
               <AdminTableHead>
                 <tr>
-                  <AdminTableHeaderCell>时间</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>操作人</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>动作</AdminTableHeaderCell>
+                  <AdminTableSortHeaderCell
+                    label="时间"
+                    active={sort?.key === 'createdAt'}
+                    direction={sort?.key === 'createdAt' ? sort.direction : undefined}
+                    onSort={() => toggleSort('createdAt')}
+                  />
+                  <AdminTableSortHeaderCell
+                    label="操作人"
+                    active={sort?.key === 'actorEmail'}
+                    direction={sort?.key === 'actorEmail' ? sort.direction : undefined}
+                    onSort={() => toggleSort('actorEmail')}
+                  />
+                  <AdminTableSortHeaderCell
+                    label="动作"
+                    active={sort?.key === 'action'}
+                    direction={sort?.key === 'action' ? sort.direction : undefined}
+                    onSort={() => toggleSort('action')}
+                  />
                   <AdminTableHeaderCell>详情</AdminTableHeaderCell>
                   <AdminTableHeaderCell>目标租户</AdminTableHeaderCell>
                   <AdminTableHeaderCell>跨租户</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
               <AdminTableBody>
-                {query.data.logs.map((log) => (
+                {sortedLogs.map((log) => (
                   <AuditLogRow
                     key={log.id}
                     log={log}

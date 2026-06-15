@@ -52,6 +52,7 @@ export function AuditLogsAdminPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
+        eyebrow="Operations"
         title="审计日志"
         description="记录成员邀请、角色变更与平台计费操作（调账、SKU）；跨租户操作会标记 crossTenant。"
       />

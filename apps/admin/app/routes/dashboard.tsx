@@ -4,10 +4,14 @@ import { Badge } from '@repo/ui'
 import { ActivityIcon, Building2Icon, ShieldCheckIcon, UsersIcon } from 'lucide-react'
 import { redirect } from 'react-router'
 
+import { AdminQuickNav } from '~/widgets/admin-overview/ui/admin-quick-nav'
 import { fetchAdminPing, fetchAdminStats } from '~/shared/api/admin-api'
 import { auth } from '~/shared/auth/client'
 import { canAccessAdminOverview } from '~/shared/auth/admin-access'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
+import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
+import { AdminPageHeader, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
+import { AdminStatusPill } from '~/shared/ui/admin-status-pill'
 
 import type { Route } from './+types/dashboard'
 
@@ -35,47 +39,61 @@ export default function DashboardRoute() {
     queryFn: fetchAdminPing,
   })
 
+  const apiHealthy = pingQuery.data?.status === 'ok' && !pingQuery.isError
+
   return (
     <div className="space-y-8">
-      <header className="space-y-2">
-        <p className="admin-display text-xs tracking-[0.24em] text-primary/75 uppercase">Overview</p>
-        <h2 className="admin-display text-3xl font-semibold tracking-tight">运营概览</h2>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          平台租户与用户规模一览；数据来自 <code className="rounded bg-muted px-1.5 py-0.5 text-xs">GET /v1/admin/stats</code>。
-        </p>
-      </header>
+      <AdminPageHeader
+        eyebrow="Overview"
+        title="运营概览"
+        description={
+          <>
+            平台租户与用户规模一览；数据来自{' '}
+            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
+              GET /v1/admin/stats
+            </code>
+            。
+          </>
+        }
+        actions={
+          pingQuery.isLoading ? null : (
+            <AdminStatusPill
+              level={apiHealthy ? 'ok' : 'warn'}
+              label={apiHealthy ? 'Admin API 在线' : 'Admin API 异常'}
+            />
+          )
+        }
+      />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard
+      <div className="admin-stagger grid gap-4 sm:grid-cols-3">
+        <AdminMetricCard
           icon={Building2Icon}
           label="租户总数"
-          value={statsQuery.data?.tenantCount}
+          value={statsQuery.data?.tenantCount ?? 0}
           loading={statsQuery.isLoading}
           error={statsQuery.isError}
         />
-        <StatCard
+        <AdminMetricCard
           icon={UsersIcon}
           label="用户总数"
-          value={statsQuery.data?.userCount}
+          value={statsQuery.data?.userCount ?? 0}
           loading={statsQuery.isLoading}
           error={statsQuery.isError}
         />
-        <StatCard
+        <AdminMetricCard
           icon={ActivityIcon}
           label="活跃租户"
-          value={statsQuery.data?.activeTenantCount}
+          value={statsQuery.data?.activeTenantCount ?? 0}
           loading={statsQuery.isLoading}
           error={statsQuery.isError}
+          hint="status = active"
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <section className="rounded-xl border border-border/70 bg-card/60 p-5 shadow-sm backdrop-blur-sm">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <ShieldCheckIcon className="size-4 text-primary" />
-            当前会话
-          </div>
-          <dl className="mt-4 space-y-2 text-sm">
+      <div className="admin-stagger grid gap-4 md:grid-cols-2">
+        <AdminPanel>
+          <AdminPanelHeader icon={ShieldCheckIcon} title="当前会话" />
+          <dl className="space-y-2 px-4 py-4 text-sm md:px-5">
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">用户</dt>
               <dd className="truncate font-medium">{session?.user.email}</dd>
@@ -84,7 +102,7 @@ export default function DashboardRoute() {
               <dt className="text-muted-foreground">租户</dt>
               <dd>{session?.tenant?.name ?? '—'}</dd>
             </div>
-            <div className="flex flex-wrap justify-end gap-1.5">
+            <div className="flex flex-wrap justify-end gap-1.5 pt-1">
               {(session?.user.roles ?? []).map((role) => (
                 <Badge key={role} variant="secondary">
                   {role}
@@ -92,14 +110,11 @@ export default function DashboardRoute() {
               ))}
             </div>
           </dl>
-        </section>
+        </AdminPanel>
 
-        <section className="rounded-xl border border-border/70 bg-card/60 p-5 shadow-sm backdrop-blur-sm">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <ActivityIcon className="size-4 text-primary" />
-            Admin API 自检
-          </div>
-          <div className="mt-4 space-y-2 text-sm">
+        <AdminPanel>
+          <AdminPanelHeader icon={ActivityIcon} title="Admin API 自检" />
+          <div className="space-y-2 px-4 py-4 text-sm md:px-5">
             {pingQuery.isLoading ? (
               <p className="text-muted-foreground">正在请求 GET /v1/admin/ping …</p>
             ) : null}
@@ -110,47 +125,25 @@ export default function DashboardRoute() {
               <dl className="space-y-2">
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted-foreground">status</dt>
-                  <dd>{pingQuery.data.status}</dd>
+                  <dd className="font-mono text-xs">{pingQuery.data.status}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted-foreground">authenticated</dt>
-                  <dd>{String(pingQuery.data.authenticated)}</dd>
+                  <dd className="font-mono text-xs">{String(pingQuery.data.authenticated)}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted-foreground">platformAdmin</dt>
-                  <dd>{String(pingQuery.data.platformAdmin)}</dd>
+                  <dd className="font-mono text-xs">{String(pingQuery.data.platformAdmin)}</dd>
                 </div>
               </dl>
             ) : null}
           </div>
-        </section>
+        </AdminPanel>
+      </div>
+
+      <div className="admin-stagger">
+        <AdminQuickNav />
       </div>
     </div>
-  )
-}
-
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  loading,
-  error,
-}: {
-  icon: typeof Building2Icon
-  label: string
-  value: number | undefined
-  loading: boolean
-  error: boolean
-}) {
-  return (
-    <section className="rounded-xl border border-border/70 bg-card/60 p-5 shadow-sm backdrop-blur-sm">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Icon className="size-4 text-primary" />
-        {label}
-      </div>
-      <p className="admin-display mt-3 text-3xl font-semibold tracking-tight">
-        {loading ? '—' : error ? '!' : (value ?? 0)}
-      </p>
-    </section>
   )
 }

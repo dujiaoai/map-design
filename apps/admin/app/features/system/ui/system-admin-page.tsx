@@ -1,49 +1,54 @@
-import { Badge } from '@repo/ui'
 import { useQuery } from '@tanstack/react-query'
-import { ExternalLinkIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import {
+  BookOpenIcon,
+  CreditCardIcon,
+  KeyRoundIcon,
+  MailIcon,
+  ServerIcon,
+  ShieldIcon,
+  SlidersHorizontalIcon,
+} from 'lucide-react'
 import { Link } from 'react-router'
 
+import {
+  buildSystemHealthSignals,
+  summarizeSystemHealth,
+} from '~/features/system/lib/system-health'
 import { fetchAdminSystemFlags } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
-import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
+import {
+  AdminConfigRow,
+  AdminEmptyState,
+  AdminPageHeader,
+  AdminPanel,
+  AdminPanelHeader,
+} from '~/shared/ui/admin-page-shell'
+import { AdminFlagBadge, AdminStatusPill } from '~/shared/ui/admin-status-pill'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 const RUNBOOK_LINKS = [
   {
     label: '本地开发（saas-api）',
     path: 'docs/runbooks/local-dev.md',
+    hint: '启动顺序、端口与 seed',
   },
   {
     label: 'Auth 冒烟',
     path: 'docs/runbooks/saas-api-auth-smoke.md',
+    hint: '登录 / 刷新 / RBAC',
   },
   {
     label: 'Billing 冒烟',
     path: 'docs/runbooks/billing-api-smoke.md',
+    hint: '钱包、充值、调账',
   },
   {
     label: '租户 RLS 说明',
     path: 'docs/architecture/supplements/tenant-rls-b05.md',
+    hint: 'PostgreSQL 行级隔离',
   },
 ] as const
-
-function FlagBadge({ enabled, label }: { enabled: boolean; label?: string }) {
-  return (
-    <Badge variant={enabled ? 'default' : 'secondary'}>
-      {label ?? (enabled ? '已启用' : '已关闭')}
-    </Badge>
-  )
-}
-
-function FlagRow({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/50 px-4 py-3 last:border-b-0">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium">{value}</span>
-    </div>
-  )
-}
 
 export function SystemAdminPage() {
   const query = useQuery({
@@ -55,6 +60,7 @@ export function SystemAdminPage() {
     return (
       <div className="space-y-6">
         <AdminPageHeader
+          eyebrow="Platform"
           title="系统"
           description="平台运行配置摘要（只读）；不含密钥与动态改配。"
         />
@@ -66,102 +72,227 @@ export function SystemAdminPage() {
   if (query.isError || !query.data) {
     return (
       <div className="space-y-6">
-        <AdminPageHeader title="系统" description="平台运行配置摘要（只读）。" />
-        <AdminEmptyState message="无法加载系统配置，请确认 saas-api 可达且具备 admin:tenants:read。" />
+        <AdminPageHeader
+          eyebrow="Platform"
+          title="系统"
+          description="平台运行配置摘要（只读）。"
+        />
+        <AdminPanel>
+          <AdminEmptyState
+            icon={ServerIcon}
+            message="无法加载系统配置，请确认 saas-api 可达且具备 admin:tenants:read。"
+          />
+        </AdminPanel>
       </div>
     )
   }
 
   const flags = query.data
+  const healthSignals = buildSystemHealthSignals(flags)
+  const healthSummary = summarizeSystemHealth(healthSignals)
+  const profileLabel = flags.runtime.activeProfiles.join(', ') || 'default'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <AdminPageHeader
+        eyebrow="Platform"
         title="系统"
         description="平台运行配置摘要（只读）；修改请通过部署环境变量或 application.yml。"
+        actions={
+          <AdminStatusPill
+            level={healthSummary.overall}
+            label={
+              healthSummary.overall === 'ok'
+                ? '运行态正常'
+                : healthSummary.overall === 'warn'
+                  ? `${healthSummary.warnings} 项需关注`
+                  : '信息摘要'
+            }
+          />
+        }
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <section className="admin-health-strip admin-stagger px-4 py-4 md:px-5 md:py-5">
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="admin-display text-xs tracking-[0.2em] text-primary/70 uppercase">
+              Health
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              关键子系统就绪状态 · Spring profile{' '}
+              <span className="font-mono text-xs text-foreground/85">{profileLabel}</span>
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {healthSignals.map((signal) => (
+              <AdminStatusPill
+                key={signal.id}
+                level={signal.level}
+                label={signal.label}
+              />
+            ))}
+          </div>
+        </div>
+        <ul className="relative mt-4 grid gap-2 md:grid-cols-2">
+          {healthSignals.map((signal) => (
+            <li
+              key={`${signal.id}-detail`}
+              className="rounded-lg border border-border/40 bg-background/25 px-3 py-2 text-xs"
+            >
+              <span className="font-medium text-foreground/90">{signal.label}</span>
+              <span className="mx-1.5 text-muted-foreground">·</span>
+              <span className="text-muted-foreground">{signal.detail}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div className="admin-stagger grid gap-6 lg:grid-cols-2">
         <AdminPanel>
-          <header className="border-b border-border/50 px-4 py-3">
-            <h3 className="text-sm font-semibold">注册与认证</h3>
-          </header>
-          <FlagRow
+          <AdminPanelHeader
+            icon={KeyRoundIcon}
+            title="注册与认证"
+            description="公开注册策略与密码策略"
+          />
+          <AdminConfigRow
             label="组织自助注册"
-            value={<FlagBadge enabled={flags.registration.allowPublicOrgSignup} />}
+            value={
+              <AdminFlagBadge enabled={flags.registration.allowPublicOrgSignup} />
+            }
           />
-          <FlagRow
+          <AdminConfigRow
             label="个人版自助注册"
-            value={<FlagBadge enabled={flags.registration.allowPublicPersonalSignup} />}
+            value={
+              <AdminFlagBadge enabled={flags.registration.allowPublicPersonalSignup} />
+            }
           />
-          <FlagRow label="注册验证 TTL" value={flags.registration.registrationTokenTtl} />
-          <FlagRow
+          <AdminConfigRow
+            label="注册验证 TTL"
+            value={flags.registration.registrationTokenTtl}
+            mono
+          />
+          <AdminConfigRow
             label="密码强度校验"
-            value={<FlagBadge enabled={flags.auth.passwordStrengthEnabled} />}
+            value={<AdminFlagBadge enabled={flags.auth.passwordStrengthEnabled} />}
           />
         </AdminPanel>
 
         <AdminPanel>
-          <header className="border-b border-border/50 px-4 py-3">
-            <h3 className="text-sm font-semibold">邮件与限流</h3>
-          </header>
-          <FlagRow label="邮件出站" value={<FlagBadge enabled={flags.mail.enabled} />} />
-          <FlagRow label="发件人" value={flags.mail.fromAddress || '—'} />
-          <FlagRow
-            label="邀请/验证可用"
-            value={<FlagBadge enabled={flags.mail.outboundReady} label={flags.mail.outboundReady ? '就绪' : '未就绪'} />}
+          <AdminPanelHeader
+            icon={MailIcon}
+            title="邮件与限流"
+            description="出站邮件与登录防护"
           />
-          <FlagRow label="全局限流" value={<FlagBadge enabled={flags.rateLimit.enabled} />} />
-          <FlagRow
+          <AdminConfigRow
+            label="邮件出站"
+            value={<AdminFlagBadge enabled={flags.mail.enabled} />}
+          />
+          <AdminConfigRow
+            label="发件人"
+            value={flags.mail.fromAddress || '—'}
+            mono
+          />
+          <AdminConfigRow
+            label="邀请/验证可用"
+            value={
+              <AdminFlagBadge
+                enabled={flags.mail.outboundReady}
+                label={flags.mail.outboundReady ? '就绪' : '未就绪'}
+                warnWhenOff={flags.mail.enabled}
+              />
+            }
+          />
+          <AdminConfigRow
+            label="全局限流"
+            value={<AdminFlagBadge enabled={flags.rateLimit.enabled} />}
+          />
+          <AdminConfigRow
             label="登录 IP 限流（次/窗口）"
             value={String(flags.rateLimit.loginIpMaxAttempts)}
+            mono
           />
         </AdminPanel>
 
         <AdminPanel>
-          <header className="border-b border-border/50 px-4 py-3">
-            <h3 className="text-sm font-semibold">多租户与计费</h3>
-          </header>
-          <FlagRow
+          <AdminPanelHeader
+            icon={ShieldIcon}
+            title="多租户与计费"
+            description="RLS 与 billing-api 集成"
+          />
+          <AdminConfigRow
             label="PostgreSQL RLS"
-            value={<FlagBadge enabled={flags.tenantRls.enabled} />}
+            value={<AdminFlagBadge enabled={flags.tenantRls.enabled} />}
           />
-          <FlagRow
+          <AdminConfigRow
             label="billing-api 集成"
-            value={<FlagBadge enabled={flags.billing.integrationEnabled} />}
+            value={
+              <AdminFlagBadge
+                enabled={flags.billing.integrationEnabled}
+                warnWhenOff
+              />
+            }
           />
-          <FlagRow label="billing 基址" value={flags.billing.baseUrl} />
-          <FlagRow
+          <AdminConfigRow label="billing 基址" value={flags.billing.baseUrl} mono />
+          <AdminConfigRow
             label="membership push"
-            value={<FlagBadge enabled={flags.billing.membershipPushEnabled} />}
+            value={<AdminFlagBadge enabled={flags.billing.membershipPushEnabled} />}
           />
-          <div className="px-4 py-3">
+          <div className="border-t border-border/50 px-4 py-3 md:px-5">
             <Link
               to="/billing"
-              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+              className="admin-quick-link inline-flex items-center gap-2 rounded-lg border border-border/60 px-3 py-2 text-sm text-primary"
             >
+              <CreditCardIcon className="size-3.5" aria-hidden />
               打开计费运营
-              <ExternalLinkIcon className="size-3.5" aria-hidden />
             </Link>
           </div>
         </AdminPanel>
 
         <AdminPanel>
-          <header className="border-b border-border/50 px-4 py-3">
-            <h3 className="text-sm font-semibold">运行态与文档</h3>
-          </header>
-          <FlagRow label="Spring profiles" value={flags.runtime.activeProfiles.join(', ')} />
-          <FlagRow label="JWT perm_epoch" value={String(flags.runtime.jwtPermEpoch)} />
-          <ul className="divide-y divide-border/50">
-            {RUNBOOK_LINKS.map((item) => (
-              <li key={item.path} className="px-4 py-3">
-                <span className="text-sm font-medium">{item.label}</span>
-                <p className="mt-0.5 font-mono text-xs text-muted-foreground">{item.path}</p>
-              </li>
-            ))}
-          </ul>
+          <AdminPanelHeader
+            icon={SlidersHorizontalIcon}
+            title="运行态"
+            description="JVM 与 JWT 权限世代"
+          />
+          <AdminConfigRow label="Spring profiles" value={profileLabel} mono />
+          <AdminConfigRow
+            label="JWT perm_epoch"
+            value={String(flags.runtime.jwtPermEpoch)}
+            mono
+          />
+          <div className="grid gap-3 p-4 sm:grid-cols-2 md:p-5">
+            <AdminMetricCard
+              icon={ServerIcon}
+              label="活跃 Profile 数"
+              value={flags.runtime.activeProfiles.length}
+              hint="来自 spring.profiles.active"
+            />
+            <AdminMetricCard
+              icon={KeyRoundIcon}
+              label="权限世代"
+              value={flags.runtime.jwtPermEpoch}
+              hint="变更后旧 JWT 权限缓存失效"
+            />
+          </div>
         </AdminPanel>
       </div>
+
+      <AdminPanel className="admin-stagger">
+        <AdminPanelHeader
+          icon={BookOpenIcon}
+          title="Runbook 索引"
+          description="仓库内运维文档路径（只读引用，不含密钥）"
+        />
+        <ul className="divide-y divide-border/50">
+          {RUNBOOK_LINKS.map((item) => (
+            <li key={item.path} className="admin-runbook-row px-4 py-3.5 md:px-5">
+              <p className="text-sm font-medium">{item.label}</p>
+              <p className="mt-0.5 font-mono text-xs text-primary/80">{item.path}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{item.hint}</p>
+            </li>
+          ))}
+        </ul>
+      </AdminPanel>
     </div>
   )
 }

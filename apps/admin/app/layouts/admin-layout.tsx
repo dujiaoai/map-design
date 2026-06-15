@@ -6,6 +6,17 @@ import { AdminShell } from '~/widgets/admin-shell/ui/admin-shell'
 
 import type { Route } from './+types/admin-layout'
 
+export function links() {
+  return [
+    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' as const },
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600&family=Syne:wght@500;600;700&display=swap',
+    },
+  ]
+}
+
 export async function clientLoader(_args: Route.ClientLoaderArgs) {
   auth.hydrateSession()
   auth.requireAuthenticated(redirect)

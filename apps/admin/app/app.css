@@ -115,3 +115,89 @@
   position: relative;
   top: 0.5px;
 }
+
+.admin-stagger > * {
+  animation: admin-fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.admin-stagger > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.admin-stagger > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+.admin-stagger > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+.admin-stagger > *:nth-child(4) {
+  animation-delay: 180ms;
+}
+.admin-stagger > *:nth-child(5) {
+  animation-delay: 240ms;
+}
+.admin-stagger > *:nth-child(6) {
+  animation-delay: 300ms;
+}
+
+@keyframes admin-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-health-strip {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in oklab, var(--primary) 22%, transparent);
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--primary) 10%, transparent),
+      color-mix(in oklab, var(--card) 88%, transparent) 48%,
+      transparent
+    ),
+    color-mix(in oklab, var(--card) 55%, transparent);
+}
+
+.admin-health-strip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--primary) 6%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 24px 100%;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.admin-runbook-row {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.admin-runbook-row:hover {
+  background: color-mix(in oklab, var(--primary) 6%, transparent);
+}
+
+.admin-quick-link {
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.admin-quick-link:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in oklab, var(--primary) 35%, transparent);
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+}

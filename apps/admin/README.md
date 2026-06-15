@@ -50,9 +50,9 @@ pnpm --filter @repo/saas-admin dev
 | `/tenant-roles` | 租户自定义角色与权限配置 | `admin:members:read` 或平台角色 |
 | `/roles` | 系统角色权限（平台级） | `admin:roles:read` |
 | `/account` | 账号资料与改密 | 已登录 |
-| `/billing` | 计费（规划中占位页） |
+| `/billing` | 计费运营（钱包、SKU、订单、调账、对账等 Tab） | `admin:billing:*` |
 | `/audit-logs` | 审计日志列表 | `admin:tenants:read` |
-| `/system` | 平台配置只读摘要（`GET /v1/admin/system/flags`） |
+| `/system` | 平台配置只读摘要与健康条（`GET /v1/admin/system/flags`） | `admin:tenants:read` |
 | `/403` | 无运营权限 | — |
 | `*` | 404 友好页 | — |
 
@@ -82,4 +82,4 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 
 ## Later（P4 余项）
 
-邮箱邀请、impersonation 审计深化、Admin MFA；`/billing`、`/system` 占位页待产品定义。
+邮箱邀请、impersonation 审计深化、Admin MFA（FND-07）。

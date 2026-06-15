@@ -101,6 +101,7 @@ export function BillingAdminPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
+        eyebrow="Billing"
         title="计费"
         description="平台钱包、充值 SKU、订单与用量；人工调账与退款操作写入审计日志。"
         actions={

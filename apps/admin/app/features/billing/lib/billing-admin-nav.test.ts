@@ -15,9 +15,10 @@ describe('parseBillingTab', () => {
 })
 
 describe('BILLING_TAB_VALUES', () => {
-  it('includes ledger, reconciliation and invoices tabs for admin read flow', () => {
+  it('includes ledger, reconciliation, invoices and coupons tabs for admin read flow', () => {
     expect(BILLING_TAB_VALUES).toContain('ledger')
     expect(BILLING_TAB_VALUES).toContain('reconciliation')
     expect(BILLING_TAB_VALUES).toContain('invoices')
+    expect(BILLING_TAB_VALUES).toContain('coupons')
   })
 })

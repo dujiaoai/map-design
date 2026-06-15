@@ -1,6 +1,7 @@
 const ENTRY_TYPE_LABELS: Record<string, string> = {
   adjust: '调账',
   credit: '入账',
+  coupon: '优惠券',
   debit: '扣费',
   recharge: '充值',
   refund: '退款',
@@ -20,6 +21,7 @@ export function formatLedgerRemark(remark: string | null | undefined): string {
   if (!remark) return '—'
   if (REMARK_LABELS[remark]) return REMARK_LABELS[remark]
   if (remark.startsWith('recharge:')) return '在线充值'
+  if (remark.startsWith('coupon:')) return `优惠券 ${remark.slice('coupon:'.length)}`
   return remark
 }
 

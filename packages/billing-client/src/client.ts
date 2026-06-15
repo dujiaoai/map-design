@@ -21,9 +21,11 @@ import {
   billingNotificationMarkAllReadSchema,
   invoiceListResponseSchema,
   invoiceRequestSchema,
+  redeemCouponResponseSchema,
   type CreateInvoiceRequest,
   type InvoiceListResponse,
   type InvoiceRequest,
+  type RedeemCouponResponse,
 } from './schemas'
 
 export type BillingClientOptions = ApiClientOptions
@@ -129,6 +131,12 @@ export function createBillingClient(options: BillingClientOptions) {
         size: String(size),
       })
       return invoiceListResponseSchema.parse(await api.get(`/invoices?${params.toString()}`))
+    },
+
+    async redeemCoupon(code: string): Promise<RedeemCouponResponse> {
+      return redeemCouponResponseSchema.parse(
+        await api.post('/coupons/redeem', { code: code.trim() }),
+      )
     },
   }
 }

@@ -164,8 +164,22 @@ export const createInvoiceRequestSchema = z.object({
   email: z.string().email(),
 })
 
+export type CreateInvoiceRequest = z.infer<typeof createInvoiceRequestSchema>
+
+export const redeemCouponRequestSchema = z.object({
+  code: z.string(),
+})
+
+export const redeemCouponResponseSchema = z.object({
+  code: z.string(),
+  points: z.number(),
+  walletBalance: z.number(),
+  idempotentReplay: z.boolean(),
+})
+
 export type BillingNotification = z.infer<typeof billingNotificationSchema>
 export type BillingNotificationListResponse = z.infer<typeof billingNotificationListSchema>
 export type InvoiceRequest = z.infer<typeof invoiceRequestSchema>
 export type InvoiceListResponse = z.infer<typeof invoiceListResponseSchema>
-export type CreateInvoiceRequest = z.infer<typeof createInvoiceRequestSchema>
+export type RedeemCouponRequest = z.infer<typeof redeemCouponRequestSchema>
+export type RedeemCouponResponse = z.infer<typeof redeemCouponResponseSchema>

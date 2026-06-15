@@ -12,6 +12,7 @@ import {
 } from '~/features/billing/lib/billing-admin-nav'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { BillingAdjustPanel } from '~/features/billing/ui/billing-adjust-panel'
+import { BillingCouponsPanel } from '~/features/billing/ui/billing-coupons-panel'
 import { CreateBillingPackageSheet } from '~/features/billing/ui/create-billing-package-sheet'
 import { EditBillingPackageSheet } from '~/features/billing/ui/edit-billing-package-sheet'
 import { BillingInvoicesPanel } from '~/features/billing/ui/billing-invoices-panel'
@@ -145,6 +146,7 @@ export function BillingAdminPage() {
               </>
             ) : null}
             {canViewPackages ? <TabsTrigger value="packages">充值 SKU</TabsTrigger> : null}
+            {canViewPackages ? <TabsTrigger value="coupons">优惠券</TabsTrigger> : null}
             {canViewOrders ? <TabsTrigger value="orders">充值订单</TabsTrigger> : null}
             {canAdjust ? <TabsTrigger value="adjust">人工调账</TabsTrigger> : null}
           </TabsList>
@@ -184,6 +186,12 @@ export function BillingAdminPage() {
                 }
                 onEditPackage={(pkg) => setEditingPackage(pkg)}
               />
+            </TabsContent>
+          ) : null}
+
+          {canViewPackages ? (
+            <TabsContent value="coupons" className="mt-4">
+              <BillingCouponsPanel canWrite={canWritePackages} />
             </TabsContent>
           ) : null}
 

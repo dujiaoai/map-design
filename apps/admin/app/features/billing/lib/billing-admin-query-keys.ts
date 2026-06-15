@@ -2,6 +2,7 @@ export const billingAdminQueryKeys = {
   all: ['admin', 'billing'] as const,
   stats: () => [...billingAdminQueryKeys.all, 'stats'] as const,
   packages: () => [...billingAdminQueryKeys.all, 'packages'] as const,
+  coupons: () => [...billingAdminQueryKeys.all, 'coupons'] as const,
   wallets: (filters: { tenantId?: string; userId?: string }, page: number) =>
     [...billingAdminQueryKeys.all, 'wallets', filters, page] as const,
   rechargeOrders: (

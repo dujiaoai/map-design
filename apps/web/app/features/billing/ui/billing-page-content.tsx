@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 
 import { canMemberSelfRecharge } from '~/features/billing/lib/member-recharge-policy'
+import { BillingCouponRedeemPanel } from '~/features/billing/ui/billing-coupon-redeem-panel'
 import { DevBillingSmokePanel } from '~/features/billing/ui/dev-billing-smoke-panel'
 import { BillingInvoicesPanel } from '~/features/billing/ui/billing-invoices-panel'
 import { BillingLedgerTable } from '~/features/billing/ui/billing-ledger-table'
@@ -26,6 +27,10 @@ export function BillingPageContent() {
   const canRecharge =
     canRechargePermission &&
     canMemberSelfRecharge(session?.user, enabledTenantFeatures)
+  const canReadWallet = hasPermission(
+    auth.getSession()?.user.permissions,
+    PermissionCodes.BILLING_WALLET_READ,
+  )
   const canReadLedger = hasPermission(
     auth.getSession()?.user.permissions,
     PermissionCodes.BILLING_LEDGER_READ,
@@ -74,6 +79,8 @@ export function BillingPageContent() {
       ) : null}
 
       {canTransfer ? <BillingTransferPanel /> : null}
+
+      {canReadWallet ? <BillingCouponRedeemPanel /> : null}
 
       {canReadTeamUsage ? <BillingUsageSummary /> : null}
 

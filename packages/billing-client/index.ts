@@ -19,6 +19,7 @@ export {
   invoiceRequestSchema,
   invoiceListResponseSchema,
   createInvoiceRequestSchema,
+  redeemCouponResponseSchema,
 } from './src/schemas'
 export type {
   CreateRechargeOrderRequest,
@@ -37,4 +38,5 @@ export type {
   BillingNotificationListResponse,
   InvoiceRequest,
   InvoiceListResponse,
+  RedeemCouponResponse,
 } from './src/schemas'

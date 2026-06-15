@@ -6,6 +6,7 @@ import {
   adminBillingWalletsQuery,
   adminLedgerListSchema,
   adminInvoiceListSchema,
+  adminCouponListSchema,
   adminReconciliationDailySchema,
   adminWalletListSchema,
   defaultReconciliationDateUtc,
@@ -146,5 +147,21 @@ describe('admin response schemas', () => {
       total: 1,
     })
     expect(parsed.items[0]?.status).toBe('pending')
+  })
+
+  it('parses coupon list payload', () => {
+    const parsed = adminCouponListSchema.parse({
+      items: [
+        {
+          id: 'c-1',
+          code: 'WELCOME100',
+          points: 100,
+          status: 'active',
+          redemptionCount: 2,
+          maxPerUser: 1,
+        },
+      ],
+    })
+    expect(parsed.items[0]?.code).toBe('WELCOME100')
   })
 })

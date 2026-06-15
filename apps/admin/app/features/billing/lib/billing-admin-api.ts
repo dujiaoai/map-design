@@ -222,6 +222,27 @@ export const adminInvoiceListSchema = z.object({
 export type AdminInvoiceList = z.infer<typeof adminInvoiceListSchema>
 export type AdminInvoice = AdminInvoiceList['items'][number]
 
+export const adminCouponListSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      code: z.string(),
+      points: z.number(),
+      status: z.string(),
+      maxTotalRedemptions: z.number().nullable().optional(),
+      redemptionCount: z.number(),
+      maxPerUser: z.number(),
+      validUntil: z.string().nullable().optional(),
+      createdAt: z.string().nullable().optional(),
+    }),
+  ),
+})
+
+export const adminCouponSchema = adminCouponListSchema.shape.items.element
+
+export type AdminCouponList = z.infer<typeof adminCouponListSchema>
+export type AdminCoupon = z.infer<typeof adminCouponSchema>
+
 function buildQuery(params: Record<string, string | number | undefined>) {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {

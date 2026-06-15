@@ -9,6 +9,7 @@ import {
 describe('formatLedgerEntryType', () => {
   it('maps known entry types', () => {
     expect(formatLedgerEntryType('recharge')).toBe('充值')
+    expect(formatLedgerEntryType('coupon')).toBe('优惠券')
     expect(formatLedgerEntryType('debit')).toBe('扣费')
   })
 
@@ -18,9 +19,10 @@ describe('formatLedgerEntryType', () => {
 })
 
 describe('formatLedgerRemark', () => {
-  it('maps signup bonus and recharge remarks', () => {
+  it('maps signup bonus, recharge and coupon remarks', () => {
     expect(formatLedgerRemark('signup_bonus')).toBe('注册体验积分')
     expect(formatLedgerRemark('recharge:RO-123')).toBe('在线充值')
+    expect(formatLedgerRemark('coupon:WELCOME100')).toBe('优惠券 WELCOME100')
   })
 
   it('returns dash for empty remark', () => {

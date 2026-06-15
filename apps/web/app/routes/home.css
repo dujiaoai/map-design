@@ -1149,6 +1149,10 @@ html:not(.dark) .workspace-page .workspace-map-atmosphere {
   z-index: 1;
 }
 
+.workspace-map-canvas-host {
+  pointer-events: auto;
+}
+
 .workspace-map-hud {
   position: absolute;
   inset: auto auto 1.25rem 1.25rem;

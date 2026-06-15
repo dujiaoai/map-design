@@ -20,6 +20,8 @@ export {
   getMapPluginBridge,
   isMapEngineReady,
   isMapPluginBridgeAttached,
+  isMapSdkMounted,
+  markMapSdkMounted,
   resetMapPluginBridge,
   setMapPluginBridge,
   type MapPluginBridge,

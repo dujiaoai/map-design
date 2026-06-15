@@ -35,14 +35,18 @@ function createNoopBridge(): MapPluginBridge {
 
 let bridge: MapPluginBridge = createNoopBridge()
 let customBridgeAttached = false
+let mapSdkMounted = false
 
-/** 接入 MapProvider 后由宿主注入真实 bridge */
-export function setMapPluginBridge(next: MapPluginBridge): void {
-  bridge = next
-  customBridgeAttached = true
+function dispatchMapEngineReady() {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('map-engine-ready'))
   }
+}
+
+/** 接入 MapProvider 后由宿主注入真实 bridge（≠ SDK 已挂载） */
+export function setMapPluginBridge(next: MapPluginBridge): void {
+  bridge = next
+  customBridgeAttached = true
 }
 
 export function getMapPluginBridge(): MapPluginBridge {
@@ -52,6 +56,20 @@ export function getMapPluginBridge(): MapPluginBridge {
 export function resetMapPluginBridge(): void {
   bridge = createNoopBridge()
   customBridgeAttached = false
+  mapSdkMounted = false
+}
+
+/** packages-map MapProvider 挂载 canvas 后调用 */
+export function markMapSdkMounted(): void {
+  if (mapSdkMounted) {
+    return
+  }
+  mapSdkMounted = true
+  dispatchMapEngineReady()
+}
+
+export function isMapSdkMounted(): boolean {
+  return mapSdkMounted
 }
 
 /** 是否已由 MapProvider / 宿主注入自定义 bridge（非默认 noop） */
@@ -59,9 +77,9 @@ export function isMapPluginBridgeAttached(): boolean {
   return customBridgeAttached
 }
 
-/** 地图引擎已挂载（注入 bridge 或显式 env 开启） */
+/** 地图 SDK 已挂载 canvas（与 bridge 注入分离） */
 export function isMapEngineReady(): boolean {
-  return customBridgeAttached || import.meta.env.VITE_MAP_ENGINE_READY === 'true'
+  return mapSdkMounted || import.meta.env.VITE_MAP_ENGINE_READY === 'true'
 }
 
 /**

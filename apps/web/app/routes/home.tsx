@@ -13,7 +13,7 @@ import { AppSidebar } from '~/widgets/app-sidebar'
 import { AccountSheet } from '~/widgets/account-sheet'
 import { MapControls } from '~/widgets/map-controls'
 import { MapContextPanel, MapContextPanelEdge } from '~/widgets/map-context-panel'
-import { MapCanvasContextMenu, MapPlaceholder } from '~/widgets/map-canvas'
+import { MapCanvasContextMenu, MapProvider } from '~/widgets/map-canvas'
 import { MapNativeModuleHost } from '~/widgets/map-native-module-host'
 import { MapQuickToolbar } from '~/widgets/map-quick-toolbar'
 import { MapToolDrawerPanel } from '~/widgets/map-import-drawer'
@@ -97,7 +97,7 @@ export default function Home() {
             >
               <WorkspaceMapAtmosphere subdued={mapEngineReady || hasActiveTools} />
               <MapCanvasContextMenu />
-              <MapPlaceholder />
+              <MapProvider />
               <MapQuickToolbar />
               <MapControls />
               <MockMapToolHost />

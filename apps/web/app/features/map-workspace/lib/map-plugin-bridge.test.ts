@@ -3,7 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createRegistryMapPluginBridge } from './create-registry-map-plugin-bridge'
 import {
   getMapPluginBridge,
+  isMapEngineReady,
   isMapPluginBridgeAttached,
+  isMapSdkMounted,
+  markMapSdkMounted,
   resetMapPluginBridge,
   setMapPluginBridge,
 } from './map-plugin-bridge'
@@ -11,6 +14,7 @@ import {
 describe('map-plugin-bridge attachment', () => {
   afterEach(() => {
     resetMapPluginBridge()
+    vi.unstubAllEnvs()
   })
 
   it('isMapPluginBridgeAttached after setMapPluginBridge', () => {
@@ -20,10 +24,31 @@ describe('map-plugin-bridge attachment', () => {
     expect(getMapPluginBridge()).toBeDefined()
   })
 
+  it('bridge attachment does not imply map engine ready', () => {
+    setMapPluginBridge(createRegistryMapPluginBridge())
+    expect(isMapPluginBridgeAttached()).toBe(true)
+    expect(isMapEngineReady()).toBe(false)
+    expect(isMapSdkMounted()).toBe(false)
+  })
+
+  it('markMapSdkMounted signals engine ready', () => {
+    markMapSdkMounted()
+    expect(isMapSdkMounted()).toBe(true)
+    expect(isMapEngineReady()).toBe(true)
+  })
+
+  it('VITE_MAP_ENGINE_READY bypasses sdk mount', () => {
+    vi.stubEnv('VITE_MAP_ENGINE_READY', 'true')
+    expect(isMapEngineReady()).toBe(true)
+    expect(isMapSdkMounted()).toBe(false)
+  })
+
   it('resetMapPluginBridge clears attachment', () => {
     setMapPluginBridge(createRegistryMapPluginBridge())
+    markMapSdkMounted()
     resetMapPluginBridge()
     expect(isMapPluginBridgeAttached()).toBe(false)
+    expect(isMapSdkMounted()).toBe(false)
   })
 })
 

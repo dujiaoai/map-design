@@ -1,7 +1,11 @@
-import { Badge, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
+import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
+import { CreditCardIcon } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router'
 
+import { buildAuditBillingLink } from '~/features/audit-logs/lib/audit-log-billing-nav'
 import { fetchAdminAuditLogs, type AdminAuditLogEntry } from '~/shared/api/admin-api'
+import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
@@ -32,7 +36,16 @@ const AUDIT_ACTION_OPTIONS = [
   { value: 'billing.recharge.refund', label: '充值退款' },
 ] as const
 
+const BILLING_PERMISSIONS = [
+  'admin:billing:read',
+  'admin:billing:adjust',
+  'admin:billing:packages:write',
+  'admin:billing:refund',
+] as const
+
 export function AuditLogsAdminPage() {
+  const { canAny } = useAdminPermissions()
+  const canViewBilling = canAny([...BILLING_PERMISSIONS])
   const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
   const [actionFilter, setActionFilter] = useState<string>('all')
   const [crossTenantOnly, setCrossTenantOnly] = useState(false)
@@ -59,6 +72,19 @@ export function AuditLogsAdminPage() {
           '记录成员邀请、角色变更与平台计费操作（调账、SKU）；跨租户操作会标记 crossTenant。',
           { total, loaded: Boolean(query.data), unit: '条' },
         )}
+        actions={
+          canViewBilling ? (
+            <Button
+              nativeButton={false}
+              variant="outline"
+              size="sm"
+              render={<Link to="/billing" />}
+            >
+              <CreditCardIcon className="size-3.5" />
+              计费运营
+            </Button>
+          ) : null
+        }
       />
 
       <div className="flex flex-wrap items-center gap-3">
@@ -138,13 +164,25 @@ export function AuditLogsAdminPage() {
 }
 
 function AuditLogRow({ log }: { log: AdminAuditLogEntry }) {
+  const billingLink = buildAuditBillingLink(log.action, log.targetTenantId)
+
   return (
     <AdminTableRow>
       <AdminTableCell className="text-muted-foreground">
         {formatAdminDate(log.createdAt)}
       </AdminTableCell>
       <AdminTableCell>{log.actorEmail}</AdminTableCell>
-      <AdminTableCell mono>{log.action}</AdminTableCell>
+      <AdminTableCell>
+        <span className="font-mono text-xs">{log.action}</span>
+        {billingLink ? (
+          <Link
+            to={billingLink}
+            className="ml-2 text-xs text-primary underline-offset-4 hover:underline"
+          >
+            查看计费
+          </Link>
+        ) : null}
+      </AdminTableCell>
       <AdminTableCell className="max-w-md truncate">{log.detail ?? '—'}</AdminTableCell>
       <AdminTableCell>
         {log.crossTenant ? (

@@ -139,6 +139,14 @@
   animation-delay: 300ms;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .admin-stagger > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @keyframes admin-fade-up {
   from {
     opacity: 0;

@@ -2,7 +2,9 @@ import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { SaaSRole } from '@repo/auth'
 import {
   Button,
+  Checkbox,
   Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
@@ -129,17 +131,16 @@ export function EditUserSheet({
             )}
           </AdminField>
           <div className="flex items-start gap-3 rounded-lg border border-border/60 p-3">
-            <input
+            <Checkbox
               id="edit-user-platform-admin"
-              type="checkbox"
-              className="mt-1 size-4 rounded border-border"
+              className="mt-1"
               checked={platformAdmin}
-              onChange={(event) => setValue('platformAdmin', event.target.checked)}
+              onCheckedChange={(value) => setValue('platformAdmin', value === true)}
             />
             <div className="space-y-1">
-              <label htmlFor="edit-user-platform-admin" className="font-mono text-sm">
+              <Label htmlFor="edit-user-platform-admin" className="font-mono text-sm">
                 PLATFORM_ADMIN
-              </label>
+              </Label>
               <p className="text-xs text-muted-foreground">
                 平台运营权限；租户角色请在「成员」页管理。变更后用户需重新登录。
               </p>

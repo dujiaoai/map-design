@@ -1,4 +1,4 @@
-import { Button, cn } from '@repo/ui'
+import { Button, Checkbox, cn } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SparklesIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -109,12 +109,11 @@ export function TenantFeaturesPanel({ tenantId }: { tenantId: string }) {
                     !canWrite && 'cursor-default opacity-80',
                   )}
                 >
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     className="mt-0.5"
                     checked={checked}
                     disabled={!canWrite}
-                    onChange={() => toggleFeature(feature.code)}
+                    onCheckedChange={() => toggleFeature(feature.code)}
                   />
                   <span className="min-w-0">
                     <span className="block font-mono text-xs">{feature.code}</span>

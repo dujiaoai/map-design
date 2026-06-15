@@ -1,5 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import { Button, cn, Input } from '@repo/ui'
+import { Button, Checkbox, cn, Input } from '@repo/ui'
 import { Building2Icon, UserIcon } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
@@ -181,11 +181,10 @@ export default function LoginRoute() {
           </div>
 
           <label className="admin-login-field flex cursor-pointer select-none items-center gap-2 text-sm text-white/60" style={{ '--field-i': 3 } as CSSProperties}>
-            <input
+            <Checkbox
               checked={rememberMe}
-              type="checkbox"
-              className="size-4 cursor-pointer rounded border-white/20 accent-primary focus-visible:ring-2 focus-visible:ring-primary/30"
-              onChange={(event) => setRememberMe(event.target.checked)}
+              onCheckedChange={(value) => setRememberMe(value === true)}
+              className="border-white/25 bg-white/5 shadow-none data-checked:border-primary data-checked:bg-primary dark:bg-white/5"
             />
             记住密码
           </label>

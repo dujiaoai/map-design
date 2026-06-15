@@ -1,4 +1,4 @@
-import { Badge, Button, cn, Input } from '@repo/ui'
+import { Badge, Button, Checkbox, cn, Input } from '@repo/ui'
 import { SearchIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
@@ -153,12 +153,11 @@ export function RolePermissionEditor({
                           readOnly && 'cursor-default opacity-80',
                         )}
                       >
-                        <input
-                          type="checkbox"
-                          className="mt-0.5 size-4 rounded border-border"
+                        <Checkbox
+                          className="mt-0.5"
                           checked={checked}
                           disabled={readOnly}
-                          onChange={() =>
+                          onCheckedChange={() =>
                             onSelectedCodesChange(
                               togglePermissionCode(selectedCodes, permission.code),
                             )

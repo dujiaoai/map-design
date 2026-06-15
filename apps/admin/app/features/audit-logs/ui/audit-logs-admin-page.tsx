@@ -96,6 +96,7 @@ export function AuditLogsAdminPage() {
     setActionFilter('all')
     setCrossTenantOnly(false)
     setPage(1)
+    clearSort()
   }
 
   const hasAuditFilters =

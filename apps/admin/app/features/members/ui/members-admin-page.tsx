@@ -159,7 +159,15 @@ export function MembersAdminPage({
           <AdminEmptyState
             message="无匹配成员"
             action={
-              <Button type="button" variant="outline" size="sm" onClick={filter.resetFilters}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  filter.resetFilters()
+                  clearSort()
+                }}
+              >
                 清除筛选
               </Button>
             }

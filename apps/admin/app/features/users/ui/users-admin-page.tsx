@@ -97,6 +97,7 @@ export function UsersAdminPage() {
     setSearchInput('')
     setStatusFilter('all')
     setPage(1)
+    clearSort()
     setSearchParams({})
   }
 

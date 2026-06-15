@@ -88,6 +88,7 @@ export function TenantsAdminPage() {
     setSearchInput('')
     setStatusFilter('all')
     setPage(1)
+    clearSort()
   }
 
   return (

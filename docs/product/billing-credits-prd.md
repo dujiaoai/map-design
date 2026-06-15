@@ -1,6 +1,6 @@
 # 充值/积分功能 PRD（Sprint F · P4）
 
-> 状态：F-1～F-3+、F-2/F-5 主体、F-4 运营财务骨架 **已落地**（2026-06-15）；**安全/限流/观测加固** ✅（2026-06-15）；F-5 优惠券、F-6 对公 **待办**  
+> 状态：F-1～F-3+、F-2/F-5 主体、F-4/F-5 骨架 **已落地**（2026-06-15）；**安全/限流/观测加固** ✅；F-6 对公 **待办**  
 > 架构摘要：[billing-service.md](../architecture/billing-service.md)  
 > 后端排期：[services-development-plan.md](../architecture/services-development-plan.md) §Sprint F
 

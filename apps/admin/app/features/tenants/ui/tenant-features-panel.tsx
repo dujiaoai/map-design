@@ -1,5 +1,6 @@
 import { Button, cn } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { SparklesIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import {
@@ -10,8 +11,9 @@ import {
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
-import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminEmptyState, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
 import { AdminFormError } from '~/shared/ui/admin-field'
+import { AdminDetailSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 export function TenantFeaturesPanel({ tenantId }: { tenantId: string }) {
   const { can } = useAdminPermissions()
@@ -53,40 +55,49 @@ export function TenantFeaturesPanel({ tenantId }: { tenantId: string }) {
   }
 
   if (catalogQuery.isLoading || featuresQuery.isLoading) {
-    return <AdminEmptyState message="加载能力配置…" />
+    return <AdminDetailSkeleton />
   }
 
   if (catalogQuery.isError || featuresQuery.isError) {
-    return <AdminEmptyState message="加载失败，请刷新重试" />
+    return (
+      <AdminPanel>
+        <AdminEmptyState icon={SparklesIcon} message="加载失败，请刷新重试" />
+      </AdminPanel>
+    )
   }
 
   const catalog = catalogQuery.data?.features ?? []
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          已开通 {selectedCodes.length} 项能力；保存后全量替换。
-        </p>
-        {canWrite ? (
-          <Button onClick={() => mutation.mutate(selectedCodes)} disabled={mutation.isPending}>
-            {mutation.isPending ? '保存中…' : '保存能力'}
-          </Button>
-        ) : null}
-      </div>
-
-      <AdminPanel className="p-0">
-        <ul className="grid gap-2 p-5 md:grid-cols-2">
+    <div className="space-y-4 admin-stagger">
+      <AdminPanel>
+        <AdminPanelHeader
+          icon={SparklesIcon}
+          title="租户能力"
+          description={`已开通 ${selectedCodes.length} 项；保存后全量替换 featureCodes。`}
+          actions={
+            canWrite ? (
+              <Button
+                size="sm"
+                onClick={() => mutation.mutate(selectedCodes)}
+                disabled={mutation.isPending}
+              >
+                {mutation.isPending ? '保存中…' : '保存能力'}
+              </Button>
+            ) : null
+          }
+        />
+        <ul className="grid gap-2 p-4 md:grid-cols-2 md:p-5">
           {catalog.map((feature) => {
             const checked = selectedCodes.includes(feature.code)
             return (
               <li key={feature.code}>
                 <label
                   className={cn(
-                    'flex cursor-pointer gap-3 rounded-lg border px-3 py-3 transition-colors',
+                    'admin-quick-link flex cursor-pointer gap-3 rounded-xl border px-3 py-3',
                     checked
                       ? 'border-primary/40 bg-primary/8'
-                      : 'border-border/60 hover:bg-muted/25',
+                      : 'border-border/60 bg-muted/10',
                     !canWrite && 'cursor-default opacity-80',
                   )}
                 >
@@ -111,7 +122,7 @@ export function TenantFeaturesPanel({ tenantId }: { tenantId: string }) {
             )
           })}
         </ul>
-        <div className="border-t border-border/60 px-5 py-4">
+        <div className="border-t border-border/60 px-4 py-4 md:px-5">
           <AdminFormError message={formError} />
         </div>
       </AdminPanel>

@@ -205,6 +205,16 @@ export type InvoiceListResponse = z.infer<typeof invoiceListResponseSchema>
 export type RedeemCouponRequest = z.infer<typeof redeemCouponRequestSchema>
 export type RedeemCouponResponse = z.infer<typeof redeemCouponResponseSchema>
 
+export const wireTransferPlatformAccountSchema = z.object({
+  enabled: z.boolean(),
+  accountName: z.string(),
+  bankName: z.string(),
+  accountNo: z.string(),
+  transferRemark: z.string(),
+})
+
+export type WireTransferPlatformAccount = z.infer<typeof wireTransferPlatformAccountSchema>
+
 export const wireTransferRequestSchema = z.object({
   id: z.string(),
   requestNo: z.string(),

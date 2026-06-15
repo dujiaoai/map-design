@@ -25,12 +25,14 @@ import {
   invoiceRequestSchema,
   redeemCouponResponseSchema,
   wireTransferListResponseSchema,
+  wireTransferPlatformAccountSchema,
   wireTransferRequestSchema,
   wechatOAuthConfigSchema,
   wechatOpenIdResponseSchema,
   type CreateWireTransferRequest,
   type RedeemCouponResponse,
   type WireTransferListResponse,
+  type WireTransferPlatformAccount,
   type WireTransferRequest,
 } from './schemas'
 
@@ -176,6 +178,12 @@ export function createBillingClient(options: BillingClientOptions) {
       })
       return wireTransferListResponseSchema.parse(
         await api.get(`/wire-transfers?${params.toString()}`),
+      )
+    },
+
+    async getWireTransferPlatformAccount(): Promise<WireTransferPlatformAccount> {
+      return wireTransferPlatformAccountSchema.parse(
+        await api.get('/wire-transfers/platform-account'),
       )
     },
   }

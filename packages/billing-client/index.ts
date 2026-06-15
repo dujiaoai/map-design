@@ -23,6 +23,7 @@ export {
   wireTransferRequestSchema,
   wireTransferListResponseSchema,
   createWireTransferRequestSchema,
+  wireTransferPlatformAccountSchema,
   wechatOAuthConfigSchema,
   wechatOpenIdResponseSchema,
 } from './src/schemas'
@@ -49,4 +50,5 @@ export type {
   RedeemCouponResponse,
   WireTransferRequest,
   WireTransferListResponse,
+  WireTransferPlatformAccount,
 } from './src/schemas'

@@ -24,6 +24,7 @@ import {
   AdminTableHeaderCell,
   AdminTableRow,
   AdminTableSortHeaderCell,
+  AdminTableSortHint,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
@@ -74,7 +75,7 @@ export function MembersAdminPage({
   const filter = useAdminTableFilterState()
   const searchInputRef = useRef<HTMLInputElement>(null)
   useAdminListSearchShortcut(searchInputRef)
-  const { sort, toggleSort } = useAdminTableSort<MemberSortKey>()
+  const { sort, toggleSort, clearSort } = useAdminTableSort<MemberSortKey>()
   const memberSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName']
   const filteredMembersRaw = useFilteredAdminRows(
     membersQuery.data?.members,
@@ -140,6 +141,8 @@ export function MembersAdminPage({
           { value: 'disabled', label: 'disabled' },
         ]}
       />
+
+      <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="loaded" />
 
       <AdminPanel>
         {membersQuery.isLoading ? (

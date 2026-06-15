@@ -20,6 +20,7 @@ import {
   AdminTableHeaderCell,
   AdminTableRow,
   AdminTableSortHeaderCell,
+  AdminTableSortHint,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
@@ -61,7 +62,7 @@ export function AuditLogsAdminPage() {
   const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
   const searchInputRef = useRef<HTMLInputElement>(null)
   useAdminListSearchShortcut(searchInputRef)
-  const { sort, toggleSort } = useAdminTableSort<AuditSortKey>()
+  const { sort, toggleSort, clearSort } = useAdminTableSort<AuditSortKey>()
   const [actionFilter, setActionFilter] = useState<string>('all')
   const [crossTenantOnly, setCrossTenantOnly] = useState(false)
 
@@ -193,6 +194,8 @@ export function AuditLogsAdminPage() {
           仅跨租户
         </Button>
       </div>
+
+      <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="page" />
 
       <AdminPanel className="p-0">
         {query.isLoading ? (

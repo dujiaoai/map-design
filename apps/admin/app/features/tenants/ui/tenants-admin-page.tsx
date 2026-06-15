@@ -19,6 +19,7 @@ import {
   AdminTableHeaderCell,
   AdminTableRow,
   AdminTableSortHeaderCell,
+  AdminTableSortHint,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
@@ -49,7 +50,7 @@ export function TenantsAdminPage() {
 
   const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
   useAdminListSearchShortcut(searchInputRef)
-  const { sort, toggleSort } = useAdminTableSort<TenantSortKey>()
+  const { sort, toggleSort, clearSort } = useAdminTableSort<TenantSortKey>()
 
   const query = useAdminPagedQuery({
     queryKey: adminQueryKeys.tenants(queryParams),
@@ -118,6 +119,8 @@ export function TenantsAdminPage() {
           { value: 'suspended', label: 'suspended' },
         ]}
       />
+
+      <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="page" />
 
       <AdminPanel className="p-0">
         {query.isLoading ? (

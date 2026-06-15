@@ -22,7 +22,11 @@ export function useAdminTableSort<T extends string>() {
     })
   }, [])
 
-  return { sort, toggleSort }
+  const clearSort = useCallback(() => {
+    setSort(null)
+  }, [])
+
+  return { sort, toggleSort, clearSort }
 }
 
 export function sortAdminTableRows<T, K extends string>(

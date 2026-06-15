@@ -19,6 +19,7 @@ import {
   AdminTableHeaderCell,
   AdminTableRow,
   AdminTableSortHeaderCell,
+  AdminTableSortHint,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
@@ -46,7 +47,7 @@ export function UsersAdminPage() {
     useAdminPagedListState(qFromUrl)
 
   useAdminListSearchShortcut(searchInputRef)
-  const { sort, toggleSort } = useAdminTableSort<UserSortKey>()
+  const { sort, toggleSort, clearSort } = useAdminTableSort<UserSortKey>()
 
   useEffect(() => {
     setSearchInput(qFromUrl)
@@ -164,6 +165,8 @@ export function UsersAdminPage() {
           { value: 'disabled', label: 'disabled' },
         ]}
       />
+
+      <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="page" />
 
       <AdminPanel className="p-0">
         {usersQuery.isLoading ? (

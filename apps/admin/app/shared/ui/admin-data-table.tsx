@@ -2,7 +2,7 @@ import { Button, cn } from '@repo/ui'
 import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import type { AdminSortDirection } from '~/shared/hooks/use-admin-table-sort'
+import type { AdminSortDirection, AdminSortState } from '~/shared/hooks/use-admin-table-sort'
 
 export function AdminDataTable({ children }: { children: ReactNode }) {
   return (
@@ -104,5 +104,36 @@ export function AdminTableSortHeaderCell({
         )}
       </Button>
     </th>
+  )
+}
+
+export function AdminTableSortHint({
+  sort,
+  onClearSort,
+  scope = 'page',
+}: {
+  sort: AdminSortState<string> | null
+  onClearSort: () => void
+  scope?: 'page' | 'loaded'
+}) {
+  if (!sort) return null
+
+  const scopeLabel = scope === 'page' ? '当前页' : '已加载'
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 px-1 text-xs text-muted-foreground">
+      <span className="border-l-2 border-primary/35 pl-2.5">
+        列排序中（{scopeLabel}数据）
+      </span>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+        onClick={onClearSort}
+      >
+        清除排序
+      </Button>
+    </div>
   )
 }

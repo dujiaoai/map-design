@@ -22,7 +22,7 @@ export const REGISTERED_MOCK_MODULE_IDS = [
 ] as const
 
 /** 已注册高保真 mock 的 drawer toolId */
-export const REGISTERED_MOCK_DRAWER_TOOL_IDS = ['global-search'] as const
+export const REGISTERED_MOCK_DRAWER_TOOL_IDS = ['global-search', 'import-file'] as const
 
 export type RegisteredMockToolId = (typeof REGISTERED_MOCK_TOOL_IDS)[number]
 export type RegisteredMockModuleId = (typeof REGISTERED_MOCK_MODULE_IDS)[number]

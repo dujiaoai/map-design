@@ -10,6 +10,7 @@ import type {
 } from '../model/types'
 import { FallbackDrawerToolContent } from '../ui/drawers/fallback-drawer-tool-content'
 import { GlobalSearchDrawerContent } from '../ui/drawers/global-search-drawer-content'
+import { ImportFileDrawerContent } from '../ui/drawers/import-file-drawer-content'
 import { CustomHighwayAlertModuleContent } from '../ui/modules/custom-highway-alert-module-content'
 import { CustomLiveShareModuleContent } from '../ui/modules/custom-live-share-module-content'
 import { FallbackModuleContent } from '../ui/modules/fallback-module-content'
@@ -57,6 +58,7 @@ const MOCK_MODULE_REGISTRY: Record<string, MockModuleContentComponent> = {
 
 const MOCK_DRAWER_TOOL_REGISTRY: Record<string, MockDrawerToolContentComponent> = {
   'global-search': GlobalSearchDrawerContent,
+  'import-file': ImportFileDrawerContent,
 }
 
 export function resolveMockToolContent(

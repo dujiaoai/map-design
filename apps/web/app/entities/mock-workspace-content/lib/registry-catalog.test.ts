@@ -35,8 +35,9 @@ describe('mock-workspace-content registry catalog', () => {
   })
 
   it('lists registered mock drawer tool ids', () => {
-    expect(REGISTERED_MOCK_DRAWER_TOOL_IDS).toEqual(['global-search'])
+    expect(REGISTERED_MOCK_DRAWER_TOOL_IDS).toEqual(['global-search', 'import-file'])
     expect(isRegisteredMockDrawerToolId('global-search')).toBe(true)
-    expect(isRegisteredMockDrawerToolId('import-file')).toBe(false)
+    expect(isRegisteredMockDrawerToolId('import-file')).toBe(true)
+    expect(isRegisteredMockDrawerToolId('unknown')).toBe(false)
   })
 })

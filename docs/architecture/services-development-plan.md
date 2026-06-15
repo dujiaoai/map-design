@@ -333,7 +333,7 @@ services/
 
 **验收（F-3）：** 402 弹窗；TENANT_ADMIN `team/usage`；hold TTL 自动 cancel。
 
-**验收（F 冒烟）：** `pnpm smoke:billing-api` 通过（充值、发票、优惠券、对公）；见 [billing-api-smoke.md](../runbooks/billing-api-smoke.md)。
+**验收（F 冒烟）：** `pnpm smoke:billing-api` 通过（22 步：充值、OAuth config 探活、发票、优惠券、对公）；见 [billing-api-smoke.md](../runbooks/billing-api-smoke.md)。Live 凭证联调见 [billing-live-payment-sop.md](../runbooks/billing-live-payment-sop.md)。
 
 ---
 

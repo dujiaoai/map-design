@@ -8,6 +8,8 @@ export const REGISTERED_MOCK_TOOL_IDS = [
 /** 已注册高保真 mock 的 moduleId */
 export const REGISTERED_MOCK_MODULE_IDS = [
   'thematic',
+  'scenic-spots',
+  'legend',
   'spatial-analysis',
   'property-view',
   'my-favorites',

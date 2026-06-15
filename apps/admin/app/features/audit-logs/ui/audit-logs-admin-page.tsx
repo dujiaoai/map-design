@@ -1,6 +1,6 @@
 import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import { CreditCardIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router'
 
 import { buildAuditBillingLink } from '~/features/audit-logs/lib/audit-log-billing-nav'
@@ -8,6 +8,7 @@ import { buildAuditUsersLink } from '~/features/audit-logs/lib/audit-log-users-n
 import { fetchAdminAuditLogs, type AdminAuditLogEntry } from '~/shared/api/admin-api'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
+import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import {
@@ -54,6 +55,8 @@ export function AuditLogsAdminPage() {
   const canReadUsers = can('admin:users:read')
   const canReadTenants = can('admin:tenants:read')
   const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  useAdminListSearchShortcut(searchInputRef)
   const [actionFilter, setActionFilter] = useState<string>('all')
   const [crossTenantOnly, setCrossTenantOnly] = useState(false)
 
@@ -118,6 +121,7 @@ export function AuditLogsAdminPage() {
 
       <div className="flex flex-wrap items-center gap-3">
         <AdminTableToolbar
+          searchInputRef={searchInputRef}
           search={searchInput}
           onSearchChange={setSearchInput}
           searchPlaceholder="搜索操作人、动作或详情…"

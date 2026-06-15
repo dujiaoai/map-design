@@ -1,10 +1,11 @@
 import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import { PencilIcon } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 
 import { fetchAdminTenants, fetchAdminUsers, type AdminUserSummary } from '~/shared/api/admin-api'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
+import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
@@ -35,9 +36,12 @@ export function UsersAdminPage() {
 
   const [editingUser, setEditingUser] = useState<AdminUserSummary | null>(null)
   const [statusFilter, setStatusFilter] = useState('all')
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const { searchInput, setSearchInput, page, setPage, queryParams } =
     useAdminPagedListState(qFromUrl)
+
+  useAdminListSearchShortcut(searchInputRef)
 
   useEffect(() => {
     setSearchInput(qFromUrl)
@@ -134,6 +138,7 @@ export function UsersAdminPage() {
       </div>
 
       <AdminTableToolbar
+        searchInputRef={searchInputRef}
         search={searchInput}
         onSearchChange={setSearchInput}
         searchPlaceholder="搜索邮箱、显示名或租户 slug…"

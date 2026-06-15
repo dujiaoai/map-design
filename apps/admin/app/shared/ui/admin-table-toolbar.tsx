@@ -1,11 +1,13 @@
 import { Button, cn, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import { SearchIcon, XIcon } from 'lucide-react'
+import type { RefObject } from 'react'
 
 export function AdminTableToolbar({
   search,
   onSearchChange,
   searchPlaceholder = '搜索…',
   searchAriaLabel,
+  searchInputRef,
   status,
   onStatusChange,
   statusOptions,
@@ -14,6 +16,7 @@ export function AdminTableToolbar({
   onSearchChange: (value: string) => void
   searchPlaceholder?: string
   searchAriaLabel?: string
+  searchInputRef?: RefObject<HTMLInputElement | null>
   status?: string
   onStatusChange?: (value: string) => void
   statusOptions?: { value: string; label: string }[]
@@ -28,14 +31,21 @@ export function AdminTableToolbar({
           aria-hidden
         />
         <Input
+          ref={searchInputRef}
           type="search"
           role="searchbox"
           aria-label={resolvedSearchLabel}
-          className={cn('pl-9', search ? 'pr-9' : undefined)}
+          aria-keyshortcuts="/"
+          className={cn('pl-9', search ? 'pr-9' : 'pr-14')}
           placeholder={searchPlaceholder}
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
         />
+        {!search ? (
+          <kbd className="pointer-events-none absolute top-1/2 right-2 hidden -translate-y-1/2 rounded border border-border/70 bg-muted/30 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
+            /
+          </kbd>
+        ) : null}
         {search ? (
           <Button
             type="button"

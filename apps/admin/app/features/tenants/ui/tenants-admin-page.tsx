@@ -1,10 +1,11 @@
 import { Button } from '@repo/ui'
 import { EyeIcon, CreditCardIcon, PencilIcon, UsersIcon } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
 import { fetchAdminTenants, type AdminTenantSummary } from '~/shared/api/admin-api'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
+import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
@@ -40,8 +41,10 @@ export function TenantsAdminPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [editingTenant, setEditingTenant] = useState<AdminTenantSummary | null>(null)
   const [statusFilter, setStatusFilter] = useState('all')
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
+  useAdminListSearchShortcut(searchInputRef)
 
   const query = useAdminPagedQuery({
     queryKey: adminQueryKeys.tenants(queryParams),
@@ -95,6 +98,7 @@ export function TenantsAdminPage() {
       />
 
       <AdminTableToolbar
+        searchInputRef={searchInputRef}
         search={toolbarStatus.search}
         onSearchChange={toolbarStatus.setSearch}
         searchPlaceholder="搜索名称或 slug…"

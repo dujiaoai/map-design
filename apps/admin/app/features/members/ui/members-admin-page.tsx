@@ -2,7 +2,7 @@ import { Badge, Button } from '@repo/ui'
 import { useSession } from '@repo/auth'
 import { useQuery } from '@tanstack/react-query'
 import { PencilIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 
 import { fetchAdminTenant, fetchTenantMembers, type AdminUserSummary } from '~/shared/api/admin-api'
@@ -11,6 +11,7 @@ import {
   useAdminTableFilterState,
   useFilteredAdminRows,
 } from '~/shared/hooks/use-admin-table-filter'
+import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
@@ -67,6 +68,8 @@ export function MembersAdminPage({
     ? `${tenantQuery.data.name} (${tenantQuery.data.slug})`
     : resolvedTenantName
   const filter = useAdminTableFilterState()
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  useAdminListSearchShortcut(searchInputRef)
   const memberSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName']
   const filteredMembers = useFilteredAdminRows(
     membersQuery.data?.members,
@@ -110,6 +113,7 @@ export function MembersAdminPage({
       ) : null}
 
       <AdminTableToolbar
+        searchInputRef={searchInputRef}
         search={filter.search}
         onSearchChange={filter.setSearch}
         searchPlaceholder="搜索邮箱或显示名…"

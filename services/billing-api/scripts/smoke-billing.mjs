@@ -2,7 +2,7 @@
 /**
  * Billing API 端到端冒烟（直连 :8083/v1/billing + :8082/v1/auth 登录）。
  *
- * 覆盖：充值/mock-pay、充值抵扣券、钱包与流水、发票申请与开票、优惠券兑换、对公转账审核入账。
+ * 覆盖：充值/mock-pay、充值抵扣券、钱包与流水、发票申请与开票、优惠券兑换、对公转账审核入账、微信 OAuth config 探活。
  *
  * Usage:
  *   node services/billing-api/scripts/smoke-billing.mjs
@@ -162,6 +162,16 @@ async function main() {
     fail('packages', `HTTP ${packages.status} ${JSON.stringify(packages.body)}`)
   }
   passed.push('packages')
+
+  const oauthConfig = await api(`${billingBase}/wechat/oauth/config`, { headers: auth })
+  if (
+    !oauthConfig.ok ||
+    typeof oauthConfig.body?.appId !== 'string' ||
+    typeof oauthConfig.body?.enabled !== 'boolean'
+  ) {
+    fail('wechat-oauth-config', `HTTP ${oauthConfig.status} ${JSON.stringify(oauthConfig.body)}`)
+  }
+  passed.push('wechat-oauth-config')
 
   const packageCode = packages.body.items[0].code
   const channel = process.env.SMOKE_RECHARGE_CHANNEL ?? 'mock'

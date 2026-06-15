@@ -167,7 +167,7 @@ sequenceDiagram
 
 - **业务校验**：`priceCents` 与订单一致；幂等 `providerTradeNo` / 订单状态；同事务入账
 - **限流**：Webhook 按来源 IP 令牌桶（默认 120/min）；超限 **429** + `Retry-After`
-- **冒烟**：`services/billing-api/scripts/smoke-billing.mjs` 覆盖充值入账、发票申请与 Admin 开票、优惠券兑换、对公转账审核；Webhook 验签 `BILLING_WEBHOOK_SIGNATURE_MODE=off|hmac|wechat_v3|alipay_rsa`
+- **冒烟**：`services/billing-api/scripts/smoke-billing.mjs` 覆盖充值入账、**微信 OAuth config 探活**、发票申请与 Admin 开票、优惠券兑换、对公转账审核；Webhook 验签 `BILLING_WEBHOOK_SIGNATURE_MODE=off|hmac|wechat_v3|alipay_rsa`；live 联调见 [billing-live-payment-sop.md](../runbooks/billing-live-payment-sop.md)
 
 ### 2.5 限流与滥用防护（billing-api）
 
@@ -385,7 +385,7 @@ flowchart LR
 
 - **骨架 ✅**：Provider `stub`/`live`；stub 占位 payUrl；**live 已接** `wechatpay-java` / `alipay-sdk-java`（Native/H5/JSAPI、WAP 下单 + 查单）；凭证 env；查单 Job（回调丢失补偿）
 - saas-web `/billing` 充值页可选渠道与 payScene；H5 链接「前往支付」新窗口调起；**JSAPI OAuth 换 openId** + 微信内置浏览器自动调起 + 手动重试；**pending 订单每 3s 轮询**直至入账
-- **待办**：live 环境联调与证书运维 SOP；公众号 OAuth 回调域名配置
+- **联调 SOP ✅**：[billing-live-payment-sop.md](../runbooks/billing-live-payment-sop.md)（live 凭证、Webhook、OAuth 域名、证书运维）
 
 ### F-4 · 运营财务
 

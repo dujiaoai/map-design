@@ -31,13 +31,15 @@ pnpm smoke:billing-api
 node services/billing-api/scripts/smoke-billing.mjs
 ```
 
-**默认流程（21 步）：**
+**默认流程（22 步）：**
 
-`login` → `wallet` → `packages` → `recharge-create` → `mock-pay` → `wallet-balance` → `ledger` → `invoice-create` → `invoice-list` → `admin-invoice-list` → `invoice-issue` → `coupon-create` → `coupon-redeem` → `discount-coupon-create` → `recharge-discount-create` → `recharge-discount-mock-pay` → `wire-transfer-create` → `wire-transfer-list` → `wire-transfer-approve`
+`login` → `wallet` → `packages` → `wechat-oauth-config` → `recharge-create` → …
 
 （`SMOKE_RECHARGE_CHANNEL=wechat|alipay` 时 mock-pay / recharge-discount-mock-pay 替换为对应 webhook 步骤。）
 
-成功输出：`billing smoke OK (21 steps): ...`（mock 渠道）
+成功输出：`billing smoke OK (22 steps): ...`（mock 渠道）
+
+Live 支付凭证与 JSAPI OAuth 联调见 [billing-live-payment-sop.md](./billing-live-payment-sop.md)。
 
 ### 环境变量（可选）
 
@@ -101,4 +103,5 @@ curl -s http://localhost:8083/v1/billing/wallet \
 
 - [billing-service.md](../architecture/billing-service.md)
 - [billing-credits-prd.md](../product/billing-credits-prd.md)
+- [billing-live-payment-sop.md](./billing-live-payment-sop.md)
 - [saas-api-auth-smoke.md](./saas-api-auth-smoke.md)

@@ -227,7 +227,9 @@ export const adminCouponListSchema = z.object({
     z.object({
       id: z.string(),
       code: z.string(),
+      kind: z.string().default('gift'),
       points: z.number(),
+      discountCents: z.number().nullable().optional(),
       status: z.string(),
       maxTotalRedemptions: z.number().nullable().optional(),
       redemptionCount: z.number(),

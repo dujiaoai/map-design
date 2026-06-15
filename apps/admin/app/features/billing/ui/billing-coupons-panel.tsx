@@ -33,6 +33,11 @@ import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge, formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
+const COUPON_KIND_OPTIONS = [
+  { value: 'gift', label: '赠送积分' },
+  { value: 'discount', label: '充值抵扣' },
+] as const
+
 const COUPON_STATUS_OPTIONS = [
   { value: 'all', label: '全部状态' },
   { value: 'active', label: '生效中' },
@@ -43,6 +48,8 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
   const queryClient = useQueryClient()
   const codeInputId = useId()
   const pointsInputId = useId()
+  const discountInputId = useId()
+  const kindInputId = useId()
   const maxTotalInputId = useId()
   const { confirm, confirmDialog } = useConfirmDialog()
 
@@ -50,7 +57,9 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
   const [codeSearch, setCodeSearch] = useState('')
   const [pendingCode, setPendingCode] = useState<string | null>(null)
   const [createCode, setCreateCode] = useState('')
+  const [createKind, setCreateKind] = useState<'gift' | 'discount'>('gift')
   const [createPoints, setCreatePoints] = useState('100')
+  const [createDiscountCents, setCreateDiscountCents] = useState('1000')
   const [createMaxTotal, setCreateMaxTotal] = useState('')
   const [createError, setCreateError] = useState<string | null>(null)
 
@@ -62,25 +71,36 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const points = Number.parseInt(createPoints, 10)
-      if (!Number.isFinite(points) || points <= 0) {
-        throw new Error('积分须为正整数')
-      }
       const maxTotal = createMaxTotal.trim()
         ? Number.parseInt(createMaxTotal, 10)
         : undefined
-      return adminCouponSchema.parse(
-        await billingAdminApi.post('/coupons', {
-          code: createCode.trim(),
-          points,
-          maxTotalRedemptions: maxTotal,
-          status: 'active',
-        }),
-      )
+      const body: Record<string, unknown> = {
+        code: createCode.trim(),
+        kind: createKind,
+        maxTotalRedemptions: maxTotal,
+        status: 'active',
+      }
+      if (createKind === 'discount') {
+        const discountCents = Number.parseInt(createDiscountCents, 10)
+        if (!Number.isFinite(discountCents) || discountCents <= 0) {
+          throw new Error('抵扣金额须为正整数（分）')
+        }
+        body.discountCents = discountCents
+        body.points = 1
+      } else {
+        const points = Number.parseInt(createPoints, 10)
+        if (!Number.isFinite(points) || points <= 0) {
+          throw new Error('积分须为正整数')
+        }
+        body.points = points
+      }
+      return adminCouponSchema.parse(await billingAdminApi.post('/coupons', body))
     },
     onSuccess: async () => {
       setCreateCode('')
+      setCreateKind('gift')
       setCreatePoints('100')
+      setCreateDiscountCents('1000')
       setCreateMaxTotal('')
       setCreateError(null)
       await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.coupons() })
@@ -135,13 +155,13 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
             <div>
               <h3 className="text-base font-medium">优惠券</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                创建兑换码为用户赠送积分；不含充值下单抵扣（后续迭代）。
+                赠送积分券用于兑换入口；充值抵扣券在下单时减免应付金额。
               </p>
             </div>
           </div>
         </div>
         {canWrite ? (
-          <div className="grid gap-3 border-b border-border/60 px-6 py-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 border-b border-border/60 px-6 py-5 sm:grid-cols-2 lg:grid-cols-5">
             <AdminField label="兑换码" htmlFor={codeInputId}>
               <Input
                 id={codeInputId}
@@ -150,15 +170,44 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
                 placeholder="WELCOME100"
               />
             </AdminField>
-            <AdminField label="赠送积分" htmlFor={pointsInputId}>
-              <Input
-                id={pointsInputId}
-                type="number"
-                min={1}
-                value={createPoints}
-                onChange={(event) => setCreatePoints(event.target.value)}
-              />
+            <AdminField label="类型" htmlFor={kindInputId}>
+              <Select
+                value={createKind}
+                onValueChange={(value) => setCreateKind(value as 'gift' | 'discount')}
+              >
+                <SelectTrigger id={kindInputId}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {COUPON_KIND_OPTIONS.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </AdminField>
+            {createKind === 'gift' ? (
+              <AdminField label="赠送积分" htmlFor={pointsInputId}>
+                <Input
+                  id={pointsInputId}
+                  type="number"
+                  min={1}
+                  value={createPoints}
+                  onChange={(event) => setCreatePoints(event.target.value)}
+                />
+              </AdminField>
+            ) : (
+              <AdminField label="抵扣金额（分）" htmlFor={discountInputId}>
+                <Input
+                  id={discountInputId}
+                  type="number"
+                  min={1}
+                  value={createDiscountCents}
+                  onChange={(event) => setCreateDiscountCents(event.target.value)}
+                />
+              </AdminField>
+            )}
             <AdminField label="总兑换上限（可选）" htmlFor={maxTotalInputId}>
               <Input
                 id={maxTotalInputId}
@@ -180,7 +229,7 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
               </Button>
             </div>
             {createError ? (
-              <div className="sm:col-span-2 lg:col-span-4">
+              <div className="sm:col-span-2 lg:col-span-5">
                 <AdminFormError message={createError} />
               </div>
             ) : null}
@@ -230,7 +279,8 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
             <AdminTableHead>
               <AdminTableRow>
                 <AdminTableHeaderCell>兑换码</AdminTableHeaderCell>
-                <AdminTableHeaderCell>积分</AdminTableHeaderCell>
+                <AdminTableHeaderCell>类型</AdminTableHeaderCell>
+                <AdminTableHeaderCell>权益</AdminTableHeaderCell>
                 <AdminTableHeaderCell>已兑换 / 上限</AdminTableHeaderCell>
                 <AdminTableHeaderCell>状态</AdminTableHeaderCell>
                 <AdminTableHeaderCell>有效期</AdminTableHeaderCell>
@@ -241,7 +291,14 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
               {filteredItems.map((coupon) => (
                 <AdminTableRow key={coupon.id}>
                   <AdminTableCell className="font-mono text-xs">{coupon.code}</AdminTableCell>
-                  <AdminTableCell>{coupon.points.toLocaleString('zh-CN')} 点</AdminTableCell>
+                  <AdminTableCell>
+                    {coupon.kind === 'discount' ? '充值抵扣' : '赠送积分'}
+                  </AdminTableCell>
+                  <AdminTableCell>
+                    {coupon.kind === 'discount' && coupon.discountCents
+                      ? `减 ¥${(coupon.discountCents / 100).toFixed(2)}`
+                      : `${coupon.points.toLocaleString('zh-CN')} 点`}
+                  </AdminTableCell>
                   <AdminTableCell>
                     {coupon.redemptionCount}
                     {coupon.maxTotalRedemptions != null

@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/ui'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { FileTextIcon } from 'lucide-react'
 import { useCallback, useId, useState } from 'react'
 
@@ -17,6 +17,8 @@ import {
   type AdminInvoice,
   INVOICE_STATUSES,
 } from '~/features/billing/lib/billing-admin-api'
+import { BillingInvoiceIssueSheet } from '~/features/billing/ui/billing-invoice-issue-sheet'
+import { BillingInvoiceRejectSheet } from '~/features/billing/ui/billing-invoice-reject-sheet'
 import type { BillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
 import { useBillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
 import { formatBillingPrice } from '~/features/billing/lib/billing-format'
@@ -35,7 +37,7 @@ import {
   AdminTableHeaderCell,
   AdminTableRow,
 } from '~/shared/ui/admin-data-table'
-import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminEmptyState, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge, formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
@@ -62,7 +64,6 @@ export function BillingInvoicesPanel({
 }) {
   const { can } = useAdminPermissions()
   const canAdjust = can('admin:billing:adjust')
-  const queryClient = useQueryClient()
 
   const tenantIdInputId = useId()
   const userIdInputId = useId()
@@ -77,8 +78,8 @@ export function BillingInvoicesPanel({
   }>({ status: 'pending' })
   const [page, setPage] = useState(0)
   const [filterError, setFilterError] = useState<string | null>(null)
-  const [actionError, setActionError] = useState<string | null>(null)
-  const [actingId, setActingId] = useState<string | null>(null)
+  const [issuingInvoice, setIssuingInvoice] = useState<AdminInvoice | null>(null)
+  const [rejectingInvoice, setRejectingInvoice] = useState<AdminInvoice | null>(null)
 
   const applySeed = useCallback((seed: BillingFilterSeed) => {
     setTenantId(seed.tenantId ?? '')
@@ -110,58 +111,6 @@ export function BillingInvoicesPanel({
       ),
   })
 
-  const issueMutation = useMutation({
-    mutationFn: async (invoice: AdminInvoice) => {
-      setActingId(invoice.id)
-      setActionError(null)
-      const pdfUrl = window.prompt('请输入 PDF 下载地址（留空则使用占位路径）', '')?.trim()
-      if (pdfUrl === undefined) {
-        throw new Error('已取消开票')
-      }
-      await billingAdminApi.post(`/invoices/${encodeURIComponent(invoice.id)}/issue`, {
-        ...(pdfUrl ? { pdfUrl } : {}),
-      })
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.all })
-    },
-    onError: (error) => {
-      const message = formatAdminApiError(error)
-      if (message !== '已取消开票') {
-        setActionError(message)
-      }
-    },
-    onSettled: () => {
-      setActingId(null)
-    },
-  })
-
-  const rejectMutation = useMutation({
-    mutationFn: async (invoice: AdminInvoice) => {
-      setActingId(invoice.id)
-      setActionError(null)
-      const reason = window.prompt('请输入驳回原因', '抬头信息有误')
-      if (!reason?.trim()) {
-        throw new Error('已取消驳回')
-      }
-      await billingAdminApi.post(`/invoices/${encodeURIComponent(invoice.id)}/reject`, {
-        reason: reason.trim(),
-      })
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.all })
-    },
-    onError: (error) => {
-      const message = formatAdminApiError(error)
-      if (message !== '已取消驳回') {
-        setActionError(message)
-      }
-    },
-    onSettled: () => {
-      setActingId(null)
-    },
-  })
-
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
 
   function applyFilters() {
@@ -185,18 +134,12 @@ export function BillingInvoicesPanel({
   return (
     <div className="space-y-4">
       <AdminPanel>
-        <div className="border-b border-border/60 px-6 py-5">
-          <div className="flex items-start gap-3">
-            <FileTextIcon className="mt-0.5 size-4 text-muted-foreground" />
-            <div>
-              <h3 className="text-base font-medium">发票申请</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                用户为已支付充值订单提交的开票申请；平台可标记已开具或驳回（骨架，不含电子发票对接）。
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-end gap-3 px-6 py-5">
+        <AdminPanelHeader
+          icon={FileTextIcon}
+          title="发票申请"
+          description="用户为已支付充值订单提交的开票申请；平台可标记已开具或驳回（骨架，不含电子发票对接）。"
+        />
+        <div className="flex flex-wrap items-end gap-3 px-4 py-5 md:px-5">
           <AdminField label="租户 ID" htmlFor={tenantIdInputId}>
             <Input
               id={tenantIdInputId}
@@ -238,13 +181,8 @@ export function BillingInvoicesPanel({
           </Button>
         </div>
         {filterError ? (
-          <div className="px-6 pb-5">
+          <div className="px-4 pb-5 md:px-5">
             <AdminFormError message={filterError} />
-          </div>
-        ) : null}
-        {actionError ? (
-          <div className="px-6 pb-5">
-            <AdminFormError message={actionError} />
           </div>
         ) : null}
       </AdminPanel>
@@ -325,8 +263,7 @@ export function BillingInvoicesPanel({
                               type="button"
                               size="sm"
                               variant="outline"
-                              disabled={actingId === invoice.id}
-                              onClick={() => void issueMutation.mutateAsync(invoice)}
+                              onClick={() => setIssuingInvoice(invoice)}
                             >
                               标记已开
                             </Button>
@@ -334,8 +271,7 @@ export function BillingInvoicesPanel({
                               type="button"
                               size="sm"
                               variant="ghost"
-                              disabled={actingId === invoice.id}
-                              onClick={() => void rejectMutation.mutateAsync(invoice)}
+                              onClick={() => setRejectingInvoice(invoice)}
                             >
                               驳回
                             </Button>
@@ -358,6 +294,25 @@ export function BillingInvoicesPanel({
           </>
         ) : null}
       </AdminPanel>
+
+      {canAdjust ? (
+        <>
+          <BillingInvoiceIssueSheet
+            invoice={issuingInvoice}
+            open={issuingInvoice !== null}
+            onOpenChange={(open) => {
+              if (!open) setIssuingInvoice(null)
+            }}
+          />
+          <BillingInvoiceRejectSheet
+            invoice={rejectingInvoice}
+            open={rejectingInvoice !== null}
+            onOpenChange={(open) => {
+              if (!open) setRejectingInvoice(null)
+            }}
+          />
+        </>
+      ) : null}
     </div>
   )
 }

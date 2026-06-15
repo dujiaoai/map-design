@@ -125,6 +125,12 @@ export function RolesAdminPage() {
           </p>
           {rolesQuery.isLoading ? (
             <AdminSidebarListSkeleton />
+          ) : rolesQuery.isError ? (
+            <AdminEmptyState
+              message="加载角色失败，请刷新重试"
+              onRetry={() => void rolesQuery.refetch()}
+              isRetrying={rolesQuery.isFetching}
+            />
           ) : (
             <ul className="space-y-1">
               {(rolesQuery.data?.roles ?? []).map((role) => (
@@ -152,6 +158,12 @@ export function RolesAdminPage() {
             <AdminEmptyState message="请选择角色" />
           ) : rolePermissionsQuery.isLoading ? (
             <AdminRbacEditorSkeleton />
+          ) : rolePermissionsQuery.isError ? (
+            <AdminEmptyState
+              message="加载角色权限失败，请刷新重试"
+              onRetry={() => void rolePermissionsQuery.refetch()}
+              isRetrying={rolePermissionsQuery.isFetching}
+            />
           ) : (
             <div className="flex flex-col">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-4">

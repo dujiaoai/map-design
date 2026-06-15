@@ -196,6 +196,12 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
         <AdminPanel className="p-2">
           {rolesQuery.isLoading ? (
             <AdminSidebarListSkeleton />
+          ) : rolesQuery.isError ? (
+            <AdminEmptyState
+              message="加载自定义角色失败，请刷新重试"
+              onRetry={() => void rolesQuery.refetch()}
+              isRetrying={rolesQuery.isFetching}
+            />
           ) : !rolesQuery.data?.roles.length ? (
             <AdminEmptyState message="暂无自定义角色" />
           ) : (
@@ -228,6 +234,12 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
             <AdminEmptyState message="请选择或创建自定义角色" />
           ) : rolePermissionsQuery.isLoading ? (
             <AdminRbacEditorSkeleton />
+          ) : rolePermissionsQuery.isError ? (
+            <AdminEmptyState
+              message="加载角色权限失败，请刷新重试"
+              onRetry={() => void rolePermissionsQuery.refetch()}
+              isRetrying={rolePermissionsQuery.isFetching}
+            />
           ) : (
             <div className="flex flex-col">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-4">

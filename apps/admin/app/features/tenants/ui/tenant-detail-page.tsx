@@ -98,7 +98,12 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
           返回列表
         </Button>
         <AdminPanel>
-          <AdminEmptyState icon={Building2Icon} message="租户不存在或无权访问" />
+          <AdminEmptyState
+            icon={Building2Icon}
+            message="租户不存在或无权访问"
+            onRetry={() => void tenantQuery.refetch()}
+            isRetrying={tenantQuery.isFetching}
+          />
         </AdminPanel>
       </div>
     )

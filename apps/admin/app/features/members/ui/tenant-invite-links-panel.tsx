@@ -20,6 +20,7 @@ import {
 } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
+import { AdminEmptyState } from '~/shared/ui/admin-page-shell'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { formatAdminDate } from '~/shared/ui/admin-status-badge'
 
@@ -198,7 +199,11 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
           {linksQuery.isLoading ? (
             <p className="text-sm text-muted-foreground">加载中…</p>
           ) : linksQuery.isError ? (
-            <p className="text-sm text-destructive">加载失败</p>
+            <AdminEmptyState
+              message="加载邀请链接失败，请刷新重试"
+              onRetry={() => void linksQuery.refetch()}
+              isRetrying={linksQuery.isFetching}
+            />
           ) : !linksQuery.data?.links.length ? (
             <p className="text-sm text-muted-foreground">暂无邀请链接</p>
           ) : (

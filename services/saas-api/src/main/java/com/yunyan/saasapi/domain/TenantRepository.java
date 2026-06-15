@@ -2,6 +2,7 @@ package com.yunyan.saasapi.domain;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yunyan.saasapi.application.internal.MembershipSyncEventPublisher;
 import com.yunyan.saasapi.application.admin.AdminListParams;
 import com.yunyan.saasapi.application.auth.EmailNormalizer;
 import com.yunyan.saasapi.domain.entity.SysTenant;
@@ -25,6 +26,7 @@ public class TenantRepository {
   private final SysUserMapper sysUserMapper;
   private final SysTenantMapper sysTenantMapper;
   private final SysTenantFeatureMapper sysTenantFeatureMapper;
+  private final MembershipSyncEventPublisher membershipSyncEventPublisher;
 
   public Optional<String> findActiveUserEmail(UUID userId) {
     var user = sysUserMapper.selectById(userId);
@@ -44,10 +46,16 @@ public class TenantRepository {
 
   public void replaceFeatureCodes(UUID tenantId, List<String> featureCodes) {
     sysTenantFeatureMapper.deleteByTenantId(tenantId);
-    seedFeatureCodes(tenantId, featureCodes);
+    seedFeatureCodesWithoutPublish(tenantId, featureCodes);
+    membershipSyncEventPublisher.publishTenantFeaturesReplace(tenantId, featureCodes);
   }
 
   public void seedFeatureCodes(UUID tenantId, List<String> featureCodes) {
+    seedFeatureCodesWithoutPublish(tenantId, featureCodes);
+    membershipSyncEventPublisher.publishTenantFeaturesReplace(tenantId, featureCodes);
+  }
+
+  private void seedFeatureCodesWithoutPublish(UUID tenantId, List<String> featureCodes) {
     for (String featureCode : featureCodes) {
       sysTenantFeatureMapper.insert(tenantId, featureCode);
     }

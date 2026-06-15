@@ -2,6 +2,7 @@ package com.yunyan.saasapi.domain;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yunyan.saasapi.application.internal.MembershipSyncEventPublisher;
 import com.yunyan.saasapi.application.admin.AdminListParams;
 import com.yunyan.saasapi.domain.entity.SysRole;
 import com.yunyan.saasapi.domain.entity.SysUser;
@@ -25,6 +26,7 @@ public class UserRepository {
   private final SysUserMapper sysUserMapper;
   private final SysUserRoleMapper sysUserRoleMapper;
   private final SysRoleMapper sysRoleMapper;
+  private final MembershipSyncEventPublisher membershipSyncEventPublisher;
 
   public List<SysUser> findAllUsers(Optional<UUID> tenantId) {
     return findUsersForAdmin(tenantId, new AdminListParams(null, null, null), List.of()).items();
@@ -110,10 +112,12 @@ public class UserRepository {
 
   public void insert(SysUser user) {
     TenantRlsBypass.run(() -> sysUserMapper.insert(user));
+    membershipSyncEventPublisher.publishUserUpsert(user);
   }
 
   public void update(SysUser user) {
     TenantRlsBypass.run(() -> sysUserMapper.updateById(user));
+    membershipSyncEventPublisher.publishUserUpsert(user);
   }
 
   public void insertUserRole(UUID userId, UUID roleId) {

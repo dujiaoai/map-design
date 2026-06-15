@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { PencilIcon } from 'lucide-react'
 import { useState } from 'react'
 
-import { fetchTenantMembers, type AdminUserSummary } from '~/shared/api/admin-api'
+import { fetchAdminTenant, fetchTenantMembers, type AdminUserSummary } from '~/shared/api/admin-api'
 import {
   useAdminTableFilterState,
   useFilteredAdminRows,
@@ -20,6 +20,7 @@ import {
   AdminTableRow,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
@@ -47,7 +48,17 @@ export function MembersAdminPage({
     queryFn: () => fetchTenantMembers(tenantId),
   })
 
-  const resolvedTenantName = tenantName ?? session?.tenant?.name ?? '当前租户'
+  const tenantQuery = useQuery({
+    queryKey: adminQueryKeys.tenant(tenantId),
+    queryFn: () => fetchAdminTenant(tenantId),
+    enabled: !embedded,
+    staleTime: 60_000,
+  })
+
+  const resolvedTenantName = tenantName ?? tenantQuery.data?.name ?? session?.tenant?.name ?? '当前租户'
+  const tenantContextLabel = tenantQuery.data
+    ? `${tenantQuery.data.name} (${tenantQuery.data.slug})`
+    : resolvedTenantName
   const filter = useAdminTableFilterState()
   const memberSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName']
   const filteredMembers = useFilteredAdminRows(
@@ -79,6 +90,15 @@ export function MembersAdminPage({
         <div className="flex justify-end">
           <Button onClick={() => setInviteOpen(true)}>邀请成员</Button>
         </div>
+      ) : null}
+
+      {!embedded ? (
+        <AdminTenantContextBanner
+          tenantId={tenantId}
+          tenantLabel={tenantContextLabel}
+          showMembersLink={false}
+          showUsersLink
+        />
       ) : null}
 
       <AdminTableToolbar

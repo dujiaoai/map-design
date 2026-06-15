@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.application.admin;
 
+import com.yunyan.billingapi.application.metrics.BillingMetrics;
 import com.yunyan.billingapi.application.tenant.TenantMembershipService;
 import com.yunyan.billingapi.application.wallet.WalletService;
 import com.yunyan.billingapi.domain.entity.BillingLedger;
@@ -27,18 +28,21 @@ public class AdminBillingAdjustService {
   private final BillingLedgerMapper ledgerMapper;
   private final AdminAuditLogService adminAuditLogService;
   private final TenantMembershipService tenantMembershipService;
+  private final BillingMetrics billingMetrics;
 
   public AdminBillingAdjustService(
       WalletService walletService,
       BillingWalletMapper walletMapper,
       BillingLedgerMapper ledgerMapper,
       AdminAuditLogService adminAuditLogService,
-      TenantMembershipService tenantMembershipService) {
+      TenantMembershipService tenantMembershipService,
+      BillingMetrics billingMetrics) {
     this.walletService = walletService;
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
     this.adminAuditLogService = adminAuditLogService;
     this.tenantMembershipService = tenantMembershipService;
+    this.billingMetrics = billingMetrics;
   }
 
   @Transactional
@@ -96,6 +100,8 @@ public class AdminBillingAdjustService {
         newBalance,
         remark,
         idempotencyKey);
+
+    billingMetrics.recordAdjustApplied();
 
     return AdminAdjustResponse.applied(
         wallet.getId(), tenantId, request.userId(), request.amount(), newBalance, remark);

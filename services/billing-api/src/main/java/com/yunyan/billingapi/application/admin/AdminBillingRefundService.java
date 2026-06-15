@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.application.admin;
 
+import com.yunyan.billingapi.application.metrics.BillingMetrics;
 import com.yunyan.billingapi.application.payment.PaymentGatewayRegistry;
 import com.yunyan.billingapi.domain.entity.BillingLedger;
 import com.yunyan.billingapi.domain.mapper.BillingLedgerMapper;
@@ -25,6 +26,7 @@ public class AdminBillingRefundService {
   private final PaymentGatewayRegistry paymentGatewayRegistry;
   private final AdminAuditLogService adminAuditLogService;
   private final AdminBillingRefundStateService refundStateService;
+  private final BillingMetrics billingMetrics;
 
   public AdminBillingRefundService(
       BillingRechargeOrderMapper orderMapper,
@@ -32,13 +34,15 @@ public class AdminBillingRefundService {
       BillingLedgerMapper ledgerMapper,
       PaymentGatewayRegistry paymentGatewayRegistry,
       AdminAuditLogService adminAuditLogService,
-      AdminBillingRefundStateService refundStateService) {
+      AdminBillingRefundStateService refundStateService,
+      BillingMetrics billingMetrics) {
     this.orderMapper = orderMapper;
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
     this.paymentGatewayRegistry = paymentGatewayRegistry;
     this.adminAuditLogService = adminAuditLogService;
     this.refundStateService = refundStateService;
+    this.billingMetrics = billingMetrics;
   }
 
   @Transactional
@@ -128,6 +132,8 @@ public class AdminBillingRefundService {
           newBalance,
           reason,
           refundResult.providerRefundNo());
+
+      billingMetrics.recordRefundCompleted();
 
       return AdminRefundResponse.applied(
           normalizedOrderNo,

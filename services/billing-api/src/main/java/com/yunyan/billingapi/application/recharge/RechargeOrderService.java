@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.application.recharge;
 
+import com.yunyan.billingapi.application.metrics.BillingMetrics;
 import com.yunyan.billingapi.application.payment.PaymentGatewayRegistry;
 import com.yunyan.billingapi.application.tenant.TenantRechargePolicyService;
 import com.yunyan.billingapi.application.wallet.WalletService;
@@ -32,6 +33,7 @@ public class RechargeOrderService {
   private final BillingLedgerMapper ledgerMapper;
   private final PaymentGatewayRegistry paymentGatewayRegistry;
   private final TenantRechargePolicyService tenantRechargePolicyService;
+  private final BillingMetrics billingMetrics;
 
   public RechargeOrderService(
       BillingAppProperties billingAppProperties,
@@ -41,7 +43,8 @@ public class RechargeOrderService {
       BillingWalletMapper walletMapper,
       BillingLedgerMapper ledgerMapper,
       PaymentGatewayRegistry paymentGatewayRegistry,
-      TenantRechargePolicyService tenantRechargePolicyService) {
+      TenantRechargePolicyService tenantRechargePolicyService,
+      BillingMetrics billingMetrics) {
     this.billingAppProperties = billingAppProperties;
     this.walletService = walletService;
     this.packageMapper = packageMapper;
@@ -50,6 +53,7 @@ public class RechargeOrderService {
     this.ledgerMapper = ledgerMapper;
     this.paymentGatewayRegistry = paymentGatewayRegistry;
     this.tenantRechargePolicyService = tenantRechargePolicyService;
+    this.billingMetrics = billingMetrics;
   }
 
   @Transactional
@@ -223,6 +227,8 @@ public class RechargeOrderService {
       ledger.setCreatedAt(now);
       ledgerMapper.insert(ledger);
     }
+
+    billingMetrics.recordRechargeCompleted();
 
     order.setStatus("paid");
     order.setPaidAt(now);

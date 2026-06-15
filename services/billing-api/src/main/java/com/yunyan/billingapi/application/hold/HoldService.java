@@ -2,6 +2,7 @@ package com.yunyan.billingapi.application.hold;
 
 import com.yunyan.billing.dto.EstimateResult;
 import com.yunyan.billing.dto.WalletHoldRequest;
+import com.yunyan.billingapi.application.metrics.BillingMetrics;
 import com.yunyan.billingapi.application.wallet.WalletService;
 import com.yunyan.billingapi.config.BillingAppProperties;
 import com.yunyan.billingapi.domain.entity.BillingConsumptionRecord;
@@ -31,6 +32,7 @@ public class HoldService {
   private final BillingConsumptionRecordMapper recordMapper;
   private final BillingWalletMapper walletMapper;
   private final BillingLedgerMapper ledgerMapper;
+  private final BillingMetrics billingMetrics;
 
   public HoldService(
       BillingAppProperties billingAppProperties,
@@ -38,13 +40,15 @@ public class HoldService {
       BillingConsumptionRuleMapper ruleMapper,
       BillingConsumptionRecordMapper recordMapper,
       BillingWalletMapper walletMapper,
-      BillingLedgerMapper ledgerMapper) {
+      BillingLedgerMapper ledgerMapper,
+      BillingMetrics billingMetrics) {
     this.billingAppProperties = billingAppProperties;
     this.walletService = walletService;
     this.ruleMapper = ruleMapper;
     this.recordMapper = recordMapper;
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
+    this.billingMetrics = billingMetrics;
   }
 
   public EstimateResult estimate(WalletHoldRequest request) {
@@ -101,6 +105,8 @@ public class HoldService {
     record.setUpdatedAt(now);
     recordMapper.insert(record);
 
+    billingMetrics.recordHoldCreated();
+
     return new HoldResponse(record.getId().toString(), resolved.points(), "held");
   }
 
@@ -148,6 +154,8 @@ public class HoldService {
       ledger.setCreatedAt(now);
       ledgerMapper.insert(ledger);
     }
+
+    billingMetrics.recordHoldConfirmed();
   }
 
   @Transactional

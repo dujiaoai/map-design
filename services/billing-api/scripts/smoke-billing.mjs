@@ -2,7 +2,7 @@
 /**
  * Billing API 端到端冒烟（直连 :8083/v1/billing + :8082/v1/auth 登录）。
  *
- * 覆盖：充值/mock-pay、钱包与流水、发票申请与开票、优惠券兑换、对公转账审核入账。
+ * 覆盖：充值/mock-pay、充值抵扣券、钱包与流水、发票申请与开票、优惠券兑换、对公转账审核入账。
  *
  * Usage:
  *   node services/billing-api/scripts/smoke-billing.mjs
@@ -314,6 +314,80 @@ async function main() {
     )
   }
   passed.push('coupon-redeem')
+
+  // --- F-5+ 充值抵扣券 ---
+  const discountCouponCode = `DSCT${Date.now()}`
+  const discountCents = 500
+  const discountCouponCreate = await api(`${adminBillingBase}/coupons`, {
+    method: 'POST',
+    headers: auth,
+    body: {
+      code: discountCouponCode,
+      kind: 'discount',
+      discountCents,
+      points: 1,
+      maxTotalRedemptions: 5,
+      status: 'active',
+    },
+  })
+  if (!discountCouponCreate.ok || discountCouponCreate.body?.kind !== 'discount') {
+    fail(
+      'discount-coupon-create',
+      `HTTP ${discountCouponCreate.status} ${JSON.stringify(discountCouponCreate.body)}`,
+    )
+  }
+  passed.push('discount-coupon-create')
+
+  const listPriceCents =
+    packages.body.items[0].priceCents ?? order.body.listPriceCents ?? priceCents
+  const discountOrder = await api(`${billingBase}/recharge-orders`, {
+    method: 'POST',
+    headers: auth,
+    body: { packageCode, channel, couponCode: discountCouponCode },
+  })
+  if (!discountOrder.ok || !discountOrder.body?.orderNo) {
+    fail('recharge-discount-create', `HTTP ${discountOrder.status} ${JSON.stringify(discountOrder.body)}`)
+  }
+  const expectedPayable = Math.max(listPriceCents - discountCents, 0)
+  if (
+    discountOrder.body.listPriceCents !== listPriceCents ||
+    discountOrder.body.couponDiscountCents !== Math.min(discountCents, listPriceCents) ||
+    discountOrder.body.priceCents !== expectedPayable
+  ) {
+    fail(
+      'recharge-discount-create',
+      `unexpected pricing list=${discountOrder.body.listPriceCents} discount=${discountOrder.body.couponDiscountCents} payable=${discountOrder.body.priceCents}`,
+    )
+  }
+  passed.push('recharge-discount-create')
+
+  const discountOrderNo = discountOrder.body.orderNo
+  const discountPayableCents = discountOrder.body.priceCents
+
+  if (channel === 'mock') {
+    const discountMockPay = await api(
+      `${billingBase}/recharge-orders/${encodeURIComponent(discountOrderNo)}/mock-pay`,
+      { method: 'POST', headers: auth },
+    )
+    if (!discountMockPay.ok || discountMockPay.body?.status !== 'paid') {
+      fail('recharge-discount-mock-pay', `HTTP ${discountMockPay.status} ${JSON.stringify(discountMockPay.body)}`)
+    }
+    passed.push('recharge-discount-mock-pay')
+  } else if (channel === 'wechat' || channel === 'alipay') {
+    const discountWebhook = await postPaymentWebhook(channel, {
+      orderNo: discountOrderNo,
+      providerTradeNo: `smoke-discount-${Date.now()}`,
+      success: true,
+      priceCents: discountPayableCents,
+    })
+    if (!discountWebhook.ok) {
+      fail(
+        `recharge-discount-webhook-${channel}`,
+        `HTTP ${discountWebhook.status} ${JSON.stringify(discountWebhook.body)}`,
+      )
+    }
+    passed.push(`recharge-discount-webhook-${channel}`)
+  }
 
   // --- F-6 对公转账申请 + Admin 审核入账 ---
   const wirePoints = 100

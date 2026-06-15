@@ -1,13 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@repo/auth'
-import { Badge } from '@repo/ui'
-import { ActivityIcon, Building2Icon, ShieldCheckIcon, UsersIcon } from 'lucide-react'
-import { redirect } from 'react-router'
+import { Badge, Button } from '@repo/ui'
+import { ActivityIcon, Building2Icon, RefreshCwIcon, ShieldCheckIcon, UsersIcon } from 'lucide-react'
+import { useState } from 'react'
+import { Link, redirect } from 'react-router'
 
 import { AdminQuickNav } from '~/widgets/admin-overview/ui/admin-quick-nav'
 import { fetchAdminPing, fetchAdminStats } from '~/shared/api/admin-api'
 import { auth } from '~/shared/auth/client'
 import { canAccessAdminOverview } from '~/shared/auth/admin-access'
+import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
 import { AdminPageHeader, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
@@ -30,6 +32,10 @@ export async function clientLoader(_args: Route.ClientLoaderArgs) {
 
 export default function DashboardRoute() {
   const session = useSession()
+  const { can } = useAdminPermissions()
+  const queryClient = useQueryClient()
+  const [refreshing, setRefreshing] = useState(false)
+
   const statsQuery = useQuery({
     queryKey: adminQueryKeys.stats,
     queryFn: fetchAdminStats,
@@ -41,8 +47,20 @@ export default function DashboardRoute() {
 
   const apiHealthy = pingQuery.data?.status === 'ok' && !pingQuery.isError
 
+  async function refreshOverview() {
+    setRefreshing(true)
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: adminQueryKeys.stats }),
+        queryClient.invalidateQueries({ queryKey: adminQueryKeys.ping }),
+      ])
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="admin-stagger space-y-8">
       <AdminPageHeader
         eyebrow="Overview"
         title="运营概览"
@@ -56,16 +74,38 @@ export default function DashboardRoute() {
           </>
         }
         actions={
-          pingQuery.isLoading ? null : (
-            <AdminStatusPill
-              level={apiHealthy ? 'ok' : 'warn'}
-              label={apiHealthy ? 'Admin API 在线' : 'Admin API 异常'}
-            />
-          )
+          <>
+            {can('admin:tenants:read') ? (
+              <Button
+                nativeButton={false}
+                variant="outline"
+                size="sm"
+                render={<Link to="/system" />}
+              >
+                系统状态
+              </Button>
+            ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={refreshing}
+              onClick={() => void refreshOverview()}
+            >
+              <RefreshCwIcon className={refreshing ? 'animate-spin' : undefined} />
+              刷新
+            </Button>
+            {pingQuery.isLoading ? null : (
+              <AdminStatusPill
+                level={apiHealthy ? 'ok' : 'warn'}
+                label={apiHealthy ? 'Admin API 在线' : 'Admin API 异常'}
+              />
+            )}
+          </>
         }
       />
 
-      <div className="admin-stagger grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3">
         <AdminMetricCard
           icon={Building2Icon}
           label="租户总数"
@@ -90,7 +130,7 @@ export default function DashboardRoute() {
         />
       </div>
 
-      <div className="admin-stagger grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         <AdminPanel>
           <AdminPanelHeader icon={ShieldCheckIcon} title="当前会话" />
           <dl className="space-y-2 px-4 py-4 text-sm md:px-5">
@@ -141,9 +181,7 @@ export default function DashboardRoute() {
         </AdminPanel>
       </div>
 
-      <div className="admin-stagger">
-        <AdminQuickNav />
-      </div>
+      <AdminQuickNav />
     </div>
   )
 }

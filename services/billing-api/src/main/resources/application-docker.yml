@@ -10,6 +10,8 @@ server:
 # Docker compose 预发：与 saas-api 共用 JWT；内网 m2m token 由 compose 注入。
 # Webhook 验签 / 限流 / 低余额阈值见 deploy/.env.docker.example 与 docs/runbooks/docker-deployment.md §4.3
 billing:
+  tenant-rls:
+    enabled: ${BILLING_TENANT_RLS_ENABLED:true}
   jwt:
     secret: ${SAAS_JWT_SECRET:docker-only-change-me-use-32chars-min!!}
   internal:

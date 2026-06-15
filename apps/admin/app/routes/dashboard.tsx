@@ -166,9 +166,20 @@ export default function DashboardRoute() {
             </p>
           ) : null}
           {pingQuery.isError ? (
-            <p className="px-4 py-4 text-sm text-destructive md:px-5">
-              无法连接 admin API，请确认 saas-api 已启动。
-            </p>
+            <div className="flex flex-col items-start gap-3 px-4 py-4 md:px-5">
+              <p className="text-sm text-destructive">
+                无法连接 admin API，请确认 saas-api 已启动。
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={pingQuery.isFetching}
+                onClick={() => void pingQuery.refetch()}
+              >
+                {pingQuery.isFetching ? '重试中…' : '重试'}
+              </Button>
+            </div>
           ) : null}
           {pingQuery.data ? (
             <>

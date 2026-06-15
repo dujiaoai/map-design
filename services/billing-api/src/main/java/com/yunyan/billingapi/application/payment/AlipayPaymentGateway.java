@@ -1,9 +1,17 @@
 package com.yunyan.billingapi.application.payment;
 
+import com.yunyan.billingapi.application.payment.provider.PaymentCreateCommand;
+import com.yunyan.billingapi.application.payment.provider.PaymentProviderRegistry;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AlipayPaymentGateway implements PaymentGateway {
+
+  private final PaymentProviderRegistry paymentProviderRegistry;
+
+  public AlipayPaymentGateway(PaymentProviderRegistry paymentProviderRegistry) {
+    this.paymentProviderRegistry = paymentProviderRegistry;
+  }
 
   @Override
   public String channel() {
@@ -13,6 +21,8 @@ public class AlipayPaymentGateway implements PaymentGateway {
   @Override
   public PaymentCreateResult createPayment(
       String orderNo, long priceCents, String currency, String packageCode) {
-    return new PaymentCreateResult("alipay-pending-" + orderNo, "https://openapi.alipay.com/gateway.do?out_trade_no=" + orderNo);
+    return paymentProviderRegistry
+        .require(PaymentWebhookChannels.ALIPAY)
+        .createPayment(new PaymentCreateCommand(orderNo, priceCents, currency, packageCode));
   }
 }

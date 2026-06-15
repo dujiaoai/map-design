@@ -106,6 +106,33 @@ public class BillingAppProperties {
   public static class Payment {
     /** Enables POST .../mock-pay for sandbox recharge completion. */
     private boolean mockEnabled = false;
+    /** stub (default) or live — selects PaymentProviderClient implementation. */
+    private String providerMode = "stub";
+    /** Poll provider for pending wechat/alipay orders when live mode (callback fallback). */
+    private boolean queryScanEnabled = false;
+    /** Scan interval for pending payment query job (ms). */
+    private long queryScanMs = 300_000L;
+    private final Wechat wechat = new Wechat();
+    private final Alipay alipay = new Alipay();
+  }
+
+  @Data
+  public static class Wechat {
+    private String appId = "";
+    private String mchId = "";
+    private String apiV3Key = "";
+    private String notifyUrl = "";
+    /** native | h5 | jsapi */
+    private String defaultPayScene = "native";
+  }
+
+  @Data
+  public static class Alipay {
+    private String appId = "";
+    private String privateKeyPem = "";
+    private String notifyUrl = "";
+    /** wap | native */
+    private String defaultPayScene = "wap";
   }
 
   @Data

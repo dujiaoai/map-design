@@ -91,6 +91,21 @@ public interface BillingRechargeOrderMapper {
   java.util.List<BillingRechargeOrder> findExpiredPendingOrders(
       @Param("now") java.time.Instant now, @Param("limit") int limit);
 
+  @Select(
+      """
+      SELECT id, order_no, tenant_id, user_id, wallet_id, package_id, channel, status,
+             points, list_price_cents, price_cents, coupon_code, coupon_discount_cents, currency,
+             provider_trade_no, expire_at, paid_at, created_at, updated_at
+      FROM billing_recharge_order
+      WHERE status = 'pending'
+        AND channel IN ('wechat', 'alipay')
+        AND (expire_at IS NULL OR expire_at > #{now})
+      ORDER BY created_at ASC
+      LIMIT #{limit}
+      """)
+  java.util.List<BillingRechargeOrder> findPendingOnlineOrders(
+      @Param("now") java.time.Instant now, @Param("limit") int limit);
+
   @Update(
       """
       UPDATE billing_recharge_order

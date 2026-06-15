@@ -1,6 +1,6 @@
 # 平台计费服务（billing-api）
 
-> 状态：F-1～F-3+、F-2 主体、F-4 退款骨架、F-5 SDK **已落地**（2026-06-14）；F-4 对账/通知/发票、F-5 优惠券、F-6 对公 **待办** · 产品细节见 [billing-credits-prd.md](../product/billing-credits-prd.md)
+> 状态：F-1～F-3+、F-2 主体、F-4 退款骨架、F-5 SDK **已落地**（2026-06-14）；**安全/限流/观测加固** ✅（2026-06-15）；F-4 对账/通知/发票、F-5 优惠券、F-6 对公 **待办** · 产品细节见 [billing-credits-prd.md](../product/billing-credits-prd.md)
 
 ## 定位
 
@@ -88,7 +88,9 @@ services/
 | POST | `/packages` | `admin:billing:packages:write` |
 | PATCH | `/packages/{code}` | `admin:billing:packages:write` |
 | GET | `/wallets` | `admin:billing:read` |
+| GET | `/tenants/{tenantId}/ledger` | `admin:billing:read`；`?userId&entryType&page` |
 | GET | `/recharge-orders` | `admin:billing:read` |
+| GET | `/adjust-records` | `admin:billing:read` |
 | POST | `/tenants/{tenantId}/adjust` | `admin:billing:adjust` |
 | POST | `/recharge-orders/{orderNo}/refund` | `admin:billing:refund` |
 
@@ -106,6 +108,12 @@ services/
 - **signup-bonus 失败**：pending 重试 Job（见 PRD §1.2）
 - **Platform 调账审计**：`sys_admin_audit_log`（billing-api 共用 PG 写入）
 - **冒烟扣费**：rule `billing.smoke.consume`（dev/staging）
+- **Webhook 安全**：Token + 可选 HMAC / 微信 V3 / 支付宝 RSA；IP 限流（见 PRD §2.4～2.5）
+- **Internal API**：`X-Billing-Caller-Service` 白名单（默认 `saas-api`）
+- **错误体**：RFC 7807 `application/problem+json`（401/403/402/422/429）
+- **观测**：Micrometer 业务计数器 + 低余额 crossing 告警（`billing.low-balance.threshold`）
+- **saas-api 调用**：`RestBillingClient` 对 502/503/504 退避重试
+- **冒烟脚本**：`services/billing-api/scripts/smoke-billing.mjs`（含验签模式环境变量）
 
 ## 部署变更（F-1）
 
@@ -129,6 +137,7 @@ services/
 | F-4 | 退款/对账/通知/发票 | 充值退款 API 骨架 ✅；对账/通知/发票待办 |
 | F-5 | 优惠券/用户间划拨 | 划拨 API + UI ✅；members_can_recharge ✅；优惠券待办 |
 | F-6 | 可选 billing 独立 DB + 对公转账 | 待办 |
+| sec | Webhook 验签/限流、Caller 白名单、RFC7807、Micrometer、Admin ledger | ✅ 2026-06-15 |
 
 完整 PRD、API 契约、前端组件：[billing-credits-prd.md](../product/billing-credits-prd.md)
 

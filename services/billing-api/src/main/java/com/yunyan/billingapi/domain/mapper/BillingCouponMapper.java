@@ -14,19 +14,19 @@ public interface BillingCouponMapper {
   @Insert(
       """
       INSERT INTO billing_coupon (
-          id, code, points, status, max_total_redemptions, redemption_count, max_per_user,
-          valid_until, created_at, updated_at
+          id, code, kind, points, discount_cents, status, max_total_redemptions, redemption_count,
+          max_per_user, valid_until, created_at, updated_at
       ) VALUES (
-          #{id}, #{code}, #{points}, #{status}, #{maxTotalRedemptions}, #{redemptionCount},
-          #{maxPerUser}, #{validUntil}, #{createdAt}, #{updatedAt}
+          #{id}, #{code}, #{kind}, #{points}, #{discountCents}, #{status}, #{maxTotalRedemptions},
+          #{redemptionCount}, #{maxPerUser}, #{validUntil}, #{createdAt}, #{updatedAt}
       )
       """)
   int insert(BillingCoupon coupon);
 
   @Select(
       """
-      SELECT id, code, points, status, max_total_redemptions, redemption_count, max_per_user,
-             valid_until, created_at, updated_at
+      SELECT id, code, kind, points, discount_cents, status, max_total_redemptions, redemption_count,
+             max_per_user, valid_until, created_at, updated_at
       FROM billing_coupon
       WHERE code = #{code}
       """)
@@ -34,8 +34,8 @@ public interface BillingCouponMapper {
 
   @Select(
       """
-      SELECT id, code, points, status, max_total_redemptions, redemption_count, max_per_user,
-             valid_until, created_at, updated_at
+      SELECT id, code, kind, points, discount_cents, status, max_total_redemptions, redemption_count,
+             max_per_user, valid_until, created_at, updated_at
       FROM billing_coupon
       ORDER BY created_at DESC
       """)

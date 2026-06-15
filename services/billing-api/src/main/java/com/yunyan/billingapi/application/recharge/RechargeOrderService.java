@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.application.recharge;
 
+import com.yunyan.billingapi.application.coupon.BillingCouponService;
 import com.yunyan.billingapi.application.metrics.BillingMetrics;
 import com.yunyan.billingapi.application.payment.PaymentGatewayRegistry;
 import com.yunyan.billingapi.application.tenant.TenantRechargePolicyService;
@@ -34,6 +35,7 @@ public class RechargeOrderService {
   private final PaymentGatewayRegistry paymentGatewayRegistry;
   private final TenantRechargePolicyService tenantRechargePolicyService;
   private final BillingMetrics billingMetrics;
+  private final BillingCouponService billingCouponService;
 
   public RechargeOrderService(
       BillingAppProperties billingAppProperties,
@@ -44,7 +46,8 @@ public class RechargeOrderService {
       BillingLedgerMapper ledgerMapper,
       PaymentGatewayRegistry paymentGatewayRegistry,
       TenantRechargePolicyService tenantRechargePolicyService,
-      BillingMetrics billingMetrics) {
+      BillingMetrics billingMetrics,
+      BillingCouponService billingCouponService) {
     this.billingAppProperties = billingAppProperties;
     this.walletService = walletService;
     this.packageMapper = packageMapper;
@@ -54,6 +57,7 @@ public class RechargeOrderService {
     this.paymentGatewayRegistry = paymentGatewayRegistry;
     this.tenantRechargePolicyService = tenantRechargePolicyService;
     this.billingMetrics = billingMetrics;
+    this.billingCouponService = billingCouponService;
   }
 
   @Transactional
@@ -75,12 +79,25 @@ public class RechargeOrderService {
     var wallet = walletService.getOrCreateWallet(principal.tenantId(), principal.userId());
     var now = Instant.now();
     var orderNo = "RO-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
+    var listPriceCents = pkg.getPriceCents() != null ? pkg.getPriceCents() : 0L;
+    long couponDiscountCents = 0L;
+    String appliedCouponCode = null;
+
+    if (StringUtils.hasText(request.couponCode())) {
+      var discountQuote =
+          billingCouponService.resolveRechargeDiscount(
+              principal, request.couponCode(), listPriceCents);
+      couponDiscountCents = discountQuote.discountCents();
+      appliedCouponCode = discountQuote.code();
+    }
+
+    var payableCents = Math.max(listPriceCents - couponDiscountCents, 0L);
     var payment =
         paymentGatewayRegistry
             .require(channel)
             .createPayment(
                 orderNo,
-                pkg.getPriceCents() != null ? pkg.getPriceCents() : 0L,
+                payableCents,
                 pkg.getCurrency(),
                 pkg.getCode());
 
@@ -94,7 +111,10 @@ public class RechargeOrderService {
     order.setChannel(channel);
     order.setStatus("pending");
     order.setPoints(pkg.getPoints());
-    order.setPriceCents(pkg.getPriceCents());
+    order.setListPriceCents(listPriceCents);
+    order.setPriceCents(payableCents);
+    order.setCouponCode(appliedCouponCode);
+    order.setCouponDiscountCents(couponDiscountCents);
     order.setCurrency(pkg.getCurrency());
     order.setProviderTradeNo(payment.providerTradeNo());
     order.setExpireAt(now.plusSeconds(billingAppProperties.getRecharge().getOrderTtlMinutes() * 60L));
@@ -203,6 +223,8 @@ public class RechargeOrderService {
       throw AuthException.conflict("Order already processed");
     }
 
+    billingCouponService.recordRechargeDiscountRedemption(order);
+
     var points = order.getPoints() != null ? order.getPoints() : 0L;
     var currentBalance = wallet.getBalance() != null ? wallet.getBalance() : 0L;
     var newBalance = currentBalance + points;
@@ -277,8 +299,11 @@ public class RechargeOrderService {
         order.getStatus(),
         order.getChannel(),
         order.getPoints() != null ? order.getPoints() : 0L,
+        order.getListPriceCents() != null ? order.getListPriceCents() : order.getPriceCents(),
         order.getPriceCents() != null ? order.getPriceCents() : 0L,
         order.getCurrency(),
+        order.getCouponCode(),
+        order.getCouponDiscountCents() != null ? order.getCouponDiscountCents() : 0L,
         payUrl,
         order.getExpireAt(),
         order.getPaidAt(),

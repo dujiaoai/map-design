@@ -39,10 +39,20 @@ public class AdminBillingCouponService {
     }
 
     var now = Instant.now();
+    var kind = BillingCouponService.resolveKind(request.kind());
     var coupon = new BillingCoupon();
     coupon.setId(UUID.randomUUID());
     coupon.setCode(code);
-    coupon.setPoints(request.points());
+    coupon.setKind(kind);
+    if (BillingCouponService.KIND_DISCOUNT.equals(kind)) {
+      if (request.discountCents() == null || request.discountCents() <= 0) {
+        throw AuthException.badRequest("discountCents is required for discount coupons");
+      }
+      coupon.setDiscountCents(request.discountCents());
+      coupon.setPoints(1L);
+    } else {
+      coupon.setPoints(request.points());
+    }
     coupon.setStatus(resolveStatus(request.status()));
     coupon.setMaxTotalRedemptions(request.maxTotalRedemptions());
     coupon.setRedemptionCount(0);
@@ -92,7 +102,9 @@ public class AdminBillingCouponService {
     return new AdminCouponDto(
         coupon.getId().toString(),
         coupon.getCode(),
+        BillingCouponService.resolveKind(coupon.getKind()),
         coupon.getPoints() != null ? coupon.getPoints() : 0L,
+        coupon.getDiscountCents(),
         coupon.getStatus(),
         coupon.getMaxTotalRedemptions(),
         coupon.getRedemptionCount() != null ? coupon.getRedemptionCount() : 0,

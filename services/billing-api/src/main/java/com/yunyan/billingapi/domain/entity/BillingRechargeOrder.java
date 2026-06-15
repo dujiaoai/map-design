@@ -22,7 +22,10 @@ public class BillingRechargeOrder {
   private String channel;
   private String status;
   private Long points;
+  private Long listPriceCents;
   private Long priceCents;
+  private Long couponDiscountCents;
+  private String couponCode;
   private String currency;
   private String providerTradeNo;
   private Instant expireAt;

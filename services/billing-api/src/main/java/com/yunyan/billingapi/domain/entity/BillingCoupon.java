@@ -11,7 +11,9 @@ public class BillingCoupon {
 
   private UUID id;
   private String code;
+  private String kind;
   private Long points;
+  private Long discountCents;
   private String status;
   private Integer maxTotalRedemptions;
   private Integer redemptionCount;

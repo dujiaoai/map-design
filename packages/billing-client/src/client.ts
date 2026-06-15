@@ -85,6 +85,7 @@ export function createBillingClient(options: BillingClientOptions) {
         await api.post('/recharge-orders', {
           packageCode: input.packageCode,
           channel: input.channel ?? 'mock',
+          ...(input.couponCode ? { couponCode: input.couponCode } : {}),
         }),
       )
     },

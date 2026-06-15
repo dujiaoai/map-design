@@ -15,10 +15,12 @@ public interface BillingRechargeOrderMapper {
       """
       INSERT INTO billing_recharge_order (
           id, order_no, tenant_id, user_id, wallet_id, package_id, channel, status,
-          points, price_cents, currency, provider_trade_no, expire_at, paid_at, created_at, updated_at
+          points, list_price_cents, price_cents, coupon_code, coupon_discount_cents, currency,
+          provider_trade_no, expire_at, paid_at, created_at, updated_at
       ) VALUES (
           #{id}, #{orderNo}, #{tenantId}, #{userId}, #{walletId}, #{packageId}, #{channel}, #{status},
-          #{points}, #{priceCents}, #{currency}, #{providerTradeNo}, #{expireAt}, #{paidAt}, #{createdAt}, #{updatedAt}
+          #{points}, #{listPriceCents}, #{priceCents}, #{couponCode}, #{couponDiscountCents}, #{currency},
+          #{providerTradeNo}, #{expireAt}, #{paidAt}, #{createdAt}, #{updatedAt}
       )
       """)
   void insert(BillingRechargeOrder order);
@@ -26,7 +28,8 @@ public interface BillingRechargeOrderMapper {
   @Select(
       """
       SELECT id, order_no, tenant_id, user_id, wallet_id, package_id, channel, status,
-             points, price_cents, currency, provider_trade_no, expire_at, paid_at, created_at, updated_at
+             points, list_price_cents, price_cents, coupon_code, coupon_discount_cents, currency,
+             provider_trade_no, expire_at, paid_at, created_at, updated_at
       FROM billing_recharge_order
       WHERE order_no = #{orderNo} AND tenant_id = #{tenantId} AND user_id = #{userId}
       """)
@@ -38,7 +41,8 @@ public interface BillingRechargeOrderMapper {
   @Select(
       """
       SELECT id, order_no, tenant_id, user_id, wallet_id, package_id, channel, status,
-             points, price_cents, currency, provider_trade_no, expire_at, paid_at, created_at, updated_at
+             points, list_price_cents, price_cents, coupon_code, coupon_discount_cents, currency,
+             provider_trade_no, expire_at, paid_at, created_at, updated_at
       FROM billing_recharge_order
       WHERE order_no = #{orderNo}
       """)
@@ -77,7 +81,8 @@ public interface BillingRechargeOrderMapper {
   @Select(
       """
       SELECT id, order_no, tenant_id, user_id, wallet_id, package_id, channel, status,
-             points, price_cents, currency, provider_trade_no, expire_at, paid_at, created_at, updated_at
+             points, list_price_cents, price_cents, coupon_code, coupon_discount_cents, currency,
+             provider_trade_no, expire_at, paid_at, created_at, updated_at
       FROM billing_recharge_order
       WHERE status = 'pending' AND expire_at IS NOT NULL AND expire_at < #{now}
       ORDER BY expire_at ASC
@@ -113,7 +118,8 @@ public interface BillingRechargeOrderMapper {
   @Select(
       """
       SELECT id, order_no, tenant_id, user_id, wallet_id, package_id, channel, status,
-             points, price_cents, currency, provider_trade_no, expire_at, paid_at, created_at, updated_at
+             points, list_price_cents, price_cents, coupon_code, coupon_discount_cents, currency,
+             provider_trade_no, expire_at, paid_at, created_at, updated_at
       FROM billing_recharge_order
       WHERE status = 'refunding' AND updated_at < #{cutoff}
       ORDER BY updated_at ASC
@@ -126,7 +132,8 @@ public interface BillingRechargeOrderMapper {
       """
       <script>
       SELECT id, order_no, tenant_id, user_id, wallet_id, package_id, channel, status,
-             points, price_cents, currency, provider_trade_no, expire_at, paid_at, created_at, updated_at
+             points, list_price_cents, price_cents, coupon_code, coupon_discount_cents, currency,
+             provider_trade_no, expire_at, paid_at, created_at, updated_at
       FROM billing_recharge_order
       <where>
         <if test="tenantId != null">AND tenant_id = #{tenantId}</if>

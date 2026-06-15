@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Pattern;
 public record CreateAdminCouponRequest(
     @NotBlank String code,
     @Min(1) long points,
+    Long discountCents,
+    @Pattern(regexp = "gift|discount") String kind,
     Integer maxTotalRedemptions,
     Integer maxPerUser,
     @Pattern(regexp = "active|inactive") String status,

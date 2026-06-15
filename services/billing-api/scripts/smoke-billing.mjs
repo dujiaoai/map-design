@@ -2,6 +2,8 @@
 /**
  * Billing API 端到端冒烟（直连 :8083/v1/billing + :8082/v1/auth 登录）。
  *
+ * 覆盖：充值/mock-pay、钱包与流水、发票申请与开票、优惠券兑换、对公转账审核入账。
+ *
  * Usage:
  *   node services/billing-api/scripts/smoke-billing.mjs
  *   BILLING_API_BASE_URL=http://localhost:8083/v1 SAAS_API_BASE_URL=http://localhost:8082/v1 node services/billing-api/scripts/smoke-billing.mjs
@@ -19,6 +21,10 @@ const billingBase = (process.env.BILLING_API_BASE_URL ?? 'http://localhost:8083/
   /\/$/,
   '',
 )
+const adminBillingBase = (
+  process.env.BILLING_ADMIN_BASE_URL ??
+  billingBase.replace(/\/billing$/, '/admin/billing')
+).replace(/\/$/, '')
 const saasBase = (process.env.SAAS_API_BASE_URL ?? 'http://localhost:8082/v1').replace(/\/$/, '')
 
 const credentials = {
@@ -216,6 +222,147 @@ async function main() {
     fail('ledger', `HTTP ${ledger.status} ${JSON.stringify(ledger.body)}`)
   }
   passed.push('ledger')
+
+  // --- F-4 发票申请 + Admin 开票 ---
+  const invoiceCreate = await api(`${billingBase}/invoices`, {
+    method: 'POST',
+    headers: auth,
+    body: {
+      orderNo,
+      invoiceType: 'personal',
+      title: 'Smoke Test',
+      email: credentials.email,
+    },
+  })
+  if (!invoiceCreate.ok || invoiceCreate.body?.status !== 'pending') {
+    fail('invoice-create', `HTTP ${invoiceCreate.status} ${JSON.stringify(invoiceCreate.body)}`)
+  }
+  passed.push('invoice-create')
+
+  const invoiceList = await api(`${billingBase}/invoices`, { headers: auth })
+  if (!invoiceList.ok || !Array.isArray(invoiceList.body?.items)) {
+    fail('invoice-list', `HTTP ${invoiceList.status} ${JSON.stringify(invoiceList.body)}`)
+  }
+  const userInvoice =
+    invoiceList.body.items.find((item) => item.orderNo === orderNo) ?? invoiceList.body.items[0]
+  if (!userInvoice?.id) {
+    fail('invoice-list', 'no invoice for paid order')
+  }
+  passed.push('invoice-list')
+
+  const adminInvoices = await api(`${adminBillingBase}/invoices?status=pending`, { headers: auth })
+  if (!adminInvoices.ok || !Array.isArray(adminInvoices.body?.items)) {
+    fail('admin-invoice-list', `HTTP ${adminInvoices.status} ${JSON.stringify(adminInvoices.body)}`)
+  }
+  const pendingInvoice =
+    adminInvoices.body.items.find((item) => item.orderNo === orderNo) ??
+    adminInvoices.body.items.find((item) => item.id === userInvoice.id)
+  if (!pendingInvoice?.id) {
+    fail('admin-invoice-list', `no pending invoice for order ${orderNo}`)
+  }
+  passed.push('admin-invoice-list')
+
+  const invoiceIssue = await api(
+    `${adminBillingBase}/invoices/${encodeURIComponent(pendingInvoice.id)}/issue`,
+    { method: 'POST', headers: auth },
+  )
+  if (!invoiceIssue.ok || invoiceIssue.body?.status !== 'issued') {
+    fail('invoice-issue', `HTTP ${invoiceIssue.status} ${JSON.stringify(invoiceIssue.body)}`)
+  }
+  passed.push('invoice-issue')
+
+  // --- F-5 优惠券创建 + 兑换 ---
+  const couponCode = `SMOKE${Date.now()}`
+  const couponPoints = 50
+  const couponCreate = await api(`${adminBillingBase}/coupons`, {
+    method: 'POST',
+    headers: auth,
+    body: {
+      code: couponCode,
+      points: couponPoints,
+      maxTotalRedemptions: 5,
+      status: 'active',
+    },
+  })
+  if (!couponCreate.ok || couponCreate.body?.code !== couponCode.toUpperCase()) {
+    fail('coupon-create', `HTTP ${couponCreate.status} ${JSON.stringify(couponCreate.body)}`)
+  }
+  passed.push('coupon-create')
+
+  const walletBeforeCoupon = await api(`${billingBase}/wallet`, { headers: auth })
+  if (!walletBeforeCoupon.ok) {
+    fail('wallet-before-coupon', `HTTP ${walletBeforeCoupon.status}`)
+  }
+  const balanceBeforeCoupon = walletBeforeCoupon.body?.balance ?? 0
+
+  const couponRedeem = await api(`${billingBase}/coupons/redeem`, {
+    method: 'POST',
+    headers: auth,
+    body: { code: couponCode },
+  })
+  if (
+    !couponRedeem.ok ||
+    couponRedeem.body?.points !== couponPoints ||
+    couponRedeem.body?.idempotentReplay !== false
+  ) {
+    fail('coupon-redeem', `HTTP ${couponRedeem.status} ${JSON.stringify(couponRedeem.body)}`)
+  }
+  if ((couponRedeem.body?.walletBalance ?? 0) < balanceBeforeCoupon + couponPoints) {
+    fail(
+      'coupon-redeem-balance',
+      `expected >= ${balanceBeforeCoupon + couponPoints}, got ${couponRedeem.body?.walletBalance}`,
+    )
+  }
+  passed.push('coupon-redeem')
+
+  // --- F-6 对公转账申请 + Admin 审核入账 ---
+  const wirePoints = 100
+  const wireCreate = await api(`${billingBase}/wire-transfers`, {
+    method: 'POST',
+    headers: auth,
+    body: {
+      companyName: 'Smoke Test Co.',
+      contactEmail: credentials.email,
+      amountCents: wirePoints * 10,
+      points: wirePoints,
+      bankReference: `smoke-${Date.now()}`,
+    },
+  })
+  if (!wireCreate.ok || wireCreate.body?.status !== 'pending') {
+    fail('wire-transfer-create', `HTTP ${wireCreate.status} ${JSON.stringify(wireCreate.body)}`)
+  }
+  const wireRequestId = wireCreate.body?.id
+  if (!wireRequestId) {
+    fail('wire-transfer-create', 'missing request id')
+  }
+  passed.push('wire-transfer-create')
+
+  const wireList = await api(`${billingBase}/wire-transfers`, { headers: auth })
+  if (!wireList.ok || !Array.isArray(wireList.body?.items)) {
+    fail('wire-transfer-list', `HTTP ${wireList.status} ${JSON.stringify(wireList.body)}`)
+  }
+  passed.push('wire-transfer-list')
+
+  const walletBeforeWire = await api(`${billingBase}/wallet`, { headers: auth })
+  if (!walletBeforeWire.ok) {
+    fail('wallet-before-wire', `HTTP ${walletBeforeWire.status}`)
+  }
+  const balanceBeforeWire = walletBeforeWire.body?.balance ?? 0
+
+  const wireApprove = await api(
+    `${adminBillingBase}/wire-transfers/${encodeURIComponent(wireRequestId)}/approve`,
+    { method: 'POST', headers: auth },
+  )
+  if (!wireApprove.ok || wireApprove.body?.status !== 'credited') {
+    fail('wire-transfer-approve', `HTTP ${wireApprove.status} ${JSON.stringify(wireApprove.body)}`)
+  }
+  if ((wireApprove.body?.walletBalanceAfter ?? 0) < balanceBeforeWire + wirePoints) {
+    fail(
+      'wire-transfer-balance',
+      `expected >= ${balanceBeforeWire + wirePoints}, got ${wireApprove.body?.walletBalanceAfter}`,
+    )
+  }
+  passed.push('wire-transfer-approve')
 
   console.log(`billing smoke OK (${passed.length} steps): ${passed.join(', ')}`)
 }

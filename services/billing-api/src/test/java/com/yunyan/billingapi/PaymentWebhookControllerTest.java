@@ -113,7 +113,7 @@ class PaymentWebhookControllerTest {
                     objectMapper.writeValueAsString(
                         new PaymentWebhookPayload(orderNo, "wx_trade_123", true, 1L))))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.message").value("Payment amount mismatch"));
+        .andExpect(jsonPath("$.detail").value("Payment amount mismatch"));
   }
 
   @Test

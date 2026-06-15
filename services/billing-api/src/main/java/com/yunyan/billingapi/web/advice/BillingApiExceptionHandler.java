@@ -50,9 +50,23 @@ public class BillingApiExceptionHandler {
   }
 
   @ExceptionHandler(AuthException.class)
-  ResponseEntity<Map<String, String>> handleAuthException(AuthException exception) {
-    return ResponseEntity.status(exception.getStatus())
-        .body(Map.of("message", exception.getMessage()));
+  ResponseEntity<ProblemDetail> handleAuthException(AuthException exception) {
+    var problem =
+        ProblemDetail.forStatusAndDetail(exception.getStatus(), exception.getMessage());
+    problem.setTitle(authProblemTitle(exception.getStatus()));
+    problem.setType(java.net.URI.create("urn:yunyan:billing:api_error"));
+    return ResponseEntity.status(exception.getStatus()).body(problem);
+  }
+
+  private static String authProblemTitle(HttpStatus status) {
+    return switch (status) {
+      case BAD_REQUEST -> "Bad request";
+      case UNAUTHORIZED -> "Unauthorized";
+      case FORBIDDEN -> "Forbidden";
+      case NOT_FOUND -> "Not found";
+      case CONFLICT -> "Conflict";
+      default -> status.getReasonPhrase();
+    };
   }
 
   @ExceptionHandler(InsufficientBalanceException.class)

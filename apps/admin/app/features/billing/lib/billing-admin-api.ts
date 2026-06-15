@@ -106,6 +106,9 @@ export const adminUsageSummarySchema = z.object({
   to: z.string(),
   productCode: z.string().nullable().optional(),
   totalPoints: z.number(),
+  page: z.number(),
+  size: z.number(),
+  total: z.number(),
   items: z.array(
     z.object({
       tenantId: z.string(),
@@ -359,10 +362,14 @@ export function adminBillingRechargeOrdersQuery(params: {
 export function adminBillingUsageQuery(params: {
   tenantId?: string
   productCode?: string
+  page?: number
+  size?: number
 }) {
   return buildQuery({
     tenantId: params.tenantId,
     productCode: params.productCode,
+    page: params.page ?? 0,
+    size: params.size ?? 20,
   })
 }
 

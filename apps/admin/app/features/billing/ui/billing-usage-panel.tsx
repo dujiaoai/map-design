@@ -23,7 +23,10 @@ import {
   AdminTableRow,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
+
+const PAGE_SIZE = 20
 
 export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSeed }) {
   const tenantIdInputId = useId()
@@ -32,22 +35,26 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
   const [tenantId, setTenantId] = useState('')
   const [productCode, setProductCode] = useState('')
   const [filters, setFilters] = useState<{ tenantId?: string; productCode?: string }>({})
+  const [page, setPage] = useState(0)
   const [filterError, setFilterError] = useState<string | null>(null)
 
   const applySeed = useCallback((seed: BillingFilterSeed) => {
     if (!seed.tenantId) return
     setTenantId(seed.tenantId)
     setFilters((prev) => ({ ...prev, tenantId: seed.tenantId }))
+    setPage(0)
     setFilterError(null)
   }, [])
 
   useBillingFilterSeed(filterSeed, applySeed)
 
   const query = useQuery({
-    queryKey: billingAdminQueryKeys.usage(filters),
+    queryKey: billingAdminQueryKeys.usage(filters, page),
     queryFn: async () =>
       adminUsageSummarySchema.parse(
-        await billingAdminApi.get(`/usage${adminBillingUsageQuery(filters)}`),
+        await billingAdminApi.get(
+          `/usage${adminBillingUsageQuery({ ...filters, page, size: PAGE_SIZE })}`,
+        ),
       ),
   })
 
@@ -73,6 +80,7 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
               return
             }
             setFilterError(null)
+            setPage(0)
             setFilters({
               tenantId: nextTenantId,
               productCode: productCode.trim() || undefined,
@@ -104,6 +112,7 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
                 setTenantId('')
                 setProductCode('')
                 setFilters({})
+                setPage(0)
                 setFilterError(null)
               }}
             >
@@ -124,8 +133,8 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
               <SummaryChip label="统计区间" value={`${query.data.from.slice(0, 10)} ~ ${query.data.to.slice(0, 10)}`} />
               <SummaryChip label="总消耗" value={`${query.data.totalPoints.toLocaleString('zh-CN')} 点`} />
               <SummaryChip
-                label="明细条数"
-                value={`${query.data.items.length} 条`}
+                label="成员/租户组合"
+                value={`${query.data.total.toLocaleString('zh-CN')} 组`}
               />
             </div>
             {query.data.productCode ? (
@@ -134,7 +143,8 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
             {query.data.items.length === 0 ? (
               <AdminEmptyState message="该条件下暂无消费记录。" />
             ) : (
-              <AdminDataTable>
+              <>
+                <AdminDataTable>
                 <AdminTableHead>
                   <AdminTableRow>
                     <AdminTableHeaderCell>租户 ID</AdminTableHeaderCell>
@@ -157,7 +167,14 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
                     </AdminTableRow>
                   ))}
                 </AdminTableBody>
-              </AdminDataTable>
+                </AdminDataTable>
+                <AdminTablePagination
+                  page={page + 1}
+                  pageSize={PAGE_SIZE}
+                  total={query.data.total}
+                  onPageChange={(next) => setPage(next - 1)}
+                />
+              </>
             )}
           </div>
         ) : null}

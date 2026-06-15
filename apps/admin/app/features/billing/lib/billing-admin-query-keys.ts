@@ -11,8 +11,8 @@ export const billingAdminQueryKeys = {
     filters: { tenantId?: string; userId?: string; status?: string },
     page: number,
   ) => [...billingAdminQueryKeys.all, 'recharge-orders', filters, page] as const,
-  usage: (filters: { tenantId?: string; productCode?: string }) =>
-    [...billingAdminQueryKeys.all, 'usage', filters] as const,
+  usage: (filters: { tenantId?: string; productCode?: string }, page: number) =>
+    [...billingAdminQueryKeys.all, 'usage', filters, page] as const,
   adjustRecords: (filters: { tenantId?: string; userId?: string }, page: number) =>
     [...billingAdminQueryKeys.all, 'adjust-records', filters, page] as const,
   ledger: (

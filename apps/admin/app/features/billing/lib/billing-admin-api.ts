@@ -210,6 +210,7 @@ export const adminInvoiceListSchema = z.object({
       amountCents: z.number(),
       currency: z.string(),
       adminRemark: z.string().nullable().optional(),
+      pdfUrl: z.string().nullable().optional(),
       createdAt: z.string().nullable().optional(),
       updatedAt: z.string().nullable().optional(),
     }),

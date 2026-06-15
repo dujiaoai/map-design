@@ -111,16 +111,25 @@ export function BillingInvoicesPanel({
   })
 
   const issueMutation = useMutation({
-    mutationFn: async (invoiceId: string) => {
-      setActingId(invoiceId)
+    mutationFn: async (invoice: AdminInvoice) => {
+      setActingId(invoice.id)
       setActionError(null)
-      await billingAdminApi.post(`/invoices/${encodeURIComponent(invoiceId)}/issue`)
+      const pdfUrl = window.prompt('请输入 PDF 下载地址（留空则使用占位路径）', '')?.trim()
+      if (pdfUrl === undefined) {
+        throw new Error('已取消开票')
+      }
+      await billingAdminApi.post(`/invoices/${encodeURIComponent(invoice.id)}/issue`, {
+        ...(pdfUrl ? { pdfUrl } : {}),
+      })
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.all })
     },
     onError: (error) => {
-      setActionError(formatAdminApiError(error))
+      const message = formatAdminApiError(error)
+      if (message !== '已取消开票') {
+        setActionError(message)
+      }
     },
     onSettled: () => {
       setActingId(null)
@@ -292,6 +301,11 @@ export function BillingInvoicesPanel({
                           {invoice.adminRemark}
                         </p>
                       ) : null}
+                      {invoice.status === 'issued' && invoice.pdfUrl ? (
+                        <p className="mt-1 max-w-[180px] truncate font-mono text-xs text-muted-foreground">
+                          {invoice.pdfUrl}
+                        </p>
+                      ) : null}
                     </AdminTableCell>
                     <AdminTableCell>{formatAdminIsoDate(invoice.createdAt)}</AdminTableCell>
                     {canAdjust ? (
@@ -303,7 +317,7 @@ export function BillingInvoicesPanel({
                               size="sm"
                               variant="outline"
                               disabled={actingId === invoice.id}
-                              onClick={() => void issueMutation.mutateAsync(invoice.id)}
+                              onClick={() => void issueMutation.mutateAsync(invoice)}
                             >
                               标记已开
                             </Button>

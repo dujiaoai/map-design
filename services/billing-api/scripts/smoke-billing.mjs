@@ -2,7 +2,8 @@
 /**
  * Billing API 端到端冒烟（直连 :8083/v1/billing + :8082/v1/auth 登录）。
  *
- * 覆盖：充值/mock-pay、充值抵扣券、钱包与流水、发票申请与开票、优惠券兑换、对公转账审核入账、微信 OAuth config 探活。
+ * 覆盖：membership 内网 API 探活、充值/mock-pay、充值抵扣券、钱包与流水、发票申请与开票、
+ * 优惠券兑换、对公转账审核入账、微信 OAuth config 探活。
  *
  * Usage:
  *   node services/billing-api/scripts/smoke-billing.mjs
@@ -26,6 +27,10 @@ const adminBillingBase = (
   billingBase.replace(/\/billing$/, '/admin/billing')
 ).replace(/\/$/, '')
 const saasBase = (process.env.SAAS_API_BASE_URL ?? 'http://localhost:8082/v1').replace(/\/$/, '')
+const saasOrigin = saasBase.replace(/\/v1$/, '')
+
+const internalToken =
+  process.env.BILLING_INTERNAL_TOKEN ?? 'dev-billing-internal-token-change-me'
 
 const credentials = {
   email: process.env.SMOKE_EMAIL ?? 'admin@demo.local',
@@ -149,6 +154,33 @@ async function main() {
 
   const token = login.body.accessToken
   const auth = { Authorization: `Bearer ${token}` }
+  const internalAuth = { 'X-Billing-Internal-Token': internalToken }
+
+  const session = await api(`${saasBase}/users/me`, { headers: auth })
+  if (!session.ok || !session.body?.user?.id || !session.body?.tenant?.id) {
+    fail('users-me', `HTTP ${session.status} ${JSON.stringify(session.body)}`)
+  }
+  passed.push('users-me')
+
+  const tenantUuid = session.body.tenant.id
+  const userUuid = session.body.user.id
+
+  const membershipCheck = await api(
+    `${saasOrigin}/internal/v1/membership/tenants/${encodeURIComponent(tenantUuid)}/users/${encodeURIComponent(userUuid)}`,
+    { headers: internalAuth },
+  )
+  if (!membershipCheck.ok || membershipCheck.body?.member !== true) {
+    fail('membership-check', `HTTP ${membershipCheck.status} ${JSON.stringify(membershipCheck.body)}`)
+  }
+  passed.push('membership-check')
+
+  const syncEvents = await api(`${saasOrigin}/internal/v1/membership/sync-events?limit=10`, {
+    headers: internalAuth,
+  })
+  if (!syncEvents.ok || !Array.isArray(syncEvents.body?.items)) {
+    fail('membership-sync-events', `HTTP ${syncEvents.status} ${JSON.stringify(syncEvents.body)}`)
+  }
+  passed.push('membership-sync-events')
 
   const walletBefore = await api(`${billingBase}/wallet`, { headers: auth })
   if (!walletBefore.ok) {

@@ -152,17 +152,17 @@ export function AuditLogsAdminPage() {
         >
           仅成员
         </Button>
-        <label className="text-muted-foreground flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={crossTenantOnly}
-            onChange={(event) => {
-              setCrossTenantOnly(event.target.checked)
-              setPage(1)
-            }}
-          />
+        <Button
+          type="button"
+          variant={crossTenantOnly ? 'secondary' : 'outline'}
+          size="sm"
+          onClick={() => {
+            setCrossTenantOnly((current) => !current)
+            setPage(1)
+          }}
+        >
           仅跨租户
-        </label>
+        </Button>
       </div>
 
       <AdminPanel className="p-0">

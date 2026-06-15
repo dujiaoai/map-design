@@ -69,6 +69,7 @@ pnpm --filter @repo/saas-admin dev
 - **P4+++ 表单与计费**：`@repo/ui` Checkbox 统一勾选控件；计费 11 Tab + 系统页错误重试；概览 ping 失败可重试
 - **P4++++ 深度错态与筛选**：MetricCard / RBAC / 租户详情 / 邀请链接错误重试；列表「无匹配」可清除筛选
 - **P4+++++ 操作反馈与筛选闭环**：挂载 `Toaster`；审计/计费零结果清除筛选；RBAC 权限搜索清除
+- **P4++++++ 键盘与 CRUD 反馈**：列表 `/` 聚焦搜索；RBAC/租户/用户保存 Toast；邀请链接 Skeleton
 
 ## 主流运维控制台 UX 对照
 
@@ -81,12 +82,13 @@ pnpm --filter @repo/saas-admin dev
 | **加载态** | Skeleton，非空白闪烁 | ✅ `AdminTableSkeleton` / `AdminSidebarListSkeleton` |
 | **空态/错态** | 明确文案 + 可恢复操作 | ✅ 列表/计费/RBAC/概览 MetricCard 均支持重试 |
 | **筛选零结果** | 「清除筛选」恢复默认 | ✅ 租户/用户/成员/审计/计费 SKU·钱包·订单 |
-| **操作反馈** | Toast 确认成功操作 | ✅ 计费 Sheet + 全局 `Toaster` |
+| **操作反馈** | Toast 确认成功操作 | ✅ 计费 Sheet、RBAC/租户/用户 CRUD |
+| **键盘效率** | 快捷键聚焦搜索 | ✅ 列表页 `/` + 搜索框 kbd 提示 |
 | **筛选控件** | 一致的 chip/toggle，非原生 checkbox | ✅ 审计筛选 toggle；表单用 `@repo/ui` Checkbox |
 | **危险操作** | Confirm / Sheet，非 `prompt` | ✅ 计费驳回 Sheet、`AlertDialog` |
 | **跨页上下文** | 租户/筛选 banner + 清除 | ✅ `AdminTenantContextBanner` 等 |
 | **无障碍** | 搜索 `role=searchbox`、`aria-label` | ✅ 工具栏搜索；reduced-motion 已处理 |
-| **待增强** | 表格列排序、批量操作、键盘快捷键 | 📋 Later |
+| **待增强** | 表格列排序、批量操作 | 📋 Later |
 
 ## 验证
 

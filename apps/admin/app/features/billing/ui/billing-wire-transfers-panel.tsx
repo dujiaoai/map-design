@@ -6,6 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  toast,
   useConfirmDialog,
 } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -116,6 +117,7 @@ export function BillingWireTransfersPanel({
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.all })
+      toast.success('对公转账已审核入账')
     },
     onError: (error) => {
       setActionError(formatAdminApiError(error))

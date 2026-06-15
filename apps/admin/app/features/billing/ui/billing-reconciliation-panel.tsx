@@ -103,7 +103,11 @@ export function BillingReconciliationPanel() {
       ) : errorMessage ? (
         <AdminPanel>
           <div className="px-6 py-5">
-            <AdminEmptyState message={errorMessage} />
+            <AdminEmptyState
+              message={errorMessage}
+              onRetry={() => void query.refetch()}
+              isRetrying={query.isFetching}
+            />
           </div>
         </AdminPanel>
       ) : query.data ? (

@@ -180,7 +180,11 @@ export function BillingRechargeOrdersPanel({
           {query.isLoading ? (
             <AdminTableSkeleton columns={columnCount} showPagination />
           ) : errorMessage ? (
-            <AdminEmptyState message={errorMessage} />
+            <AdminEmptyState
+              message={errorMessage}
+              onRetry={() => void query.refetch()}
+              isRetrying={query.isFetching}
+            />
           ) : query.data && query.data.items.length === 0 ? (
             <AdminEmptyState message="未找到匹配订单。" />
           ) : query.data ? (

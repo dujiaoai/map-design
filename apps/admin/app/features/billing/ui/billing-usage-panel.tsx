@@ -126,7 +126,11 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
         {query.isLoading ? (
           <AdminTableSkeleton columns={4} />
         ) : errorMessage ? (
-          <AdminEmptyState message={errorMessage} />
+          <AdminEmptyState
+            message={errorMessage}
+            onRetry={() => void query.refetch()}
+            isRetrying={query.isFetching}
+          />
         ) : query.data ? (
           <div className="space-y-4 px-4 py-3">
             <div className="grid gap-3 sm:grid-cols-3">

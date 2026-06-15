@@ -140,7 +140,11 @@ export function BillingAdjustRecordsPanel({
         {query.isLoading ? (
           <AdminTableSkeleton columns={6} showPagination />
         ) : errorMessage ? (
-          <AdminEmptyState message={errorMessage} />
+          <AdminEmptyState
+            message={errorMessage}
+            onRetry={() => void query.refetch()}
+            isRetrying={query.isFetching}
+          />
         ) : query.data && query.data.items.length === 0 ? (
           <AdminEmptyState message="暂无调账记录。" />
         ) : query.data ? (

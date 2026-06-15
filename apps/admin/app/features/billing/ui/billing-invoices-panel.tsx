@@ -194,7 +194,11 @@ export function BillingInvoicesPanel({
           </div>
         ) : errorMessage ? (
           <div className="px-6 py-5">
-            <AdminEmptyState message={errorMessage} />
+            <AdminEmptyState
+              message={errorMessage}
+              onRetry={() => void query.refetch()}
+              isRetrying={query.isFetching}
+            />
           </div>
         ) : query.data && query.data.items.length === 0 ? (
           <div className="px-6 py-5">

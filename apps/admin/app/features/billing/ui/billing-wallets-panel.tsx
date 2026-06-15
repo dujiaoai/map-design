@@ -140,7 +140,11 @@ export function BillingWalletsPanel({
         {query.isLoading ? (
           <AdminTableSkeleton columns={onNavigate ? 6 : 5} showPagination />
         ) : errorMessage ? (
-          <AdminEmptyState message={errorMessage} />
+          <AdminEmptyState
+            message={errorMessage}
+            onRetry={() => void query.refetch()}
+            isRetrying={query.isFetching}
+          />
         ) : query.data && query.data.items.length === 0 ? (
           <AdminEmptyState message="未找到匹配钱包。" />
         ) : query.data ? (

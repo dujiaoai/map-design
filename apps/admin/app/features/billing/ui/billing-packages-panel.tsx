@@ -167,7 +167,11 @@ export function BillingPackagesPanel({
           {query.isLoading ? (
             <AdminTableSkeleton columns={canWrite ? 7 : 6} />
           ) : errorMessage ? (
-            <AdminEmptyState message={errorMessage} />
+            <AdminEmptyState
+              message={errorMessage}
+              onRetry={() => void query.refetch()}
+              isRetrying={query.isFetching}
+            />
           ) : items.length === 0 ? (
             <AdminEmptyState message="暂无匹配 SKU。" />
           ) : (

@@ -61,7 +61,11 @@ export function BillingStatsSummary({
             </div>
           ) : errorMessage ? (
             <div className="col-span-full">
-              <AdminEmptyState message={errorMessage} />
+              <AdminEmptyState
+                message={errorMessage}
+                onRetry={() => void query.refetch()}
+                isRetrying={query.isFetching}
+              />
             </div>
           ) : query.data ? (
             <>

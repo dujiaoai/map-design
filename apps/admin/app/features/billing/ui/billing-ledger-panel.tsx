@@ -184,7 +184,11 @@ export function BillingLedgerPanel({ filterSeed }: { filterSeed?: BillingFilterS
         ) : query.isLoading ? (
           <AdminTableSkeleton columns={7} showPagination />
         ) : errorMessage ? (
-          <AdminEmptyState message={errorMessage} />
+          <AdminEmptyState
+            message={errorMessage}
+            onRetry={() => void query.refetch()}
+            isRetrying={query.isFetching}
+          />
         ) : query.data && query.data.items.length === 0 ? (
           <AdminEmptyState message="暂无流水记录。" />
         ) : query.data ? (

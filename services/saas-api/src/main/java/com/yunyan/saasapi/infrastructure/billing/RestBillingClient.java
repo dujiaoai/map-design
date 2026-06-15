@@ -27,6 +27,8 @@ import org.springframework.web.client.RestTemplate;
 public class RestBillingClient implements BillingClient {
 
   private static final String INTERNAL_TOKEN_HEADER = "X-Billing-Internal-Token";
+  private static final String CALLER_SERVICE_HEADER = "X-Billing-Caller-Service";
+  private static final String CALLER_SERVICE = "saas-api";
 
   private final BillingApiProperties billingApiProperties;
   private final RestTemplateBuilder restTemplateBuilder;
@@ -153,6 +155,7 @@ public class RestBillingClient implements BillingClient {
   private HttpHeaders internalHeaders() {
     var headers = new HttpHeaders();
     headers.set(INTERNAL_TOKEN_HEADER, billingApiProperties.getInternalToken());
+    headers.set(CALLER_SERVICE_HEADER, CALLER_SERVICE);
     return headers;
   }
 

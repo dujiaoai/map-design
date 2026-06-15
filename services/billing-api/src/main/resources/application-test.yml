@@ -23,6 +23,7 @@ billing:
     organization: 1000
   internal:
     token: test-billing-internal-token
+    allowed-callers: []
   webhook:
     token: test-billing-webhook-token
   payment:

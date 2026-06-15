@@ -2,3 +2,6 @@
 billing:
   payment:
     mock-enabled: true
+  internal:
+    allowed-callers:
+      - saas-api

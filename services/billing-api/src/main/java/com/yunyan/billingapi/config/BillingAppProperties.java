@@ -66,5 +66,7 @@ public class BillingAppProperties {
   public static class Internal {
     /** Shared secret for saas-api → billing-api internal calls */
     private String token = "dev-billing-internal-token-change-me";
+    /** Allowed {@link com.yunyan.billingapi.security.InternalAuthFilter#CALLER_SERVICE_HEADER} values; empty disables check. */
+    private java.util.List<String> allowedCallers = java.util.List.of();
   }
 }

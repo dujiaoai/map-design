@@ -64,6 +64,17 @@ public class InternalAuthFilter extends OncePerRequestFilter {
       return;
     }
 
+    if (!InternalCallerValidator.isCallerAllowed(
+        billingAppProperties, request.getHeader(CALLER_SERVICE_HEADER))) {
+      SecurityProblemWriter.write(
+          response,
+          objectMapper,
+          HttpStatus.FORBIDDEN,
+          "Caller service is not allowed",
+          "Forbidden");
+      return;
+    }
+
     filterChain.doFilter(request, response);
   }
 }

@@ -4,7 +4,7 @@ import com.yunyan.billingapi.application.hold.InsufficientBalanceException;
 import com.yunyan.billingapi.security.AuthException;
 import com.yunyan.billingapi.security.ratelimit.RateLimitException;
 import jakarta.validation.ConstraintViolationException;
-import java.util.Map;
+import java.net.URI;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -16,25 +16,34 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class BillingApiExceptionHandler {
 
+  private static final URI VALIDATION_ERROR_TYPE = URI.create("urn:yunyan:billing:validation_error");
+
   @ExceptionHandler(ConstraintViolationException.class)
-  ResponseEntity<Map<String, String>> handleConstraintViolation(
+  ResponseEntity<ProblemDetail> handleConstraintViolation(
       ConstraintViolationException exception) {
-    var message =
+    var detail =
         exception.getConstraintViolations().stream()
             .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
             .findFirst()
             .orElse("Validation failed");
-    return ResponseEntity.badRequest().body(Map.of("message", message));
+    return ResponseEntity.badRequest().body(validationProblem(detail));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException exception) {
-    var message =
+  ResponseEntity<ProblemDetail> handleValidation(MethodArgumentNotValidException exception) {
+    var detail =
         exception.getBindingResult().getFieldErrors().stream()
             .map(error -> error.getField() + ": " + error.getDefaultMessage())
             .findFirst()
             .orElse("Validation failed");
-    return ResponseEntity.badRequest().body(Map.of("message", message));
+    return ResponseEntity.badRequest().body(validationProblem(detail));
+  }
+
+  private static ProblemDetail validationProblem(String detail) {
+    var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+    problem.setTitle("Validation failed");
+    problem.setType(VALIDATION_ERROR_TYPE);
+    return problem;
   }
 
   @ExceptionHandler(RateLimitException.class)

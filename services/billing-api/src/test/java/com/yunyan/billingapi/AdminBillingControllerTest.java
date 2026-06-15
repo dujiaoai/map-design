@@ -207,7 +207,7 @@ class AdminBillingControllerTest {
                             "idempotencyKey",
                             "admin-adjust:too-large"))))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.message").exists());
+        .andExpect(jsonPath("$.detail").exists());
   }
 
   @Test

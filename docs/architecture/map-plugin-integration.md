@@ -86,6 +86,7 @@ interface MapPluginBridge {
 
 - **`MapPluginBridgeProvider`**：宿主侧注入 `createRegistryMapPluginBridge`（默认 `createDefaultMapPluginBridgeOptions()`）
 - **`map-plugin-tool-loaders.ts`**：`VITE_MAP_PLUGIN_LOADERS=true` 时按 registry lazy import `@haoxuan/map-plugins/{slug}/lazyEntry`
+- **`modify-panels.ts`**：`createModifyPanelsHost().closeSiblingExcept(pluginToolId)` 对齐 Modify 互斥组
 - **`MapToolLifecycleSync`**：仅 store → bridge 同步，不再重复注入
 - 未启用 loader 时：registry bridge DEV console.debug；未知 id 警告
 - `setMapPluginBridge()` 供 MapProvider 在 loader 就绪后覆盖注入

@@ -1,7 +1,9 @@
 import { create } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 
-import { mockNavMainItems, resolveNavToolMeta } from '~/entities/navigation'
+import { mockModuleMeta, mockNavMainItems, resolveNavToolMeta } from '~/entities/navigation'
+
+import { closeSiblingModifyPanelsExcept } from '../lib/modify-panels'
 
 import {
   type ActiveDrawerTool,
@@ -325,6 +327,11 @@ export const useMapWorkspaceStore = create<MapWorkspaceStore>((set, get) => ({
       get().closeMapModule()
       return
     }
+
+    if (mockModuleMeta[moduleId]?.pluginType === 'modify-panel') {
+      closeSiblingModifyPanelsExcept(moduleId)
+    }
+
     set({
       ...clearSidebarModules(),
       ...clearMapToolState(),

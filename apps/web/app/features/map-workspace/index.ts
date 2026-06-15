@@ -43,6 +43,14 @@ export {
   isMapPluginLoadersEnabled,
 } from './lib/map-plugin-tool-loaders'
 export {
+  closeSiblingModifyPanelsExcept,
+  createModifyPanelsHost,
+  isModifyPanelModule,
+  listModifyPanelModuleIds,
+  resolveModuleIdByPluginToolId,
+  type ModifyPanelsHost,
+} from './lib/modify-panels'
+export {
   buildWorkspaceSearchParams,
   parseWorkspaceUrl,
   selectWorkspaceLocation,

@@ -17,7 +17,7 @@
 | 项 | 说明 | 依赖 |
 | --- | --- | --- |
 | Phase C · MapProvider | `MapPluginBridgeProvider` + lazy loader 脚手架 ✅；packages-map 联调待接 | packages-map |
-| Modify 互斥组 | `modifyPanels.closeSiblingExcept` 与 store 对齐 | 宿主 bridge |
+| Modify 互斥组 | `createModifyPanelsHost` + store 对齐 ✅；MapProvider 注入待接 | 宿主 bridge |
 | 高保真 mock 扩展 | 做分析、属性查看、事件等模块 UI | registry-catalog |
 | 租户能力门控 | `tenantFeature` 与后端能力开关联调 | 鉴权 API |
 | 机库 Dock | uav-workspace 三项接真实数据 | 机库服务 |

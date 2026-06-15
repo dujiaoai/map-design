@@ -216,7 +216,22 @@ export function BillingRechargeOrdersPanel({
                       </AdminTableCell>
                       <AdminTableCell>{order.points.toLocaleString('zh-CN')}</AdminTableCell>
                       <AdminTableCell>
-                        {formatBillingPrice(order.priceCents, order.currency)}
+                        {order.couponDiscountCents > 0 ? (
+                          <div className="space-y-0.5">
+                            <p>{formatBillingPrice(order.priceCents, order.currency)}</p>
+                            <p className="text-xs text-muted-foreground">
+                              原价 {formatBillingPrice(order.listPriceCents, order.currency)}，抵扣{' '}
+                              {formatBillingPrice(order.couponDiscountCents, order.currency)}
+                            </p>
+                            {order.couponCode ? (
+                              <p className="font-mono text-xs text-muted-foreground">
+                                {order.couponCode}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : (
+                          formatBillingPrice(order.priceCents, order.currency)
+                        )}
                       </AdminTableCell>
                       <AdminTableCell>{order.channel}</AdminTableCell>
                       <AdminTableCell>{formatAdminIsoDate(order.paidAt)}</AdminTableCell>

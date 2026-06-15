@@ -53,6 +53,7 @@ export {
   useMapWorkspaceStore,
   type ActivePanelTool,
 } from './model/workspace-store'
+export { MapPluginBridgeProvider } from './ui/map-plugin-bridge-provider'
 export { MapToolLifecycleSync } from './ui/map-tool-lifecycle-sync'
 export { MapWorkspaceKeyboardSync, WORKSPACE_GLOBAL_SEARCH_INPUT_ID } from './ui/map-workspace-keyboard-sync'
 export { MapWorkspaceUrlSync } from './ui/map-workspace-url-sync'

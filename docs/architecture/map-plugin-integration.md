@@ -84,14 +84,16 @@ interface MapPluginBridge {
 
 ### 当前状态
 
-- 默认 **noop bridge**（DEV 下 console.debug）
-- `setMapPluginBridge()` 供 MapProvider 注入真实实现
-- `map-plugin-registry.ts` 维护已知 `pluginToolId` 列表（DEV 校验用）
+- **`MapPluginBridgeProvider`**：宿主侧注入 `createRegistryMapPluginBridge`（可传 `toolLoaders`）
+- **`MapToolLifecycleSync`**：仅 store → bridge 同步，不再重复注入
+- 默认 registry bridge（DEV 下 console.debug；未知 id 警告）
+- `setMapPluginBridge()` 供 MapProvider 在 loader 就绪后覆盖注入
+- `map-plugin-registry.ts` 维护已知 `pluginToolId` 列表
 
 ### 接入步骤（Phase C）
 
-1. 在 `home.tsx` 或 MapProvider 初始化时调用 `setMapPluginBridge(realBridge)`
-2. `realBridge.startMapTool` 内部 lazy import 对应 map-plugin entry
+1. MapProvider 挂载后 `<MapPluginBridgeProvider bridgeOptions={{ toolLoaders }} />` 或调用 `setMapPluginBridge(realBridge)`
+2. `realBridge.startMapTool` 内部 lazy import 对应 map-plugin entry（packages-map）
 3. 插件通过 MapProvider API 在地图上绘制/交互
 4. `stopMapTool` 清理插件状态与地图 overlay
 5. URL 深链：`workspace-url.ts` 已支持 `?tool=` 参数，bridge 需响应 restore

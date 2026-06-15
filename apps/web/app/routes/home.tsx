@@ -2,6 +2,7 @@ import { SidebarInset, SidebarProvider, cn } from '@repo/ui'
 import { type CSSProperties } from 'react'
 
 import {
+  MapPluginBridgeProvider,
   MapToolLifecycleSync,
   MapWorkspaceKeyboardSync,
   MapWorkspaceUrlSync,
@@ -69,6 +70,7 @@ export default function Home() {
     <div className="workspace-page workspace-page-enter" style={pointerStyle}>
       <SidebarProvider>
         <MapWorkspaceUrlSync />
+        <MapPluginBridgeProvider />
         <MapToolLifecycleSync />
         <MapWorkspaceKeyboardSync />
         <AppSidebar user={chrome.user} />

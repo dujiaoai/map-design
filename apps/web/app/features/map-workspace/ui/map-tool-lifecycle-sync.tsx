@@ -1,20 +1,10 @@
 import { useEffect } from 'react'
 
-import { createRegistryMapPluginBridge } from '../lib/create-registry-map-plugin-bridge'
-import {
-  getMapPluginBridge,
-  isMapPluginBridgeAttached,
-  setMapPluginBridge,
-} from '../lib/map-plugin-bridge'
+import { getMapPluginBridge } from '../lib/map-plugin-bridge'
 import { useMapWorkspaceStore } from '../model/workspace-store'
 
-/** 将 activeMapTool / activeDrawerTool 同步到 map-plugins bridge */
+/** 将 activeMapTool / activeDrawerTool 同步到 map-plugins bridge（bridge 由 MapPluginBridgeProvider 注入） */
 export function MapToolLifecycleSync() {
-  useEffect(() => {
-    if (!isMapPluginBridgeAttached()) {
-      setMapPluginBridge(createRegistryMapPluginBridge())
-    }
-  }, [])
   const activeMapTool = useMapWorkspaceStore((state) => state.activeMapTool)
   const activeDrawerTool = useMapWorkspaceStore((state) => state.activeDrawerTool)
 

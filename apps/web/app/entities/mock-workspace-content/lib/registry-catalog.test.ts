@@ -13,7 +13,10 @@ describe('mock-workspace-content registry catalog', () => {
   it('lists registered mock tool ids', () => {
     expect(REGISTERED_MOCK_TOOL_IDS).toEqual([
       'measure-distance',
+      'measure-area',
       'plot-point',
+      'pick-point',
+      'locate-point',
       'swipe-compare',
     ])
     for (const id of REGISTERED_MOCK_TOOL_IDS) {

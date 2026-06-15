@@ -1,7 +1,10 @@
 /** 已注册高保真 mock 的 toolId（批量扩展时在此追加） */
 export const REGISTERED_MOCK_TOOL_IDS = [
   'measure-distance',
+  'measure-area',
   'plot-point',
+  'pick-point',
+  'locate-point',
   'swipe-compare',
 ] as const
 

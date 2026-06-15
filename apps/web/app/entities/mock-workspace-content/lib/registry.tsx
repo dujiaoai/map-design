@@ -25,7 +25,10 @@ import { ThematicModuleContent } from '../ui/modules/thematic-module-content'
 import { ViewProjectModuleContent } from '../ui/modules/view-project-module-content'
 import { VideoMonitorModuleContent } from '../ui/modules/video-monitor-module-content'
 import { FallbackToolContent } from '../ui/tools/fallback-tool-content'
+import { LocatePointToolContent } from '../ui/tools/locate-point-tool-content'
+import { MeasureAreaToolContent } from '../ui/tools/measure-area-tool-content'
 import { MeasureDistanceToolContent } from '../ui/tools/measure-distance-tool-content'
+import { PickPointToolContent } from '../ui/tools/pick-point-tool-content'
 import { PlotPointToolContent } from '../ui/tools/plot-point-tool-content'
 import { SwipeCompareToolContent } from '../ui/tools/swipe-compare-tool-content'
 
@@ -37,7 +40,10 @@ import {
 
 const MOCK_TOOL_REGISTRY: Record<string, MockToolContentComponent> = {
   'measure-distance': MeasureDistanceToolContent,
+  'measure-area': MeasureAreaToolContent,
   'plot-point': PlotPointToolContent,
+  'pick-point': PickPointToolContent,
+  'locate-point': LocatePointToolContent,
   'swipe-compare': SwipeCompareToolContent,
 }
 

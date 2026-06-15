@@ -95,7 +95,7 @@ switch (command) {
     break
   }
   case 'rebuild': {
-    run('docker', composeArgs(['build', '--no-cache', 'saas-api', 'saas-web', 'saas-admin', 'cloud-uav']))
+    run('docker', composeArgs(['build', '--no-cache', 'saas-api', 'billing-api', 'saas-web', 'saas-admin', 'cloud-uav']))
     run('docker', composeArgs(['up', '-d']))
     break
   }

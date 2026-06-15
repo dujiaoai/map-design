@@ -102,6 +102,8 @@ billing:
     source: ${BILLING_MEMBERSHIP_SYNC_SOURCE:local}
     saas-api-base-url: ${BILLING_MEMBERSHIP_SAAS_API_BASE_URL:}
     push-receive-enabled: ${BILLING_MEMBERSHIP_PUSH_RECEIVE_ENABLED:false}
+    push-signature-verify-enabled: ${BILLING_MEMBERSHIP_PUSH_SIGNATURE_VERIFY:false}
+    push-signature-hmac-secret: ${BILLING_MEMBERSHIP_PUSH_HMAC_SECRET:}
     scan-ms: ${BILLING_MEMBERSHIP_SYNC_SCAN_MS:300000}
     saas:
       url: ${BILLING_SAAS_DATASOURCE_URL:}

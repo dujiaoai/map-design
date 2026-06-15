@@ -198,6 +198,9 @@ public class BillingAppProperties {
     private String saasApiBaseUrl = "";
     /** Accept POST /internal/v1/billing/membership/sync-events from saas-api. */
     private boolean pushReceiveEnabled = false;
+    /** When true, require HMAC-SHA256 hex on membership push body. */
+    private boolean pushSignatureVerifyEnabled = false;
+    private String pushSignatureHmacSecret = "";
     /** Scan interval for mirror sync job (ms). */
     private long scanMs = 300_000L;
     private final SaasDatasource saas = new SaasDatasource();

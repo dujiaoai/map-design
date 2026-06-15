@@ -40,18 +40,22 @@ public class RestBillingClient implements BillingClient {
       throw new IllegalStateException("Billing is disabled (saas.billing.enabled=false)");
     }
 
-    try {
-      var response =
-          restTemplate()
-              .postForEntity(internalUrl("/internal/v1/billing/hold"), jsonEntity(request), HoldResponse.class);
-      var body = response.getBody();
-      return body == null ? Optional.empty() : Optional.ofNullable(body.holdId());
-    } catch (HttpStatusCodeException ex) {
-      if (ex.getStatusCode().value() == 402) {
-        return Optional.empty();
-      }
-      throw ex;
-    }
+    return withRetry(
+        () -> {
+          try {
+            var response =
+                restTemplate()
+                    .postForEntity(
+                        internalUrl("/internal/v1/billing/hold"), jsonEntity(request), HoldResponse.class);
+            var body = response.getBody();
+            return body == null ? Optional.empty() : Optional.ofNullable(body.holdId());
+          } catch (HttpStatusCodeException ex) {
+            if (ex.getStatusCode().value() == 402) {
+              return Optional.empty();
+            }
+            throw ex;
+          }
+        });
   }
 
   @Override
@@ -59,11 +63,13 @@ public class RestBillingClient implements BillingClient {
     if (!billingApiProperties.isEnabled()) {
       return;
     }
-    restTemplate()
-        .postForEntity(
-            internalUrl("/internal/v1/billing/hold/" + holdId + "/confirm"),
-            jsonEntity(null),
-            Void.class);
+    withRetryVoid(
+        () ->
+            restTemplate()
+                .postForEntity(
+                    internalUrl("/internal/v1/billing/hold/" + holdId + "/confirm"),
+                    jsonEntity(null),
+                    Void.class));
   }
 
   @Override
@@ -71,11 +77,13 @@ public class RestBillingClient implements BillingClient {
     if (!billingApiProperties.isEnabled()) {
       return;
     }
-    restTemplate()
-        .postForEntity(
-            internalUrl("/internal/v1/billing/hold/" + holdId + "/cancel"),
-            jsonEntity(null),
-            Void.class);
+    withRetryVoid(
+        () ->
+            restTemplate()
+                .postForEntity(
+                    internalUrl("/internal/v1/billing/hold/" + holdId + "/cancel"),
+                    jsonEntity(null),
+                    Void.class));
   }
 
   @Override
@@ -97,14 +105,17 @@ public class RestBillingClient implements BillingClient {
             + "&quantity="
             + request.quantity();
 
-    var response =
-        restTemplate()
-            .exchange(url, HttpMethod.GET, new HttpEntity<>(internalHeaders()), EstimateResult.class);
-    var body = response.getBody();
-    if (body == null) {
-      throw new IllegalStateException("Empty estimate response from billing-api");
-    }
-    return body;
+    return withRetry(
+        () -> {
+          var response =
+              restTemplate()
+                  .exchange(url, HttpMethod.GET, new HttpEntity<>(internalHeaders()), EstimateResult.class);
+          var body = response.getBody();
+          if (body == null) {
+            throw new IllegalStateException("Empty estimate response from billing-api");
+          }
+          return body;
+        });
   }
 
   @Override
@@ -114,9 +125,11 @@ public class RestBillingClient implements BillingClient {
     }
 
     try {
-      restTemplate()
-          .postForEntity(
-              internalUrl("/internal/v1/billing/signup-bonus"), jsonEntity(request), Void.class);
+      withRetryVoid(
+          () ->
+              restTemplate()
+                  .postForEntity(
+                      internalUrl("/internal/v1/billing/signup-bonus"), jsonEntity(request), Void.class));
       return true;
     } catch (RestClientException ex) {
       log.warn(
@@ -143,6 +156,16 @@ public class RestBillingClient implements BillingClient {
   }
 
   public record BillingHoldProblem(long availableBalance, long requiredPoints) {}
+
+  private <T> T withRetry(java.util.function.Supplier<T> action) {
+    var client = billingApiProperties.getClient();
+    return BillingHttpRetry.execute(client.getMaxAttempts(), client.getBackoffMs(), action);
+  }
+
+  private void withRetryVoid(Runnable action) {
+    var client = billingApiProperties.getClient();
+    BillingHttpRetry.executeVoid(client.getMaxAttempts(), client.getBackoffMs(), action);
+  }
 
   private RestTemplate restTemplate() {
     return restTemplateBuilder.build();

@@ -76,6 +76,9 @@ saas:
     enabled: ${SAAS_BILLING_ENABLED:false}
     base-url: ${SAAS_BILLING_API_BASE_URL:http://localhost:8083}
     internal-token: ${BILLING_INTERNAL_TOKEN:dev-billing-internal-token-change-me}
+    client:
+      max-attempts: 3
+      backoff-ms: 200
     signup-bonus-retry:
       scan-ms: 300000
       max-attempts: 20

@@ -13,7 +13,17 @@ public class BillingApiProperties {
   private String baseUrl = "http://localhost:8083";
   private String internalToken = "dev-billing-internal-token-change-me";
 
+  private final Client client = new Client();
+
   private final SignupBonusRetry signupBonusRetry = new SignupBonusRetry();
+
+  @Data
+  public static class Client {
+    /** Max attempts for transient billing-api HTTP failures. */
+    private int maxAttempts = 3;
+    /** Base backoff between retries (ms); multiplied by attempt number. */
+    private long backoffMs = 200L;
+  }
 
   @Data
   public static class SignupBonusRetry {

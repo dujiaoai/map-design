@@ -17,6 +17,14 @@ public class BillingApiProperties {
 
   private final SignupBonusRetry signupBonusRetry = new SignupBonusRetry();
 
+  private final MembershipSync membershipSync = new MembershipSync();
+
+  @Data
+  public static class MembershipSync {
+    /** Best-effort push to billing-api after outbox enqueue (pull remains fallback). */
+    private boolean pushEnabled = false;
+  }
+
   @Data
   public static class Client {
     /** Max attempts for transient billing-api HTTP failures. */

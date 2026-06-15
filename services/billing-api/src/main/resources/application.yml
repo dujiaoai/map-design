@@ -101,6 +101,7 @@ billing:
     enabled: ${BILLING_MEMBERSHIP_SYNC_ENABLED:false}
     source: ${BILLING_MEMBERSHIP_SYNC_SOURCE:local}
     saas-api-base-url: ${BILLING_MEMBERSHIP_SAAS_API_BASE_URL:}
+    push-receive-enabled: ${BILLING_MEMBERSHIP_PUSH_RECEIVE_ENABLED:false}
     scan-ms: ${BILLING_MEMBERSHIP_SYNC_SCAN_MS:300000}
     saas:
       url: ${BILLING_SAAS_DATASOURCE_URL:}

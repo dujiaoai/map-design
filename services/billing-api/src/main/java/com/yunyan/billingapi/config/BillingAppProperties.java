@@ -194,8 +194,10 @@ public class BillingAppProperties {
     private boolean enabled = false;
     /** local (shared PG / jdbc mirror), copy (saas PG periodic COPY), api (live check), cdc (event pull). */
     private String source = "local";
-    /** saas-api origin, e.g. http://localhost:8082 — required when source=api. */
+    /** saas-api origin, e.g. http://localhost:8082 — required when source=api or cdc. */
     private String saasApiBaseUrl = "";
+    /** Accept POST /internal/v1/billing/membership/sync-events from saas-api. */
+    private boolean pushReceiveEnabled = false;
     /** Scan interval for mirror sync job (ms). */
     private long scanMs = 300_000L;
     private final SaasDatasource saas = new SaasDatasource();

@@ -82,6 +82,8 @@ saas:
     signup-bonus-retry:
       scan-ms: 300000
       max-attempts: 20
+    membership-sync:
+      push-enabled: ${SAAS_BILLING_MEMBERSHIP_PUSH_ENABLED:false}
   jwt:
     issuer: yunyan-saas
     secret: ${SAAS_JWT_SECRET:dev-only-change-me-use-32chars-minimum!!}

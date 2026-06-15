@@ -1,10 +1,17 @@
 package com.yunyan.billingapi.application.wallet;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import com.yunyan.billingapi.application.metrics.BillingMetrics;
+import com.yunyan.billingapi.application.notification.BillingNotificationService;
 import com.yunyan.billingapi.config.BillingAppProperties;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class LowBalanceMonitorTest {
@@ -17,11 +24,15 @@ class LowBalanceMonitorTest {
 
     var registry = new SimpleMeterRegistry();
     var metrics = new BillingMetrics(registry);
-    var monitor = new LowBalanceMonitor(properties, metrics);
+    var notifications = mock(BillingNotificationService.class);
+    var monitor = new LowBalanceMonitor(properties, metrics, notifications);
+    var wallet =
+        new WalletBalanceContext(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
 
-    monitor.checkAvailableCrossing(120, 40);
+    monitor.checkAvailableCrossing(wallet, 120, 40);
 
     assertThat(registry.get("billing.wallet.low_balance").counter().count()).isEqualTo(1);
+    verify(notifications).notifyLowBalance(eq(wallet.tenantId()), eq(wallet.userId()), eq(40L), eq(50L));
   }
 
   @Test
@@ -32,11 +43,15 @@ class LowBalanceMonitorTest {
 
     var registry = new SimpleMeterRegistry();
     var metrics = new BillingMetrics(registry);
-    var monitor = new LowBalanceMonitor(properties, metrics);
+    var notifications = mock(BillingNotificationService.class);
+    var monitor = new LowBalanceMonitor(properties, metrics, notifications);
+    var wallet =
+        new WalletBalanceContext(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
 
-    monitor.checkAvailableCrossing(30, 20);
+    monitor.checkAvailableCrossing(wallet, 30, 20);
 
     assertThat(registry.get("billing.wallet.low_balance").counter().count()).isZero();
+    verify(notifications, never()).notifyLowBalance(eq(wallet.tenantId()), eq(wallet.userId()), anyLong(), anyLong());
   }
 
   @Test
@@ -46,10 +61,14 @@ class LowBalanceMonitorTest {
 
     var registry = new SimpleMeterRegistry();
     var metrics = new BillingMetrics(registry);
-    var monitor = new LowBalanceMonitor(properties, metrics);
+    var notifications = mock(BillingNotificationService.class);
+    var monitor = new LowBalanceMonitor(properties, metrics, notifications);
+    var wallet =
+        new WalletBalanceContext(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
 
-    monitor.checkAvailableCrossing(120, 10);
+    monitor.checkAvailableCrossing(wallet, 120, 10);
 
     assertThat(registry.get("billing.wallet.low_balance").counter().count()).isZero();
+    verify(notifications, never()).notifyLowBalance(eq(wallet.tenantId()), eq(wallet.userId()), anyLong(), anyLong());
   }
 }

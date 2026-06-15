@@ -93,6 +93,7 @@ public class HoldService {
     }
 
     lowBalanceMonitor.checkAvailableCrossing(
+        LowBalanceMonitor.context(request.tenantId(), request.userId(), wallet.getId()),
         LowBalanceMonitor.available(balance, frozen),
         LowBalanceMonitor.available(newBalance, newFrozen));
 

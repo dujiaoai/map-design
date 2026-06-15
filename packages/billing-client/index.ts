@@ -13,6 +13,9 @@ export {
   transferRequestSchema,
   transferResponseSchema,
   walletResponseSchema,
+  billingNotificationSchema,
+  billingNotificationListSchema,
+  billingNotificationMarkAllReadSchema,
 } from './src/schemas'
 export type {
   CreateRechargeOrderRequest,
@@ -26,4 +29,6 @@ export type {
   TransferRequest,
   TransferResponse,
   WalletResponse,
+  BillingNotification,
+  BillingNotificationListResponse,
 } from './src/schemas'

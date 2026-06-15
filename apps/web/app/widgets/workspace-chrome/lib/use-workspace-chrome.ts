@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { sessionToNavUserData } from '~/features/account/lib/session-display'
-import { selectUnreadNotificationCount, useNotificationStore } from '~/entities/notification'
+import { selectNotificationItems, selectUnreadNotificationCount, useNotificationStore } from '~/entities/notification'
 import { auth } from '~/shared/auth/client'
 import { clearAppSession } from '~/shared/session/clear-app-session'
 import { useWorkspaceSession } from '~/shared/session/use-workspace-session'
@@ -12,7 +12,7 @@ export function useWorkspaceChrome() {
   const { session, isLoading } = useWorkspaceSession()
   const [accountOpen, setAccountOpen] = useState(false)
   const [notificationOpen, setNotificationOpen] = useState(false)
-  const notificationItems = useNotificationStore((state) => state.items)
+  const notificationItems = useNotificationStore(selectNotificationItems)
   const notificationUnreadCount = selectUnreadNotificationCount(notificationItems)
 
   async function handleLogout() {

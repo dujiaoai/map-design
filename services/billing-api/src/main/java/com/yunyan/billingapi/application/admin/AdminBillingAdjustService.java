@@ -85,6 +85,7 @@ public class AdminBillingAdjustService {
 
     if (request.amount() < 0) {
       lowBalanceMonitor.checkAvailableCrossing(
+          LowBalanceMonitor.context(tenantId, request.userId(), wallet.getId()),
           LowBalanceMonitor.available(currentBalance, frozen),
           LowBalanceMonitor.available(newBalance, frozen));
     }

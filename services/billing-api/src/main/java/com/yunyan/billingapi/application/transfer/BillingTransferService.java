@@ -82,7 +82,10 @@ public class BillingTransferService {
       throw AuthException.conflict("Wallet update conflict, retry");
     }
 
-    lowBalanceMonitor.checkAvailableCrossing(available, fromBalanceAfter - fromFrozen);
+    lowBalanceMonitor.checkAvailableCrossing(
+        LowBalanceMonitor.context(tenantId, actor.userId(), fromWallet.getId()),
+        available,
+        fromBalanceAfter - fromFrozen);
 
     insertLedger(
         fromWallet.getId(),

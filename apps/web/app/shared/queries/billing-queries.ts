@@ -15,6 +15,7 @@ export {
   teamUsageItemSchema,
   teamUsageSummarySchema,
   walletResponseSchema,
+  billingNotificationListSchema,
 } from '@repo/billing-client'
 
 export type {
@@ -39,6 +40,8 @@ export const billingQueryKeys = {
     [...billingQueryKeys.all, 'team-usage', productCode ?? 'all'] as const,
   estimate: (productCode: string, ruleCode: string, quantity: number) =>
     [...billingQueryKeys.all, 'estimate', productCode, ruleCode, quantity] as const,
+  notifications: (page: number, size: number) =>
+    [...billingQueryKeys.all, 'notifications', page, size] as const,
 }
 
 export function walletQueryOptions() {
@@ -142,5 +145,21 @@ export function useBillingEstimateQuery(
   return useQuery({
     ...estimateQueryOptions(productCode, ruleCode, quantity),
     enabled: enabled && usesSaasSessionBootstrap() && canReadWallet() && Boolean(ruleCode),
+  })
+}
+
+export function notificationsQueryOptions(page = 0, size = 20) {
+  return queryOptions({
+    queryKey: billingQueryKeys.notifications(page, size),
+    queryFn: () => billingClient.getNotifications(page, size),
+    staleTime: 30_000,
+  })
+}
+
+export function useBillingNotificationsQuery(page = 0, size = 20, enabled = true) {
+  return useQuery({
+    ...notificationsQueryOptions(page, size),
+    enabled: enabled && usesSaasSessionBootstrap() && canReadWallet(),
+    refetchInterval: 60_000,
   })
 }

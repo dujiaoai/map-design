@@ -2,7 +2,13 @@ import { Button, cn } from '@repo/ui'
 import { useState } from 'react'
 
 import {
+  isBillingNotificationItemId,
+  parseBillingNotificationItemId,
+} from '~/features/billing/lib/billing-notifications'
+import { billingClient } from '~/shared/api/billing-client'
+import {
   NOTIFICATION_TYPE_LABEL,
+  selectNotificationItems,
   useNotificationStore,
   type NotificationItem,
 } from '~/entities/notification'
@@ -58,17 +64,27 @@ function NotificationRow({
 }
 
 export function NotificationPanel() {
-  const items = useNotificationStore((state) => state.items)
-  const markRead = useNotificationStore((state) => state.markRead)
-  const markAllRead = useNotificationStore((state) => state.markAllRead)
+  const items = useNotificationStore(selectNotificationItems)
+  const markReadLocal = useNotificationStore((state) => state.markRead)
+  const markAllReadLocal = useNotificationStore((state) => state.markAllRead)
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const selected = items.find((item) => item.id === selectedId) ?? null
   const unreadCount = items.filter((item) => !item.read).length
 
   function handleSelect(item: NotificationItem) {
-    markRead(item.id)
+    markReadLocal(item.id)
+    if (isBillingNotificationItemId(item.id)) {
+      void billingClient
+        .markNotificationRead(parseBillingNotificationItemId(item.id))
+        .catch(() => undefined)
+    }
     setSelectedId(item.id)
+  }
+
+  function handleMarkAllRead() {
+    markAllReadLocal()
+    void billingClient.markAllNotificationsRead().catch(() => undefined)
   }
 
   if (selected) {
@@ -83,7 +99,7 @@ export function NotificationPanel() {
           <span className="text-primary ml-1">（{unreadCount} 条）</span>
         </p>
         {unreadCount > 0 ? (
-          <Button type="button" variant="ghost" size="sm" className="h-8 px-2" onClick={markAllRead}>
+          <Button type="button" variant="ghost" size="sm" className="h-8 px-2" onClick={handleMarkAllRead}>
             全部已读
           </Button>
         ) : null}

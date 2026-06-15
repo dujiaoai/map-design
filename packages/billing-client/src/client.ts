@@ -17,6 +17,8 @@ import {
   type TransferResponse,
   type WalletResponse,
   transferResponseSchema,
+  billingNotificationListSchema,
+  billingNotificationMarkAllReadSchema,
 } from './schemas'
 
 export type BillingClientOptions = ApiClientOptions
@@ -92,6 +94,24 @@ export function createBillingClient(options: BillingClientOptions) {
 
     async transfer(input: TransferRequest): Promise<TransferResponse> {
       return transferResponseSchema.parse(await api.post('/transfer', input))
+    },
+
+    async getNotifications(page = 0, size = 20) {
+      const params = new URLSearchParams({
+        page: String(page),
+        size: String(size),
+      })
+      return billingNotificationListSchema.parse(
+        await api.get(`/notifications?${params.toString()}`),
+      )
+    },
+
+    async markNotificationRead(notificationId: string) {
+      await api.post(`/notifications/${encodeURIComponent(notificationId)}/read`)
+    },
+
+    async markAllNotificationsRead() {
+      return billingNotificationMarkAllReadSchema.parse(await api.post('/notifications/read-all'))
     },
   }
 }

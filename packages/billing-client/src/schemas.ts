@@ -111,3 +111,26 @@ export const transferResponseSchema = z.object({
 
 export type TransferRequest = z.infer<typeof transferRequestSchema>
 export type TransferResponse = z.infer<typeof transferResponseSchema>
+
+export const billingNotificationSchema = z.object({
+  id: z.string(),
+  category: z.string(),
+  title: z.string(),
+  body: z.string(),
+  read: z.boolean(),
+  createdAt: z.string().nullable().optional(),
+})
+
+export const billingNotificationListSchema = z.object({
+  items: z.array(billingNotificationSchema),
+  page: z.number(),
+  size: z.number(),
+  total: z.number(),
+})
+
+export const billingNotificationMarkAllReadSchema = z.object({
+  markedCount: z.number(),
+})
+
+export type BillingNotification = z.infer<typeof billingNotificationSchema>
+export type BillingNotificationListResponse = z.infer<typeof billingNotificationListSchema>

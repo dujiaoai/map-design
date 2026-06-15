@@ -378,7 +378,8 @@ flowchart LR
 
 - **充值退款**（骨架 ✅）：`POST /v1/admin/billing/recharge-orders/{orderNo}/refund`（`admin:billing:refund`）；`paid`→`refunding`→`refunded`；扣回积分 + mock 网关原路退；审计 `billing.recharge.refund`
 - **日对账**（骨架 ✅）：`GET /v1/admin/billing/reconciliation/daily?date=`（UTC 自然日；对比 paid 订单 vs `recharge` 流水、refunded 订单 vs `refund` 流水）
-- 通知；发票
+- **站内通知**（骨架 ✅）：`GET/POST /v1/billing/notifications*`；低余额 crossing + 充值退款触发；saas-web 通知抽屉合并展示
+- 发票
 
 ### F-5 · 增长管控
 

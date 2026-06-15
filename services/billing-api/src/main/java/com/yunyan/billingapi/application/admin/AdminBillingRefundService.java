@@ -1,6 +1,7 @@
 package com.yunyan.billingapi.application.admin;
 
 import com.yunyan.billingapi.application.metrics.BillingMetrics;
+import com.yunyan.billingapi.application.notification.BillingNotificationService;
 import com.yunyan.billingapi.application.payment.PaymentGatewayRegistry;
 import com.yunyan.billingapi.application.wallet.LowBalanceMonitor;
 import com.yunyan.billingapi.domain.entity.BillingLedger;
@@ -29,6 +30,7 @@ public class AdminBillingRefundService {
   private final AdminBillingRefundStateService refundStateService;
   private final BillingMetrics billingMetrics;
   private final LowBalanceMonitor lowBalanceMonitor;
+  private final BillingNotificationService billingNotificationService;
 
   public AdminBillingRefundService(
       BillingRechargeOrderMapper orderMapper,
@@ -38,7 +40,8 @@ public class AdminBillingRefundService {
       AdminAuditLogService adminAuditLogService,
       AdminBillingRefundStateService refundStateService,
       BillingMetrics billingMetrics,
-      LowBalanceMonitor lowBalanceMonitor) {
+      LowBalanceMonitor lowBalanceMonitor,
+      BillingNotificationService billingNotificationService) {
     this.orderMapper = orderMapper;
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
@@ -47,6 +50,7 @@ public class AdminBillingRefundService {
     this.refundStateService = refundStateService;
     this.billingMetrics = billingMetrics;
     this.lowBalanceMonitor = lowBalanceMonitor;
+    this.billingNotificationService = billingNotificationService;
   }
 
   @Transactional
@@ -112,6 +116,7 @@ public class AdminBillingRefundService {
       }
 
       lowBalanceMonitor.checkAvailableCrossing(
+          LowBalanceMonitor.context(order.getTenantId(), order.getUserId(), wallet.getId()),
           LowBalanceMonitor.available(balance, frozen),
           LowBalanceMonitor.available(newBalance, frozen));
 
@@ -143,6 +148,9 @@ public class AdminBillingRefundService {
           refundResult.providerRefundNo());
 
       billingMetrics.recordRefundCompleted();
+
+      billingNotificationService.notifyRechargeRefund(
+          order.getTenantId(), order.getUserId(), normalizedOrderNo, points, reason);
 
       return AdminRefundResponse.applied(
           normalizedOrderNo,

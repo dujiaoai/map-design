@@ -15,6 +15,7 @@ import { BillingAdjustPanel } from '~/features/billing/ui/billing-adjust-panel'
 import { BillingCouponsPanel } from '~/features/billing/ui/billing-coupons-panel'
 import { CreateBillingPackageSheet } from '~/features/billing/ui/create-billing-package-sheet'
 import { EditBillingPackageSheet } from '~/features/billing/ui/edit-billing-package-sheet'
+import { BillingWireTransfersPanel } from '~/features/billing/ui/billing-wire-transfers-panel'
 import { BillingInvoicesPanel } from '~/features/billing/ui/billing-invoices-panel'
 import { BillingLedgerPanel } from '~/features/billing/ui/billing-ledger-panel'
 import { BillingPackagesPanel } from '~/features/billing/ui/billing-packages-panel'
@@ -142,6 +143,7 @@ export function BillingAdminPage() {
                 <TabsTrigger value="ledger">积分流水</TabsTrigger>
                 <TabsTrigger value="reconciliation">日对账</TabsTrigger>
                 <TabsTrigger value="invoices">发票申请</TabsTrigger>
+                <TabsTrigger value="wire-transfers">对公转账</TabsTrigger>
                 <TabsTrigger value="usage">消费汇总</TabsTrigger>
               </>
             ) : null}
@@ -170,6 +172,9 @@ export function BillingAdminPage() {
               </TabsContent>
               <TabsContent value="invoices" className="mt-4">
                 <BillingInvoicesPanel filterSeed={filterSeed} />
+              </TabsContent>
+              <TabsContent value="wire-transfers" className="mt-4">
+                <BillingWireTransfersPanel filterSeed={filterSeed} />
               </TabsContent>
               <TabsContent value="usage" className="mt-4">
                 <BillingUsagePanel filterSeed={filterSeed} />

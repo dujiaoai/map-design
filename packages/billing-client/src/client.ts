@@ -22,10 +22,12 @@ import {
   invoiceListResponseSchema,
   invoiceRequestSchema,
   redeemCouponResponseSchema,
-  type CreateInvoiceRequest,
-  type InvoiceListResponse,
-  type InvoiceRequest,
+  wireTransferListResponseSchema,
+  wireTransferRequestSchema,
+  type CreateWireTransferRequest,
   type RedeemCouponResponse,
+  type WireTransferListResponse,
+  type WireTransferRequest,
 } from './schemas'
 
 export type BillingClientOptions = ApiClientOptions
@@ -136,6 +138,20 @@ export function createBillingClient(options: BillingClientOptions) {
     async redeemCoupon(code: string): Promise<RedeemCouponResponse> {
       return redeemCouponResponseSchema.parse(
         await api.post('/coupons/redeem', { code: code.trim() }),
+      )
+    },
+
+    async createWireTransferRequest(input: CreateWireTransferRequest): Promise<WireTransferRequest> {
+      return wireTransferRequestSchema.parse(await api.post('/wire-transfers', input))
+    },
+
+    async listWireTransfers(page = 0, size = 20): Promise<WireTransferListResponse> {
+      const params = new URLSearchParams({
+        page: String(page),
+        size: String(size),
+      })
+      return wireTransferListResponseSchema.parse(
+        await api.get(`/wire-transfers?${params.toString()}`),
       )
     },
   }

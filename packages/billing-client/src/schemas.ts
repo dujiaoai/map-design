@@ -183,3 +183,38 @@ export type InvoiceRequest = z.infer<typeof invoiceRequestSchema>
 export type InvoiceListResponse = z.infer<typeof invoiceListResponseSchema>
 export type RedeemCouponRequest = z.infer<typeof redeemCouponRequestSchema>
 export type RedeemCouponResponse = z.infer<typeof redeemCouponResponseSchema>
+
+export const wireTransferRequestSchema = z.object({
+  id: z.string(),
+  requestNo: z.string(),
+  tenantId: z.string(),
+  userId: z.string(),
+  companyName: z.string(),
+  contactEmail: z.string(),
+  amountCents: z.number(),
+  points: z.number(),
+  bankReference: z.string().nullable().optional(),
+  status: z.string(),
+  adminRemark: z.string().nullable().optional(),
+  createdAt: z.string().nullable().optional(),
+  updatedAt: z.string().nullable().optional(),
+})
+
+export const wireTransferListResponseSchema = z.object({
+  items: z.array(wireTransferRequestSchema),
+  page: z.number(),
+  size: z.number(),
+  total: z.number(),
+})
+
+export const createWireTransferRequestSchema = z.object({
+  companyName: z.string(),
+  contactEmail: z.string().email(),
+  amountCents: z.number().int().positive(),
+  points: z.number().int().positive(),
+  bankReference: z.string().optional(),
+})
+
+export type WireTransferRequest = z.infer<typeof wireTransferRequestSchema>
+export type WireTransferListResponse = z.infer<typeof wireTransferListResponseSchema>
+export type CreateWireTransferRequest = z.infer<typeof createWireTransferRequestSchema>

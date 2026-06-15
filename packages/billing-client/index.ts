@@ -20,10 +20,14 @@ export {
   invoiceListResponseSchema,
   createInvoiceRequestSchema,
   redeemCouponResponseSchema,
+  wireTransferRequestSchema,
+  wireTransferListResponseSchema,
+  createWireTransferRequestSchema,
 } from './src/schemas'
 export type {
   CreateRechargeOrderRequest,
   CreateInvoiceRequest,
+  CreateWireTransferRequest,
   EstimateResponse,
   LedgerEntry,
   LedgerListResponse,
@@ -39,4 +43,6 @@ export type {
   InvoiceRequest,
   InvoiceListResponse,
   RedeemCouponResponse,
+  WireTransferRequest,
+  WireTransferListResponse,
 } from './src/schemas'

@@ -243,6 +243,39 @@ export const adminCouponSchema = adminCouponListSchema.shape.items.element
 export type AdminCouponList = z.infer<typeof adminCouponListSchema>
 export type AdminCoupon = z.infer<typeof adminCouponSchema>
 
+export const WIRE_TRANSFER_STATUSES = [
+  { value: 'all', label: '全部' },
+  { value: 'pending', label: '待审核' },
+  { value: 'credited', label: '已入账' },
+  { value: 'rejected', label: '已驳回' },
+] as const
+
+export const adminWireTransferListSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      requestNo: z.string(),
+      tenantId: z.string(),
+      userId: z.string(),
+      companyName: z.string(),
+      contactEmail: z.string(),
+      amountCents: z.number(),
+      points: z.number(),
+      bankReference: z.string().nullable().optional(),
+      status: z.string(),
+      adminRemark: z.string().nullable().optional(),
+      createdAt: z.string().nullable().optional(),
+      updatedAt: z.string().nullable().optional(),
+    }),
+  ),
+  page: z.number(),
+  size: z.number(),
+  total: z.number(),
+})
+
+export type AdminWireTransferList = z.infer<typeof adminWireTransferListSchema>
+export type AdminWireTransfer = AdminWireTransferList['items'][number]
+
 function buildQuery(params: Record<string, string | number | undefined>) {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {
@@ -326,6 +359,22 @@ export function adminBillingReconciliationQuery(params: { date?: string }) {
 }
 
 export function adminBillingInvoicesQuery(params: {
+  tenantId?: string
+  userId?: string
+  status?: string
+  page?: number
+  size?: number
+}) {
+  return buildQuery({
+    tenantId: params.tenantId,
+    userId: params.userId,
+    status: params.status,
+    page: params.page ?? 0,
+    size: params.size ?? 20,
+  })
+}
+
+export function adminBillingWireTransfersQuery(params: {
   tenantId?: string
   userId?: string
   status?: string

@@ -48,6 +48,8 @@ export const billingQueryKeys = {
     [...billingQueryKeys.all, 'notifications', page, size] as const,
   invoices: (page: number, size: number) =>
     [...billingQueryKeys.all, 'invoices', page, size] as const,
+  wireTransfers: (page: number, size: number) =>
+    [...billingQueryKeys.all, 'wire-transfers', page, size] as const,
   rechargeLedgerOrders: () => [...billingQueryKeys.all, 'recharge-ledger-orders'] as const,
 }
 
@@ -182,6 +184,21 @@ export function invoicesQueryOptions(page = 0, size = 20) {
 export function useInvoicesQuery(page = 0, size = 20, enabled = true) {
   return useQuery({
     ...invoicesQueryOptions(page, size),
+    enabled: enabled && usesSaasSessionBootstrap() && canRecharge(),
+  })
+}
+
+export function wireTransfersQueryOptions(page = 0, size = 20) {
+  return queryOptions({
+    queryKey: billingQueryKeys.wireTransfers(page, size),
+    queryFn: () => billingClient.listWireTransfers(page, size),
+    staleTime: 30_000,
+  })
+}
+
+export function useWireTransfersQuery(page = 0, size = 20, enabled = true) {
+  return useQuery({
+    ...wireTransfersQueryOptions(page, size),
     enabled: enabled && usesSaasSessionBootstrap() && canRecharge(),
   })
 }

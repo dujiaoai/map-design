@@ -7,6 +7,7 @@ import {
   adminLedgerListSchema,
   adminInvoiceListSchema,
   adminCouponListSchema,
+  adminWireTransferListSchema,
   adminReconciliationDailySchema,
   adminWalletListSchema,
   defaultReconciliationDateUtc,
@@ -163,5 +164,27 @@ describe('admin response schemas', () => {
       ],
     })
     expect(parsed.items[0]?.code).toBe('WELCOME100')
+  })
+
+  it('parses wire transfer list payload', () => {
+    const parsed = adminWireTransferListSchema.parse({
+      items: [
+        {
+          id: 'wt-1',
+          requestNo: 'WT-ABC',
+          tenantId: 't-1',
+          userId: 'u-1',
+          companyName: '示例公司',
+          contactEmail: 'a@b.com',
+          amountCents: 100000,
+          points: 10000,
+          status: 'pending',
+        },
+      ],
+      page: 0,
+      size: 20,
+      total: 1,
+    })
+    expect(parsed.items[0]?.status).toBe('pending')
   })
 })

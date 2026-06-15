@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 
 import { canMemberSelfRecharge } from '~/features/billing/lib/member-recharge-policy'
+import { BillingWireTransferPanel } from '~/features/billing/ui/billing-wire-transfer-panel'
 import { BillingCouponRedeemPanel } from '~/features/billing/ui/billing-coupon-redeem-panel'
 import { DevBillingSmokePanel } from '~/features/billing/ui/dev-billing-smoke-panel'
 import { BillingInvoicesPanel } from '~/features/billing/ui/billing-invoices-panel'
@@ -77,6 +78,8 @@ export function BillingPageContent() {
           当前租户已关闭成员自助充值。请联系租户管理员划拨积分，或通过平台申请企业预付。
         </p>
       ) : null}
+
+      {canRechargePermission ? <BillingWireTransferPanel /> : null}
 
       {canTransfer ? <BillingTransferPanel /> : null}
 

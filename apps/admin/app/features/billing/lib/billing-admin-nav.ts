@@ -2,6 +2,7 @@ export type BillingTab =
   | 'overview'
   | 'packages'
   | 'coupons'
+  | 'wire-transfers'
   | 'wallets'
   | 'ledger'
   | 'reconciliation'
@@ -14,6 +15,7 @@ export const BILLING_TAB_VALUES: BillingTab[] = [
   'overview',
   'packages',
   'coupons',
+  'wire-transfers',
   'wallets',
   'ledger',
   'reconciliation',

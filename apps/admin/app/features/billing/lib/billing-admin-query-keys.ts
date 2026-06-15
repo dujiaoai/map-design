@@ -24,4 +24,8 @@ export const billingAdminQueryKeys = {
     filters: { tenantId?: string; userId?: string; status?: string },
     page: number,
   ) => [...billingAdminQueryKeys.all, 'invoices', filters, page] as const,
+  wireTransfers: (
+    filters: { tenantId?: string; userId?: string; status?: string },
+    page: number,
+  ) => [...billingAdminQueryKeys.all, 'wire-transfers', filters, page] as const,
 }

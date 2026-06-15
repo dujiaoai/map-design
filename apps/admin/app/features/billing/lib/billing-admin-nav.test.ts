@@ -20,5 +20,6 @@ describe('BILLING_TAB_VALUES', () => {
     expect(BILLING_TAB_VALUES).toContain('reconciliation')
     expect(BILLING_TAB_VALUES).toContain('invoices')
     expect(BILLING_TAB_VALUES).toContain('coupons')
+    expect(BILLING_TAB_VALUES).toContain('wire-transfers')
   })
 })

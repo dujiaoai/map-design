@@ -1,6 +1,7 @@
 package com.yunyan.billingapi;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -68,6 +69,8 @@ class SignupBonusControllerTest {
                             "tenantId", UUID.randomUUID(),
                             "userId", UUID.randomUUID(),
                             "tenantKind", "personal"))))
-        .andExpect(status().isUnauthorized());
+        .andExpect(status().isUnauthorized())
+        .andExpect(content().contentType("application/problem+json"))
+        .andExpect(jsonPath("$.status").value(401));
   }
 }

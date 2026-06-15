@@ -1,23 +1,29 @@
 package com.yunyan.billingapi.security;
 
 import com.yunyan.billingapi.config.BillingAppProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 public class InternalAuthFilter extends OncePerRequestFilter {
 
   public static final String INTERNAL_TOKEN_HEADER = "X-Billing-Internal-Token";
+  public static final String CALLER_SERVICE_HEADER = "X-Billing-Caller-Service";
 
   private final BillingAppProperties billingAppProperties;
+  private final ObjectMapper objectMapper;
 
-  public InternalAuthFilter(BillingAppProperties billingAppProperties) {
+  public InternalAuthFilter(
+      BillingAppProperties billingAppProperties, ObjectMapper objectMapper) {
     this.billingAppProperties = billingAppProperties;
+    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -31,7 +37,12 @@ public class InternalAuthFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
     var expected = billingAppProperties.getInternal().getToken();
     if (!StringUtils.hasText(expected)) {
-      response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Internal billing API disabled");
+      SecurityProblemWriter.write(
+          response,
+          objectMapper,
+          HttpStatus.SERVICE_UNAVAILABLE,
+          "Internal billing API disabled",
+          "Service unavailable");
       return;
     }
 
@@ -44,7 +55,12 @@ public class InternalAuthFilter extends OncePerRequestFilter {
     }
 
     if (!expected.equals(token)) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid internal token");
+      SecurityProblemWriter.write(
+          response,
+          objectMapper,
+          HttpStatus.UNAUTHORIZED,
+          "Invalid internal token",
+          "Unauthorized");
       return;
     }
 

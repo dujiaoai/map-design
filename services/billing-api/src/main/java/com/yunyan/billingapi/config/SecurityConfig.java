@@ -5,6 +5,7 @@ import com.yunyan.billingapi.security.AccessTokenDenylist;
 import com.yunyan.billingapi.security.InternalAuthFilter;
 import com.yunyan.billingapi.security.JwtAuthFilter;
 import com.yunyan.billingapi.security.JwtService;
+import com.yunyan.billingapi.security.SecurityProblemWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,8 +22,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
   @Bean
-  InternalAuthFilter internalAuthFilter(BillingAppProperties billingAppProperties) {
-    return new InternalAuthFilter(billingAppProperties);
+  InternalAuthFilter internalAuthFilter(
+      BillingAppProperties billingAppProperties, ObjectMapper objectMapper) {
+    return new InternalAuthFilter(billingAppProperties, objectMapper);
   }
 
   @Bean
@@ -33,7 +35,10 @@ public class SecurityConfig {
 
   @Bean
   SecurityFilterChain securityFilterChain(
-      HttpSecurity http, JwtAuthFilter jwtAuthFilter, InternalAuthFilter internalAuthFilter)
+      HttpSecurity http,
+      JwtAuthFilter jwtAuthFilter,
+      InternalAuthFilter internalAuthFilter,
+      ObjectMapper objectMapper)
       throws Exception {
     return http
         .csrf(csrf -> csrf.disable())
@@ -48,9 +53,13 @@ public class SecurityConfig {
             .requestMatchers("/v1/admin/billing/**").authenticated()
             .requestMatchers("/v1/billing/**").authenticated()
             .anyRequest().permitAll())
-        .exceptionHandling(ex -> ex
-            .authenticationEntryPoint((req, res, e) -> res.sendError(401))
-            .accessDeniedHandler((req, res, e) -> res.sendError(403)))
+        .exceptionHandling(
+            ex ->
+                ex.authenticationEntryPoint(
+                        (req, res, e) ->
+                            SecurityProblemWriter.writeUnauthorized(res, objectMapper))
+                    .accessDeniedHandler(
+                        (req, res, e) -> SecurityProblemWriter.writeForbidden(res, objectMapper)))
         .httpBasic(basic -> basic.disable())
         .formLogin(form -> form.disable())
         .addFilterBefore(internalAuthFilter, UsernamePasswordAuthenticationFilter.class)

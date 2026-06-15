@@ -90,6 +90,19 @@ export function BillingRechargeOrdersPanel({
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
   const columnCount = 8 + (canRefund ? 1 : 0)
 
+  function resetOrderFilters() {
+    setTenantId('')
+    setUserId('')
+    setStatus('all')
+    setPage(0)
+    setFilters({})
+    setFilterError(null)
+  }
+
+  const hasOrderFilters = Boolean(
+    filters.tenantId || filters.userId || filters.status,
+  )
+
   return (
     <>
       <AdminPanel>
@@ -161,14 +174,7 @@ export function BillingRechargeOrdersPanel({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  setTenantId('')
-                  setUserId('')
-                  setStatus('all')
-                  setPage(0)
-                  setFilters({})
-                  setFilterError(null)
-                }}
+                onClick={resetOrderFilters}
               >
                 重置
               </Button>
@@ -186,7 +192,18 @@ export function BillingRechargeOrdersPanel({
               isRetrying={query.isFetching}
             />
           ) : query.data && query.data.items.length === 0 ? (
-            <AdminEmptyState message="未找到匹配订单。" />
+            hasOrderFilters ? (
+              <AdminEmptyState
+                message="未找到匹配订单。"
+                action={
+                  <Button type="button" variant="outline" size="sm" onClick={resetOrderFilters}>
+                    清除筛选
+                  </Button>
+                }
+              />
+            ) : (
+              <AdminEmptyState message="暂无充值订单。" />
+            )
           ) : query.data ? (
             <>
               <AdminDataTable>

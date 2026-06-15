@@ -91,7 +91,14 @@ export function RolePermissionEditor({
       ) : null}
 
       {visiblePermissions.length === 0 ? (
-        <p className="text-sm text-muted-foreground">无匹配权限</p>
+        <div className="flex flex-col items-start gap-2">
+          <p className="text-sm text-muted-foreground">无匹配权限</p>
+          {search.trim() ? (
+            <Button type="button" variant="outline" size="sm" onClick={() => setSearch('')}>
+              清除搜索
+            </Button>
+          ) : null}
+        </div>
       ) : (
         <div className="space-y-6">
           {[...grouped.entries()].map(([groupKey, groupPermissions]) => {

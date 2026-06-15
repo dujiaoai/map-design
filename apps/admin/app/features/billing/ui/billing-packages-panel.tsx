@@ -94,6 +94,15 @@ export function BillingPackagesPanel({
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
   const actionError = statusMutation.error ? formatAdminApiError(statusMutation.error) : null
 
+  function clearPackageFilters() {
+    setStatusFilter('all')
+    setCodeSearch('')
+    setAppliedCodeSearch('')
+    setPage(0)
+  }
+
+  const hasPackageFilters = statusFilter !== 'all' || appliedCodeSearch.length > 0
+
   return (
     <>
       <AdminPanel>
@@ -173,7 +182,18 @@ export function BillingPackagesPanel({
               isRetrying={query.isFetching}
             />
           ) : items.length === 0 ? (
-            <AdminEmptyState message="暂无匹配 SKU。" />
+            hasPackageFilters ? (
+              <AdminEmptyState
+                message="暂无匹配 SKU。"
+                action={
+                  <Button type="button" variant="outline" size="sm" onClick={clearPackageFilters}>
+                    清除筛选
+                  </Button>
+                }
+              />
+            ) : (
+              <AdminEmptyState message="暂无 SKU。" />
+            )
           ) : (
             <>
               <AdminDataTable>

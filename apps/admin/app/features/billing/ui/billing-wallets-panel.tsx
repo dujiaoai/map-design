@@ -71,6 +71,16 @@ export function BillingWalletsPanel({
 
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
 
+  function resetWalletFilters() {
+    setTenantId('')
+    setUserId('')
+    setPage(0)
+    setFilters({})
+    setFilterError(null)
+  }
+
+  const hasWalletFilters = Boolean(filters.tenantId || filters.userId)
+
   return (
     <AdminPanel>
       <div className="space-y-4 border-b border-border/60 px-6 py-5">
@@ -120,13 +130,7 @@ export function BillingWalletsPanel({
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                setTenantId('')
-                setUserId('')
-                setPage(0)
-                setFilters({})
-                setFilterError(null)
-              }}
+              onClick={resetWalletFilters}
             >
               重置
             </Button>
@@ -146,7 +150,18 @@ export function BillingWalletsPanel({
             isRetrying={query.isFetching}
           />
         ) : query.data && query.data.items.length === 0 ? (
-          <AdminEmptyState message="未找到匹配钱包。" />
+          hasWalletFilters ? (
+            <AdminEmptyState
+              message="未找到匹配钱包。"
+              action={
+                <Button type="button" variant="outline" size="sm" onClick={resetWalletFilters}>
+                  清除筛选
+                </Button>
+              }
+            />
+          ) : (
+            <AdminEmptyState message="暂无钱包。" />
+          )
         ) : query.data ? (
           <>
             <AdminDataTable>

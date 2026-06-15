@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@repo/auth'
-import { Badge, Button } from '@repo/ui'
+import { Badge, Button, toast } from '@repo/ui'
 import { ActivityIcon, Building2Icon, RefreshCwIcon, ShieldCheckIcon, UsersIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link, redirect } from 'react-router'
@@ -59,6 +59,7 @@ export default function DashboardRoute() {
         queryClient.invalidateQueries({ queryKey: adminQueryKeys.stats }),
         queryClient.invalidateQueries({ queryKey: adminQueryKeys.ping }),
       ])
+      toast.success('概览数据已刷新')
     } finally {
       setRefreshing(false)
     }

@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.web.controller;
 
+import com.yunyan.billingapi.application.ratelimit.BillingRateLimitService;
 import com.yunyan.billingapi.application.recharge.RechargeOrderService;
 import com.yunyan.billingapi.domain.permission.PermissionCodes;
 import com.yunyan.billingapi.security.SaasPrincipal;
@@ -25,9 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class RechargeOrderController {
 
   private final RechargeOrderService rechargeOrderService;
+  private final BillingRateLimitService billingRateLimitService;
 
-  public RechargeOrderController(RechargeOrderService rechargeOrderService) {
+  public RechargeOrderController(
+      RechargeOrderService rechargeOrderService,
+      BillingRateLimitService billingRateLimitService) {
     this.rechargeOrderService = rechargeOrderService;
+    this.billingRateLimitService = billingRateLimitService;
   }
 
   @PostMapping
@@ -36,6 +41,7 @@ public class RechargeOrderController {
   public RechargeOrderResponse createOrder(
       @AuthenticationPrincipal SaasPrincipal principal,
       @Valid @RequestBody CreateRechargeOrderRequest request) {
+    billingRateLimitService.checkRechargeCreate(principal.tenantId(), principal.userId());
     return rechargeOrderService.createOrder(principal, request);
   }
 

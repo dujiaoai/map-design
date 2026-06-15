@@ -18,6 +18,7 @@ public class BillingRateLimitService {
   static final String MSG_WEBHOOK = "Too many webhook requests, try again later";
   static final String MSG_ADMIN_ADJUST = "Too many adjust requests, try again later";
   static final String MSG_ADMIN_REFUND = "Too many refund requests, try again later";
+  static final String MSG_RECHARGE_CREATE = "Too many recharge order requests, try again later";
 
   private final RateLimitStore rateLimitStore;
   private final BillingAppProperties billingAppProperties;
@@ -57,6 +58,18 @@ public class BillingRateLimitService {
         admin.getRefundMaxAttempts(),
         admin.getRefundWindow(),
         MSG_ADMIN_REFUND);
+  }
+
+  public void checkRechargeCreate(UUID tenantId, UUID userId) {
+    if (!enabled() || tenantId == null || userId == null) {
+      return;
+    }
+    var recharge = billingAppProperties.getRateLimit().getRecharge();
+    consumeOrThrow(
+        "recharge:create:" + tenantId + ":" + userId,
+        recharge.getUserMaxAttempts(),
+        recharge.getUserWindow(),
+        MSG_RECHARGE_CREATE);
   }
 
   private boolean enabled() {

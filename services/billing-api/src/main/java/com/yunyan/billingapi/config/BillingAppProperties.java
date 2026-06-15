@@ -21,6 +21,7 @@ public class BillingAppProperties {
     private boolean enabled = true;
     private WebhookRateLimit webhook = new WebhookRateLimit();
     private AdminRateLimit admin = new AdminRateLimit();
+    private RechargeRateLimit recharge = new RechargeRateLimit();
   }
 
   @Data
@@ -35,6 +36,12 @@ public class BillingAppProperties {
     private java.time.Duration adjustWindow = java.time.Duration.ofHours(1);
     private int refundMaxAttempts = 10;
     private java.time.Duration refundWindow = java.time.Duration.ofHours(1);
+  }
+
+  @Data
+  public static class RechargeRateLimit {
+    private int userMaxAttempts = 20;
+    private java.time.Duration userWindow = java.time.Duration.ofHours(1);
   }
 
   @Data

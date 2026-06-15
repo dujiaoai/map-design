@@ -17,6 +17,7 @@ import org.springframework.util.StringUtils;
 @Service
 public class AdminBillingPackageService {
 
+  private static final int MAX_PAGE_SIZE = 100;
   private static final String DEFAULT_CURRENCY = "CNY";
   private static final String DEFAULT_STATUS = "active";
 
@@ -29,12 +30,17 @@ public class AdminBillingPackageService {
     this.adminAuditLogService = adminAuditLogService;
   }
 
-  public AdminRechargePackageListResponse listPackages() {
-    var items =
-        packageMapper.findAllPackages().stream()
-            .map(this::toDto)
-            .toList();
-    return new AdminRechargePackageListResponse(items);
+  public AdminRechargePackageListResponse listPackages(String status, String code, int page, int size) {
+    var safePage = Math.max(page, 0);
+    var safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+    var offset = safePage * safeSize;
+    var normalizedStatus = normalizeFilterStatus(status);
+    var normalizedCode = normalizeCodeFilter(code);
+
+    var packages = packageMapper.findPackagesAdmin(normalizedStatus, normalizedCode, safeSize, offset);
+    var total = packageMapper.countPackagesAdmin(normalizedStatus, normalizedCode);
+    var items = packages.stream().map(this::toDto).toList();
+    return new AdminRechargePackageListResponse(items, safePage, safeSize, total);
   }
 
   @Transactional
@@ -142,5 +148,16 @@ public class AdminBillingPackageService {
 
   private static String resolveStatus(String status) {
     return StringUtils.hasText(status) ? status.trim() : DEFAULT_STATUS;
+  }
+
+  private static String normalizeFilterStatus(String status) {
+    if (!StringUtils.hasText(status) || "all".equalsIgnoreCase(status.trim())) {
+      return null;
+    }
+    return status.trim();
+  }
+
+  private static String normalizeCodeFilter(String code) {
+    return StringUtils.hasText(code) ? code.trim() : null;
   }
 }

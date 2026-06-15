@@ -142,8 +142,12 @@ public class AdminBillingController {
           + PermissionCodes.ADMIN_BILLING_PACKAGES_WRITE
           + "')")
   @Operation(summary = "平台查询全部充值 SKU（含 inactive）")
-  public AdminRechargePackageListResponse listPackages() {
-    return adminBillingPackageService.listPackages();
+  public AdminRechargePackageListResponse listPackages(
+      @RequestParam(required = false) String status,
+      @RequestParam(required = false) String code,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return adminBillingPackageService.listPackages(status, code, page, size);
   }
 
   @PostMapping("/packages")
@@ -173,8 +177,12 @@ public class AdminBillingController {
           + PermissionCodes.ADMIN_BILLING_PACKAGES_WRITE
           + "')")
   @Operation(summary = "平台查询优惠券列表")
-  public AdminCouponListResponse listCoupons() {
-    return adminBillingCouponService.listCoupons();
+  public AdminCouponListResponse listCoupons(
+      @RequestParam(required = false) String status,
+      @RequestParam(required = false) String code,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return adminBillingCouponService.listCoupons(status, code, page, size);
   }
 
   @PostMapping("/coupons")

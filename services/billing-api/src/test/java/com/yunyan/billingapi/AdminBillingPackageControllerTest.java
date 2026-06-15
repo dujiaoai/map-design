@@ -33,6 +33,9 @@ class AdminBillingPackageControllerTest {
             get("/v1/admin/billing/packages").header("Authorization", "Bearer " + token))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.items", org.hamcrest.Matchers.hasSize(3)))
+        .andExpect(jsonPath("$.page").value(0))
+        .andExpect(jsonPath("$.size").value(20))
+        .andExpect(jsonPath("$.total").value(3))
         .andExpect(jsonPath("$.items[0].code").value("starter_500"))
         .andExpect(jsonPath("$.items[0].status").value("active"));
   }

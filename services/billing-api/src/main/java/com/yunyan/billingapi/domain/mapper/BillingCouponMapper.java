@@ -41,6 +41,38 @@ public interface BillingCouponMapper {
       """)
   java.util.List<BillingCoupon> findAll();
 
+  @Select(
+      """
+      <script>
+      SELECT id, code, kind, points, discount_cents, status, max_total_redemptions, redemption_count,
+             max_per_user, valid_until, created_at, updated_at
+      FROM billing_coupon
+      <where>
+        <if test="status != null and status != ''">AND status = #{status}</if>
+        <if test="code != null and code != ''">AND LOWER(code) LIKE LOWER(CONCAT('%', #{code}, '%'))</if>
+      </where>
+      ORDER BY created_at DESC
+      LIMIT #{limit} OFFSET #{offset}
+      </script>
+      """)
+  java.util.List<BillingCoupon> findCouponsAdmin(
+      @Param("status") String status,
+      @Param("code") String code,
+      @Param("limit") int limit,
+      @Param("offset") int offset);
+
+  @Select(
+      """
+      <script>
+      SELECT COUNT(*) FROM billing_coupon
+      <where>
+        <if test="status != null and status != ''">AND status = #{status}</if>
+        <if test="code != null and code != ''">AND LOWER(code) LIKE LOWER(CONCAT('%', #{code}, '%'))</if>
+      </where>
+      </script>
+      """)
+  long countCouponsAdmin(@Param("status") String status, @Param("code") String code);
+
   @Update(
       """
       UPDATE billing_coupon

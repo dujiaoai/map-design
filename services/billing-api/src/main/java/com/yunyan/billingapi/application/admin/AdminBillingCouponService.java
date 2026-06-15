@@ -18,6 +18,7 @@ import org.springframework.util.StringUtils;
 @Service
 public class AdminBillingCouponService {
 
+  private static final int MAX_PAGE_SIZE = 100;
   private static final String DEFAULT_STATUS = "active";
 
   private final BillingCouponMapper couponMapper;
@@ -26,9 +27,17 @@ public class AdminBillingCouponService {
     this.couponMapper = couponMapper;
   }
 
-  public AdminCouponListResponse listCoupons() {
-    var items = couponMapper.findAll().stream().map(AdminBillingCouponService::toDto).toList();
-    return new AdminCouponListResponse(items);
+  public AdminCouponListResponse listCoupons(String status, String code, int page, int size) {
+    var safePage = Math.max(page, 0);
+    var safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+    var offset = safePage * safeSize;
+    var normalizedStatus = normalizeFilterStatus(status);
+    var normalizedCode = normalizeCodeFilter(code);
+
+    var coupons = couponMapper.findCouponsAdmin(normalizedStatus, normalizedCode, safeSize, offset);
+    var total = couponMapper.countCouponsAdmin(normalizedStatus, normalizedCode);
+    var items = coupons.stream().map(AdminBillingCouponService::toDto).toList();
+    return new AdminCouponListResponse(items, safePage, safeSize, total);
   }
 
   @Transactional
@@ -122,5 +131,16 @@ public class AdminBillingCouponService {
       return null;
     }
     return Instant.parse(value.trim());
+  }
+
+  private static String normalizeFilterStatus(String status) {
+    if (!StringUtils.hasText(status) || "all".equalsIgnoreCase(status.trim())) {
+      return null;
+    }
+    return status.trim();
+  }
+
+  private static String normalizeCodeFilter(String code) {
+    return StringUtils.hasText(code) ? code.trim() : null;
   }
 }

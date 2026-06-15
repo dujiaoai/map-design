@@ -39,6 +39,37 @@ public interface BillingRechargePackageMapper {
 
   @Select(
       """
+      <script>
+      SELECT id, code, points, price_cents, currency, status, sort_order, created_at
+      FROM billing_recharge_package
+      <where>
+        <if test="status != null and status != ''">AND status = #{status}</if>
+        <if test="code != null and code != ''">AND LOWER(code) LIKE LOWER(CONCAT('%', #{code}, '%'))</if>
+      </where>
+      ORDER BY sort_order ASC, points ASC
+      LIMIT #{limit} OFFSET #{offset}
+      </script>
+      """)
+  List<BillingRechargePackage> findPackagesAdmin(
+      @Param("status") String status,
+      @Param("code") String code,
+      @Param("limit") int limit,
+      @Param("offset") int offset);
+
+  @Select(
+      """
+      <script>
+      SELECT COUNT(*) FROM billing_recharge_package
+      <where>
+        <if test="status != null and status != ''">AND status = #{status}</if>
+        <if test="code != null and code != ''">AND LOWER(code) LIKE LOWER(CONCAT('%', #{code}, '%'))</if>
+      </where>
+      </script>
+      """)
+  long countPackagesAdmin(@Param("status") String status, @Param("code") String code);
+
+  @Select(
+      """
       SELECT id, code, points, price_cents, currency, status, sort_order, created_at
       FROM billing_recharge_package
       WHERE code = #{code}

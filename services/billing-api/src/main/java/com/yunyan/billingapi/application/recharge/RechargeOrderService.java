@@ -100,7 +100,8 @@ public class RechargeOrderService {
                 payableCents,
                 pkg.getCurrency(),
                 pkg.getCode(),
-                request.payScene());
+                request.payScene(),
+                request.wechatOpenId());
 
     var order = new BillingRechargeOrder();
     order.setId(UUID.randomUUID());

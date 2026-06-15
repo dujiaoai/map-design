@@ -12,10 +12,21 @@ public class MockPaymentGateway implements PaymentGateway {
 
   @Override
   public PaymentCreateResult createPayment(
-      String orderNo, long priceCents, String currency, String packageCode, String payScene) {
+      String orderNo,
+      long priceCents,
+      String currency,
+      String packageCode,
+      String payScene,
+      String wechatOpenId) {
     var tradeNo = "mock-" + orderNo;
     var payUrl = "mock://billing/recharge/" + orderNo;
     return new PaymentCreateResult(tradeNo, payUrl);
+  }
+
+  @Override
+  public PaymentCreateResult createPayment(
+      String orderNo, long priceCents, String currency, String packageCode, String payScene) {
+    return createPayment(orderNo, priceCents, currency, packageCode, payScene, null);
   }
 
   @Override

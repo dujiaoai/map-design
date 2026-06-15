@@ -138,6 +138,8 @@ public class BillingAppProperties {
     /** Merchant API private key PEM (apiclient_key.pem). */
     private String privateKeyPem = "";
     private String notifyUrl = "";
+    /** WeChat Official Account app secret for JSAPI OAuth (snsapi_base). */
+    private String appSecret = "";
     /** native | h5 | jsapi */
     private String defaultPayScene = "native";
   }

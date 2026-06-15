@@ -21,7 +21,12 @@ public class WechatPaymentGateway implements PaymentGateway {
 
   @Override
   public PaymentCreateResult createPayment(
-      String orderNo, long priceCents, String currency, String packageCode, String payScene) {
+      String orderNo,
+      long priceCents,
+      String currency,
+      String packageCode,
+      String payScene,
+      String wechatOpenId) {
     var scene = PaymentGateway.resolvePayScene(payScene);
     return paymentProviderRegistry
         .require(PaymentWebhookChannels.WECHAT)
@@ -31,6 +36,7 @@ public class WechatPaymentGateway implements PaymentGateway {
                 priceCents,
                 currency,
                 packageCode,
-                scene != null ? scene : PaymentPayScene.NATIVE));
+                scene != null ? scene : PaymentPayScene.NATIVE,
+                wechatOpenId));
   }
 }

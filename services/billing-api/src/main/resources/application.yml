@@ -62,6 +62,7 @@ billing:
       merchant-serial-no: ${BILLING_PAYMENT_WECHAT_MERCHANT_SERIAL_NO:}
       private-key-pem: ${BILLING_PAYMENT_WECHAT_PRIVATE_KEY_PEM:}
       notify-url: ${BILLING_PAYMENT_WECHAT_NOTIFY_URL:}
+      app-secret: ${BILLING_PAYMENT_WECHAT_APP_SECRET:}
       default-pay-scene: ${BILLING_PAYMENT_WECHAT_DEFAULT_PAY_SCENE:native}
     alipay:
       app-id: ${BILLING_PAYMENT_ALIPAY_APP_ID:}

@@ -7,11 +7,21 @@ public interface PaymentGateway {
   String channel();
 
   PaymentCreateResult createPayment(
-      String orderNo, long priceCents, String currency, String packageCode, String payScene);
+      String orderNo,
+      long priceCents,
+      String currency,
+      String packageCode,
+      String payScene,
+      String wechatOpenId);
+
+  default PaymentCreateResult createPayment(
+      String orderNo, long priceCents, String currency, String packageCode, String payScene) {
+    return createPayment(orderNo, priceCents, currency, packageCode, payScene, null);
+  }
 
   default PaymentCreateResult createPayment(
       String orderNo, long priceCents, String currency, String packageCode) {
-    return createPayment(orderNo, priceCents, currency, packageCode, null);
+    return createPayment(orderNo, priceCents, currency, packageCode, null, null);
   }
 
   default PaymentRefundResult refund(

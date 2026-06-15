@@ -113,7 +113,7 @@ services/
 - **错误体**：RFC 7807 `application/problem+json`（401/403/402/422/429）
 - **观测**：Micrometer 业务计数器 + 低余额 crossing 告警（`billing.low-balance.threshold`）
 - **saas-api 调用**：`RestBillingClient` 对 502/503/504 退避重试
-- **冒烟脚本**：`services/billing-api/scripts/smoke-billing.mjs`（充值/mock-pay、发票开票、优惠券兑换、对公转账审核；含验签模式环境变量 `BILLING_WEBHOOK_SIGNATURE_MODE`）
+- **冒烟脚本**：`pnpm smoke:billing-api`（`services/billing-api/scripts/smoke-billing.mjs`：充值/mock-pay、发票开票、优惠券兑换、对公转账审核；验签 `BILLING_WEBHOOK_SIGNATURE_MODE`）
 
 ## 独立 PostgreSQL（可选）
 

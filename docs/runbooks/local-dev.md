@@ -173,9 +173,10 @@ pnpm --filter @repo/saas-web dev
 
 ```bash
 pnpm smoke:saas-api
+pnpm smoke:billing-api   # 需 saas-api :8082 + billing-api :8083 已启动
 ```
 
-完整清单（含前端 `/dev/saas-auth-smoke`）：[saas-api-auth-smoke.md](./saas-api-auth-smoke.md)。
+完整清单（含前端 `/dev/saas-auth-smoke`）：[saas-api-auth-smoke.md](./saas-api-auth-smoke.md)。Billing 端到端见 [billing-service.md](../architecture/billing-service.md) §冒烟脚本。
 
 #### 7. 运行测试
 

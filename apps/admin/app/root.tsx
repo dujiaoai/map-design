@@ -1,6 +1,8 @@
-import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router'
+import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration, Link } from 'react-router'
+import { Button } from '@repo/ui'
 
 import { AppProviders } from '~/providers/app-providers'
+import { AdminErrorPage, AdminLoadingPage } from '~/shared/ui/admin-error-page'
 import { themeInitScript } from '~/shared/lib/theme'
 import type { Route } from './+types/root'
 import './app.css'
@@ -27,11 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export function HydrateFallback() {
-  return (
-    <div className="flex min-h-svh items-center justify-center bg-background text-foreground">
-      <p className="text-sm text-muted-foreground">加载中…</p>
-    </div>
-  )
+  return <AdminLoadingPage />
 }
 
 export default function App() {
@@ -43,20 +41,36 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = '出错了'
+  let code = '500'
+  let title = '出错了'
   let details = '发生了意外错误，请稍后重试。'
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? '404' : '错误'
-    details = error.status === 404 ? '找不到请求的页面。' : error.statusText || details
+    code = String(error.status)
+    title = error.status === 404 ? '页面未找到' : '请求失败'
+    details =
+      error.status === 404
+        ? '找不到请求的页面，请检查链接后重试。'
+        : error.statusText || details
   } else if (import.meta.env.DEV && error instanceof Error) {
     details = error.message
   }
 
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-4 bg-background px-6 text-foreground">
-      <h1 className="text-2xl font-semibold">{message}</h1>
-      <p className="text-sm text-muted-foreground">{details}</p>
-    </main>
+    <AdminErrorPage
+      code={code}
+      title={title}
+      description={details}
+      actions={
+        <>
+          <Button type="button" onClick={() => window.location.reload()}>
+            重试
+          </Button>
+          <Button nativeButton={false} variant="outline" render={<Link to="/" />}>
+            返回概览
+          </Button>
+        </>
+      }
+    />
   )
 }

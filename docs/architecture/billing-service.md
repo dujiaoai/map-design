@@ -149,7 +149,7 @@ services/
 | P3 | push 定时重试 Job | ✅ | saas-api 失败 push 退避重试 |
 | P3 | push HMAC 验签（可选） | ✅ | billing-api 验签 + saas-api 签名 |
 | P3 | Admin SKU/优惠券/用量分页 | ✅ | billing-api + admin 面板服务端分页 |
-| P3 | 冒烟 26 步 | ✅ | 含 membership 内网 API 探活 |
+| P3 | 冒烟 24 步（mock） | ✅ | 含 membership 内网 API 探活；步数以脚本 `passed.length` 为准 |
 | — | suspended 租户 billing 拦截 | 不做 | 仅在 saas-api 登录层拦截（PRD） |
 | — | PostgreSQL RLS | 可选 | 工作量大，未纳入 Sprint F |
 

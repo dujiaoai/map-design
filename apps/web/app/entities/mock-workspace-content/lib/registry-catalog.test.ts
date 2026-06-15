@@ -24,6 +24,8 @@ describe('mock-workspace-content registry catalog', () => {
 
   it('lists registered mock module ids', () => {
     expect(REGISTERED_MOCK_MODULE_IDS).toContain('thematic')
+    expect(REGISTERED_MOCK_MODULE_IDS).toContain('spatial-analysis')
+    expect(REGISTERED_MOCK_MODULE_IDS).toContain('property-view')
     expect(isRegisteredMockModuleId('flight-ledger')).toBe(true)
     expect(isRegisteredMockModuleId('uav-list')).toBe(false)
   })

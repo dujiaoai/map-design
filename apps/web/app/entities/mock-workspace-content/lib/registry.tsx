@@ -13,6 +13,8 @@ import { GlobalSearchDrawerContent } from '../ui/drawers/global-search-drawer-co
 import { FallbackModuleContent } from '../ui/modules/fallback-module-content'
 import { FlightLedgerModuleContent } from '../ui/modules/flight-ledger-module-content'
 import { MyFavoritesModuleContent } from '../ui/modules/my-favorites-module-content'
+import { PropertyViewModuleContent } from '../ui/modules/property-view-module-content'
+import { SpatialAnalysisModuleContent } from '../ui/modules/spatial-analysis-module-content'
 import { ThematicModuleContent } from '../ui/modules/thematic-module-content'
 import { ViewProjectModuleContent } from '../ui/modules/view-project-module-content'
 import { FallbackToolContent } from '../ui/tools/fallback-tool-content'
@@ -34,6 +36,8 @@ const MOCK_TOOL_REGISTRY: Record<string, MockToolContentComponent> = {
 
 const MOCK_MODULE_REGISTRY: Record<string, MockModuleContentComponent> = {
   thematic: ThematicModuleContent,
+  'spatial-analysis': SpatialAnalysisModuleContent,
+  'property-view': PropertyViewModuleContent,
   'my-favorites': MyFavoritesModuleContent,
   'flight-ledger': FlightLedgerModuleContent,
   'view-project': ViewProjectModuleContent,

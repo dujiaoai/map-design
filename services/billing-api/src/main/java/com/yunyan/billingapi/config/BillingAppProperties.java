@@ -16,6 +16,7 @@ public class BillingAppProperties {
   private final Webhook webhook = new Webhook();
   private final RateLimit rateLimit = new RateLimit();
   private final LowBalance lowBalance = new LowBalance();
+  private final MembershipSync membershipSync = new MembershipSync();
 
   @Data
   public static class RateLimit {
@@ -119,5 +120,21 @@ public class BillingAppProperties {
     private String token = "dev-billing-internal-token-change-me";
     /** Allowed {@link com.yunyan.billingapi.security.InternalAuthFilter#CALLER_SERVICE_HEADER} values; empty disables check. */
     private java.util.List<String> allowedCallers = java.util.List.of();
+  }
+
+  /** Periodic COPY of {@code sys_user} / {@code sys_tenant_feature} from saas DB (dedicated billing PG). */
+  @Data
+  public static class MembershipSync {
+    private boolean enabled = false;
+    /** Scan interval for mirror sync job (ms). */
+    private long scanMs = 300_000L;
+    private final SaasDatasource saas = new SaasDatasource();
+  }
+
+  @Data
+  public static class SaasDatasource {
+    private String url = "";
+    private String username = "saas";
+    private String password = "saas";
   }
 }

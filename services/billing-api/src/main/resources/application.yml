@@ -78,6 +78,13 @@ billing:
       adjust-window: PT1H
       refund-max-attempts: 10
       refund-window: PT1H
+  membership-sync:
+    enabled: ${BILLING_MEMBERSHIP_SYNC_ENABLED:false}
+    scan-ms: ${BILLING_MEMBERSHIP_SYNC_SCAN_MS:300000}
+    saas:
+      url: ${BILLING_SAAS_DATASOURCE_URL:}
+      username: ${BILLING_SAAS_DATASOURCE_USERNAME:saas}
+      password: ${BILLING_SAAS_DATASOURCE_PASSWORD:saas}
 
 springdoc:
   api-docs:

@@ -25,6 +25,10 @@ services:
       BILLING_DATASOURCE_URL: jdbc:postgresql://postgres-billing:5432/billing
       BILLING_DATASOURCE_USERNAME: billing
       BILLING_DATASOURCE_PASSWORD: billing
+      BILLING_MEMBERSHIP_SYNC_ENABLED: ${BILLING_MEMBERSHIP_SYNC_ENABLED:-true}
+      BILLING_SAAS_DATASOURCE_URL: jdbc:postgresql://postgres:5432/saas
+      BILLING_SAAS_DATASOURCE_USERNAME: saas
+      BILLING_SAAS_DATASOURCE_PASSWORD: saas
     depends_on:
       postgres:
         condition: service_healthy

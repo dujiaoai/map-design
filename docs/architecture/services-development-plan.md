@@ -317,7 +317,7 @@ flowchart TD
 | F-5 | packages/billing-client | TS SDK + saas-web 接入 | ✅ |
 | F-4 | billing-api + admin | 退款/日对账/站内通知/发票申请 | ✅ 骨架 |
 | F-5 | billing-api + web/admin | 优惠券兑换 + 用户间划拨 + billing-client | ✅ 骨架 |
-| F-6 | billing-api + admin/web | 对公转账预付申请与审核入账 | ✅ 骨架；独立 DB 待办 |
+| F-6 | billing-api + admin/web | 对公转账预付申请与审核入账 | ✅ 骨架；独立 DB 可选 compose ✅ |
 
 **Maven 目标：**
 

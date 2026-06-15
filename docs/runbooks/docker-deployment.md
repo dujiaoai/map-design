@@ -174,6 +174,8 @@ compose 通过 [`deploy/.env.docker.example`](../../deploy/.env.docker.example) 
 
 冒烟（充值 + 发票/优惠券/对公 + 验签模式）：`node services/billing-api/scripts/smoke-billing.mjs`（见 PRD §2.4）。
 
+**billing 独立库（可选）**：`docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.billing-db.yml up -d`；首次启动后 `billing-db-sync` 从 saas 库复制 `sys_user` / `sys_tenant_feature` 镜像。见 [billing-service.md](../architecture/billing-service.md) §独立 PostgreSQL。
+
 ---
 
 ## 5. Nginx 要点

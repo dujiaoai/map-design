@@ -1,6 +1,6 @@
 # 平台计费服务（billing-api）
 
-> 状态：F-1～F-6 骨架、F-5 SDK **已落地**（2026-06-15）；**安全/限流/观测加固** ✅；billing 独立 DB 等待办 · 产品细节见 [billing-credits-prd.md](../product/billing-credits-prd.md)
+> 状态：F-1～F-6 骨架、F-5 SDK **已落地**（2026-06-15）；**安全/限流/观测加固** ✅；billing **可选独立 DB 骨架** ✅ · 产品细节见 [billing-credits-prd.md](../product/billing-credits-prd.md)
 
 ## 定位
 
@@ -115,6 +115,18 @@ services/
 - **saas-api 调用**：`RestBillingClient` 对 502/503/504 退避重试
 - **冒烟脚本**：`services/billing-api/scripts/smoke-billing.mjs`（充值/mock-pay、发票开票、优惠券兑换、对公转账审核；含验签模式环境变量 `BILLING_WEBHOOK_SIGNATURE_MODE`）
 
+## 独立 PostgreSQL（可选）
+
+默认与 saas-api **共用** `postgres/saas`（Flyway 表 `flyway_schema_history_billing` 隔离迁移）。生产可分库：
+
+| 项 | 说明 |
+| --- | --- |
+| 数据源 | `BILLING_DATASOURCE_URL` / `USERNAME` / `PASSWORD`（见 `application-docker.yml`） |
+| 成员校验 | Flyway **V9** `sys_user` 镜像 + 已有 `sys_tenant_feature` 镜像 |
+| 同步 | `services/billing-api/scripts/sync-membership-mirror.sh`（从 saas 库 COPY） |
+| Compose | `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.billing-db.yml up -d` |
+| 待办 | saas-api → billing 实时 CDC / 内网 membership API，替代定时 COPY |
+
 ## 部署变更（F-1）
 
 | 文件 | 变更 |
@@ -137,7 +149,7 @@ services/
 | F-5 | `packages/billing-client` TS SDK | ✅ |
 | F-4 | 退款/对账/通知/发票 | 退款 ✅；日对账 ✅；站内通知 ✅；发票申请骨架 ✅（无电子票对接） |
 | F-5 | 优惠券/用户间划拨 | 划拨 API + UI ✅；members_can_recharge ✅；优惠券兑换骨架 ✅ |
-| F-6 | 可选 billing 独立 DB + 对公转账 | 对公预付申请骨架 ✅；独立 DB 待办 |
+| F-6 | 可选 billing 独立 DB + 对公转账 | 对公预付申请骨架 ✅；独立 DB 可选 compose 覆盖 ✅（CDC 待办） |
 | sec | Webhook 验签/限流、Caller 白名单、RFC7807、Micrometer、Admin ledger | ✅ 2026-06-15 |
 
 完整 PRD、API 契约、前端组件：[billing-credits-prd.md](../product/billing-credits-prd.md)

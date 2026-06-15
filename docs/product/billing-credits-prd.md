@@ -1,6 +1,6 @@
 # 充值/积分功能 PRD（Sprint F · P4）
 
-> 状态：F-1～F-6 骨架 **已落地**（2026-06-15）；**安全/限流/观测加固** ✅；billing 独立 DB 等待办  
+> 状态：F-1～F-6 骨架 **已落地**（2026-06-15）；**安全/限流/观测加固** ✅；billing **可选独立 DB 骨架** ✅  
 > 架构摘要：[billing-service.md](../architecture/billing-service.md)  
 > 后端排期：[services-development-plan.md](../architecture/services-development-plan.md) §Sprint F
 
@@ -404,8 +404,8 @@ flowchart LR
   - 用户：`POST/GET /v1/billing/wire-transfers`（`billing:recharge:create`）
   - Admin：`GET /v1/admin/billing/wire-transfers`；`POST .../{id}/approve`（入账 `wire_transfer` 流水）、`POST .../{id}/reject`（`admin:billing:adjust`）
   - saas-web 企业预付申请；Admin「对公转账」Tab
-  - **不含**平台收款账户配置、汇款自动认款、独立 billing DB（后续迭代）
-- 可选 billing 独立 DB（待办）
+  - **不含**平台收款账户配置、汇款自动认款；独立 DB 见 [billing-service.md](../architecture/billing-service.md) §独立 PostgreSQL
+- 可选 billing 独立 DB（骨架 ✅）：`docker-compose.billing-db.yml` + `sync-membership-mirror.sh`；实时 CDC 待办
 
 ---
 

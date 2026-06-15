@@ -6,6 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  toast,
   useConfirmDialog,
 } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -118,6 +119,7 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
       await queryClient.invalidateQueries({
         queryKey: [...billingAdminQueryKeys.all, 'coupons'],
       })
+      toast.success('优惠券已创建')
     },
     onError: (error) => {
       setCreateError(formatAdminApiError(error))
@@ -139,10 +141,11 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
         }),
       )
     },
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({
         queryKey: [...billingAdminQueryKeys.all, 'coupons'],
       })
+      toast.success(variables.status === 'active' ? '优惠券已启用' : '优惠券已停用')
     },
     onSettled: () => {
       setPendingCode(null)

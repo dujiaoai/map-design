@@ -1,6 +1,7 @@
 package com.yunyan.billingapi.application.payment.provider;
 
 import com.yunyan.billingapi.application.payment.PaymentCreateResult;
+import com.yunyan.billingapi.application.payment.PaymentRefundResult;
 import com.yunyan.billingapi.application.payment.PaymentWebhookChannels;
 import com.yunyan.billingapi.application.payment.sdk.AlipaySdkClient;
 import com.yunyan.billingapi.config.BillingAppProperties;
@@ -53,6 +54,15 @@ public class LiveAlipayPaymentProvider implements PaymentProviderClient {
       return PaymentQueryResult.unpaid();
     }
     return PaymentQueryResult.paid(sdkResult.providerTradeNo(), sdkResult.priceCents());
+  }
+
+  @Override
+  public PaymentRefundResult refund(
+      String orderNo, long priceCents, String currency, String providerTradeNo) {
+    var alipay = billingAppProperties.getPayment().getAlipay();
+    assertConfigured(alipay.getAppId(), alipay.getPrivateKeyPem(), alipay.getAlipayPublicKeyPem());
+    var sdkResult = alipaySdkClient.refund(orderNo, priceCents, currency, providerTradeNo);
+    return new PaymentRefundResult(sdkResult.providerRefundNo(), sdkResult.async());
   }
 
   private static void assertConfigured(

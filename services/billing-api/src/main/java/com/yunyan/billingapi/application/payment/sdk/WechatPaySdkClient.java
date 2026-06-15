@@ -8,6 +8,9 @@ public interface WechatPaySdkClient {
 
   SdkQueryOrderResult queryByOutTradeNo(String outTradeNo);
 
+  SdkRefundResult refund(
+      String orderNo, long priceCents, String currency, String providerTradeNo);
+
   record SdkCreateOrderRequest(
       String orderNo,
       long priceCents,
@@ -25,4 +28,6 @@ public interface WechatPaySdkClient {
       return new SdkQueryOrderResult(false, null, 0L);
     }
   }
+
+  record SdkRefundResult(String providerRefundNo, boolean async) {}
 }

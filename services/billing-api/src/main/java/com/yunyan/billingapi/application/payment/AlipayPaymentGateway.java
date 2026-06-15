@@ -39,4 +39,14 @@ public class AlipayPaymentGateway implements PaymentGateway {
                 scene != null ? scene : PaymentPayScene.WAP,
                 wechatOpenId));
   }
+
+  @Override
+  public PaymentRefundResult refund(
+      String orderNo, long priceCents, String currency, String providerTradeNo) {
+    var result =
+        paymentProviderRegistry
+            .require(PaymentWebhookChannels.ALIPAY)
+            .refund(orderNo, priceCents, currency, providerTradeNo);
+    return new PaymentRefundResult(result.providerRefundNo(), result.async());
+  }
 }

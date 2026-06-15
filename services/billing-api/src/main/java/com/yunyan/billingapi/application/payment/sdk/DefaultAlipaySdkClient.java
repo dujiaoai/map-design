@@ -6,6 +6,9 @@ import com.alipay.api.AlipayConfig;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.domain.AlipayTradeQueryModel;
 import com.alipay.api.domain.AlipayTradeWapPayModel;
+import com.alipay.api.domain.AlipayTradeRefundModel;
+import com.alipay.api.request.AlipayTradeRefundRequest;
+import com.alipay.api.response.AlipayTradeRefundResponse;
 import com.alipay.api.request.AlipayTradeQueryRequest;
 import com.alipay.api.request.AlipayTradeWapPayRequest;
 import com.alipay.api.response.AlipayTradeQueryResponse;
@@ -78,6 +81,31 @@ public class DefaultAlipaySdkClient implements AlipaySdkClient {
       return new SdkQueryOrderResult(true, tradeNo, total);
     } catch (AlipayApiException ex) {
       throw sdkError("Alipay query failed", ex);
+    }
+  }
+
+  @Override
+  public SdkRefundResult refund(
+      String orderNo, long priceCents, String currency, String providerTradeNo) {
+    var refundRequest = new AlipayTradeRefundRequest();
+    var model = new AlipayTradeRefundModel();
+    model.setOutTradeNo(orderNo);
+    model.setRefundAmount(formatAmount(priceCents));
+    model.setOutRequestNo("refund-" + orderNo);
+    refundRequest.setBizModel(model);
+
+    try {
+      AlipayTradeRefundResponse response = requireClient().execute(refundRequest);
+      if (!response.isSuccess()) {
+        throw sdkError("Alipay refund failed", response.getSubCode(), response.getSubMsg());
+      }
+      var refundNo =
+          StringUtils.hasText(response.getTradeNo())
+              ? response.getTradeNo()
+              : "alipay-refund-" + orderNo;
+      return new SdkRefundResult(refundNo, false);
+    } catch (AlipayApiException ex) {
+      throw sdkError("Alipay refund failed", ex);
     }
   }
 

@@ -11,6 +11,10 @@ import com.wechat.pay.java.service.payments.model.Transaction.TradeStateEnum;
 import com.wechat.pay.java.service.payments.nativepay.NativePayService;
 import com.wechat.pay.java.service.payments.nativepay.model.PrepayResponse;
 import com.wechat.pay.java.service.payments.nativepay.model.QueryOrderByOutTradeNoRequest;
+import com.wechat.pay.java.service.refund.RefundService;
+import com.wechat.pay.java.service.refund.model.AmountReq;
+import com.wechat.pay.java.service.refund.model.CreateRequest;
+import com.wechat.pay.java.service.refund.model.Refund;
 import com.yunyan.billingapi.application.payment.provider.PaymentPayScene;
 import com.yunyan.billingapi.config.BillingAppProperties;
 import com.yunyan.billingapi.security.AuthException;
@@ -76,6 +80,32 @@ public class DefaultWechatPaySdkClient implements WechatPaySdkClient {
         return SdkQueryOrderResult.unpaid();
       }
       throw sdkError("WeChat Pay query failed", ex);
+    }
+  }
+
+  @Override
+  public SdkRefundResult refund(
+      String orderNo, long priceCents, String currency, String providerTradeNo) {
+    var config = requireConfig();
+    var service = new RefundService.Builder().config(config).build();
+    var amount = new AmountReq();
+    amount.setRefund(priceCents);
+    amount.setTotal(priceCents);
+    amount.setCurrency(StringUtils.hasText(currency) ? currency : "CNY");
+    var request = new CreateRequest();
+    request.setOutTradeNo(orderNo);
+    request.setOutRefundNo("refund-" + orderNo);
+    request.setReason("Platform admin refund");
+    request.setAmount(amount);
+    try {
+      Refund response = service.create(request);
+      var refundNo =
+          StringUtils.hasText(response.getRefundId())
+              ? response.getRefundId()
+              : "wx-refund-" + orderNo;
+      return new SdkRefundResult(refundNo, false);
+    } catch (ServiceException ex) {
+      throw sdkError("WeChat Pay refund failed", ex);
     }
   }
 

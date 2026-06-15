@@ -39,4 +39,14 @@ public class WechatPaymentGateway implements PaymentGateway {
                 scene != null ? scene : PaymentPayScene.NATIVE,
                 wechatOpenId));
   }
+
+  @Override
+  public PaymentRefundResult refund(
+      String orderNo, long priceCents, String currency, String providerTradeNo) {
+    var result =
+        paymentProviderRegistry
+            .require(PaymentWebhookChannels.WECHAT)
+            .refund(orderNo, priceCents, currency, providerTradeNo);
+    return new PaymentRefundResult(result.providerRefundNo(), result.async());
+  }
 }

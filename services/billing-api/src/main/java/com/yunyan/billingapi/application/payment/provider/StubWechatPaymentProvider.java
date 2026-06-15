@@ -1,6 +1,7 @@
 package com.yunyan.billingapi.application.payment.provider;
 
 import com.yunyan.billingapi.application.payment.PaymentCreateResult;
+import com.yunyan.billingapi.application.payment.PaymentRefundResult;
 import com.yunyan.billingapi.application.payment.PaymentWebhookChannels;
 import com.yunyan.billingapi.config.BillingAppProperties;
 import org.springframework.stereotype.Component;
@@ -34,6 +35,12 @@ public class StubWechatPaymentProvider implements PaymentProviderClient {
   @Override
   public PaymentQueryResult queryPayment(String orderNo, String providerTradeNo) {
     return PaymentQueryResult.unpaid();
+  }
+
+  @Override
+  public PaymentRefundResult refund(
+      String orderNo, long priceCents, String currency, String providerTradeNo) {
+    return new PaymentRefundResult("wx-refund-" + orderNo, false);
   }
 
   private PaymentPayScene resolvePayScene(PaymentPayScene requested) {

@@ -126,6 +126,27 @@ pnpm smoke:billing-api
 
 ---
 
+## 6.5 Platform Admin 充值退款（live）
+
+`POST /v1/admin/billing/recharge-orders/{orderNo}/refund`（`admin:billing:refund`）在 **stub/mock** 与 **live** 模式下均走 `PaymentGateway.refund`：
+
+| 模式 | 行为 |
+| --- | --- |
+| `provider-mode=stub` | 同步占位退款号（`wx-refund-*` / `alipay-refund-*`），不调用网关 |
+| `provider-mode=live` | 微信 V3 `RefundService.create` / 支付宝 `alipay.trade.refund` |
+| `channel=mock` | 沿用 `MockPaymentGateway` 同步退款 |
+
+**live 退款验收：**
+
+1. 使用 live 模式完成一笔小额充值（§4）
+2. Admin「充值订单」对该 `orderNo` 发起退款并填写原因
+3. 订单状态 `paid` → `refunded`；钱包积分扣回；流水 `refund`
+4. 商户平台侧可查到对应退款单（微信/支付宝控制台）
+
+**注意：** 当前仅支持**同步**退款结果；网关返回 async 时将 409（与 Admin 退款服务一致）。
+
+---
+
 ## 6. 故障排查
 
 | 现象 | 排查 |
@@ -148,6 +169,7 @@ pnpm smoke:billing-api
 - [ ] （JSAPI）微信内 OAuth + 调起 + 入账
 - [ ] Webhook 验签开启后回调仍成功
 - [ ] （可选）查单 Job 在关闭 Webhook 时补单成功
+- [ ] live 模式下 Admin 退款原路成功（§6.5）
 
 ## 参考
 

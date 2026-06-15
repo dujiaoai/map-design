@@ -1,6 +1,7 @@
 package com.yunyan.billingapi.application.payment.provider;
 
 import com.yunyan.billingapi.application.payment.PaymentCreateResult;
+import com.yunyan.billingapi.application.payment.PaymentRefundResult;
 import com.yunyan.billingapi.application.payment.PaymentWebhookChannels;
 import com.yunyan.billingapi.application.payment.sdk.WechatPaySdkClient;
 import com.yunyan.billingapi.config.BillingAppProperties;
@@ -64,6 +65,20 @@ public class LiveWechatPaymentProvider implements PaymentProviderClient {
       return PaymentQueryResult.unpaid();
     }
     return PaymentQueryResult.paid(sdkResult.providerTradeNo(), sdkResult.priceCents());
+  }
+
+  @Override
+  public PaymentRefundResult refund(
+      String orderNo, long priceCents, String currency, String providerTradeNo) {
+    var wechat = billingAppProperties.getPayment().getWechat();
+    assertConfigured(
+        wechat.getAppId(),
+        wechat.getMchId(),
+        wechat.getApiV3Key(),
+        wechat.getMerchantSerialNo(),
+        wechat.getPrivateKeyPem());
+    var sdkResult = wechatPaySdkClient.refund(orderNo, priceCents, currency, providerTradeNo);
+    return new PaymentRefundResult(sdkResult.providerRefundNo(), sdkResult.async());
   }
 
   private static void assertConfigured(

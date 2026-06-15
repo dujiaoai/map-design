@@ -383,8 +383,8 @@ flowchart LR
 ### F-2.5 · 移动支付（P1）
 
 - **骨架 ✅**：Provider `stub`/`live`；stub 占位 payUrl；**live 已接** `wechatpay-java` / `alipay-sdk-java`（Native/H5/JSAPI、WAP 下单 + 查单）；凭证 env；查单 Job（回调丢失补偿）
-- saas-web `/billing` 充值页可选渠道与 payScene；H5 链接「前往支付」新窗口调起；**pending 订单每 3s 轮询**直至入账
-- **待办**：微信 JSAPI 内嵌浏览器自动调起；live 环境联调与证书运维 SOP
+- saas-web `/billing` 充值页可选渠道与 payScene；H5 链接「前往支付」新窗口调起；**JSAPI 微信内置浏览器自动调起** + 手动重试按钮；**pending 订单每 3s 轮询**直至入账
+- **待办**：live 环境联调与证书运维 SOP；JSAPI 需传 `wechatOpenId`（OAuth 待接）
 
 ### F-4 · 运营财务
 

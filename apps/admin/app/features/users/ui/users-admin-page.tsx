@@ -73,6 +73,7 @@ export function UsersAdminPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
+        eyebrow="Users"
         title="用户"
         description="跨租户用户列表；邀请新成员请前往对应租户的「成员」页生成邀请链接。"
         actions={null}

@@ -68,6 +68,7 @@ export function TenantsAdminPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
+        eyebrow="Tenants"
         title="租户"
         description="管理平台全部租户；停用后该租户用户无法登录。"
         actions={

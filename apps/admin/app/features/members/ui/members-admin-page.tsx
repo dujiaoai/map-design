@@ -60,6 +60,7 @@ export function MembersAdminPage({
     <>
       {!embedded ? (
         <AdminPageHeader
+          eyebrow="Members"
           title="租户成员"
           description={`${resolvedTenantName} · 管理本租户成员与角色分配。`}
           actions={

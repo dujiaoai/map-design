@@ -196,6 +196,7 @@ export function PermissionsAdminPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
+        eyebrow="RBAC"
         title="权限目录"
         description="按模块组织权限码；自定义模块下可增删改权限项，系统内置项受保护。"
         actions={

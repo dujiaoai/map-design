@@ -100,6 +100,7 @@ export function RolesAdminPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
+        eyebrow="RBAC"
         title="角色与权限"
         description="每个角色可绑定多项权限码，保存时全量替换权限集合。"
       />

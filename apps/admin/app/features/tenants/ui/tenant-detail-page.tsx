@@ -68,6 +68,7 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
       </div>
 
       <AdminPageHeader
+        eyebrow="Tenant"
         title={tenant.name}
         description={`${tenant.slug} · ${tenant.plan}`}
         actions={

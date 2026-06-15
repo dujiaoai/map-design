@@ -5,7 +5,10 @@ import { useId, useState } from 'react'
 import { formatPoints } from '~/features/billing/lib/format-points'
 import { formatPriceCents } from '~/features/billing/lib/format-price'
 import { useCreateWireTransferMutation } from '~/features/billing/model/use-billing-wire-transfer-mutation'
-import { useWireTransfersQuery } from '~/shared/queries/billing-queries'
+import {
+  useWireTransferPlatformAccountQuery,
+  useWireTransfersQuery,
+} from '~/shared/queries/billing-queries'
 
 const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   dateStyle: 'medium',
@@ -28,6 +31,8 @@ export function BillingWireTransferPanel() {
 
   const createRequest = useCreateWireTransferMutation()
   const listQuery = useWireTransfersQuery()
+  const platformAccountQuery = useWireTransferPlatformAccountQuery()
+  const platformAccount = platformAccountQuery.data
 
   const [companyName, setCompanyName] = useState('')
   const [contactEmail, setContactEmail] = useState('')
@@ -79,10 +84,37 @@ export function BillingWireTransferPanel() {
           对公转账 / 企业预付
         </CardTitle>
         <CardDescription>
-          提交企业对公汇款信息后，平台财务审核通过后将积分入账至您的个人账户。收款账户信息请联系销售或平台运营。
+          {platformAccount?.enabled
+            ? '请汇款至下方平台收款账户，并在附言中注明企业名称；提交申请后财务审核通过将积分入账至您的个人账户。'
+            : '提交企业对公汇款信息后，平台财务审核通过后将积分入账至您的个人账户。收款账户信息请联系销售或平台运营。'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {platformAccount?.enabled ? (
+          <div className="rounded-md border border-border/60 bg-muted/30 px-4 py-3 text-sm">
+            <p className="mb-2 font-medium text-foreground">平台收款账户</p>
+            <dl className="grid gap-1.5 sm:grid-cols-2">
+              <div>
+                <dt className="text-muted-foreground text-xs">户名</dt>
+                <dd className="font-medium">{platformAccount.accountName}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground text-xs">开户行</dt>
+                <dd className="font-medium">{platformAccount.bankName}</dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="text-muted-foreground text-xs">账号</dt>
+                <dd className="font-mono font-medium tracking-wide">{platformAccount.accountNo}</dd>
+              </div>
+              {platformAccount.transferRemark ? (
+                <div className="sm:col-span-2">
+                  <dt className="text-muted-foreground text-xs">汇款附言建议</dt>
+                  <dd>{platformAccount.transferRemark}</dd>
+                </div>
+              ) : null}
+            </dl>
+          </div>
+        ) : null}
         <form className="grid gap-3 sm:grid-cols-2" onSubmit={handleSubmit}>
           <div className="space-y-2 sm:col-span-2">
             <label htmlFor={companyInputId} className="text-sm font-medium">

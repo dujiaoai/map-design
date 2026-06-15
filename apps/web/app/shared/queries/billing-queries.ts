@@ -51,6 +51,8 @@ export const billingQueryKeys = {
     [...billingQueryKeys.all, 'invoices', page, size] as const,
   wireTransfers: (page: number, size: number) =>
     [...billingQueryKeys.all, 'wire-transfers', page, size] as const,
+  wireTransferPlatformAccount: () =>
+    [...billingQueryKeys.all, 'wire-transfer-platform-account'] as const,
   rechargeLedgerOrders: () => [...billingQueryKeys.all, 'recharge-ledger-orders'] as const,
   rechargeOrder: (orderNo: string) =>
     [...billingQueryKeys.all, 'recharge-order', orderNo] as const,
@@ -212,6 +214,21 @@ export function wireTransfersQueryOptions(page = 0, size = 20) {
     queryKey: billingQueryKeys.wireTransfers(page, size),
     queryFn: () => billingClient.listWireTransfers(page, size),
     staleTime: 30_000,
+  })
+}
+
+export function wireTransferPlatformAccountQueryOptions() {
+  return queryOptions({
+    queryKey: billingQueryKeys.wireTransferPlatformAccount(),
+    queryFn: () => billingClient.getWireTransferPlatformAccount(),
+    staleTime: 60_000,
+  })
+}
+
+export function useWireTransferPlatformAccountQuery(enabled = true) {
+  return useQuery({
+    ...wireTransferPlatformAccountQueryOptions(),
+    enabled: enabled && usesSaasSessionBootstrap() && canRecharge(),
   })
 }
 

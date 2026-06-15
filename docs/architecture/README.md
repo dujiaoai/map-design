@@ -36,7 +36,7 @@ flowchart LR
 ## 认证与授权
 
 **当前**：登录/注册/bootstrap 已走 SaaS（C-06～C-08）；Account 部分仍 RuoYi。  
-**路线图**：C-10～C-12 收尾 ✅ → Sprint D 权限与后台 ✅ → Admin P0～P3 ✅ → Sprint E 业务域（Later）。详见 [services-development-plan.md](./services-development-plan.md)（含 **§十 执行指引**）。
+**路线图**：C-10～C-12 收尾 ✅ → Sprint D 权限与后台 ✅ → Admin P0～P3 ✅ → **Sprint F 平台计费（含 sec/RLS）✅** → Sprint E 业务域（Later）。详见 [services-development-plan.md](./services-development-plan.md)（含 **§十 执行指引**）。
 
 ## API 双轨
 
@@ -111,6 +111,7 @@ flowchart LR
 | Admin 功能完善 P1：租户详情、跨租户成员、能力管理 | ✅ |
 | Admin 功能完善 P2：列表分页、`/account`、TeamSwitcher | ✅ |
 | Admin 功能完善 P3：Skeleton、404、Vitest/MockMvc | ✅ |
+| Sprint F：billing-api 平台计费（F-0～F-6 + sec/RLS） | ✅；[billing-service.md](./billing-service.md)、[billing-credits-prd.md](../product/billing-credits-prd.md) |
 | Sprint E：地图/机库等业务 API | Later，C/D 不做 |
 | packages（ui/auth/api-client/ruoyi-api） | 已完成 |
 | SaaS `/v1` 后端 | Auth MVP + 租户 API ✅ |

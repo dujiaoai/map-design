@@ -65,6 +65,23 @@ pnpm --filter @repo/saas-admin dev
 - **P4 运维控制台 UX**：工业深色网格壳、Health 条（含 ping）、列表 stagger 入场、租户详情 URL Tab、快捷入口、403/404 统一错误页
 - **P4+ 计费 Sheet**：发票开具/驳回、对公转账驳回改用 Sheet（替代 `window.prompt`）；审计页计费动作可跳转对应 Tab
 - **P4+ 跨页导航**：`AdminTenantContextBanner`、计费/用户 URL 筛选条、审计→用户/计费/租户链接、租户列表计费快捷入口、RBAC 骨架加载、Shell 动态租户标题
+- **P4++ 主流 UX 对齐**：列表错误态「重试」、筛选 toggle 芯片统一、搜索框 `aria-label` + 清除、动效尊重 `prefers-reduced-motion`
+
+## 主流运维控制台 UX 对照
+
+与 AWS Console / Vercel / Stripe Dashboard 等常见模式对齐的检查项（持续维护）：
+
+| 维度 | 主流期望 | Admin 现状 |
+| --- | --- | --- |
+| **信息架构** | 侧栏分组 + 面包屑/页眉 eyebrow | ✅ `AdminPageHeader` + 分组导航 |
+| **列表页** | 搜索 + 筛选 + 分页 + 总数 | ✅ `AdminTableToolbar` + 服务端分页 |
+| **加载态** | Skeleton，非空白闪烁 | ✅ `AdminTableSkeleton` / `AdminSidebarListSkeleton` |
+| **空态/错态** | 明确文案 + 可恢复操作 | ✅ `AdminEmptyState` 支持 `onRetry` |
+| **筛选控件** | 一致的 chip/toggle，非原生 checkbox | ✅ 审计「仅计费/成员/跨租户」toggle |
+| **危险操作** | Confirm / Sheet，非 `prompt` | ✅ 计费驳回 Sheet、`AlertDialog` |
+| **跨页上下文** | 租户/筛选 banner + 清除 | ✅ `AdminTenantContextBanner` 等 |
+| **无障碍** | 搜索 `role=searchbox`、`aria-label` | ✅ 工具栏搜索；reduced-motion 已处理 |
+| **待增强** | 表格列排序、批量操作、键盘快捷键 | 📋 Later |
 
 ## 验证
 

@@ -17,4 +17,6 @@ export const billingAdminQueryKeys = {
     filters: { userId?: string; entryType?: string },
     page: number,
   ) => [...billingAdminQueryKeys.all, 'ledger', tenantId, filters, page] as const,
+  reconciliation: (date: string) =>
+    [...billingAdminQueryKeys.all, 'reconciliation', date] as const,
 }

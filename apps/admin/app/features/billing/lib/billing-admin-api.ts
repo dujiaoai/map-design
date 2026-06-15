@@ -168,6 +168,26 @@ export const adminLedgerListSchema = z.object({
 
 export type AdminLedgerList = z.infer<typeof adminLedgerListSchema>
 
+export const adminReconciliationDailySchema = z.object({
+  date: z.string(),
+  from: z.string(),
+  to: z.string(),
+  paidOrderCount: z.number(),
+  paidOrderPoints: z.number(),
+  paidOrderGmvCents: z.number(),
+  rechargeLedgerCount: z.number(),
+  rechargeLedgerPoints: z.number(),
+  refundedOrderCount: z.number(),
+  refundedOrderPoints: z.number(),
+  refundedOrderGmvCents: z.number(),
+  refundLedgerCount: z.number(),
+  refundLedgerPoints: z.number(),
+  balanced: z.boolean(),
+  discrepancies: z.array(z.string()),
+})
+
+export type AdminReconciliationDaily = z.infer<typeof adminReconciliationDailySchema>
+
 function buildQuery(params: Record<string, string | number | undefined>) {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {
@@ -244,4 +264,15 @@ export function adminBillingLedgerQuery(params: {
     page: params.page ?? 0,
     size: params.size ?? 20,
   })
+}
+
+export function adminBillingReconciliationQuery(params: { date?: string }) {
+  return buildQuery({ date: params.date })
+}
+
+/** UTC 昨日，对齐 billing-api 默认对账日 */
+export function defaultReconciliationDateUtc() {
+  const date = new Date()
+  date.setUTCDate(date.getUTCDate() - 1)
+  return date.toISOString().slice(0, 10)
 }

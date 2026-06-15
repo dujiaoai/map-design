@@ -5,6 +5,8 @@ import {
   CoinsIcon,
   PackageIcon,
   ReceiptIcon,
+  ScaleIcon,
+  ScrollTextIcon,
   WalletIcon,
 } from 'lucide-react'
 
@@ -25,6 +27,8 @@ const QUICK_LINKS: {
   { tab: 'wallets', label: '用户钱包', icon: WalletIcon },
   { tab: 'orders', label: '充值订单', icon: ReceiptIcon },
   { tab: 'packages', label: '充值 SKU', icon: PackageIcon },
+  { tab: 'ledger', label: '积分流水', icon: ScrollTextIcon },
+  { tab: 'reconciliation', label: '日对账', icon: ScaleIcon },
   { tab: 'usage', label: '消费汇总', icon: CoinsIcon },
 ]
 

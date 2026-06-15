@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest'
 
 import {
   adminBillingLedgerQuery,
+  adminBillingReconciliationQuery,
   adminBillingWalletsQuery,
   adminLedgerListSchema,
+  adminReconciliationDailySchema,
   adminWalletListSchema,
+  defaultReconciliationDateUtc,
 } from './billing-admin-api'
 
 describe('adminBillingWalletsQuery', () => {
@@ -38,6 +41,22 @@ describe('adminBillingLedgerQuery', () => {
     })
     expect(query).toContain('entryType=adjust')
     expect(query).toContain('userId=22222222-2222-2222-2222-222222222222')
+  })
+})
+
+describe('adminBillingReconciliationQuery', () => {
+  it('includes date when provided', () => {
+    expect(adminBillingReconciliationQuery({ date: '2026-06-14' })).toBe('?date=2026-06-14')
+  })
+
+  it('returns empty query when date omitted', () => {
+    expect(adminBillingReconciliationQuery({})).toBe('')
+  })
+})
+
+describe('defaultReconciliationDateUtc', () => {
+  it('returns YYYY-MM-DD', () => {
+    expect(defaultReconciliationDateUtc()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
 })
 
@@ -82,5 +101,26 @@ describe('admin response schemas', () => {
       total: 1,
     })
     expect(parsed.items[0]?.entryType).toBe('adjust')
+  })
+
+  it('parses reconciliation daily payload', () => {
+    const parsed = adminReconciliationDailySchema.parse({
+      date: '2026-06-14',
+      from: '2026-06-14T00:00:00Z',
+      to: '2026-06-15T00:00:00Z',
+      paidOrderCount: 1,
+      paidOrderPoints: 500,
+      paidOrderGmvCents: 4900,
+      rechargeLedgerCount: 1,
+      rechargeLedgerPoints: 500,
+      refundedOrderCount: 0,
+      refundedOrderPoints: 0,
+      refundedOrderGmvCents: 0,
+      refundLedgerCount: 0,
+      refundLedgerPoints: 0,
+      balanced: true,
+      discrepancies: [],
+    })
+    expect(parsed.balanced).toBe(true)
   })
 })

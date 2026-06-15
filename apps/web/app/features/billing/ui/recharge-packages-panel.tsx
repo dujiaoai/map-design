@@ -1,6 +1,32 @@
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Skeleton } from '@repo/ui'
-import { useState } from 'react'
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Skeleton,
+} from '@repo/ui'
+import { useMemo, useState } from 'react'
 
+import {
+  defaultPaySceneForChannel,
+  payScenesForChannel,
+  RECHARGE_CHANNELS,
+  type RechargeChannel,
+  type RechargePayScene,
+} from '~/features/billing/lib/payment-channel-options'
+import {
+  classifyRechargePayLaunch,
+  openRechargePayUrl,
+  rechargePayLaunchHint,
+} from '~/features/billing/lib/open-recharge-pay-url'
 import {
   useCancelRechargeOrderMutation,
   useCreateRechargeOrderMutation,
@@ -28,8 +54,20 @@ export function RechargePackagesPanel({
   const cancelOrder = useCancelRechargeOrderMutation()
   const [pendingOrder, setPendingOrder] = useState<RechargeOrderResponse | null>(null)
   const [couponCode, setCouponCode] = useState('')
+  const [channel, setChannel] = useState<RechargeChannel>('mock')
+  const [payScene, setPayScene] = useState<RechargePayScene>('native')
   const [paidMessage, setPaidMessage] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+
+  const paySceneOptions = useMemo(() => payScenesForChannel(channel), [channel])
+
+  function handleChannelChange(nextChannel: RechargeChannel) {
+    setChannel(nextChannel)
+    const nextDefault = defaultPaySceneForChannel(nextChannel)
+    if (nextDefault) {
+      setPayScene(nextDefault)
+    }
+  }
 
   async function handleCreateOrder(packageCode: string) {
     setActionError(null)
@@ -37,8 +75,9 @@ export function RechargePackagesPanel({
     try {
       const order = await createOrder.mutateAsync({
         packageCode,
-        channel: 'mock',
+        channel,
         ...(couponCode.trim() ? { couponCode: couponCode.trim() } : {}),
+        ...(channel !== 'mock' ? { payScene } : {}),
       })
       setPendingOrder(order)
     } catch {
@@ -60,6 +99,14 @@ export function RechargePackagesPanel({
     }
   }
 
+  function handleOpenPayUrl() {
+    if (!pendingOrder?.payUrl) return
+    const opened = openRechargePayUrl(pendingOrder.payUrl)
+    if (!opened) {
+      setActionError('当前支付链接无法在新窗口打开，请复制下方链接手动访问。')
+    }
+  }
+
   async function handleCancelOrder() {
     if (!pendingOrder) return
     setActionError(null)
@@ -74,12 +121,16 @@ export function RechargePackagesPanel({
   const isBusy =
     createOrder.isPending || mockPay.isPending || cancelOrder.isPending
 
+  const pendingPayLaunch = pendingOrder?.payUrl
+    ? classifyRechargePayLaunch(pendingOrder.payUrl, pendingOrder.payScene)
+    : null
+
   return (
     <Card className="border-border/60 bg-card/80">
       <CardHeader>
         <CardTitle className="text-base">充值套餐</CardTitle>
         <CardDescription>
-          积分将进入您个人账户。当前环境使用沙箱 mock 支付；正式微信 / 支付宝将在后续迭代接入。
+          积分将进入您个人账户。可选择沙箱 mock、微信或支付宝（H5/扫码占位链路；正式 SDK 接入后自动调起）。
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -91,6 +142,53 @@ export function RechargePackagesPanel({
         {actionError ? (
           <p className="text-destructive text-sm">{actionError}</p>
         ) : null}
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="recharge-channel">
+              支付渠道
+            </label>
+            <Select
+              value={channel}
+              onValueChange={(value) => handleChannelChange((value ?? 'mock') as RechargeChannel)}
+              disabled={isBusy || Boolean(pendingOrder)}
+            >
+              <SelectTrigger id="recharge-channel">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {RECHARGE_CHANNELS.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {paySceneOptions.length > 0 ? (
+            <div className="space-y-2">
+              <label className="text-sm font-medium" htmlFor="recharge-pay-scene">
+                支付场景
+              </label>
+              <Select
+                value={payScene}
+                onValueChange={(value) => setPayScene((value ?? payScene) as RechargePayScene)}
+                disabled={isBusy || Boolean(pendingOrder)}
+              >
+                <SelectTrigger id="recharge-pay-scene">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {paySceneOptions.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : null}
+        </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="recharge-coupon-code">
@@ -164,16 +262,32 @@ export function RechargePackagesPanel({
               {pendingOrder.couponCode ? (
                 <p className="text-muted-foreground text-xs">已使用抵扣券 {pendingOrder.couponCode}</p>
               ) : null}
+              {pendingOrder.payScene ? (
+                <p className="text-muted-foreground text-xs">
+                  支付场景 {pendingOrder.channel} / {pendingOrder.payScene}
+                </p>
+              ) : null}
               {pendingOrder.payUrl ? (
                 <p className="text-muted-foreground mt-1 break-all font-mono text-xs">
                   {pendingOrder.payUrl}
                 </p>
               ) : null}
+              {pendingPayLaunch ? (
+                <p className="text-muted-foreground mt-2 text-xs">
+                  {rechargePayLaunchHint(pendingPayLaunch)}
+                </p>
+              ) : null}
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button type="button" disabled={isBusy} onClick={() => void handleMockPay()}>
-                模拟支付完成
-              </Button>
+              {pendingOrder.channel === 'mock' ? (
+                <Button type="button" disabled={isBusy} onClick={() => void handleMockPay()}>
+                  模拟支付完成
+                </Button>
+              ) : pendingPayLaunch === 'http' ? (
+                <Button type="button" disabled={isBusy} onClick={handleOpenPayUrl}>
+                  前往支付
+                </Button>
+              ) : null}
               <Button
                 type="button"
                 variant="outline"

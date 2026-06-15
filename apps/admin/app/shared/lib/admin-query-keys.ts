@@ -2,6 +2,7 @@ import type { AdminListQuery } from '~/shared/api/admin-api'
 
 export const adminQueryKeys = {
   stats: ['admin', 'stats'] as const,
+  ping: ['admin', 'ping'] as const,
   tenants: (params?: AdminListQuery) => ['admin', 'tenants', params ?? {}] as const,
   tenantsAll: ['admin', 'tenants', 'all-options'] as const,
   tenant: (tenantId: string) => ['admin', 'tenants', tenantId] as const,

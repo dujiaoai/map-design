@@ -14,7 +14,7 @@ import {
   buildSystemHealthSignals,
   summarizeSystemHealth,
 } from '~/features/system/lib/system-health'
-import { fetchAdminSystemFlags } from '~/shared/api/admin-api'
+import { fetchAdminPing, fetchAdminSystemFlags } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
 import {
@@ -55,6 +55,11 @@ export function SystemAdminPage() {
     queryKey: adminQueryKeys.systemFlags,
     queryFn: fetchAdminSystemFlags,
   })
+  const pingQuery = useQuery({
+    queryKey: adminQueryKeys.ping,
+    queryFn: fetchAdminPing,
+    staleTime: 30_000,
+  })
 
   if (query.isLoading) {
     return (
@@ -88,7 +93,11 @@ export function SystemAdminPage() {
   }
 
   const flags = query.data
-  const healthSignals = buildSystemHealthSignals(flags)
+  const healthSignals = buildSystemHealthSignals(
+    flags,
+    pingQuery.data,
+    pingQuery.isError,
+  )
   const healthSummary = summarizeSystemHealth(healthSignals)
   const profileLabel = flags.runtime.activeProfiles.join(', ') || 'default'
 

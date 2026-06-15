@@ -27,36 +27,64 @@ const BASE_FLAGS: AdminSystemFlagsResponse = {
 
 describe('buildSystemHealthSignals', () => {
   it('marks mail as warn when enabled but not ready', () => {
-    const signals = buildSystemHealthSignals({
-      ...BASE_FLAGS,
-      mail: { enabled: true, fromAddress: '', outboundReady: false },
-    })
+    const signals = buildSystemHealthSignals(
+      {
+        ...BASE_FLAGS,
+        mail: { enabled: true, fromAddress: '', outboundReady: false },
+      },
+      { status: 'ok', authenticated: true, platformAdmin: true },
+    )
     const mail = signals.find((s) => s.id === 'mail')
     expect(mail?.level).toBe('warn')
   })
 
   it('marks billing integration as warn when disabled', () => {
-    const signals = buildSystemHealthSignals({
-      ...BASE_FLAGS,
-      billing: { ...BASE_FLAGS.billing, integrationEnabled: false },
-    })
+    const signals = buildSystemHealthSignals(
+      {
+        ...BASE_FLAGS,
+        billing: { ...BASE_FLAGS.billing, integrationEnabled: false },
+      },
+      { status: 'ok', authenticated: true, platformAdmin: true },
+    )
     expect(signals.find((s) => s.id === 'billing')?.level).toBe('warn')
   })
 
   it('summarizes overall health with warnings', () => {
-    const signals = buildSystemHealthSignals({
-      ...BASE_FLAGS,
-      billing: { ...BASE_FLAGS.billing, integrationEnabled: false },
-    })
+    const signals = buildSystemHealthSignals(
+      {
+        ...BASE_FLAGS,
+        billing: { ...BASE_FLAGS.billing, integrationEnabled: false },
+      },
+      { status: 'ok', authenticated: true, platformAdmin: true },
+    )
     const summary = summarizeSystemHealth(signals)
     expect(summary.overall).toBe('warn')
     expect(summary.warnings).toBe(1)
   })
 
   it('reports ok when all critical signals are healthy', () => {
-    const signals = buildSystemHealthSignals(BASE_FLAGS)
+    const signals = buildSystemHealthSignals(BASE_FLAGS, {
+      status: 'ok',
+      authenticated: true,
+      platformAdmin: true,
+    })
     const summary = summarizeSystemHealth(signals)
     expect(summary.overall).toBe('ok')
     expect(summary.warnings).toBe(0)
+  })
+
+  it('marks admin api as warn when ping fails', () => {
+    const signals = buildSystemHealthSignals(BASE_FLAGS, undefined, true)
+    const api = signals.find((s) => s.id === 'admin-api')
+    expect(api?.level).toBe('warn')
+  })
+
+  it('includes admin api signal first', () => {
+    const signals = buildSystemHealthSignals(BASE_FLAGS, {
+      status: 'ok',
+      authenticated: true,
+      platformAdmin: true,
+    })
+    expect(signals[0]?.id).toBe('admin-api')
   })
 })

@@ -1,4 +1,4 @@
-import type { AdminSystemFlagsResponse } from '~/shared/api/admin-api'
+import type { AdminPingResponse, AdminSystemFlagsResponse } from '~/shared/api/admin-api'
 import type { AdminStatusLevel } from '~/shared/ui/admin-status-pill'
 
 export interface SystemHealthSignal {
@@ -8,10 +8,36 @@ export interface SystemHealthSignal {
   detail: string
 }
 
+export function buildApiPingSignal(
+  ping: AdminPingResponse | undefined,
+  isError: boolean,
+): SystemHealthSignal {
+  if (isError || !ping) {
+    return {
+      id: 'admin-api',
+      label: 'Admin API',
+      level: 'warn',
+      detail: '无法连接 saas-api，请确认服务已启动',
+    }
+  }
+
+  const online = ping.status === 'ok'
+  return {
+    id: 'admin-api',
+    label: 'Admin API',
+    level: online ? 'ok' : 'warn',
+    detail: online
+      ? `authenticated=${ping.authenticated} · platformAdmin=${ping.platformAdmin}`
+      : `status=${ping.status}`,
+  }
+}
+
 export function buildSystemHealthSignals(
   flags: AdminSystemFlagsResponse,
+  ping?: AdminPingResponse,
+  pingError = false,
 ): SystemHealthSignal[] {
-  const signals: SystemHealthSignal[] = []
+  const signals: SystemHealthSignal[] = [buildApiPingSignal(ping, pingError)]
 
   if (flags.mail.enabled) {
     signals.push({

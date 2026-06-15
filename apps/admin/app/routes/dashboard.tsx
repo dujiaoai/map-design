@@ -35,7 +35,7 @@ export default function DashboardRoute() {
     queryFn: fetchAdminStats,
   })
   const pingQuery = useQuery({
-    queryKey: ['admin', 'ping'],
+    queryKey: adminQueryKeys.ping,
     queryFn: fetchAdminPing,
   })
 

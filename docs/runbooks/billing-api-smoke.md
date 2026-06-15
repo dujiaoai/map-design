@@ -31,13 +31,13 @@ pnpm smoke:billing-api
 node services/billing-api/scripts/smoke-billing.mjs
 ```
 
-**默认流程（23 步）：**
+**默认流程（26 步）：**
 
-`login` → `wallet` → `packages` → `wechat-oauth-config` → `wire-transfer-platform-account` → `recharge-create` → …
+`login` → `users-me` → `membership-check` → `membership-sync-events` → `wallet` → `packages` → `wechat-oauth-config` → `wire-transfer-platform-account` → `recharge-create` → …
 
 （`SMOKE_RECHARGE_CHANNEL=wechat|alipay` 时 mock-pay / recharge-discount-mock-pay 替换为对应 webhook 步骤。）
 
-成功输出：`billing smoke OK (23 steps): ...`（mock 渠道）
+成功输出：`billing smoke OK (26 steps): ...`（mock 渠道）
 
 Live 支付凭证与 JSAPI OAuth 联调见 [billing-live-payment-sop.md](./billing-live-payment-sop.md)。
 
@@ -52,6 +52,7 @@ Live 支付凭证与 JSAPI OAuth 联调见 [billing-live-payment-sop.md](./billi
 | `SMOKE_RECHARGE_CHANNEL` | `mock` | `mock` / `wechat` / `alipay` |
 | `BILLING_WEBHOOK_TOKEN` | dev token | 与 billing-api 配置一致 |
 | `BILLING_WEBHOOK_SIGNATURE_MODE` | `off` | `off` / `hmac` / `wechat_v3` / `alipay_rsa` |
+| `BILLING_INTERNAL_TOKEN` | dev token | saas-api `/internal/v1/membership/*` 探活（与 m2m 配置一致） |
 
 Webhook 渠道冒烟（非 mock）需额外配置验签密钥，见 [billing-credits-prd.md](../product/billing-credits-prd.md) §2.4。
 

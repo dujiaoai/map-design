@@ -363,7 +363,7 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | 编号 | 主题 | 状态 |
 | --- | --- | --- |
 | FND-01 | 文档与计划对齐 | ✅ |
-| FND-02 | Testcontainers（PG + RLS） | 待做 |
+| FND-02 | Testcontainers（PG + RLS） | ✅ |
 | FND-03 | 计费 live 退款 / runbook 生产化 | 待做 |
 | FND-04 | saas-api RLS 扩展（`map_layer` 起） | 待做 |
 | FND-05 | 可观测性最小集（MDC + billing 探活） | 待做 |

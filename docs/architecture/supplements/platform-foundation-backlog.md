@@ -14,7 +14,7 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | 优先级 | 编号 | 主题 | 状态 |
 | --- | --- | --- | --- |
 | P0 | FND-01 | 文档与计划对齐 | ✅ |
-| P1 | FND-02 | Testcontainers（PG + RLS 关键路径） | 待做 |
+| P1 | FND-02 | Testcontainers（PG + RLS 关键路径） | ✅ |
 | P1 | FND-03 | 计费 live 退款 / 对公 / runbook 生产化 | 待做 |
 | P1 | FND-04 | saas-api RLS 扩展（租户业务表） | 待做 |
 | P2 | FND-05 | 可观测性最小集（MDC + 依赖健康探活） | 待做 |
@@ -43,7 +43,7 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | saas-api | 登录 + `sys_user` RLS 隔离冒烟 |
 | billing-api | 钱包读写 + `billing_*` RLS 冒烟 |
 
-Skill：`java-backend-testing`
+**命令**：`mvn -f services/pom.xml -pl saas-api,billing-api -Pintegration test`（需 Docker；无 Docker 时 `@Testcontainers(disabledWithoutDocker = true)` 自动跳过）
 
 ---
 

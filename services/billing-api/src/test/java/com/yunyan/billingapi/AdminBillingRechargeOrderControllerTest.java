@@ -75,7 +75,9 @@ class AdminBillingRechargeOrderControllerTest {
         .andExpect(jsonPath("$.total").value(1))
         .andExpect(jsonPath("$.items[0].orderNo").value(orderNo))
         .andExpect(jsonPath("$.items[0].status").value("paid"))
-        .andExpect(jsonPath("$.items[0].points").value(500));
+        .andExpect(jsonPath("$.items[0].points").value(500))
+        .andExpect(jsonPath("$.items[0].listPriceCents").value(4900))
+        .andExpect(jsonPath("$.items[0].couponDiscountCents").value(0));
   }
 
   @Test

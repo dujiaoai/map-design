@@ -1,5 +1,6 @@
 package com.yunyan.billingapi;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -112,5 +113,18 @@ class BillingRechargeCouponDiscountTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(Map.of("code", couponCode))))
         .andExpect(status().isBadRequest());
+
+    mockMvc
+        .perform(
+            get("/v1/admin/billing/recharge-orders")
+                .param("tenantId", tenantId.toString())
+                .param("status", "paid")
+                .header("Authorization", "Bearer " + adminWriteToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items[0].orderNo").value(orderNo))
+        .andExpect(jsonPath("$.items[0].listPriceCents").value(4900))
+        .andExpect(jsonPath("$.items[0].couponDiscountCents").value(1000))
+        .andExpect(jsonPath("$.items[0].priceCents").value(3900))
+        .andExpect(jsonPath("$.items[0].couponCode").value(couponCode));
   }
 }

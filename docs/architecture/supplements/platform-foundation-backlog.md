@@ -17,7 +17,7 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | P1 | FND-02 | Testcontainers（PG + RLS 关键路径） | ✅ |
 | P1 | FND-03 | 计费 live 退款 / 对公 / runbook 生产化 | ✅（live 退款；对公认款仍 Later） |
 | P1 | FND-04 | saas-api RLS 扩展（租户业务表） | 待做 |
-| P2 | FND-05 | 可观测性最小集（MDC + 依赖健康探活） | 待做 |
+| P2 | FND-05 | 可观测性最小集（MDC + 依赖健康探活） | ✅ |
 | P3 | FND-06 | Admin `/system` 平台配置 | 待做 |
 | Later | FND-07 | OAuth2/OIDC、Admin MFA、impersonation | 远期 |
 

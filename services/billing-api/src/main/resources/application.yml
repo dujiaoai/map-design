@@ -19,6 +19,10 @@ spring:
 server:
   port: 8083
 
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%X{tenantId}/%X{userId}] [%thread] %logger{36} - %msg%n"
+
 management:
   endpoints:
     web:

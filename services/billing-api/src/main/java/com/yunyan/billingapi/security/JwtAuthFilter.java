@@ -45,6 +45,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       }
       filterChain.doFilter(request, response);
     } finally {
+      RequestMdc.clear();
       TenantContext.clear();
     }
   }
@@ -75,6 +76,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
           principal, null, principal.getAuthorities());
       authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
       SecurityContextHolder.getContext().setAuthentication(authentication);
+      RequestMdc.set(parsed.tenantId(), parsed.userId());
     } catch (AuthException ignored) {
       // 无效/过期 token — 视为未认证
     }

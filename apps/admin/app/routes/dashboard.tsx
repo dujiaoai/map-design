@@ -117,6 +117,8 @@ export default function DashboardRoute() {
           value={statsQuery.data?.tenantCount ?? 0}
           loading={statsQuery.isLoading}
           error={statsQuery.isError}
+          onRetry={() => void statsQuery.refetch()}
+          isRetrying={statsQuery.isFetching}
         />
         <AdminMetricCard
           icon={UsersIcon}
@@ -124,6 +126,8 @@ export default function DashboardRoute() {
           value={statsQuery.data?.userCount ?? 0}
           loading={statsQuery.isLoading}
           error={statsQuery.isError}
+          onRetry={() => void statsQuery.refetch()}
+          isRetrying={statsQuery.isFetching}
         />
         <AdminMetricCard
           icon={ActivityIcon}
@@ -131,6 +135,8 @@ export default function DashboardRoute() {
           value={statsQuery.data?.activeTenantCount ?? 0}
           loading={statsQuery.isLoading}
           error={statsQuery.isError}
+          onRetry={() => void statsQuery.refetch()}
+          isRetrying={statsQuery.isFetching}
           hint="status = active"
         />
       </div>

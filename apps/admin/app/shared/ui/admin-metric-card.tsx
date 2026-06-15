@@ -1,4 +1,4 @@
-import { cn } from '@repo/ui'
+import { Button, cn } from '@repo/ui'
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -12,6 +12,8 @@ export function AdminMetricCard({
   emphasis = false,
   className,
   footer,
+  onRetry,
+  isRetrying = false,
 }: {
   icon: LucideIcon
   label: string
@@ -22,6 +24,8 @@ export function AdminMetricCard({
   emphasis?: boolean
   className?: string
   footer?: ReactNode
+  onRetry?: () => void
+  isRetrying?: boolean
 }) {
   return (
     <section
@@ -50,8 +54,21 @@ export function AdminMetricCard({
           value
         )}
       </p>
-      {hint ? <p className="relative mt-1 text-xs text-muted-foreground">{hint}</p> : null}
-      {footer ? <div className="relative mt-3">{footer}</div> : null}
+      {hint && !error ? <p className="relative mt-1 text-xs text-muted-foreground">{hint}</p> : null}
+      {error && onRetry ? (
+        <div className="relative mt-3">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={isRetrying}
+            onClick={onRetry}
+          >
+            {isRetrying ? '重试中…' : '重试'}
+          </Button>
+        </div>
+      ) : null}
+      {!error && footer ? <div className="relative mt-3">{footer}</div> : null}
     </section>
   )
 }

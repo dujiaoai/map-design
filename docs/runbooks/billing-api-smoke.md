@@ -31,13 +31,13 @@ pnpm smoke:billing-api
 node services/billing-api/scripts/smoke-billing.mjs
 ```
 
-**默认流程（22 步）：**
+**默认流程（23 步）：**
 
-`login` → `wallet` → `packages` → `wechat-oauth-config` → `recharge-create` → …
+`login` → `wallet` → `packages` → `wechat-oauth-config` → `wire-transfer-platform-account` → `recharge-create` → …
 
 （`SMOKE_RECHARGE_CHANNEL=wechat|alipay` 时 mock-pay / recharge-discount-mock-pay 替换为对应 webhook 步骤。）
 
-成功输出：`billing smoke OK (22 steps): ...`（mock 渠道）
+成功输出：`billing smoke OK (23 steps): ...`（mock 渠道）
 
 Live 支付凭证与 JSAPI OAuth 联调见 [billing-live-payment-sop.md](./billing-live-payment-sop.md)。
 

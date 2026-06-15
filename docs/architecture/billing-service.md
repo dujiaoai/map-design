@@ -123,9 +123,10 @@ services/
 | --- | --- |
 | 数据源 | `BILLING_DATASOURCE_URL` / `USERNAME` / `PASSWORD`（见 `application-docker.yml`） |
 | 成员校验 | Flyway **V9** `sys_user` 镜像 + 已有 `sys_tenant_feature` 镜像 |
-| 同步 | 首次：`pnpm sync:billing-membership` 或 compose `billing-db-sync`；持续：`BILLING_MEMBERSHIP_SYNC_ENABLED=true` + `MembershipMirrorSyncJob`（默认 5min） |
+| 同步 | 首次：`pnpm sync:billing-membership` 或 compose `billing-db-sync`；持续：`BILLING_MEMBERSHIP_SYNC_ENABLED=true` + `MembershipMirrorSyncJob`（默认 5min）；或 **`BILLING_MEMBERSHIP_SYNC_SOURCE=api`** 实时查 saas-api |
 | Compose | `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.billing-db.yml up -d` |
-| 待办 | saas-api 事件驱动 CDC / 内网 membership API（替代全量 COPY） |
+| 内网 API | saas-api `GET /internal/v1/membership/tenants/{tenantId}/users/{userId}`（`X-Billing-Internal-Token`）；billing-api `SaasMembershipApiClient` |
+| 待办 | saas-api 事件驱动 CDC（替代 periodic COPY / 轮询 API） |
 
 ## 部署变更（F-1）
 

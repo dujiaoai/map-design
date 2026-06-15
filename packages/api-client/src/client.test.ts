@@ -45,6 +45,37 @@ describe('createApiClient', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
+  it('并行 401 refresh 清会话后不重复触发 onUnauthorized', async () => {
+    const fetchMock = vi.fn(async () => new Response('unauthorized', { status: 401 }))
+    let refreshPromise: Promise<string | null> | null = null
+    let token: string | null = 'old-token'
+    const refresh = vi.fn(async () => {
+      refreshPromise ??= Promise.resolve(null).then(() => {
+        token = null
+        return null
+      })
+      return refreshPromise
+    })
+    const getAccessToken = vi.fn(() => token)
+    const onUnauthorized = vi.fn()
+
+    const client = createApiClient({
+      baseUrl: 'https://api.test/v1',
+      fetch: fetchMock,
+      auth: {
+        getAccessToken,
+        refreshAccessToken: refresh,
+        onUnauthorized,
+      },
+    })
+
+    await expect(
+      Promise.all([client.get('/a'), client.get('/b')]),
+    ).rejects.toBeInstanceOf(ApiError)
+
+    expect(onUnauthorized).not.toHaveBeenCalled()
+  })
+
   it('非 2xx 抛出 ApiError', async () => {
     const client = createApiClient({
       baseUrl: 'https://api.test/v1',

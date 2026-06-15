@@ -8,9 +8,9 @@ import { isMockAccessToken } from '~/shared/mock/dev-auth'
 import { clearAppSession } from './clear-app-session'
 import { persistAuthSession } from './persist-auth-session'
 
-/** 非 mock token 时 bootstrap / 刷新均走 SaaS `GET /v1/users/me` */
+/** 非 mock token 且本地仍持有 access token 时，走 SaaS `GET /v1/users/me` bootstrap */
 export function usesSaasSessionBootstrap(): boolean {
-  return !isMockAccessToken(auth.getAccessToken())
+  return auth.isAuthenticated() && !isMockAccessToken(auth.getAccessToken())
 }
 
 /** 拉取当前会话并同步 `@repo/auth` */

@@ -37,6 +37,9 @@ export function createSessionStore(storage: TokenStorage) {
     },
 
     clear() {
+      if (get().session === null && !storage.isAuthenticated()) {
+        return
+      }
       storage.clear()
       set({ session: null, hydrated: true })
     },

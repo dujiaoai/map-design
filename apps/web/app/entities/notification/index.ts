@@ -3,5 +3,6 @@ export { mockNotifications, NOTIFICATION_TYPE_LABEL } from './model/mock-notific
 export {
   selectNotificationItems,
   selectUnreadNotificationCount,
+  selectUnreadNotificationCountFromStore,
   useNotificationStore,
 } from './model/notification-store'

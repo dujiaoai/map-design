@@ -58,7 +58,10 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
       if (newToken) {
         return request<T>(path, { ...init, _retry: true })
       }
-      options.auth.onUnauthorized?.()
+      // refresh 失败路径已清会话；避免并行 401 重复触发 onUnauthorized 导致 store 更新风暴
+      if (options.auth.getAccessToken()) {
+        options.auth.onUnauthorized?.()
+      }
     }
 
     const body = await parseBody(res)
@@ -74,7 +77,9 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
           options.onAfterAuthRefresh?.()
           return request<T>(path, { ...init, _permRetry: true })
         }
-        options.auth.onUnauthorized?.()
+        if (options.auth.getAccessToken()) {
+          options.auth.onUnauthorized?.()
+        }
       }
       if (res.status === 402 && options.onPaymentRequired) {
         const detail = parsePaymentRequiredDetail(body)

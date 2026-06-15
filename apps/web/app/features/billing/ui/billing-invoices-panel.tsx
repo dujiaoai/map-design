@@ -1,6 +1,6 @@
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Skeleton } from '@repo/ui'
 import { FileTextIcon } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { formatInvoiceStatus, formatInvoiceType } from '~/features/billing/lib/invoice-labels'
 import { formatPriceCents } from '~/features/billing/lib/format-price'
@@ -59,12 +59,20 @@ export function BillingInvoicesPanel({
     [rechargeOrderOptions, invoicedOrderNos],
   )
 
+  const sheetOrderOptions = useMemo(
+    () => (availableOrderOptions.length > 0 ? availableOrderOptions : rechargeOrderOptions),
+    [availableOrderOptions, rechargeOrderOptions],
+  )
+
+  const clearRequestOrderNoRef = useRef(onClearRequestOrderNo)
+  clearRequestOrderNoRef.current = onClearRequestOrderNo
+
   useEffect(() => {
     if (!requestOrderNo) return
     setDefaultOrderNo(requestOrderNo)
     setSheetOpen(true)
-    onClearRequestOrderNo?.()
-  }, [requestOrderNo, onClearRequestOrderNo])
+    clearRequestOrderNoRef.current?.()
+  }, [requestOrderNo])
 
   function openSheet(orderNo?: string) {
     setDefaultOrderNo(orderNo)
@@ -171,7 +179,7 @@ export function BillingInvoicesPanel({
       <BillingInvoiceRequestSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
-        orderOptions={availableOrderOptions.length > 0 ? availableOrderOptions : rechargeOrderOptions}
+        orderOptions={sheetOrderOptions}
         defaultOrderNo={defaultOrderNo}
       />
     </>

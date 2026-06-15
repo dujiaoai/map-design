@@ -58,6 +58,14 @@ export function createAuth(options: CreateAuthOptions) {
     store.getState().setSession(session)
   }
 
+  function clearSession() {
+    if (!storage.isAuthenticated() && store.getState().session === null) {
+      return
+    }
+    store.getState().clear()
+    options.onUnauthorized?.()
+  }
+
   return {
     SaaSRole: Role,
 
@@ -74,10 +82,7 @@ export function createAuth(options: CreateAuthOptions) {
       persist(session, tokens)
     },
 
-    clearSession() {
-      store.getState().clear()
-      options.onUnauthorized?.()
-    },
+    clearSession,
 
     async login(credentials: LoginCredentials): Promise<Session> {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用登录接口')
@@ -194,8 +199,7 @@ export function createAuth(options: CreateAuthOptions) {
             return tokens.accessToken
           })
           .catch(() => {
-            store.getState().clear()
-            options.onUnauthorized?.()
+            clearSession()
             return null
           })
           .finally(() => {

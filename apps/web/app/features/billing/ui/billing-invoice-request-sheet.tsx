@@ -52,6 +52,8 @@ export function BillingInvoiceRequestSheet({
     setErrorMessage(null)
   }, [open, defaultOrderNo, orderOptions])
 
+  const orderSelectValue = orderNo || orderOptions[0] || undefined
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
     setErrorMessage(null)
@@ -103,7 +105,10 @@ export function BillingInvoiceRequestSheet({
             <div className="space-y-2">
               <Label htmlFor={orderSelectId}>充值订单</Label>
               {orderOptions.length > 0 ? (
-                <Select value={orderNo} onValueChange={setOrderNo}>
+                <Select
+                  value={orderSelectValue}
+                  onValueChange={(value) => setOrderNo(value ?? '')}
+                >
                   <SelectTrigger id={orderSelectId}>
                     <SelectValue placeholder="选择订单" />
                   </SelectTrigger>

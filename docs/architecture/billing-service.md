@@ -125,8 +125,8 @@ services/
 | 成员校验 | Flyway **V9** `sys_user` 镜像 + 已有 `sys_tenant_feature` 镜像 |
 | 同步 | 首次：`pnpm sync:billing-membership`；持续：`source=copy` + `BILLING_MEMBERSHIP_SYNC_ENABLED=true`；**`source=api`** 实时校验；**`source=cdc`** 事件 outbox 拉取（`billing_membership_sync_event`） |
 | Compose | `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.billing-db.yml up -d` |
-| 内网 API | membership 校验 + sync-events pull/ack（`X-Billing-Internal-Token`） |
-| 待办 | 实时推送/Webhook 替代 billing 轮询 pull |
+| 内网 API | membership 校验 + sync-events pull/ack；**push** `POST /internal/v1/billing/membership/sync-events`（`push-receive-enabled`） |
+| 待办 | 更强一致性的推送重试 / Webhook 签名（当前 push 失败仍走 pull 兜底） |
 
 ## 部署变更（F-1）
 

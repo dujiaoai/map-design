@@ -31,11 +31,13 @@ pnpm smoke:billing-api
 node services/billing-api/scripts/smoke-billing.mjs
 ```
 
-**默认流程（17 步）：**
+**默认流程（21 步）：**
 
-`login` → `wallet` → `packages` → `recharge-create` → `mock-pay` → `wallet-balance` → `ledger` → `invoice-create` → `invoice-list` → `admin-invoice-list` → `invoice-issue` → `coupon-create` → `coupon-redeem` → `wire-transfer-create` → `wire-transfer-list` → `wire-transfer-approve`
+`login` → `wallet` → `packages` → `recharge-create` → `mock-pay` → `wallet-balance` → `ledger` → `invoice-create` → `invoice-list` → `admin-invoice-list` → `invoice-issue` → `coupon-create` → `coupon-redeem` → `discount-coupon-create` → `recharge-discount-create` → `recharge-discount-mock-pay` → `wire-transfer-create` → `wire-transfer-list` → `wire-transfer-approve`
 
-成功输出：`billing smoke OK (17 steps): ...`
+（`SMOKE_RECHARGE_CHANNEL=wechat|alipay` 时 mock-pay / recharge-discount-mock-pay 替换为对应 webhook 步骤。）
+
+成功输出：`billing smoke OK (21 steps): ...`（mock 渠道）
 
 ### 环境变量（可选）
 

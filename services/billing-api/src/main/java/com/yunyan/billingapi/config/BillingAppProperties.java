@@ -192,7 +192,7 @@ public class BillingAppProperties {
   @Data
   public static class MembershipSync {
     private boolean enabled = false;
-    /** local (jdbc mirror / shared PG) or api (saas-api internal REST). */
+    /** local (shared PG / jdbc mirror), copy (saas PG periodic COPY), api (live check), cdc (event pull). */
     private String source = "local";
     /** saas-api origin, e.g. http://localhost:8082 — required when source=api. */
     private String saasApiBaseUrl = "";

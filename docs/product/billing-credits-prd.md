@@ -383,9 +383,10 @@ flowchart LR
   - 表 `billing_invoice_request`；状态 `pending` / `issued` / `rejected`；类型 `personal` / `enterprise`
   - 用户：`POST /v1/billing/invoices`（`billing:recharge:create`）；仅 **已支付** 充值订单；`dedupe_key=invoice:{orderNo}` 幂等
   - 用户：`GET /v1/billing/invoices` 分页列表
-  - Admin：`GET /v1/admin/billing/invoices`（`admin:billing:read`）；`POST .../{id}/issue`、`POST .../{id}/reject`（`admin:billing:adjust`）
-  - saas-web：`/billing` 充值发票 Tab + 充值成功后快捷申请；Admin「发票申请」Tab
-  - **不含**电子发票平台对接、PDF 附件、邮件自动发送（后续迭代）
+  - Admin：`GET /v1/admin/billing/invoices`（`admin:billing:read`）；`POST .../{id}/issue`（可选 `pdfUrl`，未传则占位 `invoices/{id}.pdf`）、`POST .../{id}/reject`（`admin:billing:adjust`）
+  - 响应含 `pdfUrl`（仅 `issued` 时有值）；saas-web 已开具记录展示下载链接（外链）或占位路径
+  - saas-web：`/billing` 充值发票 Tab + 充值成功后快捷申请；Admin「发票申请」Tab 开票时可填 PDF URL
+  - **不含**电子发票平台对接、PDF 文件生成/托管、邮件自动发送（后续迭代）
 
 ### F-5 · 增长管控
 

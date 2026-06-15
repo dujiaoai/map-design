@@ -25,6 +25,7 @@
     "validate": "node scripts/turbo-run.mjs run typecheck && node scripts/turbo-run.mjs run test && pnpm check",
     "smoke:saas-api": "node services/saas-api/scripts/smoke-auth.mjs",
     "smoke:billing-api": "node services/billing-api/scripts/smoke-billing.mjs",
+    "sync:billing-membership": "docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.billing-db.yml run --rm billing-db-sync",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "format": "biome format --write ."

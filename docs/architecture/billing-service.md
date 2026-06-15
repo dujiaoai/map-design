@@ -123,7 +123,7 @@ services/
 | --- | --- |
 | 数据源 | `BILLING_DATASOURCE_URL` / `USERNAME` / `PASSWORD`（见 `application-docker.yml`） |
 | 成员校验 | Flyway **V9** `sys_user` 镜像 + 已有 `sys_tenant_feature` 镜像 |
-| 同步 | `services/billing-api/scripts/sync-membership-mirror.sh`（从 saas 库 COPY） |
+| 同步 | `pnpm sync:billing-membership`（compose 内 `billing-db-sync`）；脚本 `sync-membership-mirror.sh` |
 | Compose | `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.billing-db.yml up -d` |
 | 待办 | saas-api → billing 实时 CDC / 内网 membership API，替代定时 COPY |
 

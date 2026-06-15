@@ -86,6 +86,8 @@ saas:
       push-enabled: ${SAAS_BILLING_MEMBERSHIP_PUSH_ENABLED:false}
       push-retry-scan-ms: 60000
       push-retry-batch-size: 50
+      push-signature-enabled: ${SAAS_BILLING_MEMBERSHIP_PUSH_SIGNATURE:false}
+      push-signature-hmac-secret: ${BILLING_MEMBERSHIP_PUSH_HMAC_SECRET:}
   jwt:
     issuer: yunyan-saas
     secret: ${SAAS_JWT_SECRET:dev-only-change-me-use-32chars-minimum!!}

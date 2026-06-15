@@ -27,6 +27,9 @@ public class BillingApiProperties {
     private long pushRetryScanMs = 60_000L;
     /** Max pending events per retry batch. */
     private int pushRetryBatchSize = 50;
+    /** When true, sign push body with HMAC-SHA256 hex (requires billing-api verify enabled). */
+    private boolean pushSignatureEnabled = false;
+    private String pushSignatureHmacSecret = "";
   }
 
   @Data

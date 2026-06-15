@@ -138,9 +138,19 @@ sequenceDiagram
 
 ### 2.3 支付网关
 
-- `WechatNativeGateway`、`AlipayPrecreateGateway`
-- `MockPaymentGateway`（测试 profile）
+- `PaymentProviderRegistry`：`stub`（默认）/ `live` 模式切换
+- **stub**：`StubWechatPaymentProvider` / `StubAlipayPaymentProvider`（Native/H5/JSAPI/WAP 占位 URL）
+- **live**：`LiveWechatPaymentProvider` / `LiveAlipayPaymentProvider`（凭证校验 + SDK 接入点注释；查单待接 SDK）
+- `MockPaymentGateway`（`billing.payment.mock-enabled`）
 - 密钥 env 注入，不进仓库
+- **查单补偿**（live + `billing.payment.query-scan-enabled=true`）：`PendingPaymentQueryJob` 轮询 pending 微信/支付宝订单
+
+| 配置 | 说明 |
+| --- | --- |
+| `billing.payment.provider-mode` | `stub` \| `live` |
+| `billing.payment.wechat.*` | `app-id`、`mch-id`、`api-v3-key`、`notify-url`、`default-pay-scene` |
+| `billing.payment.alipay.*` | `app-id`、`private-key-pem`、`notify-url`、`default-pay-scene` |
+| `billing.payment.query-scan-enabled` | live 模式下启用查单 Job（默认 false） |
 
 ### 2.4 Webhook 安全
 
@@ -372,7 +382,8 @@ flowchart LR
 
 ### F-2.5 · 移动支付（P1）
 
-- 微信 H5/JSAPI；支付宝手机网站
+- **骨架 ✅**：Provider `stub`/`live`；微信 Native/H5/JSAPI、支付宝 WAP 占位 payUrl；live 凭证 env；查单 Job（回调丢失补偿，待接官方 SDK）
+- **待办**：接入 WeChat Pay API v3 / Alipay OpenAPI 正式 SDK；saas-web 按 `payScene` 调起 H5/JSAPI
 
 ### F-4 · 运营财务
 

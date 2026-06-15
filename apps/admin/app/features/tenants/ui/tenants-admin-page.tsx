@@ -70,7 +70,11 @@ export function TenantsAdminPage() {
       <AdminPageHeader
         eyebrow="Tenants"
         title="租户"
-        description="管理平台全部租户；停用后该租户用户无法登录。"
+        description={
+          query.data
+            ? `管理平台全部租户；停用后该租户用户无法登录。共 ${total} 个。`
+            : '管理平台全部租户；停用后该租户用户无法登录。'
+        }
         actions={
           canWrite ? (
             <Button onClick={() => setCreateOpen(true)}>新建租户</Button>

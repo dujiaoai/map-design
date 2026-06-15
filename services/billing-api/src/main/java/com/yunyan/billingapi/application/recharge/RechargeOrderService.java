@@ -99,7 +99,8 @@ public class RechargeOrderService {
                 orderNo,
                 payableCents,
                 pkg.getCurrency(),
-                pkg.getCode());
+                pkg.getCode(),
+                request.payScene());
 
     var order = new BillingRechargeOrder();
     order.setId(UUID.randomUUID());
@@ -122,13 +123,13 @@ public class RechargeOrderService {
     order.setUpdatedAt(now);
     orderMapper.insert(order);
 
-    return toResponse(order, payment.payUrl(), wallet.getBalance());
+    return toResponse(order, payment.payUrl(), payment.payScene(), wallet.getBalance());
   }
 
   public RechargeOrderResponse getOrder(SaasPrincipal principal, String orderNo) {
     var order = requireOrder(principal, orderNo);
     var wallet = walletService.getOrCreateWallet(principal.tenantId(), principal.userId());
-    return toResponse(order, null, wallet.getBalance());
+    return toResponse(order, null, null, wallet.getBalance());
   }
 
   @Transactional
@@ -140,7 +141,7 @@ public class RechargeOrderService {
     }
     order.setStatus("cancelled");
     var wallet = walletService.getOrCreateWallet(principal.tenantId(), principal.userId());
-    return toResponse(order, null, wallet.getBalance());
+    return toResponse(order, null, null, wallet.getBalance());
   }
 
   /** Marks pending orders past {@code expire_at} as expired. Returns count updated. */
@@ -218,7 +219,7 @@ public class RechargeOrderService {
     var updated = orderMapper.markPaid(order.getId(), "paid", tradeNo, now, now);
     if (updated == 0) {
       if ("paid".equals(order.getStatus())) {
-        return toResponse(order, null, wallet.getBalance());
+        return toResponse(order, null, null, wallet.getBalance());
       }
       throw AuthException.conflict("Order already processed");
     }
@@ -255,7 +256,7 @@ public class RechargeOrderService {
     order.setStatus("paid");
     order.setPaidAt(now);
     order.setProviderTradeNo(tradeNo);
-    return toResponse(order, null, newBalance);
+    return toResponse(order, null, null, newBalance);
   }
 
   private BillingRechargeOrder requireOrder(SaasPrincipal principal, String orderNo) {
@@ -293,7 +294,7 @@ public class RechargeOrderService {
   }
 
   private RechargeOrderResponse toResponse(
-      BillingRechargeOrder order, String payUrl, Long walletBalance) {
+      BillingRechargeOrder order, String payUrl, String payScene, Long walletBalance) {
     return new RechargeOrderResponse(
         order.getOrderNo(),
         order.getStatus(),
@@ -305,6 +306,7 @@ public class RechargeOrderService {
         order.getCouponCode(),
         order.getCouponDiscountCents() != null ? order.getCouponDiscountCents() : 0L,
         payUrl,
+        payScene,
         order.getExpireAt(),
         order.getPaidAt(),
         walletBalance != null ? walletBalance : 0L);

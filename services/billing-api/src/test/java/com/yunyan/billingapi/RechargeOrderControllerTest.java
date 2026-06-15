@@ -77,4 +77,37 @@ class RechargeOrderControllerTest {
         .andExpect(jsonPath("$.total").value(1))
         .andExpect(jsonPath("$.items[0].entryType").value("recharge"));
   }
+
+  @Test
+  void wechatH5Order_returnsPaySceneAndH5PayUrl() throws Exception {
+    var tenantId = UUID.randomUUID();
+    var userId = UUID.randomUUID();
+    var token =
+        BillingJwtTestSupport.accessToken(
+            userId,
+            tenantId,
+            List.of(
+                PermissionCodes.BILLING_WALLET_READ,
+                PermissionCodes.BILLING_RECHARGE_CREATE));
+
+    mockMvc
+        .perform(
+            post("/v1/billing/recharge-orders")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "packageCode",
+                            "starter_500",
+                            "channel",
+                            "wechat",
+                            "payScene",
+                            "h5"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("pending"))
+        .andExpect(jsonPath("$.channel").value("wechat"))
+        .andExpect(jsonPath("$.payScene").value("h5"))
+        .andExpect(jsonPath("$.payUrl").value(org.hamcrest.Matchers.containsString("/wechat/h5")));
+  }
 }

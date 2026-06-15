@@ -13,6 +13,7 @@ public record RechargeOrderResponse(
     String couponCode,
     long couponDiscountCents,
     String payUrl,
+    String payScene,
     Instant expireAt,
     Instant paidAt,
     long walletBalance) {}

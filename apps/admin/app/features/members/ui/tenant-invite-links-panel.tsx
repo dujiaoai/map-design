@@ -22,6 +22,7 @@ import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminEmptyState } from '~/shared/ui/admin-page-shell'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
+import { AdminSidebarListSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { formatAdminDate } from '~/shared/ui/admin-status-badge'
 
 import {
@@ -197,7 +198,7 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
         <p className="shrink-0 text-sm font-medium">已有链接</p>
         <div className="admin-scroll-area -mr-1 min-h-0 flex-1 pr-1">
           {linksQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">加载中…</p>
+            <AdminSidebarListSkeleton rows={3} />
           ) : linksQuery.isError ? (
             <AdminEmptyState
               message="加载邀请链接失败，请刷新重试"

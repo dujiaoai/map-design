@@ -17,7 +17,11 @@ const PACKAGE_LABELS: Record<string, string> = {
   pro_5000: '专业包',
 }
 
-export function RechargePackagesPanel() {
+export function RechargePackagesPanel({
+  onPaidOrder,
+}: {
+  onPaidOrder?: (orderNo: string) => void
+}) {
   const packagesQuery = useRechargePackagesQuery()
   const createOrder = useCreateRechargeOrderMutation()
   const mockPay = useMockPayRechargeOrderMutation()
@@ -42,8 +46,10 @@ export function RechargePackagesPanel() {
     setActionError(null)
     try {
       const result = await mockPay.mutateAsync(pendingOrder.orderNo)
+      const paidOrderNo = pendingOrder.orderNo
       setPendingOrder(null)
       setPaidMessage(`充值成功，当前可用 ${formatPoints(result.walletBalance)} 点。`)
+      onPaidOrder?.(paidOrderNo)
     } catch {
       setActionError('模拟支付失败，请重试或取消订单。')
     }

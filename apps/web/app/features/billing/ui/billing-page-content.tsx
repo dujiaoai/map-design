@@ -1,10 +1,12 @@
 import { hasPermission, PermissionCodes } from '@repo/auth'
 import { Button } from '@repo/ui'
 import { ArrowLeftIcon } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router'
 
 import { canMemberSelfRecharge } from '~/features/billing/lib/member-recharge-policy'
 import { DevBillingSmokePanel } from '~/features/billing/ui/dev-billing-smoke-panel'
+import { BillingInvoicesPanel } from '~/features/billing/ui/billing-invoices-panel'
 import { BillingLedgerTable } from '~/features/billing/ui/billing-ledger-table'
 import { BillingTransferPanel } from '~/features/billing/ui/billing-transfer-panel'
 import { BillingUsageSummary } from '~/features/billing/ui/billing-usage-summary'
@@ -16,6 +18,7 @@ import { useEnabledTenantFeatures } from '~/features/team-switcher'
 export function BillingPageContent() {
   const session = auth.getSession()
   const enabledTenantFeatures = useEnabledTenantFeatures()
+  const [invoiceRequestOrderNo, setInvoiceRequestOrderNo] = useState<string | null>(null)
   const canRechargePermission = hasPermission(
     session?.user.permissions,
     PermissionCodes.BILLING_RECHARGE_CREATE,
@@ -57,7 +60,13 @@ export function BillingPageContent() {
 
       <DevBillingSmokePanel />
 
-      {canRecharge ? <RechargePackagesPanel /> : null}
+      {canRecharge ? <RechargePackagesPanel onPaidOrder={setInvoiceRequestOrderNo} /> : null}
+      {canRecharge ? (
+        <BillingInvoicesPanel
+          requestOrderNo={invoiceRequestOrderNo}
+          onClearRequestOrderNo={() => setInvoiceRequestOrderNo(null)}
+        />
+      ) : null}
       {canRechargePermission && !canRecharge ? (
         <p className="text-muted-foreground rounded-xl border border-border/60 bg-card p-5 text-sm">
           当前租户已关闭成员自助充值。请联系租户管理员划拨积分，或通过平台申请企业预付。

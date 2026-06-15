@@ -16,11 +16,15 @@ export {
   teamUsageSummarySchema,
   walletResponseSchema,
   billingNotificationListSchema,
+  invoiceListResponseSchema,
 } from '@repo/billing-client'
 
 export type {
   CreateRechargeOrderRequest,
+  CreateInvoiceRequest,
   EstimateResponse,
+  InvoiceListResponse,
+  InvoiceRequest,
   LedgerEntry,
   LedgerListResponse,
   RechargeOrderResponse,
@@ -42,6 +46,9 @@ export const billingQueryKeys = {
     [...billingQueryKeys.all, 'estimate', productCode, ruleCode, quantity] as const,
   notifications: (page: number, size: number) =>
     [...billingQueryKeys.all, 'notifications', page, size] as const,
+  invoices: (page: number, size: number) =>
+    [...billingQueryKeys.all, 'invoices', page, size] as const,
+  rechargeLedgerOrders: () => [...billingQueryKeys.all, 'recharge-ledger-orders'] as const,
 }
 
 export function walletQueryOptions() {
@@ -161,5 +168,38 @@ export function useBillingNotificationsQuery(page = 0, size = 20, enabled = true
     ...notificationsQueryOptions(page, size),
     enabled: enabled && usesSaasSessionBootstrap() && canReadWallet(),
     refetchInterval: 60_000,
+  })
+}
+
+export function invoicesQueryOptions(page = 0, size = 20) {
+  return queryOptions({
+    queryKey: billingQueryKeys.invoices(page, size),
+    queryFn: () => billingClient.listInvoices(page, size),
+    staleTime: 30_000,
+  })
+}
+
+export function useInvoicesQuery(page = 0, size = 20, enabled = true) {
+  return useQuery({
+    ...invoicesQueryOptions(page, size),
+    enabled: enabled && usesSaasSessionBootstrap() && canRecharge(),
+  })
+}
+
+export function rechargeLedgerOrdersQueryOptions() {
+  return queryOptions({
+    queryKey: billingQueryKeys.rechargeLedgerOrders(),
+    queryFn: async () => {
+      const ledger = await billingClient.getLedger(0, 50)
+      return ledger.items
+    },
+    staleTime: 30_000,
+  })
+}
+
+export function useRechargeLedgerOrdersQuery(enabled = true) {
+  return useQuery({
+    ...rechargeLedgerOrdersQueryOptions(),
+    enabled: enabled && usesSaasSessionBootstrap() && canRecharge(),
   })
 }

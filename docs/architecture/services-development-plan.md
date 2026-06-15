@@ -336,7 +336,7 @@ services/
 
 **验收（F 冒烟）：** `pnpm smoke:billing-api` 通过（mock 默认 24 步：充值、OAuth config 探活、发票、优惠券、对公、membership 内网 API 探活）；见 [billing-api-smoke.md](../runbooks/billing-api-smoke.md)。Live 凭证联调见 [billing-live-payment-sop.md](../runbooks/billing-live-payment-sop.md)。
 
-**验收（sec）：** P0～P3 改进清单全部 ✅（含 billing-api PostgreSQL RLS）；见 [billing-credits-prd.md](../product/billing-credits-prd.md) `f-sec-hardening`。
+**验收（sec）：** P0～P3 改进清单全部 ✅（含 billing-api PostgreSQL RLS，见 [billing-tenant-rls.md](./supplements/billing-tenant-rls.md)）；见 [billing-credits-prd.md](../product/billing-credits-prd.md) `f-sec-hardening`。
 
 ---
 

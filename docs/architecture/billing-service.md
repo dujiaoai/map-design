@@ -151,7 +151,7 @@ services/
 | P3 | Admin SKU/优惠券/用量分页 | ✅ | billing-api + admin 面板服务端分页 |
 | P3 | 冒烟 24 步（mock） | ✅ | 含 membership 内网 API 探活；步数以脚本 `passed.length` 为准 |
 | — | suspended 租户 billing 拦截 | 不做 | 仅在 saas-api 登录层拦截（PRD） |
-| — | PostgreSQL RLS | ✅ 2026-06-15 | billing_* + sys_tenant_feature；`billing.tenant-rls.enabled`；test/H2 关闭 |
+| — | PostgreSQL RLS | ✅ 2026-06-15 | billing_* + sys_tenant_feature；`billing.tenant-rls.enabled`；test/H2 关闭；补充说明见 [billing-tenant-rls.md](./supplements/billing-tenant-rls.md) |
 
 ## 部署变更（F-1）
 

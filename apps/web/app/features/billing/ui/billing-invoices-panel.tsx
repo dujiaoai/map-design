@@ -16,6 +16,23 @@ const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
   timeStyle: 'short',
 })
 
+function InvoicePdfLink({ pdfUrl }: { pdfUrl: string }) {
+  const isExternal = /^https?:\/\//i.test(pdfUrl)
+  if (isExternal) {
+    return (
+      <a
+        href={pdfUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="text-primary text-xs underline-offset-2 hover:underline"
+      >
+        下载 PDF
+      </a>
+    )
+  }
+  return <p className="text-muted-foreground font-mono text-xs">{pdfUrl}</p>
+}
+
 export function BillingInvoicesPanel({
   requestOrderNo,
   onClearRequestOrderNo,
@@ -130,6 +147,11 @@ export function BillingInvoicesPanel({
                         <p>{formatInvoiceStatus(invoice.status)}</p>
                         {invoice.adminRemark ? (
                           <p className="text-muted-foreground text-xs">{invoice.adminRemark}</p>
+                        ) : null}
+                        {invoice.status === 'issued' && invoice.pdfUrl ? (
+                          <div className="mt-1">
+                            <InvoicePdfLink pdfUrl={invoice.pdfUrl} />
+                          </div>
                         ) : null}
                       </td>
                       <td className="text-muted-foreground px-3 py-2 whitespace-nowrap">

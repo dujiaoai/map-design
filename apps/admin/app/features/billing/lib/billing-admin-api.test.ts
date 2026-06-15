@@ -5,6 +5,7 @@ import {
   adminBillingReconciliationQuery,
   adminBillingWalletsQuery,
   adminLedgerListSchema,
+  adminInvoiceListSchema,
   adminReconciliationDailySchema,
   adminWalletListSchema,
   defaultReconciliationDateUtc,
@@ -122,5 +123,28 @@ describe('admin response schemas', () => {
       discrepancies: [],
     })
     expect(parsed.balanced).toBe(true)
+  })
+
+  it('parses invoice list payload', () => {
+    const parsed = adminInvoiceListSchema.parse({
+      items: [
+        {
+          id: 'inv-1',
+          tenantId: 't-1',
+          userId: 'u-1',
+          orderNo: 'RO-ABC',
+          invoiceType: 'personal',
+          title: '张三',
+          email: 'a@b.com',
+          status: 'pending',
+          amountCents: 4900,
+          currency: 'CNY',
+        },
+      ],
+      page: 0,
+      size: 20,
+      total: 1,
+    })
+    expect(parsed.items[0]?.status).toBe('pending')
   })
 })

@@ -14,6 +14,7 @@ import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-quer
 import { BillingAdjustPanel } from '~/features/billing/ui/billing-adjust-panel'
 import { CreateBillingPackageSheet } from '~/features/billing/ui/create-billing-package-sheet'
 import { EditBillingPackageSheet } from '~/features/billing/ui/edit-billing-package-sheet'
+import { BillingInvoicesPanel } from '~/features/billing/ui/billing-invoices-panel'
 import { BillingLedgerPanel } from '~/features/billing/ui/billing-ledger-panel'
 import { BillingPackagesPanel } from '~/features/billing/ui/billing-packages-panel'
 import { BillingReconciliationPanel } from '~/features/billing/ui/billing-reconciliation-panel'
@@ -139,6 +140,7 @@ export function BillingAdminPage() {
                 <TabsTrigger value="wallets">用户钱包</TabsTrigger>
                 <TabsTrigger value="ledger">积分流水</TabsTrigger>
                 <TabsTrigger value="reconciliation">日对账</TabsTrigger>
+                <TabsTrigger value="invoices">发票申请</TabsTrigger>
                 <TabsTrigger value="usage">消费汇总</TabsTrigger>
               </>
             ) : null}
@@ -163,6 +165,9 @@ export function BillingAdminPage() {
               </TabsContent>
               <TabsContent value="reconciliation" className="mt-4">
                 <BillingReconciliationPanel />
+              </TabsContent>
+              <TabsContent value="invoices" className="mt-4">
+                <BillingInvoicesPanel filterSeed={filterSeed} />
               </TabsContent>
               <TabsContent value="usage" className="mt-4">
                 <BillingUsagePanel filterSeed={filterSeed} />

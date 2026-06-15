@@ -188,6 +188,40 @@ export const adminReconciliationDailySchema = z.object({
 
 export type AdminReconciliationDaily = z.infer<typeof adminReconciliationDailySchema>
 
+export const INVOICE_STATUSES = [
+  { value: 'all', label: '全部' },
+  { value: 'pending', label: '待处理' },
+  { value: 'issued', label: '已开具' },
+  { value: 'rejected', label: '已驳回' },
+] as const
+
+export const adminInvoiceListSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      tenantId: z.string(),
+      userId: z.string(),
+      orderNo: z.string(),
+      invoiceType: z.string(),
+      title: z.string(),
+      taxNo: z.string().nullable().optional(),
+      email: z.string(),
+      status: z.string(),
+      amountCents: z.number(),
+      currency: z.string(),
+      adminRemark: z.string().nullable().optional(),
+      createdAt: z.string().nullable().optional(),
+      updatedAt: z.string().nullable().optional(),
+    }),
+  ),
+  page: z.number(),
+  size: z.number(),
+  total: z.number(),
+})
+
+export type AdminInvoiceList = z.infer<typeof adminInvoiceListSchema>
+export type AdminInvoice = AdminInvoiceList['items'][number]
+
 function buildQuery(params: Record<string, string | number | undefined>) {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {
@@ -268,6 +302,22 @@ export function adminBillingLedgerQuery(params: {
 
 export function adminBillingReconciliationQuery(params: { date?: string }) {
   return buildQuery({ date: params.date })
+}
+
+export function adminBillingInvoicesQuery(params: {
+  tenantId?: string
+  userId?: string
+  status?: string
+  page?: number
+  size?: number
+}) {
+  return buildQuery({
+    tenantId: params.tenantId,
+    userId: params.userId,
+    status: params.status,
+    page: params.page ?? 0,
+    size: params.size ?? 20,
+  })
 }
 
 /** UTC 昨日，对齐 billing-api 默认对账日 */

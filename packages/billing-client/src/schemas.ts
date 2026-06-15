@@ -132,5 +132,40 @@ export const billingNotificationMarkAllReadSchema = z.object({
   markedCount: z.number(),
 })
 
+export const invoiceRequestSchema = z.object({
+  id: z.string(),
+  tenantId: z.string(),
+  userId: z.string(),
+  orderNo: z.string(),
+  invoiceType: z.string(),
+  title: z.string(),
+  taxNo: z.string().nullable().optional(),
+  email: z.string(),
+  status: z.string(),
+  amountCents: z.number(),
+  currency: z.string(),
+  adminRemark: z.string().nullable().optional(),
+  createdAt: z.string().nullable().optional(),
+  updatedAt: z.string().nullable().optional(),
+})
+
+export const invoiceListResponseSchema = z.object({
+  items: z.array(invoiceRequestSchema),
+  page: z.number(),
+  size: z.number(),
+  total: z.number(),
+})
+
+export const createInvoiceRequestSchema = z.object({
+  orderNo: z.string(),
+  invoiceType: z.enum(['personal', 'enterprise']),
+  title: z.string(),
+  taxNo: z.string().optional(),
+  email: z.string().email(),
+})
+
 export type BillingNotification = z.infer<typeof billingNotificationSchema>
 export type BillingNotificationListResponse = z.infer<typeof billingNotificationListSchema>
+export type InvoiceRequest = z.infer<typeof invoiceRequestSchema>
+export type InvoiceListResponse = z.infer<typeof invoiceListResponseSchema>
+export type CreateInvoiceRequest = z.infer<typeof createInvoiceRequestSchema>

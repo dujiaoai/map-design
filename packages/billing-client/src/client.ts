@@ -19,6 +19,11 @@ import {
   transferResponseSchema,
   billingNotificationListSchema,
   billingNotificationMarkAllReadSchema,
+  invoiceListResponseSchema,
+  invoiceRequestSchema,
+  type CreateInvoiceRequest,
+  type InvoiceListResponse,
+  type InvoiceRequest,
 } from './schemas'
 
 export type BillingClientOptions = ApiClientOptions
@@ -112,6 +117,18 @@ export function createBillingClient(options: BillingClientOptions) {
 
     async markAllNotificationsRead() {
       return billingNotificationMarkAllReadSchema.parse(await api.post('/notifications/read-all'))
+    },
+
+    async createInvoiceRequest(input: CreateInvoiceRequest): Promise<InvoiceRequest> {
+      return invoiceRequestSchema.parse(await api.post('/invoices', input))
+    },
+
+    async listInvoices(page = 0, size = 20): Promise<InvoiceListResponse> {
+      const params = new URLSearchParams({
+        page: String(page),
+        size: String(size),
+      })
+      return invoiceListResponseSchema.parse(await api.get(`/invoices?${params.toString()}`))
     },
   }
 }

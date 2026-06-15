@@ -9,6 +9,7 @@ import com.yunyan.billingapi.application.admin.AdminBillingRefundService;
 import com.yunyan.billingapi.application.admin.AdminBillingStatsService;
 import com.yunyan.billingapi.application.admin.AdminBillingUsageService;
 import com.yunyan.billingapi.application.admin.AdminBillingWalletService;
+import com.yunyan.billingapi.application.invoice.BillingInvoiceService;
 import com.yunyan.billingapi.application.ratelimit.BillingRateLimitService;
 import com.yunyan.billingapi.domain.permission.PermissionCodes;
 import com.yunyan.billingapi.security.SaasPrincipal;
@@ -17,9 +18,12 @@ import com.yunyan.billingapi.web.dto.AdminAdjustRequest;
 import com.yunyan.billingapi.web.dto.AdminLedgerListResponse;
 import com.yunyan.billingapi.web.dto.AdminAdjustResponse;
 import com.yunyan.billingapi.web.dto.AdminBillingStatsResponse;
+import com.yunyan.billingapi.web.dto.AdminRejectInvoiceRequest;
 import com.yunyan.billingapi.web.dto.AdminReconciliationDailyResponse;
 import com.yunyan.billingapi.web.dto.AdminRefundRequest;
 import com.yunyan.billingapi.web.dto.AdminRefundResponse;
+import com.yunyan.billingapi.web.dto.InvoiceListResponse;
+import com.yunyan.billingapi.web.dto.InvoiceRequestDto;
 import com.yunyan.billingapi.web.dto.AdminRechargeOrderListResponse;
 import com.yunyan.billingapi.web.dto.AdminRechargePackageListResponse;
 import com.yunyan.billingapi.web.dto.AdminUsageSummaryResponse;
@@ -62,6 +66,7 @@ public class AdminBillingController {
   private final AdminBillingUsageService adminBillingUsageService;
   private final AdminBillingRefundService adminBillingRefundService;
   private final AdminBillingReconciliationService adminBillingReconciliationService;
+  private final BillingInvoiceService billingInvoiceService;
   private final BillingRateLimitService billingRateLimitService;
 
   public AdminBillingController(
@@ -74,6 +79,7 @@ public class AdminBillingController {
       AdminBillingUsageService adminBillingUsageService,
       AdminBillingRefundService adminBillingRefundService,
       AdminBillingReconciliationService adminBillingReconciliationService,
+      BillingInvoiceService billingInvoiceService,
       BillingRateLimitService billingRateLimitService) {
     this.adminBillingAdjustService = adminBillingAdjustService;
     this.adminBillingLedgerService = adminBillingLedgerService;
@@ -84,6 +90,7 @@ public class AdminBillingController {
     this.adminBillingUsageService = adminBillingUsageService;
     this.adminBillingRefundService = adminBillingRefundService;
     this.adminBillingReconciliationService = adminBillingReconciliationService;
+    this.billingInvoiceService = billingInvoiceService;
     this.billingRateLimitService = billingRateLimitService;
   }
 
@@ -219,5 +226,35 @@ public class AdminBillingController {
       @Valid @RequestBody AdminRefundRequest request) {
     billingRateLimitService.checkAdminRefund(principal.userId());
     return adminBillingRefundService.refundOrder(principal, orderNo, request);
+  }
+
+  @GetMapping("/invoices")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_READ + "')")
+  @Operation(summary = "平台查询发票申请列表")
+  public InvoiceListResponse listInvoices(
+      @RequestParam(required = false) UUID tenantId,
+      @RequestParam(required = false) UUID userId,
+      @RequestParam(required = false) String status,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return billingInvoiceService.listForAdmin(tenantId, userId, status, page, size);
+  }
+
+  @PostMapping("/invoices/{invoiceId}/issue")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_ADJUST + "')")
+  @Operation(summary = "标记发票申请为已开具（骨架）")
+  public InvoiceRequestDto issueInvoice(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID invoiceId) {
+    return billingInvoiceService.issue(principal, invoiceId);
+  }
+
+  @PostMapping("/invoices/{invoiceId}/reject")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_ADJUST + "')")
+  @Operation(summary = "驳回发票申请")
+  public InvoiceRequestDto rejectInvoice(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID invoiceId,
+      @Valid @RequestBody AdminRejectInvoiceRequest request) {
+    return billingInvoiceService.reject(principal, invoiceId, request);
   }
 }

@@ -19,4 +19,8 @@ export const billingAdminQueryKeys = {
   ) => [...billingAdminQueryKeys.all, 'ledger', tenantId, filters, page] as const,
   reconciliation: (date: string) =>
     [...billingAdminQueryKeys.all, 'reconciliation', date] as const,
+  invoices: (
+    filters: { tenantId?: string; userId?: string; status?: string },
+    page: number,
+  ) => [...billingAdminQueryKeys.all, 'invoices', filters, page] as const,
 }

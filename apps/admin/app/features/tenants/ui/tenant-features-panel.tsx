@@ -61,7 +61,15 @@ export function TenantFeaturesPanel({ tenantId }: { tenantId: string }) {
   if (catalogQuery.isError || featuresQuery.isError) {
     return (
       <AdminPanel>
-        <AdminEmptyState icon={SparklesIcon} message="加载失败，请刷新重试" />
+        <AdminEmptyState
+          icon={SparklesIcon}
+          message="加载失败，请刷新重试"
+          onRetry={() => {
+            void catalogQuery.refetch()
+            void featuresQuery.refetch()
+          }}
+          isRetrying={catalogQuery.isFetching || featuresQuery.isFetching}
+        />
       </AdminPanel>
     )
   }

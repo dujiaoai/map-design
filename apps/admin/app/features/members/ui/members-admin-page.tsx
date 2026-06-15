@@ -126,7 +126,11 @@ export function MembersAdminPage({
         {membersQuery.isLoading ? (
           <AdminTableSkeleton columns={canWrite ? 7 : 6} />
         ) : membersQuery.isError ? (
-          <AdminEmptyState message="加载失败，请确认租户权限后重试" />
+          <AdminEmptyState
+            message="加载失败，请确认租户权限后重试"
+            onRetry={() => void membersQuery.refetch()}
+            isRetrying={membersQuery.isFetching}
+          />
         ) : !membersQuery.data?.members.length ? (
           <AdminEmptyState message="暂无成员" />
         ) : !filteredMembers.length ? (

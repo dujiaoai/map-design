@@ -279,7 +279,11 @@ export function PermissionsAdminPage() {
           {modulesQuery.isLoading ? (
             <AdminSidebarListSkeleton />
           ) : modulesQuery.isError ? (
-            <AdminEmptyState message="加载失败，请刷新重试" />
+            <AdminEmptyState
+              message="加载失败，请刷新重试"
+              onRetry={() => void modulesQuery.refetch()}
+              isRetrying={modulesQuery.isFetching}
+            />
           ) : (
             <ul className="space-y-1">
               {(modulesQuery.data?.modules ?? []).map((module) => (

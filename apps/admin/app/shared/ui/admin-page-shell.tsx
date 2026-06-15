@@ -1,4 +1,5 @@
-import { cn } from '@repo/ui'
+import { Button, cn } from '@repo/ui'
+import { AlertCircleIcon } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
@@ -112,18 +113,44 @@ export function AdminConfigRow({
 export function AdminEmptyState({
   message,
   icon: Icon,
+  action,
+  onRetry,
+  retryLabel = '重试',
+  isRetrying = false,
 }: {
   message: string
   icon?: LucideIcon
+  action?: ReactNode
+  onRetry?: () => void
+  retryLabel?: string
+  isRetrying?: boolean
 }) {
+  const DisplayIcon = Icon ?? (onRetry ? AlertCircleIcon : undefined)
+
   return (
     <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-      {Icon ? (
+      {DisplayIcon ? (
         <div className="flex size-12 items-center justify-center rounded-full border border-border/60 bg-muted/20">
-          <Icon className="size-5 text-muted-foreground" aria-hidden />
+          <DisplayIcon className="size-5 text-muted-foreground" aria-hidden />
         </div>
       ) : null}
       <p className="max-w-sm text-sm text-muted-foreground">{message}</p>
+      {onRetry || action ? (
+        <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+          {onRetry ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isRetrying}
+              onClick={onRetry}
+            >
+              {isRetrying ? '重试中…' : retryLabel}
+            </Button>
+          ) : null}
+          {action}
+        </div>
+      ) : null}
     </div>
   )
 }

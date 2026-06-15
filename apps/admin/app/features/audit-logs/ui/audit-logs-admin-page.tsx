@@ -169,7 +169,11 @@ export function AuditLogsAdminPage() {
         {query.isLoading ? (
           <AdminTableSkeleton columns={6} showPagination />
         ) : query.isError ? (
-          <AdminEmptyState message="加载失败，请刷新重试" />
+          <AdminEmptyState
+            message="加载失败，请刷新重试"
+            onRetry={() => void query.refetch()}
+            isRetrying={query.isFetching}
+          />
         ) : !query.data?.logs.length ? (
           <AdminEmptyState message="暂无审计记录" />
         ) : (

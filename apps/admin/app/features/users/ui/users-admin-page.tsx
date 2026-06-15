@@ -147,7 +147,11 @@ export function UsersAdminPage() {
         {usersQuery.isLoading ? (
           <AdminTableSkeleton columns={canWrite ? 8 : 7} showPagination />
         ) : usersQuery.isError ? (
-          <AdminEmptyState message="加载失败，请刷新重试" />
+          <AdminEmptyState
+            message="加载失败，请刷新重试"
+            onRetry={() => void usersQuery.refetch()}
+            isRetrying={usersQuery.isFetching}
+          />
         ) : !usersQuery.data?.users.length ? (
           <AdminEmptyState message="暂无用户" />
         ) : !filteredUsers.length ? (

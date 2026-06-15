@@ -7,6 +7,7 @@ import { fetchAdminTenants, type AdminTenantSummary } from '~/shared/api/admin-a
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
+import { sortAdminTableRows, useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
@@ -17,6 +18,7 @@ import {
   AdminTableHead,
   AdminTableHeaderCell,
   AdminTableRow,
+  AdminTableSortHeaderCell,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
@@ -26,6 +28,8 @@ import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badg
 
 import { CreateTenantSheet } from './create-tenant-sheet'
 import { EditTenantSheet } from './edit-tenant-sheet'
+
+type TenantSortKey = 'name' | 'slug' | 'createdAt'
 
 export function TenantsAdminPage() {
   const { can, canAny } = useAdminPermissions()
@@ -45,6 +49,7 @@ export function TenantsAdminPage() {
 
   const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
   useAdminListSearchShortcut(searchInputRef)
+  const { sort, toggleSort } = useAdminTableSort<TenantSortKey>()
 
   const query = useAdminPagedQuery({
     queryKey: adminQueryKeys.tenants(queryParams),
@@ -52,16 +57,19 @@ export function TenantsAdminPage() {
   })
 
   const tenantSearchKeys: (keyof AdminTenantSummary)[] = ['name', 'slug', 'plan']
-  const filteredTenants = useMemo(
-    () =>
-      filterAdminTableRows(query.data?.tenants, {
-        search: '',
-        searchKeys: tenantSearchKeys,
-        status: statusFilter,
-        statusKey: 'status',
-      }),
-    [query.data?.tenants, statusFilter],
-  )
+  const filteredTenants = useMemo(() => {
+    const filtered = filterAdminTableRows(query.data?.tenants, {
+      search: '',
+      searchKeys: tenantSearchKeys,
+      status: statusFilter,
+      statusKey: 'status',
+    })
+    return sortAdminTableRows(filtered, sort, {
+      name: (tenant) => tenant.name.toLowerCase(),
+      slug: (tenant) => tenant.slug.toLowerCase(),
+      createdAt: (tenant) => tenant.createdAt,
+    })
+  }, [query.data?.tenants, statusFilter, sort])
 
   const total = query.data?.total ?? query.data?.tenants.length ?? 0
 
@@ -136,11 +144,26 @@ export function TenantsAdminPage() {
             <AdminDataTable>
               <AdminTableHead>
                 <tr>
-                  <AdminTableHeaderCell>名称</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>Slug</AdminTableHeaderCell>
+                  <AdminTableSortHeaderCell
+                    label="名称"
+                    active={sort?.key === 'name'}
+                    direction={sort?.key === 'name' ? sort.direction : undefined}
+                    onSort={() => toggleSort('name')}
+                  />
+                  <AdminTableSortHeaderCell
+                    label="Slug"
+                    active={sort?.key === 'slug'}
+                    direction={sort?.key === 'slug' ? sort.direction : undefined}
+                    onSort={() => toggleSort('slug')}
+                  />
                   <AdminTableHeaderCell>计划</AdminTableHeaderCell>
                   <AdminTableHeaderCell>状态</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>创建时间</AdminTableHeaderCell>
+                  <AdminTableSortHeaderCell
+                    label="创建时间"
+                    active={sort?.key === 'createdAt'}
+                    direction={sort?.key === 'createdAt' ? sort.direction : undefined}
+                    onSort={() => toggleSort('createdAt')}
+                  />
                   <AdminTableHeaderCell className="text-right">操作</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>

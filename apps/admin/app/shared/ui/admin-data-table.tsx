@@ -1,5 +1,8 @@
-import { cn } from '@repo/ui'
+import { Button, cn } from '@repo/ui'
+import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+
+import type { AdminSortDirection } from '~/shared/hooks/use-admin-table-sort'
 
 export function AdminDataTable({ children }: { children: ReactNode }) {
   return (
@@ -57,4 +60,39 @@ export function AdminTableHeaderCell({
   className?: string
 }) {
   return <th className={cn('px-4 py-3 font-medium', className)}>{children}</th>
+}
+
+export function AdminTableSortHeaderCell({
+  label,
+  active,
+  direction,
+  onSort,
+  className,
+}: {
+  label: string
+  active: boolean
+  direction?: AdminSortDirection
+  onSort: () => void
+  className?: string
+}) {
+  return (
+    <th className={cn('px-4 py-3 font-medium', className)}>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="-ml-2 h-7 gap-1 px-2 text-xs tracking-[0.12em] text-muted-foreground uppercase hover:text-foreground"
+        onClick={onSort}
+      >
+        {label}
+        {active && direction === 'asc' ? (
+          <ArrowUpIcon className="size-3" aria-hidden />
+        ) : active && direction === 'desc' ? (
+          <ArrowDownIcon className="size-3" aria-hidden />
+        ) : (
+          <ChevronsUpDownIcon className="size-3 opacity-45" aria-hidden />
+        )}
+      </Button>
+    </th>
+  )
 }

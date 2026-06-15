@@ -83,8 +83,8 @@ services/
 | 方法 | 路径 | 权限 |
 | --- | --- | --- |
 | GET | `/stats` | `admin:billing:read` |
-| GET | `/usage` | `admin:billing:read`；跨租户消费汇总 |
-| GET | `/packages` | `admin:billing:read` |
+| GET | `/usage` | `admin:billing:read`；跨租户消费汇总；`?page&size` 服务端分页 |
+| GET | `/packages` | `admin:billing:read`；`?page&size` 服务端分页 |
 | POST | `/packages` | `admin:billing:packages:write` |
 | PATCH | `/packages/{code}` | `admin:billing:packages:write` |
 | GET | `/wallets` | `admin:billing:read` |
@@ -126,7 +126,32 @@ services/
 | 同步 | 首次：`pnpm sync:billing-membership`；持续：`source=copy` + `BILLING_MEMBERSHIP_SYNC_ENABLED=true`；**`source=api`** 实时校验；**`source=cdc`** outbox pull/ack + **push 即时/定时重试**（`SAAS_BILLING_MEMBERSHIP_PUSH_ENABLED`） |
 | Compose | `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.billing-db.yml up -d` |
 | 内网 API | membership 校验 + sync-events pull/ack；**push** `POST /internal/v1/billing/membership/sync-events`（`push-receive-enabled`） |
-| 待办 | —（push HMAC 可选：`BILLING_MEMBERSHIP_PUSH_SIGNATURE_VERIFY` + 共享 `BILLING_MEMBERSHIP_PUSH_HMAC_SECRET`） |
+| Push HMAC | 可选：`BILLING_MEMBERSHIP_PUSH_SIGNATURE_VERIFY` + `SAAS_BILLING_MEMBERSHIP_PUSH_SIGNATURE` + 共享 `BILLING_MEMBERSHIP_PUSH_HMAC_SECRET` |
+
+## Sprint F 安全与稳定性改进（落地索引）
+
+| 优先级 | 项 | 状态 | 说明 |
+| --- | --- | --- | --- |
+| P0 | Webhook 验签 + mock-pay 生产禁用 | ✅ | Token / 微信 V3 / 支付宝 RSA；`BILLING_MOCK_PAY_ENABLED=false` |
+| P0 | Internal caller 白名单 | ✅ | `X-Billing-Caller-Service`（默认 `saas-api`） |
+| P0 | Admin 成员校验 + 限流 | ✅ | 调账/退款前 membership 校验；Admin 路由限流 |
+| P1 | 订单过期 Job | ✅ | 超时未支付订单自动关闭 |
+| P1 | signup bonus outbox + 重试 | ✅ | saas-api pending + 定时 Job |
+| P1 | 退款失败补偿 Job | ✅ | `refunding` 状态回滚/重试 |
+| P1 | internal hold 请求校验 | ✅ | 金额/规则/租户一致性 |
+| P2 | RFC 7807 统一错误体 | ✅ | billing-api ProblemDetail |
+| P2 | BillingClient 502/503/504 重试 | ✅ | saas-api `RestBillingClient` |
+| P2 | Admin 幂等键 | ✅ | 调账/退款 `Idempotency-Key` |
+| P2 | Admin Tab 权限 + 二次确认 | ✅ | packages/adjust/refund 细粒度 + UI confirm |
+| P2 | Admin ledger 查询 | ✅ | `GET .../tenants/{id}/ledger` |
+| P3 | Micrometer 业务指标 | ✅ | 充值/扣费/低余额 crossing |
+| P3 | membership CDC pull + push | ✅ | outbox pull/ack + push 接收端点 |
+| P3 | push 定时重试 Job | ✅ | saas-api 失败 push 退避重试 |
+| P3 | push HMAC 验签（可选） | ✅ | billing-api 验签 + saas-api 签名 |
+| P3 | Admin SKU/优惠券/用量分页 | ✅ | billing-api + admin 面板服务端分页 |
+| P3 | 冒烟 26 步 | ✅ | 含 membership 内网 API 探活 |
+| — | suspended 租户 billing 拦截 | 不做 | 仅在 saas-api 登录层拦截（PRD） |
+| — | PostgreSQL RLS | 可选 | 工作量大，未纳入 Sprint F |
 
 ## 部署变更（F-1）
 
@@ -152,7 +177,7 @@ services/
 | F-4 | 退款/对账/通知/发票 | 退款 ✅；日对账 ✅；站内通知 ✅；发票申请骨架 ✅（无电子票对接） |
 | F-5 | 优惠券/用户间划拨 | 划拨 API + UI ✅；members_can_recharge ✅；优惠券兑换骨架 ✅ |
 | F-6 | 可选 billing 独立 DB + 对公转账 | 对公预付申请骨架 ✅；独立 DB compose ✅；membership api/cdc ✅ |
-| sec | Webhook 验签/限流、Caller 白名单、RFC7807、Micrometer、Admin ledger | ✅ 2026-06-15 |
+| sec | Webhook 验签/限流、Caller 白名单、RFC7807、Micrometer、Admin ledger、membership push/HMAC、Admin 分页 | ✅ 2026-06-14 |
 
 完整 PRD、API 契约、前端组件：[billing-credits-prd.md](../product/billing-credits-prd.md)
 

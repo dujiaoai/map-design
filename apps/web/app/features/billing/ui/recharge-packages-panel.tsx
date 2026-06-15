@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Skeleton } from '@repo/ui'
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, Skeleton } from '@repo/ui'
 import { useState } from 'react'
 
 import {
@@ -27,6 +27,7 @@ export function RechargePackagesPanel({
   const mockPay = useMockPayRechargeOrderMutation()
   const cancelOrder = useCancelRechargeOrderMutation()
   const [pendingOrder, setPendingOrder] = useState<RechargeOrderResponse | null>(null)
+  const [couponCode, setCouponCode] = useState('')
   const [paidMessage, setPaidMessage] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
 
@@ -34,7 +35,11 @@ export function RechargePackagesPanel({
     setActionError(null)
     setPaidMessage(null)
     try {
-      const order = await createOrder.mutateAsync({ packageCode, channel: 'mock' })
+      const order = await createOrder.mutateAsync({
+        packageCode,
+        channel: 'mock',
+        ...(couponCode.trim() ? { couponCode: couponCode.trim() } : {}),
+      })
       setPendingOrder(order)
     } catch {
       setActionError('创建订单失败，请稍后重试。')
@@ -87,6 +92,22 @@ export function RechargePackagesPanel({
           <p className="text-destructive text-sm">{actionError}</p>
         ) : null}
 
+        <div className="space-y-2">
+          <label className="text-sm font-medium" htmlFor="recharge-coupon-code">
+            抵扣券（可选）
+          </label>
+          <Input
+            id="recharge-coupon-code"
+            value={couponCode}
+            onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
+            placeholder="充值抵扣券码"
+            disabled={isBusy || Boolean(pendingOrder)}
+          />
+          <p className="text-muted-foreground text-xs">
+            抵扣券在下单时减免应付金额；赠送积分券请使用下方「优惠券兑换」。
+          </p>
+        </div>
+
         {packagesQuery.isPending ? (
           <div className="grid gap-3 sm:grid-cols-3">
             <Skeleton className="h-28 w-full" />
@@ -130,8 +151,19 @@ export function RechargePackagesPanel({
               <p className="font-medium">待支付订单</p>
               <p className="text-muted-foreground text-sm">
                 订单号 {pendingOrder.orderNo} · {formatPoints(pendingOrder.points)} 点 ·{' '}
-                {formatPriceCents(pendingOrder.priceCents)}
+                {pendingOrder.couponDiscountCents > 0 ? (
+                  <>
+                    原价 {formatPriceCents(pendingOrder.listPriceCents)}，抵扣{' '}
+                    {formatPriceCents(pendingOrder.couponDiscountCents)}，应付{' '}
+                    {formatPriceCents(pendingOrder.priceCents)}
+                  </>
+                ) : (
+                  formatPriceCents(pendingOrder.priceCents)
+                )}
               </p>
+              {pendingOrder.couponCode ? (
+                <p className="text-muted-foreground text-xs">已使用抵扣券 {pendingOrder.couponCode}</p>
+              ) : null}
               {pendingOrder.payUrl ? (
                 <p className="text-muted-foreground mt-1 break-all font-mono text-xs">
                   {pendingOrder.payUrl}

@@ -423,7 +423,7 @@ flowchart LR
   - Admin：`GET /v1/admin/billing/wire-transfers`；`POST .../{id}/approve`（入账 `wire_transfer` 流水）、`POST .../{id}/reject`（`admin:billing:adjust`）
   - saas-web 企业预付申请 + 收款账户展示；Admin「对公转账」Tab
   - **不含**汇款自动认款；独立 DB 见 [billing-service.md](../architecture/billing-service.md) §独立 PostgreSQL
-- 可选 billing 独立 DB（骨架 ✅）：`docker-compose.billing-db.yml` + `sync-membership-mirror.sh`；**membership 内网 API**（`source=api`）✅；事件驱动 CDC 待办
+- 可选 billing 独立 DB（骨架 ✅）：`docker-compose.billing-db.yml` + `sync-membership-mirror.sh`；membership **`source=api`** ✅；**`source=cdc`** 事件 outbox pull/ack ✅
 
 ---
 

@@ -111,6 +111,7 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
       setCreateName('')
       setCreateSelectedCodes([])
       setSelectedRole(role)
+      toast.success('自定义角色已创建')
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
@@ -120,6 +121,7 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.tenantCustomRoles(tenantId) })
       setSelectedRole(null)
+      toast.success('自定义角色已删除')
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })

@@ -1,7 +1,7 @@
 import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import { PencilIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 
 import { fetchAdminTenants, fetchAdminUsers, type AdminUserSummary } from '~/shared/api/admin-api'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
@@ -25,9 +25,18 @@ import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badg
 
 import { EditUserSheet } from './edit-user-sheet'
 
+const BILLING_PERMISSIONS = [
+  'admin:billing:read',
+  'admin:billing:adjust',
+  'admin:billing:packages:write',
+  'admin:billing:refund',
+] as const
+
 export function UsersAdminPage() {
-  const { can } = useAdminPermissions()
+  const { can, canAny } = useAdminPermissions()
   const canWrite = can('admin:users:write')
+  const canReadTenants = can('admin:tenants:read')
+  const canViewBilling = canAny([...BILLING_PERMISSIONS])
   const [searchParams, setSearchParams] = useSearchParams()
   const tenantFilterId = searchParams.get('tenantId') ?? undefined
 
@@ -82,6 +91,54 @@ export function UsersAdminPage() {
         )}
         actions={null}
       />
+
+      {tenantFilterId ? (
+        <AdminPanel className="flex flex-wrap items-center justify-between gap-3 border-primary/20 bg-primary/5 px-4 py-3 md:px-5">
+          <p className="text-sm">
+            <span className="text-muted-foreground">租户筛选 · </span>
+            <span className="font-medium">{tenantLabel}</span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {canReadTenants ? (
+              <>
+                <Button
+                  nativeButton={false}
+                  variant="outline"
+                  size="sm"
+                  render={<Link to={`/tenants/${tenantFilterId}?tab=info`} />}
+                >
+                  租户详情
+                </Button>
+                <Button
+                  nativeButton={false}
+                  variant="outline"
+                  size="sm"
+                  render={<Link to={`/tenants/${tenantFilterId}?tab=members`} />}
+                >
+                  成员管理
+                </Button>
+              </>
+            ) : null}
+            {canViewBilling ? (
+              <Button
+                nativeButton={false}
+                variant="outline"
+                size="sm"
+                render={
+                  <Link
+                    to={`/billing?tab=wallets&tenantId=${encodeURIComponent(tenantFilterId)}`}
+                  />
+                }
+              >
+                计费钱包
+              </Button>
+            ) : null}
+            <Button type="button" variant="ghost" size="sm" onClick={() => setSearchParams({})}>
+              清除筛选
+            </Button>
+          </div>
+        </AdminPanel>
+      ) : null}
 
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm text-muted-foreground">租户筛选</span>

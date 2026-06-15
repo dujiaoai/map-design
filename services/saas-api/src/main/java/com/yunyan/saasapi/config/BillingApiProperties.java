@@ -23,6 +23,10 @@ public class BillingApiProperties {
   public static class MembershipSync {
     /** Best-effort push to billing-api after outbox enqueue (pull remains fallback). */
     private boolean pushEnabled = false;
+    /** Scan interval for pending push retry job (ms). */
+    private long pushRetryScanMs = 60_000L;
+    /** Max pending events per retry batch. */
+    private int pushRetryBatchSize = 50;
   }
 
   @Data

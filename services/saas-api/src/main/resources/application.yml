@@ -84,6 +84,8 @@ saas:
       max-attempts: 20
     membership-sync:
       push-enabled: ${SAAS_BILLING_MEMBERSHIP_PUSH_ENABLED:false}
+      push-retry-scan-ms: 60000
+      push-retry-batch-size: 50
   jwt:
     issuer: yunyan-saas
     secret: ${SAAS_JWT_SECRET:dev-only-change-me-use-32chars-minimum!!}

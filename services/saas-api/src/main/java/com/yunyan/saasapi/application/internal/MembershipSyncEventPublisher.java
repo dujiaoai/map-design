@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 public class MembershipSyncEventPublisher {
 
   private static final Logger log = LoggerFactory.getLogger(MembershipSyncEventPublisher.class);
-  private static final String PROCESSED_BY_PUSH = "billing-api-push";
+  public static final String PROCESSED_BY_PUSH = "billing-api-push";
 
   public static final String EVENT_USER_UPSERT = "user_upsert";
   public static final String EVENT_TENANT_FEATURES_REPLACE = "tenant_features_replace";

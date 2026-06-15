@@ -63,6 +63,7 @@ pnpm --filter @repo/saas-admin dev
 - **P2**：租户/用户服务端分页、`/account`、侧栏 TeamSwitcher（remember-login）
 - **P3**：列表/详情 Skeleton、全局 404、`pnpm validate`（Vitest）
 - **P4 运维控制台 UX**：工业深色网格壳、Health 条（含 ping）、列表 stagger 入场、租户详情 URL Tab、快捷入口、403/404 统一错误页
+- **P4+ 计费 Sheet**：发票开具/驳回、对公转账驳回改用 Sheet（替代 `window.prompt`）；审计页计费动作可跳转对应 Tab
 
 ## 验证
 

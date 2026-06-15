@@ -73,6 +73,7 @@ pnpm --filter @repo/saas-admin dev
 - **P4+++++++ 反馈与排序扩展**：成员/账号/权限/邀请 Toast 全覆盖；租户与成员表客户端列排序
 - **P4++++++++ 列表排序与 a11y**：用户/审计日志列排序；表头 `aria-sort`；邀请链接复制 Toast
 - **P4+++++++++ 计费与复制反馈**：SKU/优惠券/调账/对公入账 Toast；`AdminIdCell` 复制 Toast；概览刷新 Toast
+- **P4++++++++++ 排序透明化**：`AdminTableSortHint` 标明当前页/已加载范围 + 清除排序；租户自定义角色 Toast
 
 ## 主流运维控制台 UX 对照
 
@@ -87,7 +88,7 @@ pnpm --filter @repo/saas-admin dev
 | **筛选零结果** | 「清除筛选」恢复默认 | ✅ 租户/用户/成员/审计/计费 SKU·钱包·订单 |
 | **操作反馈** | Toast 确认成功操作 | ✅ 全平台 CRUD、计费 11 Tab、复制、概览刷新 |
 | **键盘效率** | 快捷键聚焦搜索 | ✅ 列表页 `/` + 搜索框 kbd 提示 |
-| **表格列排序** | 可点击表头排序 | 🟡 租户/成员/用户/审计（客户端，当前页数据） |
+| **表格列排序** | 可点击表头排序 | 🟡 四主表客户端排序 + 范围提示与清除 |
 | **筛选控件** | 一致的 chip/toggle，非原生 checkbox | ✅ 审计筛选 toggle；表单用 `@repo/ui` Checkbox |
 | **危险操作** | Confirm / Sheet，非 `prompt` | ✅ 计费驳回 Sheet、`AlertDialog` |
 | **跨页上下文** | 租户/筛选 banner + 清除 | ✅ `AdminTenantContextBanner` 等 |

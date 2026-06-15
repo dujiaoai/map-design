@@ -79,6 +79,7 @@ export const rechargeOrderResponseSchema = z.object({
   couponCode: z.string().nullable().optional(),
   couponDiscountCents: z.number(),
   payUrl: z.string().nullable().optional(),
+  payScene: z.string().nullable().optional(),
   expireAt: z.string().nullable().optional(),
   paidAt: z.string().nullable().optional(),
   walletBalance: z.number(),
@@ -90,6 +91,7 @@ export const createRechargeOrderRequestSchema = z.object({
   packageCode: z.string(),
   channel: z.string().optional(),
   couponCode: z.string().optional(),
+  payScene: z.enum(['native', 'h5', 'jsapi', 'wap']).optional(),
 })
 
 export type CreateRechargeOrderRequest = z.infer<typeof createRechargeOrderRequestSchema>

@@ -86,6 +86,7 @@ export function createBillingClient(options: BillingClientOptions) {
           packageCode: input.packageCode,
           channel: input.channel ?? 'mock',
           ...(input.couponCode ? { couponCode: input.couponCode } : {}),
+          ...(input.payScene ? { payScene: input.payScene } : {}),
         }),
       )
     },

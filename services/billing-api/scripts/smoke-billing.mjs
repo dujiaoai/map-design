@@ -5,7 +5,15 @@
  * Usage:
  *   node services/billing-api/scripts/smoke-billing.mjs
  *   BILLING_API_BASE_URL=http://localhost:8083/v1 SAAS_API_BASE_URL=http://localhost:8082/v1 node services/billing-api/scripts/smoke-billing.mjs
+ *
+ * Webhook 验签（与 billing.webhook.signature-verify-enabled 对齐）：
+ *   BILLING_WEBHOOK_SIGNATURE_MODE=off|hmac|wechat_v3|alipay_rsa  （默认 off，仅 Token）
+ *   BILLING_WEBHOOK_HMAC_SECRET=...                               （hmac 模式）
+ *   BILLING_WEBHOOK_WECHAT_PRIVATE_KEY_PEM=...                    （wechat_v3 签名）
+ *   BILLING_WEBHOOK_ALIPAY_PRIVATE_KEY_PEM=...                    （alipay_rsa 签名）
  */
+
+import crypto from 'node:crypto'
 
 const billingBase = (process.env.BILLING_API_BASE_URL ?? 'http://localhost:8083/v1/billing').replace(
   /\/$/,
@@ -22,6 +30,13 @@ const credentials = {
 const webhookToken =
   process.env.BILLING_WEBHOOK_TOKEN ?? 'dev-billing-webhook-token-change-me'
 
+const webhookSignatureMode = (process.env.BILLING_WEBHOOK_SIGNATURE_MODE ?? 'off')
+  .trim()
+  .toLowerCase()
+const webhookHmacSecret = process.env.BILLING_WEBHOOK_HMAC_SECRET ?? ''
+const wechatPrivateKeyPem = process.env.BILLING_WEBHOOK_WECHAT_PRIVATE_KEY_PEM ?? ''
+const alipayPrivateKeyPem = process.env.BILLING_WEBHOOK_ALIPAY_PRIVATE_KEY_PEM ?? ''
+
 const passed = []
 
 function fail(step, detail) {
@@ -29,15 +44,70 @@ function fail(step, detail) {
   process.exit(1)
 }
 
-async function api(url, { method = 'GET', headers = {}, body } = {}) {
+function signHmacSha256Hex(secret, message) {
+  return crypto.createHmac('sha256', secret).update(message).digest('hex')
+}
+
+function signRsaSha256Base64(privateKeyPem, message) {
+  const key = crypto.createPrivateKey(privateKeyPem)
+  return crypto.sign('RSA-SHA256', Buffer.from(message), key).toString('base64')
+}
+
+function buildWebhookHeaders(channel, rawBody) {
+  const headers = { 'X-Billing-Webhook-Token': webhookToken }
+
+  if (webhookSignatureMode === 'off' || webhookSignatureMode === '') {
+    return headers
+  }
+
+  if (webhookSignatureMode === 'hmac') {
+    if (!webhookHmacSecret) {
+      fail('webhook-config', 'BILLING_WEBHOOK_HMAC_SECRET is required when mode=hmac')
+    }
+    headers['X-Billing-Webhook-Signature'] = signHmacSha256Hex(webhookHmacSecret, rawBody)
+    return headers
+  }
+
+  if (webhookSignatureMode === 'wechat_v3') {
+    if (channel !== 'wechat') {
+      fail('webhook-config', 'wechat_v3 mode requires SMOKE_RECHARGE_CHANNEL=wechat')
+    }
+    if (!wechatPrivateKeyPem) {
+      fail('webhook-config', 'BILLING_WEBHOOK_WECHAT_PRIVATE_KEY_PEM is required when mode=wechat_v3')
+    }
+    const timestamp = String(Math.floor(Date.now() / 1000))
+    const nonce = `smoke-${Date.now()}`
+    const message = `${timestamp}\n${nonce}\n${rawBody}\n`
+    headers['Wechatpay-Timestamp'] = timestamp
+    headers['Wechatpay-Nonce'] = nonce
+    headers['Wechatpay-Signature'] = signRsaSha256Base64(wechatPrivateKeyPem, message)
+    return headers
+  }
+
+  if (webhookSignatureMode === 'alipay_rsa') {
+    if (channel !== 'alipay') {
+      fail('webhook-config', 'alipay_rsa mode requires SMOKE_RECHARGE_CHANNEL=alipay')
+    }
+    if (!alipayPrivateKeyPem) {
+      fail('webhook-config', 'BILLING_WEBHOOK_ALIPAY_PRIVATE_KEY_PEM is required when mode=alipay_rsa')
+    }
+    headers['Alipay-Signature'] = signRsaSha256Base64(alipayPrivateKeyPem, rawBody)
+    return headers
+  }
+
+  fail('webhook-config', `Unknown BILLING_WEBHOOK_SIGNATURE_MODE: ${webhookSignatureMode}`)
+}
+
+async function api(url, { method = 'GET', headers = {}, body, rawBody } = {}) {
+  const payload = rawBody ?? (body !== undefined ? JSON.stringify(body) : undefined)
   const response = await fetch(url, {
     method,
     headers: {
       Accept: 'application/json',
-      ...(body ? { 'Content-Type': 'application/json' } : {}),
+      ...(payload ? { 'Content-Type': 'application/json' } : {}),
       ...headers,
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body: payload,
   })
   const text = await response.text()
   let parsed = null
@@ -49,6 +119,16 @@ async function api(url, { method = 'GET', headers = {}, body } = {}) {
     }
   }
   return { ok: response.ok, status: response.status, body: parsed }
+}
+
+async function postPaymentWebhook(channel, payload) {
+  const rawBody = JSON.stringify(payload)
+  const path = channel === 'alipay' ? 'alipay' : 'wechat'
+  return api(`${billingBase}/webhooks/${path}`, {
+    method: 'POST',
+    headers: buildWebhookHeaders(channel, rawBody),
+    rawBody,
+  })
 }
 
 async function main() {
@@ -102,21 +182,19 @@ async function main() {
       fail('mock-pay', `HTTP ${mockPay.status} ${JSON.stringify(mockPay.body)}`)
     }
     passed.push('mock-pay')
-  } else if (channel === 'wechat') {
-    const webhook = await api(`${billingBase}/webhooks/wechat`, {
-      method: 'POST',
-      headers: { 'X-Billing-Webhook-Token': webhookToken },
-      body: {
-        orderNo,
-        providerTradeNo: `smoke-${Date.now()}`,
-        success: true,
-        priceCents,
-      },
+  } else if (channel === 'wechat' || channel === 'alipay') {
+    const webhook = await postPaymentWebhook(channel, {
+      orderNo,
+      providerTradeNo: `smoke-${Date.now()}`,
+      success: true,
+      priceCents,
     })
     if (!webhook.ok) {
-      fail('webhook-wechat', `HTTP ${webhook.status} ${JSON.stringify(webhook.body)}`)
+      fail(`webhook-${channel}`, `HTTP ${webhook.status} ${JSON.stringify(webhook.body)}`)
     }
-    passed.push('webhook-wechat')
+    passed.push(`webhook-${channel}`)
+  } else {
+    fail('recharge-channel', `Unsupported SMOKE_RECHARGE_CHANNEL: ${channel}`)
   }
 
   const walletAfter = await api(`${billingBase}/wallet`, { headers: auth })

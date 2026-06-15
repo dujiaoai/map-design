@@ -2,7 +2,7 @@ import { Badge, Button } from '@repo/ui'
 import { useSession } from '@repo/auth'
 import { useQuery } from '@tanstack/react-query'
 import { PencilIcon } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 
 import { fetchAdminTenant, fetchTenantMembers, type AdminUserSummary } from '~/shared/api/admin-api'
@@ -12,6 +12,7 @@ import {
   useFilteredAdminRows,
 } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
+import { sortAdminTableRows, useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
@@ -22,6 +23,7 @@ import {
   AdminTableHead,
   AdminTableHeaderCell,
   AdminTableRow,
+  AdminTableSortHeaderCell,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
@@ -31,6 +33,8 @@ import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badg
 
 import { EditMemberSheet } from './edit-member-sheet'
 import { InviteMemberSheet } from './invite-member-sheet'
+
+type MemberSortKey = 'email' | 'displayName' | 'lastLoginAt' | 'createdAt'
 
 export function MembersAdminPage({
   tenantId,
@@ -70,12 +74,23 @@ export function MembersAdminPage({
   const filter = useAdminTableFilterState()
   const searchInputRef = useRef<HTMLInputElement>(null)
   useAdminListSearchShortcut(searchInputRef)
+  const { sort, toggleSort } = useAdminTableSort<MemberSortKey>()
   const memberSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName']
-  const filteredMembers = useFilteredAdminRows(
+  const filteredMembersRaw = useFilteredAdminRows(
     membersQuery.data?.members,
     filter,
     memberSearchKeys,
     'status',
+  )
+  const filteredMembers = useMemo(
+    () =>
+      sortAdminTableRows(filteredMembersRaw, sort, {
+        email: (member) => member.email.toLowerCase(),
+        displayName: (member) => (member.displayName ?? '').toLowerCase(),
+        lastLoginAt: (member) => member.lastLoginAt ?? '',
+        createdAt: (member) => member.createdAt,
+      }),
+    [filteredMembersRaw, sort],
   )
 
   const memberTotal = membersQuery.data?.members.length ?? 0
@@ -150,12 +165,32 @@ export function MembersAdminPage({
           <AdminDataTable>
             <AdminTableHead>
               <tr>
-                <AdminTableHeaderCell>邮箱</AdminTableHeaderCell>
-                <AdminTableHeaderCell>显示名</AdminTableHeaderCell>
+                <AdminTableSortHeaderCell
+                  label="邮箱"
+                  active={sort?.key === 'email'}
+                  direction={sort?.key === 'email' ? sort.direction : undefined}
+                  onSort={() => toggleSort('email')}
+                />
+                <AdminTableSortHeaderCell
+                  label="显示名"
+                  active={sort?.key === 'displayName'}
+                  direction={sort?.key === 'displayName' ? sort.direction : undefined}
+                  onSort={() => toggleSort('displayName')}
+                />
                 <AdminTableHeaderCell>角色</AdminTableHeaderCell>
                 <AdminTableHeaderCell>状态</AdminTableHeaderCell>
-                <AdminTableHeaderCell>最近登录</AdminTableHeaderCell>
-                <AdminTableHeaderCell>创建时间</AdminTableHeaderCell>
+                <AdminTableSortHeaderCell
+                  label="最近登录"
+                  active={sort?.key === 'lastLoginAt'}
+                  direction={sort?.key === 'lastLoginAt' ? sort.direction : undefined}
+                  onSort={() => toggleSort('lastLoginAt')}
+                />
+                <AdminTableSortHeaderCell
+                  label="创建时间"
+                  active={sort?.key === 'createdAt'}
+                  direction={sort?.key === 'createdAt' ? sort.direction : undefined}
+                  onSort={() => toggleSort('createdAt')}
+                />
                 {canWrite ? (
                   <AdminTableHeaderCell className="text-right">操作</AdminTableHeaderCell>
                 ) : null}

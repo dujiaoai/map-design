@@ -35,8 +35,8 @@ flowchart LR
 
 ## 认证与授权
 
-**当前**：登录/注册/bootstrap 已走 SaaS（C-06～C-08）；Account 部分仍 RuoYi。  
-**路线图**：C-10～C-12 收尾 ✅ → Sprint D 权限与后台 ✅ → Admin P0～P3 ✅ → **Sprint F 平台计费（含 sec/RLS）✅** → Sprint E 业务域（Later）。详见 [services-development-plan.md](./services-development-plan.md)（含 **§十 执行指引**）。
+**当前**：登录/注册/bootstrap/Account 已走 SaaS（C-06～C-12 ✅）。  
+**路线图**：Sprint D 权限与后台 ✅ → Admin P0～P3 ✅ → **Sprint F 平台计费（含 sec/RLS）✅** → **FND-* 基础完善** → Sprint E 业务域（Later）。详见 [services-development-plan.md](./services-development-plan.md)（§七 FND-*、[platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md)）。
 
 ## API 双轨
 

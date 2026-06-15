@@ -1,6 +1,6 @@
 # services/ 后端开发计划
 
-> 状态：Living doc · 2026-06-09（更新：Sprint C/D 聚焦身份·权限·后台基础，业务域 API 后移）  
+> 状态：Living doc · 2026-06-15（更新：Sprint C/D/F 基座 ✅；**平台基础完善 backlog** 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md)）  
 > 关联：[backend-integration.md](./backend-integration.md)、[auth-rbac.md](./auth-rbac.md)、[java-backend-index](../../.cursor/skills/java-backend-index/SKILL.md)
 
 ## 范围说明
@@ -59,7 +59,7 @@ map-design/
 | 用户会话       | ✅     | `GET/PUT /v1/users/me`、`POST /v1/users/me/password`         |
 | 安全         | ✅     | JWT access/refresh、Spring Security 6、`JwtAuthFilter`         |
 | RBAC       | ✅     | `PLATFORM_ADMIN` / `TENANT_ADMIN` / `MEMBER` / `VIEWER`      |
-| 多租户（应用层）   | 🟡 部分 | `TenantContext` + MyBatis-Plus 租户拦截（仅 `sys_user`）            |
+| 多租户（应用层）   | 🟡 深化中 | `TenantContext` + RLS：`sys_user` ✅、`billing_*` ✅；其它租户表见 FND-04 |
 | Refresh 存储 | ✅     | dev 用 Redis，test 用 InMemory                                  |
 | 错误体        | ✅     | RFC 7807 `ProblemDetail`                                     |
 | OpenAPI    | ✅     | SpringDoc 已配置                                                |
@@ -124,7 +124,7 @@ mvn -f services/pom.xml -pl saas-api test
 | **`/v1/menus`** | 无 SaaS 菜单 API；侧栏 mock / registry |
 | **地图 / 机库 / 专题等业务 API** | Sprint C/D **不设计**；基础盘（登录·注册·权限·后台）完成后再开 |
 | **OAuth2/OIDC** | 远期；C/D 用 Email/Password + JWT |
-| **邮箱验证 / 邀请注册** | 可做为 Sprint C 拉伸项，非阻塞首版注册 |
+| **邮箱验证 / 邀请注册** | auth-foundation P3 ✅（[auth-email-module.md](./auth-email-module.md)）；非阻塞首版注册 |
 
 
 ---
@@ -356,12 +356,21 @@ services/
 
 ---
 
-## 七、建议立即开工的 3 件事
+## 七、平台基础完善（非业务 · FND-*）
 
-1. ~~**A-01 CORS**~~ ✅ 已完成
-2. ~~**A-03 Auth 冒烟**~~ ✅ 已完成
-3. **Sprint C** — 登录、注册、用户信息 + saas-web 切 SaaS（Sprint B 已完成）
-4. **Sprint D** — 用户权限、权限配置、`/v1/admin/*` + apps/admin（**不做业务域 API**）
+Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API 之前）按 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) 收束：
+
+| 编号 | 主题 | 状态 |
+| --- | --- | --- |
+| FND-01 | 文档与计划对齐 | ✅ |
+| FND-02 | Testcontainers（PG + RLS） | 待做 |
+| FND-03 | 计费 live 退款 / runbook 生产化 | 待做 |
+| FND-04 | saas-api RLS 扩展（`map_layer` 起） | 待做 |
+| FND-05 | 可观测性最小集（MDC + billing 探活） | 待做 |
+| FND-06 | Admin `/system` 平台配置 | 待做 |
+| FND-07 | OAuth2/OIDC、MFA、impersonation | Later |
+
+**仍不做（本阶段）**：Sprint E 地图/机库/专题业务 API。
 
 ---
 
@@ -369,8 +378,8 @@ services/
 
 - `SysUserRole` 缺 `@TableId` 警告（MyBatis-Plus）
 - MapStruct 已在 POM 声明但未使用
-- 测试环境 H2 与生产 PG 差异（后续引入 Testcontainers）
-- OAuth2/OIDC 为远期目标（X-01），当前 Email/Password + JWT 足够
+- 测试环境 H2 与生产 PG 差异 → **FND-02** Testcontainers（`-Pintegration`）
+- OAuth2/OIDC 为远期目标（X-01 / FND-07），当前 Email/Password + JWT 足够
 
 ---
 
@@ -390,12 +399,13 @@ services/
 | `saas-auth-ruoyi`                                     | saas-web 会话迁移前端清单  |
 | [billing-service.md](./billing-service.md)            | billing-api 微服务架构     |
 | [billing-credits-prd.md](../product/billing-credits-prd.md) | Sprint F 充值/积分 PRD |
+| [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) | 平台基础完善 FND-*（非业务） |
 
 ---
 
 ## 十、执行指引（由你指定开工项）
 
-文档已对齐：**Sprint C/D = 平台基础；Sprint E = 业务域（Later）**。**C-01～C-12 已完成**（含 C-09 tenant features 侧栏过滤）。实现顺序由你指定，可用任务编号点名。
+文档已对齐：**Sprint C/D/F 基座 ✅**；**FND-* = 基础完善（非业务）**；**Sprint E = 业务域（Later）**。实现顺序由你指定，可用任务编号点名。
 
 ### 任务索引（可复制）
 
@@ -421,12 +431,16 @@ services/
 | RBAC-P1 ✅ | D+ | 平台用户角色分配 + 角色权限变更会话吊销 |
 | RBAC-P2 ✅ | D+ | 租户自定义角色与权限配置 |
 | E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
+| FND-01～FND-06 | 基础完善 | 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) |
+| FND-07 | Later | OAuth2/OIDC、MFA、impersonation |
 
 ### 建议默认顺序（仅供参考，非强制）
 
 1. ~~**C-02～C-12**~~ 身份与会话主路径 ✅（含 C-09）  
 2. ~~**Sprint D**~~ 权限与 `apps/admin` ✅  
-3. **Sprint E** 地图、机库等业务 API（Later）
+3. ~~**Sprint F**~~ 计费骨架 + sec ✅  
+4. **FND-01～FND-06** 平台基础完善（非业务）  
+5. **Sprint E** 地图、机库等业务 API（Later）
 
 你指定后，按编号在对应 Skill（`java-rest-api`、`java-auth-security`、`saas-auth-ruoyi`、`saas-fsd-feature`）下实现即可。
 

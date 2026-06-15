@@ -20,13 +20,17 @@
 | 路由 | 组件 | 说明 |
 | --- | --- | --- |
 | `/login` | `routes/login.tsx` | SaaS `POST /v1/auth/login`（C-06 ✅） |
-| `/register` | `routes/register.tsx` | SaaS `POST /v1/auth/register`（C-07 ✅） |
+| `/register` | `routes/register.tsx` | SaaS 注册（组织/个人/邮箱确认） |
+| `/forgot-password` | `routes/forgot-password.tsx` | 自助密码重置（SaaS） |
+| `/reset-password` | `routes/reset-password.tsx` | 重置密码确认 |
+| `/verify-email` | `routes/verify-email.tsx` | 注册邮箱验证 |
+| `/accept-invite` | `routes/accept-invite.tsx` | 邀请链接加入 |
+| `/join` | `routes/join.tsx` | 邀请码加入 |
 | `/` | `routes/home.tsx` | 地图工作台首页 |
 
-### 规划路由（Sprint C 后）
+### 规划路由
 
 ```
-/forgot-password          # Later
 /onboarding/*             # Later
 /:orgSlug/*               # Later
 /settings/*               # feature 已有，路由待注册
@@ -66,8 +70,8 @@ pnpm --filter @repo/saas-web dev
 | `/roles` | 角色与权限配置（未保存切换确认） |
 | `/account` | 当前账号资料（`PUT /users/me`）与改密 |
 | `/audit-logs` | 成员操作审计日志（`GET /v1/admin/audit-logs`） |
-| `/billing` | 计费（规划中占位页） |
-| `/system` | 系统配置（规划中占位页） |
+| `/billing` | 平台计费运营（SKU/调账/退款/对账/发票/对公） |
+| `/system` | 系统配置（FND-06 规划中 · ComingSoon） |
 | `/403` | 无运营权限 |
 | `*` | 404 友好页（按会话返回概览或登录） |
 
@@ -90,8 +94,9 @@ pnpm --filter @repo/saas-web dev
 | 状态 | 项 |
 | --- | --- |
 | ✅ | `/audit-logs` 列表 + `sys_admin_audit_log` + 成员写操作落库 |
-| 占位 | `/billing`、`/system` |
-| Later | 邮箱邀请、impersonation、Admin MFA |
+| ✅ | `/billing` 计费运营 Tab（对接 billing-api `/v1/admin/billing`） |
+| FND-06 | `/system` 平台配置只读摘要 |
+| Later | impersonation、Admin MFA |
 
 开发：
 

@@ -2,6 +2,7 @@ package com.yunyan.billingapi.application.payment.provider;
 
 import com.yunyan.billingapi.application.payment.PaymentCreateResult;
 import com.yunyan.billingapi.application.payment.PaymentWebhookChannels;
+import com.yunyan.billingapi.application.payment.sdk.WechatPaySdkClient;
 import com.yunyan.billingapi.config.BillingAppProperties;
 import com.yunyan.billingapi.security.AuthException;
 import org.springframework.stereotype.Component;
@@ -11,9 +12,12 @@ import org.springframework.util.StringUtils;
 public class LiveWechatPaymentProvider implements PaymentProviderClient {
 
   private final BillingAppProperties billingAppProperties;
+  private final WechatPaySdkClient wechatPaySdkClient;
 
-  public LiveWechatPaymentProvider(BillingAppProperties billingAppProperties) {
+  public LiveWechatPaymentProvider(
+      BillingAppProperties billingAppProperties, WechatPaySdkClient wechatPaySdkClient) {
     this.billingAppProperties = billingAppProperties;
+    this.wechatPaySdkClient = wechatPaySdkClient;
   }
 
   @Override
@@ -24,27 +28,61 @@ public class LiveWechatPaymentProvider implements PaymentProviderClient {
   @Override
   public PaymentCreateResult createPayment(PaymentCreateCommand command) {
     var wechat = billingAppProperties.getPayment().getWechat();
-    assertConfigured(wechat.getAppId(), wechat.getMchId(), wechat.getApiV3Key());
+    assertConfigured(
+        wechat.getAppId(),
+        wechat.getMchId(),
+        wechat.getApiV3Key(),
+        wechat.getMerchantSerialNo(),
+        wechat.getPrivateKeyPem());
     var payScene = command.payScene() != null ? command.payScene() : PaymentPayScene.NATIVE;
-    // SDK 接入点：Native / H5 / JSAPI 统一下单（WeChat Pay API v3）
+    var notifyUrl = requireNotifyUrl(wechat.getNotifyUrl());
+    var sdkResult =
+        wechatPaySdkClient.createOrder(
+            new WechatPaySdkClient.SdkCreateOrderRequest(
+                command.orderNo(),
+                command.priceCents(),
+                command.currency(),
+                "YunYan recharge " + command.packageCode(),
+                payScene,
+                command.wechatOpenId(),
+                notifyUrl));
     return new PaymentCreateResult(
-        "wx-live-pending-" + command.orderNo(),
-        "https://pay.wechat.example/pending-sdk/" + payScene.wireValue() + "?order=" + command.orderNo(),
-        payScene.wireValue());
+        sdkResult.providerTradeNo(), sdkResult.payUrl(), sdkResult.payScene());
   }
 
   @Override
   public PaymentQueryResult queryPayment(String orderNo, String providerTradeNo) {
     var wechat = billingAppProperties.getPayment().getWechat();
-    assertConfigured(wechat.getAppId(), wechat.getMchId(), wechat.getApiV3Key());
-    // SDK 接入点：GET /v3/pay/transactions/out-trade-no/{orderNo}
-    return PaymentQueryResult.unpaid();
+    assertConfigured(
+        wechat.getAppId(),
+        wechat.getMchId(),
+        wechat.getApiV3Key(),
+        wechat.getMerchantSerialNo(),
+        wechat.getPrivateKeyPem());
+    var sdkResult = wechatPaySdkClient.queryByOutTradeNo(orderNo);
+    if (!sdkResult.paid()) {
+      return PaymentQueryResult.unpaid();
+    }
+    return PaymentQueryResult.paid(sdkResult.providerTradeNo(), sdkResult.priceCents());
   }
 
-  private void assertConfigured(String appId, String mchId, String apiV3Key) {
-    if (!StringUtils.hasText(appId) || !StringUtils.hasText(mchId) || !StringUtils.hasText(apiV3Key)) {
+  private static void assertConfigured(
+      String appId, String mchId, String apiV3Key, String merchantSerialNo, String privateKeyPem) {
+    if (!StringUtils.hasText(appId)
+        || !StringUtils.hasText(mchId)
+        || !StringUtils.hasText(apiV3Key)
+        || !StringUtils.hasText(merchantSerialNo)
+        || !StringUtils.hasText(privateKeyPem)) {
       throw AuthException.badRequest(
-          "WeChat Pay live mode requires billing.payment.wechat.app-id, mch-id, api-v3-key");
+          "WeChat Pay live mode requires billing.payment.wechat app-id, mch-id, api-v3-key,"
+              + " merchant-serial-no, private-key-pem");
     }
+  }
+
+  private static String requireNotifyUrl(String notifyUrl) {
+    if (!StringUtils.hasText(notifyUrl)) {
+      throw AuthException.badRequest("billing.payment.wechat.notify-url is required in live mode");
+    }
+    return notifyUrl.trim();
   }
 }

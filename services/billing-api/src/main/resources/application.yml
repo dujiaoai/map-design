@@ -59,12 +59,16 @@ billing:
       app-id: ${BILLING_PAYMENT_WECHAT_APP_ID:}
       mch-id: ${BILLING_PAYMENT_WECHAT_MCH_ID:}
       api-v3-key: ${BILLING_PAYMENT_WECHAT_API_V3_KEY:}
+      merchant-serial-no: ${BILLING_PAYMENT_WECHAT_MERCHANT_SERIAL_NO:}
+      private-key-pem: ${BILLING_PAYMENT_WECHAT_PRIVATE_KEY_PEM:}
       notify-url: ${BILLING_PAYMENT_WECHAT_NOTIFY_URL:}
       default-pay-scene: ${BILLING_PAYMENT_WECHAT_DEFAULT_PAY_SCENE:native}
     alipay:
       app-id: ${BILLING_PAYMENT_ALIPAY_APP_ID:}
       private-key-pem: ${BILLING_PAYMENT_ALIPAY_PRIVATE_KEY_PEM:}
+      alipay-public-key-pem: ${BILLING_PAYMENT_ALIPAY_PUBLIC_KEY_PEM:}
       notify-url: ${BILLING_PAYMENT_ALIPAY_NOTIFY_URL:}
+      gateway-url: ${BILLING_PAYMENT_ALIPAY_GATEWAY_URL:https://openapi.alipay.com/gateway.do}
       default-pay-scene: ${BILLING_PAYMENT_ALIPAY_DEFAULT_PAY_SCENE:wap}
   recharge:
     order-ttl-minutes: 30

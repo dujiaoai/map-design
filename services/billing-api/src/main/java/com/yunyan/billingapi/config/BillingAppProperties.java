@@ -133,6 +133,10 @@ public class BillingAppProperties {
     private String appId = "";
     private String mchId = "";
     private String apiV3Key = "";
+    /** Merchant API certificate serial number (WeChat Pay API v3). */
+    private String merchantSerialNo = "";
+    /** Merchant API private key PEM (apiclient_key.pem). */
+    private String privateKeyPem = "";
     private String notifyUrl = "";
     /** native | h5 | jsapi */
     private String defaultPayScene = "native";
@@ -142,7 +146,11 @@ public class BillingAppProperties {
   public static class Alipay {
     private String appId = "";
     private String privateKeyPem = "";
+    /** Alipay platform public key PEM for response verify. */
+    private String alipayPublicKeyPem = "";
     private String notifyUrl = "";
+    /** Production or sandbox gateway. */
+    private String gatewayUrl = "https://openapi.alipay.com/gateway.do";
     /** wap | native */
     private String defaultPayScene = "wap";
   }

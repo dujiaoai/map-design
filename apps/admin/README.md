@@ -64,7 +64,7 @@ pnpm --filter @repo/saas-admin dev
 - **P3**：列表/详情 Skeleton、全局 404、`pnpm validate`（Vitest）
 - **P4 运维控制台 UX**：工业深色网格壳、Health 条（含 ping）、列表 stagger 入场、租户详情 URL Tab、快捷入口、403/404 统一错误页
 - **P4+ 计费 Sheet**：发票开具/驳回、对公转账驳回改用 Sheet（替代 `window.prompt`）；审计页计费动作可跳转对应 Tab
-- **P4+ 跨页导航**：计费/用户页 URL 筛选条、审计目标租户列与「仅计费」筛选、RBAC 骨架加载、Shell 动态租户标题
+- **P4+ 跨页导航**：`AdminTenantContextBanner`、计费/用户 URL 筛选条、审计→用户/计费/租户链接、租户列表计费快捷入口、RBAC 骨架加载、Shell 动态租户标题
 
 ## 验证
 

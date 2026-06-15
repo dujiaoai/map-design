@@ -312,6 +312,7 @@ flowchart TD
 | F-0 | saas-api | `tenant_kind=personal`、register-personal、个人版 UI | ✅ |
 | F-1 | **billing-api :8083** + billing-core | 用户钱包；saas-api **V18** 权限；signup-bonus；Nginx 分流 | ✅ |
 | F-2 | billing-api + admin | 微信/支付宝 Webhook 骨架 + 充值 UI + **Platform Admin 调账/SKU/订单** | ✅ 主体 |
+| F-2.5 | billing-api + saas-web + billing-client | live SDK（wechatpay-java/alipay-sdk-java）、payScene、订单轮询、JSAPI OAuth/openId、联调 SOP | ✅ |
 | F-3 | saas-api → billing-api | hold/confirm + **402 弹窗** + `team/usage` + smoke rule + perm_epoch | ✅ |
 | F-3+ | web | `BillingCostPreview`、低余额样式 | ✅ |
 | F-5 | packages/billing-client | TS SDK + saas-web 接入 | ✅ |

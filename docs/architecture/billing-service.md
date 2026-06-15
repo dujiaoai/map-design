@@ -144,6 +144,7 @@ services/
 | F-0 | 个人版（saas-api，`tenant_kind=personal`） |
 | F-1 | billing-api 脚手架 + 钱包账本 + billing-core |
 | F-2 | 微信/支付宝 + Webhook |
+| F-2.5 | live SDK 下单/查单、payScene、saas-web 轮询与 JSAPI OAuth、联调 SOP | ✅ 2026-06-15 |
 | F-3 | 跨服务 hold/confirm + 402 弹窗 + team/usage + estimate | ✅ |
 | F-3+ | BillingCostPreview + 低余额样式 | ✅ |
 | F-5 | `packages/billing-client` TS SDK | ✅ |

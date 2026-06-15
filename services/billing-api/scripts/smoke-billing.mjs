@@ -351,7 +351,7 @@ async function main() {
     {
       method: 'POST',
       headers: { ...auth, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pdfUrl: issuePdfUrl }),
+      body: { pdfUrl: issuePdfUrl },
     },
   )
   if (

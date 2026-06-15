@@ -19,6 +19,7 @@ import {
 } from '~/features/billing/lib/billing-admin-api'
 import type { BillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
 import { useBillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
+import { BillingWireTransferRejectSheet } from '~/features/billing/ui/billing-wire-transfer-reject-sheet'
 import { formatBillingPrice } from '~/features/billing/lib/billing-format'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
@@ -35,7 +36,7 @@ import {
   AdminTableHeaderCell,
   AdminTableRow,
 } from '~/shared/ui/admin-data-table'
-import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminEmptyState, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge, formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
@@ -73,6 +74,7 @@ export function BillingWireTransfersPanel({
   const [filterError, setFilterError] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [actingId, setActingId] = useState<string | null>(null)
+  const [rejectingTransfer, setRejectingTransfer] = useState<AdminWireTransfer | null>(null)
 
   const applySeed = useCallback((seed: BillingFilterSeed) => {
     setTenantId(seed.tenantId ?? '')
@@ -121,32 +123,6 @@ export function BillingWireTransfersPanel({
     },
   })
 
-  const rejectMutation = useMutation({
-    mutationFn: async (item: AdminWireTransfer) => {
-      setActingId(item.id)
-      setActionError(null)
-      const reason = window.prompt('请输入驳回原因', '汇款凭证不符')
-      if (!reason?.trim()) {
-        throw new Error('已取消驳回')
-      }
-      await billingAdminApi.post(`/wire-transfers/${encodeURIComponent(item.id)}/reject`, {
-        reason: reason.trim(),
-      })
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.all })
-    },
-    onError: (error) => {
-      const message = formatAdminApiError(error)
-      if (message !== '已取消驳回') {
-        setActionError(message)
-      }
-    },
-    onSettled: () => {
-      setActingId(null)
-    },
-  })
-
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
 
   function applyFilters() {
@@ -170,18 +146,12 @@ export function BillingWireTransfersPanel({
   return (
     <div className="space-y-4">
       <AdminPanel>
-        <div className="border-b border-border/60 px-6 py-5">
-          <div className="flex items-start gap-3">
-            <Building2Icon className="mt-0.5 size-4 text-muted-foreground" />
-            <div>
-              <h3 className="text-base font-medium">对公转账</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                审核企业预付申请；通过后积分入账至申请人个人账户（骨架，不含收款账户配置）。
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-end gap-3 px-6 py-5">
+        <AdminPanelHeader
+          icon={Building2Icon}
+          title="对公转账"
+          description="审核企业预付申请；通过后积分入账至申请人个人账户（骨架，不含收款账户配置）。"
+        />
+        <div className="flex flex-wrap items-end gap-3 px-4 py-5 md:px-5">
           <AdminField label="租户 ID" htmlFor={tenantIdInputId}>
             <Input
               id={tenantIdInputId}
@@ -223,12 +193,12 @@ export function BillingWireTransfersPanel({
           </Button>
         </div>
         {filterError ? (
-          <div className="px-6 pb-5">
+          <div className="px-4 pb-5 md:px-5">
             <AdminFormError message={filterError} />
           </div>
         ) : null}
         {actionError ? (
-          <div className="px-6 pb-5">
+          <div className="px-4 pb-5 md:px-5">
             <AdminFormError message={actionError} />
           </div>
         ) : null}
@@ -314,7 +284,7 @@ export function BillingWireTransfersPanel({
                               size="sm"
                               variant="ghost"
                               disabled={actingId === item.id}
-                              onClick={() => void rejectMutation.mutateAsync(item)}
+                              onClick={() => setRejectingTransfer(item)}
                             >
                               驳回
                             </Button>
@@ -337,6 +307,16 @@ export function BillingWireTransfersPanel({
           </>
         ) : null}
       </AdminPanel>
+
+      {canAdjust ? (
+        <BillingWireTransferRejectSheet
+          transfer={rejectingTransfer}
+          open={rejectingTransfer !== null}
+          onOpenChange={(open) => {
+            if (!open) setRejectingTransfer(null)
+          }}
+        />
+      ) : null}
     </div>
   )
 }

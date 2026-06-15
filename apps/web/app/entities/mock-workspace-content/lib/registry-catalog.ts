@@ -24,6 +24,9 @@ export const REGISTERED_MOCK_MODULE_IDS = [
   'custom-live-share',
   'video-monitor',
   'view-project',
+  'uav-list',
+  'uav-collect',
+  'uav-settings',
 ] as const
 
 /** 已注册高保真 mock 的 drawer toolId */

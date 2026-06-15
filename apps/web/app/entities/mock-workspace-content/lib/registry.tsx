@@ -23,6 +23,9 @@ import { ScenicSpotsModuleContent } from '../ui/modules/scenic-spots-module-cont
 import { SpatialAnalysisModuleContent } from '../ui/modules/spatial-analysis-module-content'
 import { ThematicModuleContent } from '../ui/modules/thematic-module-content'
 import { ViewProjectModuleContent } from '../ui/modules/view-project-module-content'
+import { UavCollectModuleContent } from '../ui/modules/uav-collect-module-content'
+import { UavListModuleContent } from '../ui/modules/uav-list-module-content'
+import { UavSettingsModuleContent } from '../ui/modules/uav-settings-module-content'
 import { VideoMonitorModuleContent } from '../ui/modules/video-monitor-module-content'
 import { AdminDivisionsToolContent } from '../ui/tools/admin-divisions-tool-content'
 import { FallbackToolContent } from '../ui/tools/fallback-tool-content'
@@ -64,6 +67,9 @@ const MOCK_MODULE_REGISTRY: Record<string, MockModuleContentComponent> = {
   'custom-live-share': CustomLiveShareModuleContent,
   'video-monitor': VideoMonitorModuleContent,
   'view-project': ViewProjectModuleContent,
+  'uav-list': UavListModuleContent,
+  'uav-collect': UavCollectModuleContent,
+  'uav-settings': UavSettingsModuleContent,
 }
 
 const MOCK_DRAWER_TOOL_REGISTRY: Record<string, MockDrawerToolContentComponent> = {

@@ -36,7 +36,8 @@ describe('mock-workspace-content registry catalog', () => {
     expect(isRegisteredMockModuleId('flight-ledger')).toBe(true)
     expect(isRegisteredMockModuleId('flight-ai-alerts')).toBe(true)
     expect(isRegisteredMockModuleId('video-monitor')).toBe(true)
-    expect(isRegisteredMockModuleId('uav-list')).toBe(false)
+    expect(isRegisteredMockModuleId('uav-list')).toBe(true)
+    expect(isRegisteredMockModuleId('uav-collect')).toBe(true)
   })
 
   it('lists registered mock drawer tool ids', () => {

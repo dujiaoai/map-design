@@ -17,7 +17,7 @@ import {
   AdminRbacEditorSkeleton,
   AdminSidebarListSkeleton,
 } from '~/shared/ui/admin-table-skeleton'
-import { Button, cn, useConfirmDialog } from '@repo/ui'
+import { Button, cn, toast, useConfirmDialog } from '@repo/ui'
 
 import { filterPermissionsForRole } from '../lib/role-permission-rules'
 import { RolePermissionEditor } from './role-permission-editor'
@@ -37,7 +37,6 @@ export function RolesAdminPage() {
   const [selectedRole, setSelectedRole] = useState<AdminRoleSummary | null>(null)
   const [selectedCodes, setSelectedCodes] = useState<string[]>([])
   const [formError, setFormError] = useState<string | null>(null)
-  const [saveNotice, setSaveNotice] = useState<string | null>(null)
 
   const rolePermissionsQuery = useQuery({
     queryKey: adminQueryKeys.rolePermissions(selectedRole?.id ?? ''),
@@ -79,7 +78,9 @@ export function RolesAdminPage() {
         queryKey: adminQueryKeys.rolePermissions(selectedRole!.id),
       })
       setFormError(null)
-      setSaveNotice('权限已保存。持有该角色的用户需重新登录后生效。')
+      toast.success('权限已保存', {
+        description: '持有该角色的用户需重新登录后生效。',
+      })
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
@@ -97,7 +98,6 @@ export function RolesAdminPage() {
       return
     }
     setSelectedRole(role)
-    setSaveNotice(null)
   }
 
   function handleSave() {
@@ -112,12 +112,6 @@ export function RolesAdminPage() {
         title="角色与权限"
         description="每个角色可绑定多项权限码，保存时全量替换权限集合。"
       />
-      {saveNotice ? (
-        <p className="rounded-lg border border-primary/30 bg-primary/8 px-4 py-3 text-sm text-primary">
-          {saveNotice}
-        </p>
-      ) : null}
-
       <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
         <AdminPanel className="p-2">
           <p className="px-3 py-2 text-xs tracking-[0.14em] text-muted-foreground uppercase">
@@ -163,6 +157,12 @@ export function RolesAdminPage() {
               message="加载角色权限失败，请刷新重试"
               onRetry={() => void rolePermissionsQuery.refetch()}
               isRetrying={rolePermissionsQuery.isFetching}
+            />
+          ) : permissionsQuery.isError ? (
+            <AdminEmptyState
+              message="加载权限目录失败，请刷新重试"
+              onRetry={() => void permissionsQuery.refetch()}
+              isRetrying={permissionsQuery.isFetching}
             />
           ) : (
             <div className="flex flex-col">

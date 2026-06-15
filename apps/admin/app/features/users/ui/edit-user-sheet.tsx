@@ -16,6 +16,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
+  toast,
 } from '@repo/ui'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
@@ -90,6 +91,7 @@ export function EditUserSheet({
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
       onOpenChange(false)
+      toast.success('用户已更新')
     },
   })
 

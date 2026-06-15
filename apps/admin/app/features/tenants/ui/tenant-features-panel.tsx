@@ -1,4 +1,4 @@
-import { Button, Checkbox, cn } from '@repo/ui'
+import { Button, Checkbox, cn, toast } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SparklesIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -44,6 +44,7 @@ export function TenantFeaturesPanel({ tenantId }: { tenantId: string }) {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.tenantFeatures(tenantId) })
       setFormError(null)
+      toast.success('租户能力已保存')
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })

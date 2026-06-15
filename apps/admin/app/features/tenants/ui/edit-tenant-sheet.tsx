@@ -13,6 +13,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
+  toast,
 } from '@repo/ui'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
@@ -77,6 +78,7 @@ export function EditTenantSheet({
         await queryClient.invalidateQueries({ queryKey: adminQueryKeys.tenant(tenant.id) })
       }
       onOpenChange(false)
+      toast.success('租户已更新')
     },
   })
 

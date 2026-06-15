@@ -8,6 +8,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
+  toast,
 } from '@repo/ui'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
@@ -54,6 +55,7 @@ export function CreateTenantSheet({
       await queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] })
       reset()
       onOpenChange(false)
+      toast.success('租户已创建')
     },
   })
 

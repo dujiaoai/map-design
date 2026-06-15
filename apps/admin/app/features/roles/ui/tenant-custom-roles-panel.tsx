@@ -1,4 +1,4 @@
-import { Badge, Button, Input, useConfirmDialog } from '@repo/ui'
+import { Badge, Button, Input, toast, useConfirmDialog } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -42,7 +42,6 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
   const [selectedRole, setSelectedRole] = useState<TenantRoleSummary | null>(null)
   const [selectedCodes, setSelectedCodes] = useState<string[]>([])
   const [formError, setFormError] = useState<string | null>(null)
-  const [saveNotice, setSaveNotice] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
   const [createCode, setCreateCode] = useState('')
   const [createName, setCreateName] = useState('')
@@ -91,7 +90,9 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
         queryClient.invalidateQueries({ queryKey: adminQueryKeys.tenantCustomRoles(tenantId) }),
       ])
       setFormError(null)
-      setSaveNotice('权限已保存。持有该角色的成员需重新登录后生效。')
+      toast.success('权限已保存', {
+        description: '持有该角色的成员需重新登录后生效。',
+      })
     },
     onError: (error) => setFormError(formatAdminApiError(error)),
   })
@@ -186,12 +187,6 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
         </AdminPanel>
       ) : null}
 
-      {saveNotice ? (
-        <p className="rounded-lg border border-primary/30 bg-primary/8 px-4 py-3 text-sm text-primary">
-          {saveNotice}
-        </p>
-      ) : null}
-
       <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
         <AdminPanel className="p-2">
           {rolesQuery.isLoading ? (
@@ -217,7 +212,6 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
                     }`}
                     onClick={() => {
                       setSelectedRole(role)
-                      setSaveNotice(null)
                     }}
                   >
                     <span className="block font-medium">{role.name}</span>
@@ -239,6 +233,12 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
               message="加载角色权限失败，请刷新重试"
               onRetry={() => void rolePermissionsQuery.refetch()}
               isRetrying={rolePermissionsQuery.isFetching}
+            />
+          ) : permissionsQuery.isError ? (
+            <AdminEmptyState
+              message="加载可分配权限失败，请刷新重试"
+              onRetry={() => void permissionsQuery.refetch()}
+              isRetrying={permissionsQuery.isFetching}
             />
           ) : (
             <div className="flex flex-col">

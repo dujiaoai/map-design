@@ -40,3 +40,5 @@ saas:
     refresh-ttl: P7D
     refresh-grace-period: PT30S
     perm-epoch: 1
+  billing:
+    internal-token: test-billing-internal-token

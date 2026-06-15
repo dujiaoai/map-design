@@ -1,7 +1,9 @@
 package com.yunyan.saasapi.config;
 
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
+import com.yunyan.saasapi.security.BillingInternalAuthFilter;
 import com.yunyan.saasapi.security.JwtAuthFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,8 +23,17 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class SecurityConfig {
 
   @Bean
+  BillingInternalAuthFilter billingInternalAuthFilter(
+      BillingApiProperties billingApiProperties, ObjectMapper objectMapper) {
+    return new BillingInternalAuthFilter(billingApiProperties, objectMapper);
+  }
+
+  @Bean
   SecurityFilterChain securityFilterChain(
-      HttpSecurity http, JwtAuthFilter jwtAuthFilter, CorsConfigurationSource corsConfigurationSource)
+      HttpSecurity http,
+      JwtAuthFilter jwtAuthFilter,
+      BillingInternalAuthFilter billingInternalAuthFilter,
+      CorsConfigurationSource corsConfigurationSource)
       throws Exception {
     return http
         .cors(cors -> cors.configurationSource(corsConfigurationSource))
@@ -32,6 +43,7 @@ public class SecurityConfig {
             .requestMatchers("/actuator/health", "/actuator/info").permitAll()
             .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
             .requestMatchers(HttpMethod.GET, "/v1/ping").permitAll()
+            .requestMatchers("/internal/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/v1/auth/invite-links/preview").permitAll()
             .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/register", "/v1/auth/register-org", "/v1/auth/register-personal", "/v1/auth/register/confirm", "/v1/auth/register/resend", "/v1/auth/refresh", "/v1/auth/accept-invite", "/v1/auth/join-via-invite-link", "/v1/auth/password-reset/request", "/v1/auth/password-reset/confirm")
                 .permitAll()
@@ -44,6 +56,7 @@ public class SecurityConfig {
             .accessDeniedHandler((req, res, e) -> res.sendError(403)))
         .httpBasic(basic -> basic.disable())
         .formLogin(form -> form.disable())
+        .addFilterBefore(billingInternalAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .build();
   }

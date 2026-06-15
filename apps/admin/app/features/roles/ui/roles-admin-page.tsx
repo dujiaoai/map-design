@@ -13,6 +13,10 @@ import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminFormError } from '~/shared/ui/admin-field'
+import {
+  AdminRbacEditorSkeleton,
+  AdminSidebarListSkeleton,
+} from '~/shared/ui/admin-table-skeleton'
 import { Button, cn, useConfirmDialog } from '@repo/ui'
 
 import { filterPermissionsForRole } from '../lib/role-permission-rules'
@@ -120,7 +124,7 @@ export function RolesAdminPage() {
             角色
           </p>
           {rolesQuery.isLoading ? (
-            <AdminEmptyState message="加载中…" />
+            <AdminSidebarListSkeleton />
           ) : (
             <ul className="space-y-1">
               {(rolesQuery.data?.roles ?? []).map((role) => (
@@ -147,7 +151,7 @@ export function RolesAdminPage() {
           {!selectedRole ? (
             <AdminEmptyState message="请选择角色" />
           ) : rolePermissionsQuery.isLoading ? (
-            <AdminEmptyState message="加载权限…" />
+            <AdminRbacEditorSkeleton />
           ) : (
             <div className="flex flex-col">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-4">

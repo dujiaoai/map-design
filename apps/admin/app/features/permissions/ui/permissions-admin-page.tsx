@@ -19,6 +19,10 @@ import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
+import {
+  AdminRbacEditorSkeleton,
+  AdminSidebarListSkeleton,
+} from '~/shared/ui/admin-table-skeleton'
 import { PermissionActionTreeView } from '~/shared/ui/permission-action-tree-view'
 
 import { PERMISSION_SCOPE_LABELS } from '../../roles/lib/role-permission-rules'
@@ -273,7 +277,9 @@ export function PermissionsAdminPage() {
             模块
           </p>
           {modulesQuery.isLoading ? (
-            <AdminEmptyState message="加载中…" />
+            <AdminSidebarListSkeleton />
+          ) : modulesQuery.isError ? (
+            <AdminEmptyState message="加载失败，请刷新重试" />
           ) : (
             <ul className="space-y-1">
               {(modulesQuery.data?.modules ?? []).map((module) => (

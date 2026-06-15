@@ -71,3 +71,31 @@ export function AdminDetailSkeleton() {
     </div>
   )
 }
+
+export function AdminSidebarListSkeleton({ rows = 5 }: { rows?: number }) {
+  return (
+    <ul className="space-y-1 px-2 pb-2">
+      {Array.from({ length: rows }).map((_, index) => (
+        <li key={index} className="rounded-lg px-3 py-2.5">
+          <Skeleton className="h-4" style={{ width: `${48 + (index % 3) * 12}%` }} />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+export function AdminRbacEditorSkeleton({ rows = 8 }: { rows?: number }) {
+  return (
+    <div className="flex flex-col">
+      <div className="border-b border-border/60 px-5 py-4">
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="mt-2 h-4 w-48" />
+      </div>
+      <div className="space-y-3 p-5">
+        {Array.from({ length: rows }).map((_, index) => (
+          <Skeleton key={index} className="h-4" style={{ width: `${60 + (index % 4) * 8}%` }} />
+        ))}
+      </div>
+    </div>
+  )
+}

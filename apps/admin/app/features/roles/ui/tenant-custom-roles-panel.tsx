@@ -17,6 +17,10 @@ import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminFormError } from '~/shared/ui/admin-field'
+import {
+  AdminRbacEditorSkeleton,
+  AdminSidebarListSkeleton,
+} from '~/shared/ui/admin-table-skeleton'
 
 import { RolePermissionEditor } from './role-permission-editor'
 
@@ -191,7 +195,7 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
       <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
         <AdminPanel className="p-2">
           {rolesQuery.isLoading ? (
-            <AdminEmptyState message="加载中…" />
+            <AdminSidebarListSkeleton />
           ) : !rolesQuery.data?.roles.length ? (
             <AdminEmptyState message="暂无自定义角色" />
           ) : (
@@ -223,7 +227,7 @@ export function TenantCustomRolesPanel({ tenantId }: { tenantId: string }) {
           {!selectedRole ? (
             <AdminEmptyState message="请选择或创建自定义角色" />
           ) : rolePermissionsQuery.isLoading ? (
-            <AdminEmptyState message="加载权限…" />
+            <AdminRbacEditorSkeleton />
           ) : (
             <div className="flex flex-col">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-4">

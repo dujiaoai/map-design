@@ -3,6 +3,7 @@ package com.yunyan.billingapi.web.controller;
 import com.yunyan.billingapi.application.admin.AdminBillingAdjustService;
 import com.yunyan.billingapi.application.admin.AdminBillingCouponService;
 import com.yunyan.billingapi.application.admin.AdminBillingLedgerService;
+import com.yunyan.billingapi.application.admin.AdminBillingWireTransferService;
 import com.yunyan.billingapi.application.admin.AdminBillingPackageService;
 import com.yunyan.billingapi.application.admin.AdminBillingRechargeOrderService;
 import com.yunyan.billingapi.application.admin.AdminBillingReconciliationService;
@@ -11,6 +12,7 @@ import com.yunyan.billingapi.application.admin.AdminBillingStatsService;
 import com.yunyan.billingapi.application.admin.AdminBillingUsageService;
 import com.yunyan.billingapi.application.admin.AdminBillingWalletService;
 import com.yunyan.billingapi.application.invoice.BillingInvoiceService;
+import com.yunyan.billingapi.application.wiretransfer.BillingWireTransferService;
 import com.yunyan.billingapi.application.ratelimit.BillingRateLimitService;
 import com.yunyan.billingapi.domain.permission.PermissionCodes;
 import com.yunyan.billingapi.security.SaasPrincipal;
@@ -25,10 +27,13 @@ import com.yunyan.billingapi.web.dto.AdminRefundRequest;
 import com.yunyan.billingapi.web.dto.AdminRefundResponse;
 import com.yunyan.billingapi.web.dto.InvoiceListResponse;
 import com.yunyan.billingapi.web.dto.InvoiceRequestDto;
+import com.yunyan.billingapi.web.dto.WireTransferListResponse;
+import com.yunyan.billingapi.web.dto.WireTransferRequestDto;
 import com.yunyan.billingapi.web.dto.AdminCouponDto;
 import com.yunyan.billingapi.web.dto.AdminCouponListResponse;
 import com.yunyan.billingapi.web.dto.CreateAdminCouponRequest;
 import com.yunyan.billingapi.web.dto.PatchAdminCouponRequest;
+import com.yunyan.billingapi.web.dto.ApproveWireTransferResponse;
 import com.yunyan.billingapi.web.dto.AdminRechargeOrderListResponse;
 import com.yunyan.billingapi.web.dto.AdminRechargePackageListResponse;
 import com.yunyan.billingapi.web.dto.AdminUsageSummaryResponse;
@@ -73,6 +78,8 @@ public class AdminBillingController {
   private final AdminBillingRefundService adminBillingRefundService;
   private final AdminBillingReconciliationService adminBillingReconciliationService;
   private final BillingInvoiceService billingInvoiceService;
+  private final AdminBillingWireTransferService adminBillingWireTransferService;
+  private final BillingWireTransferService billingWireTransferService;
   private final BillingRateLimitService billingRateLimitService;
 
   public AdminBillingController(
@@ -87,6 +94,8 @@ public class AdminBillingController {
       AdminBillingRefundService adminBillingRefundService,
       AdminBillingReconciliationService adminBillingReconciliationService,
       BillingInvoiceService billingInvoiceService,
+      AdminBillingWireTransferService adminBillingWireTransferService,
+      BillingWireTransferService billingWireTransferService,
       BillingRateLimitService billingRateLimitService) {
     this.adminBillingAdjustService = adminBillingAdjustService;
     this.adminBillingLedgerService = adminBillingLedgerService;
@@ -99,6 +108,8 @@ public class AdminBillingController {
     this.adminBillingRefundService = adminBillingRefundService;
     this.adminBillingReconciliationService = adminBillingReconciliationService;
     this.billingInvoiceService = billingInvoiceService;
+    this.adminBillingWireTransferService = adminBillingWireTransferService;
+    this.billingWireTransferService = billingWireTransferService;
     this.billingRateLimitService = billingRateLimitService;
   }
 
@@ -295,5 +306,36 @@ public class AdminBillingController {
       @PathVariable UUID invoiceId,
       @Valid @RequestBody AdminRejectInvoiceRequest request) {
     return billingInvoiceService.reject(principal, invoiceId, request);
+  }
+
+  @GetMapping("/wire-transfers")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_READ + "')")
+  @Operation(summary = "平台查询对公转账申请列表")
+  public WireTransferListResponse listWireTransfers(
+      @RequestParam(required = false) UUID tenantId,
+      @RequestParam(required = false) UUID userId,
+      @RequestParam(required = false) String status,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return billingWireTransferService.listForAdmin(tenantId, userId, status, page, size);
+  }
+
+  @PostMapping("/wire-transfers/{requestId}/approve")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_ADJUST + "')")
+  @Operation(summary = "审核通过对公转账申请并入账积分")
+  public ApproveWireTransferResponse approveWireTransfer(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID requestId) {
+    billingRateLimitService.checkAdminAdjust(principal.userId());
+    return adminBillingWireTransferService.approve(principal, requestId);
+  }
+
+  @PostMapping("/wire-transfers/{requestId}/reject")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_ADJUST + "')")
+  @Operation(summary = "驳回对公转账申请")
+  public WireTransferRequestDto rejectWireTransfer(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID requestId,
+      @Valid @RequestBody AdminRejectInvoiceRequest request) {
+    return adminBillingWireTransferService.reject(principal, requestId, request);
   }
 }

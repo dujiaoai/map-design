@@ -67,6 +67,7 @@ pnpm --filter @repo/saas-admin dev
 - **P4+ 跨页导航**：`AdminTenantContextBanner`、计费/用户 URL 筛选条、审计→用户/计费/租户链接、租户列表计费快捷入口、RBAC 骨架加载、Shell 动态租户标题
 - **P4++ 主流 UX 对齐**：列表错误态「重试」、筛选 toggle 芯片统一、搜索框 `aria-label` + 清除、动效尊重 `prefers-reduced-motion`
 - **P4+++ 表单与计费**：`@repo/ui` Checkbox 统一勾选控件；计费 11 Tab + 系统页错误重试；概览 ping 失败可重试
+- **P4++++ 深度错态与筛选**：MetricCard / RBAC / 租户详情 / 邀请链接错误重试；列表「无匹配」可清除筛选
 
 ## 主流运维控制台 UX 对照
 
@@ -77,7 +78,8 @@ pnpm --filter @repo/saas-admin dev
 | **信息架构** | 侧栏分组 + 面包屑/页眉 eyebrow | ✅ `AdminPageHeader` + 分组导航 |
 | **列表页** | 搜索 + 筛选 + 分页 + 总数 | ✅ `AdminTableToolbar` + 服务端分页 |
 | **加载态** | Skeleton，非空白闪烁 | ✅ `AdminTableSkeleton` / `AdminSidebarListSkeleton` |
-| **空态/错态** | 明确文案 + 可恢复操作 | ✅ 列表/计费/系统/概览均支持重试 |
+| **空态/错态** | 明确文案 + 可恢复操作 | ✅ 列表/计费/RBAC/概览 MetricCard 均支持重试 |
+| **筛选零结果** | 「清除筛选」恢复默认 | ✅ 租户/用户/成员列表 |
 | **筛选控件** | 一致的 chip/toggle，非原生 checkbox | ✅ 审计筛选 toggle；表单用 `@repo/ui` Checkbox |
 | **危险操作** | Confirm / Sheet，非 `prompt` | ✅ 计费驳回 Sheet、`AlertDialog` |
 | **跨页上下文** | 租户/筛选 banner + 清除 | ✅ `AdminTenantContextBanner` 等 |

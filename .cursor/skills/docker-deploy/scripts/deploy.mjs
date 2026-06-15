@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * map-design Docker compose 封装：up / smoke / down / ps / logs / rebuild
- * 用法：node .cursor/skills/docker-deploy/scripts/deploy.mjs [command] [--gateway]
+ * 用法：node .cursor/skills/docker-deploy/scripts/deploy.mjs [command] [--gateway] [--billing-db]
  */
 import { spawnSync } from 'node:child_process'
 import fs from 'node:fs'
@@ -73,6 +73,9 @@ function ensureEnv() {
 
 function composeArgs(extra = []) {
   const args = ['compose']
+  if (process.argv.includes('--billing-db')) {
+    args.push('-f', 'docker-compose.yml', '-f', 'docker-compose.billing-db.yml')
+  }
   if (process.argv.includes('--gateway')) {
     args.push('--profile', 'gateway')
   }
@@ -112,11 +115,13 @@ switch (command) {
     const webPort = env.SAAS_WEB_PORT || '8084'
     const adminPort = env.SAAS_ADMIN_PORT || '8083'
     const apiPort = env.SAAS_API_PORT || '8082'
+    const billingPort = env.BILLING_API_PORT || '8085'
     const uavPort = env.CLOUD_UAV_PORT || '8081'
     const checks = [
       { name: 'saas-web SPA', url: `http://localhost:${webPort}/` },
       { name: 'SaaS /v1 proxy', url: `http://localhost:${webPort}/v1/ping`, method: 'GET' },
       { name: 'saas-api health', url: `http://localhost:${apiPort}/actuator/health` },
+      { name: 'billing-api health', url: `http://localhost:${billingPort}/actuator/health` },
       { name: 'saas-admin SPA', url: `http://localhost:${adminPort}/` },
       {
         name: 'saas-admin /v1/admin/ping',
@@ -138,6 +143,6 @@ switch (command) {
   }
   default:
     console.error(`Unknown command: ${command}`)
-    console.error('Usage: deploy.mjs [up|smoke|down|ps|logs|rebuild] [--gateway]')
+    console.error('Usage: deploy.mjs [up|smoke|down|ps|logs|rebuild] [--gateway] [--billing-db]')
     process.exit(1)
 }

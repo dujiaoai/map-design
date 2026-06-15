@@ -40,7 +40,8 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs up
 | --- | --- |
 | `up` | 构建并启动（默认） |
 | `up --gateway` | 额外启动统一网关 :9080 |
-| `smoke` | 对已运行容器做 HTTP 冒烟 |
+| `up --billing-db` | billing-api 使用独立 PostgreSQL（`docker-compose.billing-db.yml`） |
+| `smoke` | 对已运行容器做 HTTP 冒烟（含 billing-api health） |
 | `down` | 停止并移除容器 |
 | `ps` | 查看状态 |
 | `logs` | 跟踪日志 |

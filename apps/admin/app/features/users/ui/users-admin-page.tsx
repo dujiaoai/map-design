@@ -7,6 +7,7 @@ import { fetchAdminTenants, fetchAdminUsers, type AdminUserSummary } from '~/sha
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
+import { sortAdminTableRows, useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
@@ -17,6 +18,7 @@ import {
   AdminTableHead,
   AdminTableHeaderCell,
   AdminTableRow,
+  AdminTableSortHeaderCell,
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
@@ -26,6 +28,8 @@ import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
 
 import { EditUserSheet } from './edit-user-sheet'
+
+type UserSortKey = 'email' | 'displayName' | 'tenantSlug' | 'lastLoginAt' | 'createdAt'
 
 export function UsersAdminPage() {
   const { can } = useAdminPermissions()
@@ -42,6 +46,7 @@ export function UsersAdminPage() {
     useAdminPagedListState(qFromUrl)
 
   useAdminListSearchShortcut(searchInputRef)
+  const { sort, toggleSort } = useAdminTableSort<UserSortKey>()
 
   useEffect(() => {
     setSearchInput(qFromUrl)
@@ -71,14 +76,19 @@ export function UsersAdminPage() {
   }, [tenantFilterId, tenantsQuery.data?.tenants])
 
   const userSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName', 'tenantSlug']
-  const filteredUsers = useMemo(
-    () =>
-      filterAdminTableRows(usersQuery.data?.users, {
-        search: '',
-        searchKeys: userSearchKeys,
-      }),
-    [usersQuery.data?.users],
-  )
+  const filteredUsers = useMemo(() => {
+    const filtered = filterAdminTableRows(usersQuery.data?.users, {
+      search: '',
+      searchKeys: userSearchKeys,
+    })
+    return sortAdminTableRows(filtered, sort, {
+      email: (user) => user.email.toLowerCase(),
+      displayName: (user) => (user.displayName ?? '').toLowerCase(),
+      tenantSlug: (user) => (user.tenantSlug ?? '').toLowerCase(),
+      lastLoginAt: (user) => user.lastLoginAt ?? '',
+      createdAt: (user) => user.createdAt,
+    })
+  }, [usersQuery.data?.users, sort])
 
   const total = usersQuery.data?.total ?? usersQuery.data?.users.length ?? 0
 
@@ -180,13 +190,38 @@ export function UsersAdminPage() {
             <AdminDataTable>
               <AdminTableHead>
                 <tr>
-                  <AdminTableHeaderCell>邮箱</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>显示名</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>租户</AdminTableHeaderCell>
+                  <AdminTableSortHeaderCell
+                    label="邮箱"
+                    active={sort?.key === 'email'}
+                    direction={sort?.key === 'email' ? sort.direction : undefined}
+                    onSort={() => toggleSort('email')}
+                  />
+                  <AdminTableSortHeaderCell
+                    label="显示名"
+                    active={sort?.key === 'displayName'}
+                    direction={sort?.key === 'displayName' ? sort.direction : undefined}
+                    onSort={() => toggleSort('displayName')}
+                  />
+                  <AdminTableSortHeaderCell
+                    label="租户"
+                    active={sort?.key === 'tenantSlug'}
+                    direction={sort?.key === 'tenantSlug' ? sort.direction : undefined}
+                    onSort={() => toggleSort('tenantSlug')}
+                  />
                   <AdminTableHeaderCell>角色</AdminTableHeaderCell>
                   <AdminTableHeaderCell>状态</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>最近登录</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>创建时间</AdminTableHeaderCell>
+                  <AdminTableSortHeaderCell
+                    label="最近登录"
+                    active={sort?.key === 'lastLoginAt'}
+                    direction={sort?.key === 'lastLoginAt' ? sort.direction : undefined}
+                    onSort={() => toggleSort('lastLoginAt')}
+                  />
+                  <AdminTableSortHeaderCell
+                    label="创建时间"
+                    active={sort?.key === 'createdAt'}
+                    direction={sort?.key === 'createdAt' ? sort.direction : undefined}
+                    onSort={() => toggleSort('createdAt')}
+                  />
                   {canWrite ? (
                     <AdminTableHeaderCell className="text-right">操作</AdminTableHeaderCell>
                   ) : null}

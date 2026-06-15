@@ -165,9 +165,12 @@ export function BillingInvoicesPanel({
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
 
   function applyFilters() {
-    const validation = validateOptionalUuidFilters({ tenantId, userId })
-    if (!validation.ok) {
-      setFilterError(validation.message)
+    const validation = validateOptionalUuidFilters({
+      '租户 ID': tenantId,
+      '用户 ID': userId,
+    })
+    if (validation) {
+      setFilterError(validation)
       return
     }
     setFilterError(null)
@@ -211,7 +214,13 @@ export function BillingInvoicesPanel({
             />
           </AdminField>
           <AdminField label="状态">
-            <Select value={status} onValueChange={setStatus}>
+            <Select
+              value={status}
+              onValueChange={(value) => {
+                if (value == null) return
+                setStatus(value)
+              }}
+            >
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
               </SelectTrigger>

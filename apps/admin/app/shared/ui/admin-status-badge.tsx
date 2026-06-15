@@ -12,6 +12,9 @@ const STATUS_LABELS: Record<string, string> = {
   refunded: '已退款',
   expired: '已过期',
   inactive: '已下架',
+  issued: '已开具',
+  rejected: '已驳回',
+  credited: '已入账',
 }
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -25,14 +28,24 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'destructive' | '
   refunded: 'secondary',
   expired: 'destructive',
   inactive: 'secondary',
+  issued: 'default',
+  rejected: 'destructive',
+  credited: 'default',
+  unverified: 'outline',
 }
 
-export function AdminStatusBadge({ status }: { status: string }) {
-  const label = STATUS_LABELS[status] ?? status
+export function AdminStatusBadge({
+  status,
+  label,
+}: {
+  status: string
+  label?: string
+}) {
+  const resolvedLabel = label ?? STATUS_LABELS[status] ?? status
   const variant = STATUS_VARIANT[status] ?? 'outline'
   return (
     <Badge variant={variant} className={cn('font-mono text-[11px] uppercase tracking-wide')}>
-      {label}
+      {resolvedLabel}
     </Badge>
   )
 }

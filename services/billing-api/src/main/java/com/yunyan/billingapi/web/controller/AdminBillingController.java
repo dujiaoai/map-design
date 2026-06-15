@@ -1,6 +1,7 @@
 package com.yunyan.billingapi.web.controller;
 
 import com.yunyan.billingapi.application.admin.AdminBillingAdjustService;
+import com.yunyan.billingapi.application.admin.AdminBillingCouponService;
 import com.yunyan.billingapi.application.admin.AdminBillingLedgerService;
 import com.yunyan.billingapi.application.admin.AdminBillingPackageService;
 import com.yunyan.billingapi.application.admin.AdminBillingRechargeOrderService;
@@ -24,6 +25,10 @@ import com.yunyan.billingapi.web.dto.AdminRefundRequest;
 import com.yunyan.billingapi.web.dto.AdminRefundResponse;
 import com.yunyan.billingapi.web.dto.InvoiceListResponse;
 import com.yunyan.billingapi.web.dto.InvoiceRequestDto;
+import com.yunyan.billingapi.web.dto.AdminCouponDto;
+import com.yunyan.billingapi.web.dto.AdminCouponListResponse;
+import com.yunyan.billingapi.web.dto.CreateAdminCouponRequest;
+import com.yunyan.billingapi.web.dto.PatchAdminCouponRequest;
 import com.yunyan.billingapi.web.dto.AdminRechargeOrderListResponse;
 import com.yunyan.billingapi.web.dto.AdminRechargePackageListResponse;
 import com.yunyan.billingapi.web.dto.AdminUsageSummaryResponse;
@@ -62,6 +67,7 @@ public class AdminBillingController {
   private final AdminBillingWalletService adminBillingWalletService;
   private final AdminBillingRechargeOrderService adminBillingRechargeOrderService;
   private final AdminBillingPackageService adminBillingPackageService;
+  private final AdminBillingCouponService adminBillingCouponService;
   private final AdminBillingStatsService adminBillingStatsService;
   private final AdminBillingUsageService adminBillingUsageService;
   private final AdminBillingRefundService adminBillingRefundService;
@@ -75,6 +81,7 @@ public class AdminBillingController {
       AdminBillingWalletService adminBillingWalletService,
       AdminBillingRechargeOrderService adminBillingRechargeOrderService,
       AdminBillingPackageService adminBillingPackageService,
+      AdminBillingCouponService adminBillingCouponService,
       AdminBillingStatsService adminBillingStatsService,
       AdminBillingUsageService adminBillingUsageService,
       AdminBillingRefundService adminBillingRefundService,
@@ -86,6 +93,7 @@ public class AdminBillingController {
     this.adminBillingWalletService = adminBillingWalletService;
     this.adminBillingRechargeOrderService = adminBillingRechargeOrderService;
     this.adminBillingPackageService = adminBillingPackageService;
+    this.adminBillingCouponService = adminBillingCouponService;
     this.adminBillingStatsService = adminBillingStatsService;
     this.adminBillingUsageService = adminBillingUsageService;
     this.adminBillingRefundService = adminBillingRefundService;
@@ -143,6 +151,37 @@ public class AdminBillingController {
       @PathVariable String code,
       @Valid @RequestBody PatchAdminPackageRequest request) {
     return adminBillingPackageService.patchPackage(principal, code, request);
+  }
+
+  @GetMapping("/coupons")
+  @PreAuthorize(
+      "hasAnyAuthority('"
+          + PermissionCodes.ADMIN_BILLING_READ
+          + "','"
+          + PermissionCodes.ADMIN_BILLING_PACKAGES_WRITE
+          + "')")
+  @Operation(summary = "平台查询优惠券列表")
+  public AdminCouponListResponse listCoupons() {
+    return adminBillingCouponService.listCoupons();
+  }
+
+  @PostMapping("/coupons")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_PACKAGES_WRITE + "')")
+  @Operation(summary = "创建优惠券")
+  public AdminCouponDto createCoupon(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @Valid @RequestBody CreateAdminCouponRequest request) {
+    return adminBillingCouponService.createCoupon(principal, request);
+  }
+
+  @PatchMapping("/coupons/{code}")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_PACKAGES_WRITE + "')")
+  @Operation(summary = "更新优惠券")
+  public AdminCouponDto patchCoupon(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable String code,
+      @Valid @RequestBody PatchAdminCouponRequest request) {
+    return adminBillingCouponService.patchCoupon(principal, code, request);
   }
 
   @GetMapping("/wallets")

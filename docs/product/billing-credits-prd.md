@@ -408,7 +408,8 @@ flowchart LR
   - **充值抵扣券**（`kind=discount`）：`POST /v1/billing/recharge-orders` 可选 `couponCode` 减免应付金额；支付成功后记录兑换
   - saas-web `/billing` 兑换面板 + 充值抵扣券输入；Admin「优惠券」Tab 支持 gift/discount 类型
   - Admin「充值订单」列表展示 `listPriceCents` / `couponDiscountCents` / `couponCode`（有抵扣时）
-  - **不含**叠加使用规则引擎（后续迭代）
+  - **叠加规则骨架**（`BillingCouponStackingPolicy`）：`billing.coupon.stacking-mode`（默认 `single`）、`max-coupons-per-recharge`、`min-payable-cents-after-discount`、`block-concurrent-pending-recharge-coupons`；充值下单前校验
+  - **不含**多券组合算法、跨订单券池（后续迭代）
 - 充值策略；`members_can_recharge`（默认 **true**；**false** 时成员仅能通过 **Platform Admin 调账** 或 **TENANT_ADMIN 划拨** 获得积分）✅
 - `POST /v1/billing/transfer`（TENANT_ADMIN → 成员）✅；`packages/billing-client` ✅
 

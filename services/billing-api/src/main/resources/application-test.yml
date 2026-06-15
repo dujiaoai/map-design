@@ -13,6 +13,8 @@ spring:
       enabled: false
 
 billing:
+  tenant-rls:
+    enabled: false
   jwt:
     issuer: yunyan-saas-test
     secret: test-jwt-secret-with-at-least-32-bytes!!

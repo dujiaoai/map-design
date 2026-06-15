@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yunyan.billingapi.security.AccessTokenDenylist;
 import com.yunyan.billingapi.security.InternalAuthFilter;
 import com.yunyan.billingapi.security.JwtAuthFilter;
+import com.yunyan.billingapi.security.TenantRlsScopeFilter;
 import com.yunyan.billingapi.security.JwtService;
 import com.yunyan.billingapi.security.SecurityProblemWriter;
 import org.springframework.context.annotation.Bean;
@@ -34,10 +35,16 @@ public class SecurityConfig {
   }
 
   @Bean
+  TenantRlsScopeFilter tenantRlsScopeFilter() {
+    return new TenantRlsScopeFilter();
+  }
+
+  @Bean
   SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       JwtAuthFilter jwtAuthFilter,
       InternalAuthFilter internalAuthFilter,
+      TenantRlsScopeFilter tenantRlsScopeFilter,
       ObjectMapper objectMapper)
       throws Exception {
     return http
@@ -64,6 +71,7 @@ public class SecurityConfig {
         .formLogin(form -> form.disable())
         .addFilterBefore(internalAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterAfter(tenantRlsScopeFilter, JwtAuthFilter.class)
         .build();
   }
 }

@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.application.admin;
 
+import com.yunyan.billingapi.security.TenantRlsBypass;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,6 @@ public class RefundingRecoveryJob {
 
   @Scheduled(fixedDelayString = "${billing.refund.recovery-scan-ms:300000}")
   public void recoverStuckRefundingOrders() {
-    refundingRecoveryService.recoverStuckRefundingOrders();
+    TenantRlsBypass.run(() -> refundingRecoveryService.recoverStuckRefundingOrders());
   }
 }

@@ -1,6 +1,7 @@
 package com.yunyan.billingapi.application.hold;
 
 import com.yunyan.billingapi.config.BillingAppProperties;
+import com.yunyan.billingapi.security.TenantRlsBypass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,9 +22,12 @@ public class HoldExpiryJob {
 
   @Scheduled(fixedDelayString = "${billing.hold.expire-scan-ms:300000}")
   public void cancelExpiredHolds() {
-    var cancelled = holdService.cancelExpiredHolds(50);
-    if (cancelled > 0) {
-      log.info("Auto-cancelled {} expired billing holds", cancelled);
-    }
+    TenantRlsBypass.run(
+        () -> {
+          var cancelled = holdService.cancelExpiredHolds(50);
+          if (cancelled > 0) {
+            log.info("Auto-cancelled {} expired billing holds", cancelled);
+          }
+        });
   }
 }

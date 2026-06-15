@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.application.recharge;
 
+import com.yunyan.billingapi.security.TenantRlsBypass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,9 +19,12 @@ public class RechargeOrderExpiryJob {
 
   @Scheduled(fixedDelayString = "${billing.recharge.expire-scan-ms:300000}")
   public void expirePendingOrders() {
-    var expired = rechargeOrderService.expirePendingOrders(50);
-    if (expired > 0) {
-      log.info("Auto-expired {} pending billing recharge orders", expired);
-    }
+    TenantRlsBypass.run(
+        () -> {
+          var expired = rechargeOrderService.expirePendingOrders(50);
+          if (expired > 0) {
+            log.info("Auto-expired {} pending billing recharge orders", expired);
+          }
+        });
   }
 }

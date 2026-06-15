@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.application.tenant;
 
+import com.yunyan.billingapi.security.TenantRlsBypass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -20,13 +21,16 @@ public class MembershipCdcSyncJob {
 
   @Scheduled(fixedDelayString = "${billing.membership-sync.scan-ms:300000}")
   public void pullMembershipEvents() {
-    try {
-      var applied = membershipMirrorCdcService.syncPendingEvents(100);
-      if (applied > 0) {
-        log.info("Applied {} membership CDC events from saas-api", applied);
-      }
-    } catch (RuntimeException ex) {
-      log.warn("Membership CDC sync failed: {}", ex.getMessage());
-    }
+    TenantRlsBypass.run(
+        () -> {
+          try {
+            var applied = membershipMirrorCdcService.syncPendingEvents(100);
+            if (applied > 0) {
+              log.info("Applied {} membership CDC events from saas-api", applied);
+            }
+          } catch (RuntimeException ex) {
+            log.warn("Membership CDC sync failed: {}", ex.getMessage());
+          }
+        });
   }
 }

@@ -33,16 +33,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    var bearer = resolveBearerToken(request);
-    if (bearer.isPresent()) {
-      try {
-        authenticate(request, bearer.get());
-      } catch (PermEpochStaleException ex) {
-        PermEpochProblemWriter.write(response, objectMapper);
-        return;
+    try {
+      var bearer = resolveBearerToken(request);
+      if (bearer.isPresent()) {
+        try {
+          authenticate(request, bearer.get());
+        } catch (PermEpochStaleException ex) {
+          PermEpochProblemWriter.write(response, objectMapper);
+          return;
+        }
       }
+      filterChain.doFilter(request, response);
+    } finally {
+      TenantContext.clear();
     }
-    filterChain.doFilter(request, response);
   }
 
   private void authenticate(HttpServletRequest request, String token) {
@@ -54,6 +58,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       if (accessTokenDenylist.isUserDenied(parsed.userId())) {
         return;
       }
+      TenantContext.set(parsed.tenantId().toString());
 
       var permissionCodes =
           parsed.permissionCodes() != null ? parsed.permissionCodes() : List.<String>of();

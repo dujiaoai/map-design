@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.application.tenant;
 
+import com.yunyan.billingapi.security.TenantRlsBypass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -21,16 +22,19 @@ public class MembershipMirrorSyncJob {
 
   @Scheduled(fixedDelayString = "${billing.membership-sync.scan-ms:300000}")
   public void syncMembershipMirror() {
-    try {
-      var result = membershipMirrorSyncService.syncFromSaas();
-      if (result.userCount() > 0 || result.featureCount() > 0) {
-        log.info(
-            "Synced membership mirror from saas DB: {} users, {} tenant features",
-            result.userCount(),
-            result.featureCount());
-      }
-    } catch (RuntimeException ex) {
-      log.warn("Membership mirror sync failed: {}", ex.getMessage());
-    }
+    TenantRlsBypass.run(
+        () -> {
+          try {
+            var result = membershipMirrorSyncService.syncFromSaas();
+            if (result.userCount() > 0 || result.featureCount() > 0) {
+              log.info(
+                  "Synced membership mirror from saas DB: {} users, {} tenant features",
+                  result.userCount(),
+                  result.featureCount());
+            }
+          } catch (RuntimeException ex) {
+            log.warn("Membership mirror sync failed: {}", ex.getMessage());
+          }
+        });
   }
 }

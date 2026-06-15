@@ -76,13 +76,23 @@ export function AdminTableSortHeaderCell({
   className?: string
 }) {
   return (
-    <th className={cn('px-4 py-3 font-medium', className)}>
+    <th
+      className={cn('px-4 py-3 font-medium', className)}
+      aria-sort={
+        active && direction === 'asc'
+          ? 'ascending'
+          : active && direction === 'desc'
+            ? 'descending'
+            : 'none'
+      }
+    >
       <Button
         type="button"
         variant="ghost"
         size="sm"
         className="-ml-2 h-7 gap-1 px-2 text-xs tracking-[0.12em] text-muted-foreground uppercase hover:text-foreground"
         onClick={onSort}
+        aria-label={`按${label}排序`}
       >
         {label}
         {active && direction === 'asc' ? (

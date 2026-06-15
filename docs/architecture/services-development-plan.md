@@ -302,7 +302,7 @@ flowchart TD
 | 机库 | `/v1/uav/*` | uav-workspace |
 | 其它专题 | 按 PRD | mock-nav 已有入口 |
 
-### Sprint F · 平台计费（F-1～F-6 骨架已落地 · 2026-06-15）
+### Sprint F · 平台计费（F-1～F-6 骨架 + sec 加固已落地 · 2026-06-14）
 
 **PRD：** [billing-credits-prd.md](../product/billing-credits-prd.md)  
 **架构：** [billing-service.md](./billing-service.md)
@@ -318,7 +318,8 @@ flowchart TD
 | F-5 | packages/billing-client | TS SDK + saas-web 接入 | ✅ |
 | F-4 | billing-api + admin | 退款/日对账/站内通知/发票申请 | ✅ 骨架 |
 | F-5 | billing-api + web/admin | 优惠券兑换 + 用户间划拨 + billing-client | ✅ 骨架 |
-| F-6 | billing-api + admin/web | 对公转账预付申请与审核入账 | ✅ 骨架；独立 DB 可选 compose ✅ |
+| F-6 | billing-api + admin/web | 对公转账预付申请与审核入账；membership copy/api/cdc + push | ✅ 骨架；独立 DB 可选 compose ✅ |
+| sec | billing-api + saas-api + admin | Webhook/Caller/RFC7807/Job/CDC push·HMAC/Admin 分页/冒烟 26 步 | ✅；落地索引见 [billing-service.md](./billing-service.md) §Sprint F 安全与稳定性改进 |
 
 **Maven 目标：**
 
@@ -334,6 +335,8 @@ services/
 **验收（F-3）：** 402 弹窗；TENANT_ADMIN `team/usage`；hold TTL 自动 cancel。
 
 **验收（F 冒烟）：** `pnpm smoke:billing-api` 通过（26 步：充值、OAuth config 探活、发票、优惠券、对公、membership 内网 API 探活）；见 [billing-api-smoke.md](../runbooks/billing-api-smoke.md)。Live 凭证联调见 [billing-live-payment-sop.md](../runbooks/billing-live-payment-sop.md)。
+
+**验收（sec）：** P0～P3 改进清单全部 ✅（suspended 租户计费解耦单测、PostgreSQL RLS 未纳入）；见 [billing-credits-prd.md](../product/billing-credits-prd.md) `f-sec-hardening`。
 
 ---
 

@@ -64,7 +64,7 @@ pnpm --filter @repo/saas-web dev
 | `/login` | SaaS 登录（记住凭据供 TeamSwitcher 切租户） |
 | `/` | 运营概览（`GET /v1/admin/stats` + `GET /v1/admin/ping`） |
 | `/tenants` | 租户列表、创建、编辑；服务端 `q` / `page` / `size` |
-| `/tenants/:tenantId` | 租户详情（信息 / 成员 / 能力 Tab） |
+| `/tenants/:tenantId` | 租户详情（`?tab=` 信息 / 成员 / 自定义角色 / 能力；快捷跳转用户与计费） |
 | `/users` | 跨租户用户列表、邀请、编辑；可按 `?tenantId=` 筛选 |
 | `/members` | 成员管理；`?tenantId=`（平台可跨租户，租户管理员仅本租户） |
 | `/roles` | 角色与权限配置（未保存切换确认） |

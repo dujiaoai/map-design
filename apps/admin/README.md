@@ -44,7 +44,7 @@ pnpm --filter @repo/saas-admin dev
 | `/login` | SaaS 登录 | 公开 |
 | `/` | 运营概览（`GET /v1/admin/stats` + ping） | `admin:tenants:read` 等 |
 | `/tenants` | 租户列表、创建、编辑；服务端分页/搜索 | `admin:tenants:read` |
-| `/tenants/:tenantId` | 租户详情（信息 / 成员 / 能力 Tab） | `admin:tenants:read` |
+| `/tenants/:tenantId` | 租户详情（`?tab=` 信息 / 成员 / 自定义角色 / 能力；快捷跳转用户与计费） | `admin:tenants:read` |
 | `/users` | 用户列表、邀请、编辑；`?tenantId=` 筛选 | `admin:users:read` |
 | `/members` | 成员管理；`?tenantId=`（平台可跨租户） | `admin:members:read` 或平台角色 |
 | `/tenant-roles` | 租户自定义角色与权限配置 | `admin:members:read` 或平台角色 |

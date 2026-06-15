@@ -116,9 +116,16 @@ class BillingInvoiceControllerTest {
     mockMvc
         .perform(
             post("/v1/admin/billing/invoices/" + invoiceId + "/issue")
-                .header("Authorization", "Bearer " + adminAdjustToken))
+                .header("Authorization", "Bearer " + adminAdjustToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("pdfUrl", "https://cdn.example.com/invoices/" + invoiceId + ".pdf"))))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.status").value("issued"));
+        .andExpect(jsonPath("$.status").value("issued"))
+        .andExpect(
+            jsonPath("$.pdfUrl")
+                .value("https://cdn.example.com/invoices/" + invoiceId + ".pdf"));
 
     var orderNo2 = createAndPayOrder(userToken);
 

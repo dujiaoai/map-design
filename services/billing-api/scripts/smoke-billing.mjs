@@ -262,11 +262,20 @@ async function main() {
   }
   passed.push('admin-invoice-list')
 
+  const issuePdfUrl = `https://smoke.example/invoices/${pendingInvoice.id}.pdf`
   const invoiceIssue = await api(
     `${adminBillingBase}/invoices/${encodeURIComponent(pendingInvoice.id)}/issue`,
-    { method: 'POST', headers: auth },
+    {
+      method: 'POST',
+      headers: { ...auth, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pdfUrl: issuePdfUrl }),
+    },
   )
-  if (!invoiceIssue.ok || invoiceIssue.body?.status !== 'issued') {
+  if (
+    !invoiceIssue.ok ||
+    invoiceIssue.body?.status !== 'issued' ||
+    invoiceIssue.body?.pdfUrl !== issuePdfUrl
+  ) {
     fail('invoice-issue', `HTTP ${invoiceIssue.status} ${JSON.stringify(invoiceIssue.body)}`)
   }
   passed.push('invoice-issue')

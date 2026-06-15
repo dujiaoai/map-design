@@ -21,6 +21,7 @@ public class BillingInvoiceRequest {
   private Long amountCents;
   private String currency;
   private String adminRemark;
+  private String pdfUrl;
   private String dedupeKey;
   private Instant createdAt;
   private Instant updatedAt;

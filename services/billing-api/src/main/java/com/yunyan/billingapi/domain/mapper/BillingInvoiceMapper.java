@@ -26,7 +26,7 @@ public interface BillingInvoiceMapper {
   @Select(
       """
       SELECT id, tenant_id, user_id, order_no, invoice_type, title, tax_no, email, status,
-             amount_cents, currency, admin_remark, dedupe_key, created_at, updated_at
+             amount_cents, currency, admin_remark, pdf_url, dedupe_key, created_at, updated_at
       FROM billing_invoice_request
       WHERE dedupe_key = #{dedupeKey}
       """)
@@ -35,7 +35,7 @@ public interface BillingInvoiceMapper {
   @Select(
       """
       SELECT id, tenant_id, user_id, order_no, invoice_type, title, tax_no, email, status,
-             amount_cents, currency, admin_remark, dedupe_key, created_at, updated_at
+             amount_cents, currency, admin_remark, pdf_url, dedupe_key, created_at, updated_at
       FROM billing_invoice_request
       WHERE id = #{id}
       """)
@@ -45,7 +45,7 @@ public interface BillingInvoiceMapper {
       """
       <script>
       SELECT id, tenant_id, user_id, order_no, invoice_type, title, tax_no, email, status,
-             amount_cents, currency, admin_remark, dedupe_key, created_at, updated_at
+             amount_cents, currency, admin_remark, pdf_url, dedupe_key, created_at, updated_at
       FROM billing_invoice_request
       <where>
         <if test="tenantId != null">AND tenant_id = #{tenantId}</if>
@@ -89,5 +89,16 @@ public interface BillingInvoiceMapper {
       @Param("id") UUID id,
       @Param("status") String status,
       @Param("adminRemark") String adminRemark,
+      @Param("updatedAt") java.time.Instant updatedAt);
+
+  @Update(
+      """
+      UPDATE billing_invoice_request
+      SET status = 'issued', pdf_url = #{pdfUrl}, updated_at = #{updatedAt}
+      WHERE id = #{id} AND status = 'pending'
+      """)
+  int issueWithPdf(
+      @Param("id") UUID id,
+      @Param("pdfUrl") String pdfUrl,
       @Param("updatedAt") java.time.Instant updatedAt);
 }

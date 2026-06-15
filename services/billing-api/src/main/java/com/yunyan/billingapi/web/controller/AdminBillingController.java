@@ -21,6 +21,7 @@ import com.yunyan.billingapi.web.dto.AdminAdjustRequest;
 import com.yunyan.billingapi.web.dto.AdminLedgerListResponse;
 import com.yunyan.billingapi.web.dto.AdminAdjustResponse;
 import com.yunyan.billingapi.web.dto.AdminBillingStatsResponse;
+import com.yunyan.billingapi.web.dto.AdminIssueInvoiceRequest;
 import com.yunyan.billingapi.web.dto.AdminRejectInvoiceRequest;
 import com.yunyan.billingapi.web.dto.AdminReconciliationDailyResponse;
 import com.yunyan.billingapi.web.dto.AdminRefundRequest;
@@ -292,10 +293,12 @@ public class AdminBillingController {
 
   @PostMapping("/invoices/{invoiceId}/issue")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_ADJUST + "')")
-  @Operation(summary = "标记发票申请为已开具（骨架）")
+  @Operation(summary = "标记发票申请为已开具（骨架，可选 pdfUrl）")
   public InvoiceRequestDto issueInvoice(
-      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID invoiceId) {
-    return billingInvoiceService.issue(principal, invoiceId);
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID invoiceId,
+      @RequestBody(required = false) @Valid AdminIssueInvoiceRequest request) {
+    return billingInvoiceService.issue(principal, invoiceId, request);
   }
 
   @PostMapping("/invoices/{invoiceId}/reject")

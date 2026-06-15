@@ -5,6 +5,7 @@ import com.yunyan.billingapi.domain.mapper.BillingInvoiceMapper;
 import com.yunyan.billingapi.domain.mapper.BillingRechargeOrderMapper;
 import com.yunyan.billingapi.security.AuthException;
 import com.yunyan.billingapi.security.SaasPrincipal;
+import com.yunyan.billingapi.web.dto.AdminIssueInvoiceRequest;
 import com.yunyan.billingapi.web.dto.AdminRejectInvoiceRequest;
 import com.yunyan.billingapi.web.dto.CreateInvoiceRequest;
 import com.yunyan.billingapi.web.dto.InvoiceListResponse;
@@ -95,14 +96,23 @@ public class BillingInvoiceService {
   }
 
   @Transactional
-  public InvoiceRequestDto issue(SaasPrincipal principal, UUID invoiceId) {
-    return updatePendingStatus(invoiceId, STATUS_ISSUED, null);
+  public InvoiceRequestDto issue(
+      SaasPrincipal principal, UUID invoiceId, AdminIssueInvoiceRequest request) {
+    var pdfUrl = resolvePdfUrl(invoiceId, request != null ? request.pdfUrl() : null);
+    return issuePending(invoiceId, pdfUrl);
   }
 
   @Transactional
   public InvoiceRequestDto reject(
       SaasPrincipal principal, UUID invoiceId, AdminRejectInvoiceRequest request) {
     return updatePendingStatus(invoiceId, STATUS_REJECTED, request.reason().trim());
+  }
+
+  static String resolvePdfUrl(UUID invoiceId, String requested) {
+    if (StringUtils.hasText(requested)) {
+      return requested.trim();
+    }
+    return "invoices/" + invoiceId + ".pdf";
   }
 
   private InvoiceListResponse listRequests(
@@ -116,6 +126,24 @@ public class BillingInvoiceService {
             .toList();
     var total = invoiceMapper.countRequests(tenantId, userId, normalizedStatus);
     return new InvoiceListResponse(items, page, limit, total);
+  }
+
+  private InvoiceRequestDto issuePending(UUID invoiceId, String pdfUrl) {
+    var existing = invoiceMapper.findById(invoiceId);
+    if (existing == null) {
+      throw AuthException.notFound("Invoice request not found");
+    }
+    if (!STATUS_PENDING.equals(existing.getStatus())) {
+      throw AuthException.badRequest("Invoice request is not pending");
+    }
+
+    var updated = invoiceMapper.issueWithPdf(invoiceId, pdfUrl, Instant.now());
+    if (updated != 1) {
+      throw AuthException.conflict("Invoice request status changed concurrently");
+    }
+
+    var refreshed = invoiceMapper.findById(invoiceId);
+    return toDto(refreshed);
   }
 
   private InvoiceRequestDto updatePendingStatus(UUID invoiceId, String status, String adminRemark) {
@@ -151,6 +179,7 @@ public class BillingInvoiceService {
         request.getAmountCents(),
         request.getCurrency(),
         request.getAdminRemark(),
+        request.getPdfUrl(),
         request.getCreatedAt() != null ? request.getCreatedAt().toString() : null,
         request.getUpdatedAt() != null ? request.getUpdatedAt().toString() : null);
   }

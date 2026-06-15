@@ -13,5 +13,6 @@ public record InvoiceRequestDto(
     long amountCents,
     String currency,
     String adminRemark,
+    String pdfUrl,
     String createdAt,
     String updatedAt) {}

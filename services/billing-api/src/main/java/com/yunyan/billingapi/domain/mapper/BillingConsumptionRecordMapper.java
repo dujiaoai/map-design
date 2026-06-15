@@ -111,7 +111,7 @@ public interface BillingConsumptionRecordMapper {
       </if>
       GROUP BY tenant_id, user_id
       ORDER BY totalPoints DESC
-      LIMIT #{limit}
+      LIMIT #{limit} OFFSET #{offset}
       </script>
       """)
   List<com.yunyan.billingapi.domain.projection.PlatformUsageRow> aggregatePlatformUsage(
@@ -119,5 +119,53 @@ public interface BillingConsumptionRecordMapper {
       @Param("from") Instant from,
       @Param("to") Instant to,
       @Param("productCode") String productCode,
-      @Param("limit") int limit);
+      @Param("limit") int limit,
+      @Param("offset") int offset);
+
+  @Select(
+      """
+      <script>
+      SELECT COUNT(*) FROM (
+        SELECT tenant_id, user_id
+        FROM billing_consumption_record
+        WHERE status = 'confirmed'
+          AND created_at &gt;= #{from}
+          AND created_at &lt; #{to}
+        <if test="tenantId != null">
+          AND tenant_id = #{tenantId}
+        </if>
+        <if test="productCode != null and productCode != ''">
+          AND product_code = #{productCode}
+        </if>
+        GROUP BY tenant_id, user_id
+      ) grouped
+      </script>
+      """)
+  long countPlatformUsageGroups(
+      @Param("tenantId") UUID tenantId,
+      @Param("from") Instant from,
+      @Param("to") Instant to,
+      @Param("productCode") String productCode);
+
+  @Select(
+      """
+      <script>
+      SELECT COALESCE(SUM(points), 0)
+      FROM billing_consumption_record
+      WHERE status = 'confirmed'
+        AND created_at &gt;= #{from}
+        AND created_at &lt; #{to}
+      <if test="tenantId != null">
+        AND tenant_id = #{tenantId}
+      </if>
+      <if test="productCode != null and productCode != ''">
+        AND product_code = #{productCode}
+      </if>
+      </script>
+      """)
+  long sumPlatformUsagePoints(
+      @Param("tenantId") UUID tenantId,
+      @Param("from") Instant from,
+      @Param("to") Instant to,
+      @Param("productCode") String productCode);
 }

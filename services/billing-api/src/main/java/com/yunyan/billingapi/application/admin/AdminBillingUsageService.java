@@ -14,7 +14,7 @@ import org.springframework.util.StringUtils;
 public class AdminBillingUsageService {
 
   private static final int DEFAULT_RANGE_DAYS = 30;
-  private static final int MAX_ITEMS = 200;
+  private static final int MAX_PAGE_SIZE = 100;
 
   private final BillingConsumptionRecordMapper recordMapper;
 
@@ -23,7 +23,7 @@ public class AdminBillingUsageService {
   }
 
   public AdminUsageSummaryResponse getUsage(
-      UUID tenantId, Instant from, Instant to, String productCode) {
+      UUID tenantId, Instant from, Instant to, String productCode, int page, int size) {
     var effectiveTo = to != null ? to : Instant.now();
     var effectiveFrom =
         from != null ? from : effectiveTo.minus(DEFAULT_RANGE_DAYS, ChronoUnit.DAYS);
@@ -32,10 +32,20 @@ public class AdminBillingUsageService {
       throw AuthException.badRequest("from must be before to");
     }
 
+    var safePage = Math.max(page, 0);
+    var safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+    var offset = safePage * safeSize;
     var normalizedProductCode = StringUtils.hasText(productCode) ? productCode.trim() : null;
+
     var rows =
         recordMapper.aggregatePlatformUsage(
-            tenantId, effectiveFrom, effectiveTo, normalizedProductCode, MAX_ITEMS);
+            tenantId, effectiveFrom, effectiveTo, normalizedProductCode, safeSize, offset);
+    var totalGroups =
+        recordMapper.countPlatformUsageGroups(
+            tenantId, effectiveFrom, effectiveTo, normalizedProductCode);
+    var totalPoints =
+        recordMapper.sumPlatformUsagePoints(
+            tenantId, effectiveFrom, effectiveTo, normalizedProductCode);
 
     var items =
         rows.stream()
@@ -48,9 +58,14 @@ public class AdminBillingUsageService {
                         row.getEventCount() != null ? row.getEventCount() : 0L))
             .toList();
 
-    var totalPoints = items.stream().mapToLong(AdminUsageItemDto::totalPoints).sum();
-
     return new AdminUsageSummaryResponse(
-        effectiveFrom, effectiveTo, normalizedProductCode, items, totalPoints);
+        effectiveFrom,
+        effectiveTo,
+        normalizedProductCode,
+        items,
+        totalPoints,
+        safePage,
+        safeSize,
+        totalGroups);
   }
 }

@@ -8,4 +8,7 @@ public record AdminUsageSummaryResponse(
     Instant to,
     String productCode,
     List<AdminUsageItemDto> items,
-    long totalPoints) {}
+    long totalPoints,
+    int page,
+    int size,
+    long total) {}

@@ -130,8 +130,10 @@ public class AdminBillingController {
           Instant from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
           Instant to,
-      @RequestParam(required = false) String productCode) {
-    return adminBillingUsageService.getUsage(tenantId, from, to, productCode);
+      @RequestParam(required = false) String productCode,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return adminBillingUsageService.getUsage(tenantId, from, to, productCode, page, size);
   }
 
   @GetMapping("/packages")

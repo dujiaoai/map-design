@@ -30,6 +30,10 @@ import {
   rechargePayLaunchHint,
 } from '~/features/billing/lib/open-recharge-pay-url'
 import {
+  resolveWechatOpenIdForRecharge,
+  useWechatJsapiOAuth,
+} from '~/features/billing/model/use-wechat-jsapi-oauth'
+import {
   useCancelRechargeOrderMutation,
   useCreateRechargeOrderMutation,
   useMockPayRechargeOrderMutation,
@@ -61,6 +65,7 @@ export function RechargePackagesPanel({
   const [payScene, setPayScene] = useState<RechargePayScene>('native')
   const [paidMessage, setPaidMessage] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const { pendingResume, clearPendingResume, ensureOpenId, oauthReady } = useWechatJsapiOAuth()
 
   const paySceneOptions = useMemo(() => payScenesForChannel(channel), [channel])
 
@@ -111,6 +116,19 @@ export function RechargePackagesPanel({
     })
   }, [pendingOrder?.orderNo, pendingOrder?.payUrl, pendingOrder?.payScene])
 
+  useEffect(() => {
+    if (!oauthReady || !pendingResume || pendingOrder) {
+      return
+    }
+    void handleCreateOrder(pendingResume.packageCode, {
+      channel: pendingResume.channel,
+      payScene: pendingResume.payScene,
+      couponCode: pendingResume.couponCode,
+    }).finally(() => {
+      clearPendingResume()
+    })
+  }, [oauthReady, pendingResume, pendingOrder, clearPendingResume])
+
   function handleChannelChange(nextChannel: RechargeChannel) {
     setChannel(nextChannel)
     const nextDefault = defaultPaySceneForChannel(nextChannel)
@@ -119,15 +137,35 @@ export function RechargePackagesPanel({
     }
   }
 
-  async function handleCreateOrder(packageCode: string) {
+  async function handleCreateOrder(
+    packageCode: string,
+    overrides?: {
+      channel?: RechargeChannel
+      payScene?: RechargePayScene
+      couponCode?: string
+    },
+  ) {
     setActionError(null)
     setPaidMessage(null)
+    const effectiveChannel = overrides?.channel ?? channel
+    const effectivePayScene = overrides?.payScene ?? payScene
+    const effectiveCoupon = overrides?.couponCode ?? couponCode
     try {
+      const wechatOpenId = await resolveWechatOpenIdForRecharge(ensureOpenId, {
+        channel: effectiveChannel,
+        payScene: effectivePayScene,
+        packageCode,
+        couponCode: effectiveCoupon.trim() || undefined,
+      })
+      if (wechatOpenId === 'redirecting') {
+        return
+      }
       const order = await createOrder.mutateAsync({
         packageCode,
-        channel,
-        ...(couponCode.trim() ? { couponCode: couponCode.trim() } : {}),
-        ...(channel !== 'mock' ? { payScene } : {}),
+        channel: effectiveChannel,
+        ...(effectiveCoupon.trim() ? { couponCode: effectiveCoupon.trim() } : {}),
+        ...(effectiveChannel !== 'mock' ? { payScene: effectivePayScene } : {}),
+        ...(wechatOpenId ? { wechatOpenId } : {}),
       })
       setPendingOrder(order)
     } catch {

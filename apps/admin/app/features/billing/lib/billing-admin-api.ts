@@ -146,6 +146,28 @@ export const adminAdjustRecordListSchema = z.object({
 
 export type AdminAdjustRecordList = z.infer<typeof adminAdjustRecordListSchema>
 
+export const adminLedgerListSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      walletId: z.string(),
+      tenantId: z.string(),
+      userId: z.string(),
+      entryType: z.string(),
+      amount: z.number(),
+      balanceAfter: z.number(),
+      productCode: z.string(),
+      remark: z.string(),
+      createdAt: z.string().nullable().optional(),
+    }),
+  ),
+  page: z.number(),
+  size: z.number(),
+  total: z.number(),
+})
+
+export type AdminLedgerList = z.infer<typeof adminLedgerListSchema>
+
 function buildQuery(params: Record<string, string | number | undefined>) {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(params)) {
@@ -205,6 +227,20 @@ export function adminBillingAdjustRecordsQuery(params: {
   return buildQuery({
     tenantId: params.tenantId,
     userId: params.userId,
+    page: params.page ?? 0,
+    size: params.size ?? 20,
+  })
+}
+
+export function adminBillingLedgerQuery(params: {
+  userId?: string
+  entryType?: string
+  page?: number
+  size?: number
+}) {
+  return buildQuery({
+    userId: params.userId,
+    entryType: params.entryType,
     page: params.page ?? 0,
     size: params.size ?? 20,
   })

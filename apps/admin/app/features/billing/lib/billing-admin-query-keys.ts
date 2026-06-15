@@ -12,4 +12,9 @@ export const billingAdminQueryKeys = {
     [...billingAdminQueryKeys.all, 'usage', filters] as const,
   adjustRecords: (filters: { tenantId?: string; userId?: string }, page: number) =>
     [...billingAdminQueryKeys.all, 'adjust-records', filters, page] as const,
+  ledger: (
+    tenantId: string,
+    filters: { userId?: string; entryType?: string },
+    page: number,
+  ) => [...billingAdminQueryKeys.all, 'ledger', tenantId, filters, page] as const,
 }

@@ -14,6 +14,7 @@ import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-quer
 import { BillingAdjustPanel } from '~/features/billing/ui/billing-adjust-panel'
 import { CreateBillingPackageSheet } from '~/features/billing/ui/create-billing-package-sheet'
 import { EditBillingPackageSheet } from '~/features/billing/ui/edit-billing-package-sheet'
+import { BillingLedgerPanel } from '~/features/billing/ui/billing-ledger-panel'
 import { BillingPackagesPanel } from '~/features/billing/ui/billing-packages-panel'
 import { BillingRechargeOrdersPanel } from '~/features/billing/ui/billing-recharge-orders-panel'
 import { BillingStatsSummary } from '~/features/billing/ui/billing-stats-summary'
@@ -135,6 +136,7 @@ export function BillingAdminPage() {
               <>
                 <TabsTrigger value="overview">概览</TabsTrigger>
                 <TabsTrigger value="wallets">用户钱包</TabsTrigger>
+                <TabsTrigger value="ledger">积分流水</TabsTrigger>
                 <TabsTrigger value="usage">消费汇总</TabsTrigger>
               </>
             ) : null}
@@ -153,6 +155,9 @@ export function BillingAdminPage() {
                   filterSeed={filterSeed}
                   onNavigate={navigateBilling}
                 />
+              </TabsContent>
+              <TabsContent value="ledger" className="mt-4">
+                <BillingLedgerPanel filterSeed={filterSeed} />
               </TabsContent>
               <TabsContent value="usage" className="mt-4">
                 <BillingUsagePanel filterSeed={filterSeed} />

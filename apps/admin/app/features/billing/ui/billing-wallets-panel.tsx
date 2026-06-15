@@ -182,20 +182,36 @@ export function BillingWalletsPanel({
                       <AdminTableCell>{wallet.balance}</AdminTableCell>
                       {onNavigate ? (
                         <AdminTableCell>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              onNavigate({
-                                tab: 'orders',
-                                tenantId: wallet.tenantId,
-                                userId: wallet.userId,
-                              })
-                            }
-                          >
-                            充值订单
-                          </Button>
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                onNavigate({
+                                  tab: 'ledger',
+                                  tenantId: wallet.tenantId,
+                                  userId: wallet.userId,
+                                })
+                              }
+                            >
+                              积分流水
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                onNavigate({
+                                  tab: 'orders',
+                                  tenantId: wallet.tenantId,
+                                  userId: wallet.userId,
+                                })
+                              }
+                            >
+                              充值订单
+                            </Button>
+                          </div>
                         </AdminTableCell>
                       ) : null}
                     </AdminTableRow>

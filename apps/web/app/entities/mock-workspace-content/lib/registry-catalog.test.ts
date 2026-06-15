@@ -18,6 +18,8 @@ describe('mock-workspace-content registry catalog', () => {
       'pick-point',
       'locate-point',
       'swipe-compare',
+      'hd-image-compare',
+      'admin-divisions',
     ])
     for (const id of REGISTERED_MOCK_TOOL_IDS) {
       expect(isRegisteredMockToolId(id)).toBe(true)

@@ -6,6 +6,8 @@ export const REGISTERED_MOCK_TOOL_IDS = [
   'pick-point',
   'locate-point',
   'swipe-compare',
+  'hd-image-compare',
+  'admin-divisions',
 ] as const
 
 /** 已注册高保真 mock 的 moduleId */

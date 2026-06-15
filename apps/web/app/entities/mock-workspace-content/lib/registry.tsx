@@ -24,7 +24,9 @@ import { SpatialAnalysisModuleContent } from '../ui/modules/spatial-analysis-mod
 import { ThematicModuleContent } from '../ui/modules/thematic-module-content'
 import { ViewProjectModuleContent } from '../ui/modules/view-project-module-content'
 import { VideoMonitorModuleContent } from '../ui/modules/video-monitor-module-content'
+import { AdminDivisionsToolContent } from '../ui/tools/admin-divisions-tool-content'
 import { FallbackToolContent } from '../ui/tools/fallback-tool-content'
+import { HdImageCompareToolContent } from '../ui/tools/hd-image-compare-tool-content'
 import { LocatePointToolContent } from '../ui/tools/locate-point-tool-content'
 import { MeasureAreaToolContent } from '../ui/tools/measure-area-tool-content'
 import { MeasureDistanceToolContent } from '../ui/tools/measure-distance-tool-content'
@@ -45,6 +47,8 @@ const MOCK_TOOL_REGISTRY: Record<string, MockToolContentComponent> = {
   'pick-point': PickPointToolContent,
   'locate-point': LocatePointToolContent,
   'swipe-compare': SwipeCompareToolContent,
+  'hd-image-compare': HdImageCompareToolContent,
+  'admin-divisions': AdminDivisionsToolContent,
 }
 
 const MOCK_MODULE_REGISTRY: Record<string, MockModuleContentComponent> = {

@@ -31,7 +31,7 @@ flowchart LR
 
 ## 多租户
 
-默认：**共享 DB + Row-Level Security + `tenant_id`**（[ADR-0004](../adr/0004-tenant-isolation-strategy.md) Accepted）。前端 `@repo/auth` 已提供 `TenantProvider`；侧栏 `mock-nav-items` 经 **C-09 ✅** `filterNavMainItemsForTenant` 按 tenant features 过滤。详见 [multi-tenancy.md](./multi-tenancy.md)；RLS 原理见 [tenant-rls-b05.md](./supplements/tenant-rls-b05.md)。
+默认：**共享 DB + Row-Level Security + `tenant_id`**（[ADR-0004](../adr/0004-tenant-isolation-strategy.md) Accepted）。前端 `@repo/auth` 已提供 `TenantProvider`；侧栏 `mock-nav-items` 经 **C-09 ✅** `filterNavMainItemsForTenant` 按 tenant features 过滤。详见 [multi-tenancy.md](./multi-tenancy.md)；RLS 原理见 [tenant-rls-b05.md](./supplements/tenant-rls-b05.md)（saas-api）、[billing-tenant-rls.md](./supplements/billing-tenant-rls.md)（billing-api）。
 
 ## 认证与授权
 

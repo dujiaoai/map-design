@@ -114,13 +114,20 @@ MyBatis-Plus TenantLineHandler   // 对配置表白名单追加 WHERE tenant_id 
 | 租户列表 / 能力 | `TenantsController`、`TenantService` |
 | 跨租户成员查询 | `SysUserMapper.selectActiveByEmailAcrossTenants` |
 
-PostgreSQL RLS：`sys_user` 已启用（`db/migration-postgresql/V5__rls.sql` + `TenantRlsDataSource`）；其余业务表随 Sprint 扩展。  
-**可读性补充**：[tenant-rls-b05.md](../architecture/supplements/tenant-rls-b05.md)（B-05 作用、双层防护、Bypass 说明）。
+PostgreSQL RLS：
+
+| 服务 | 范围 | 迁移 | 补充说明 |
+| --- | --- | --- | --- |
+| **saas-api** | `sys_user` | `V5__rls.sql` | [tenant-rls-b05.md](../architecture/supplements/tenant-rls-b05.md) |
+| **billing-api** | `billing_*` + membership 镜像表 | `V12__billing_tenant_rls.sql` | [billing-tenant-rls.md](../architecture/supplements/billing-tenant-rls.md) |
+
+其余 saas 业务表随 Sprint 扩展；会话变量均为 `app.tenant_id` / `app.bypass_tenant_rls`（ADR 一致）。
 
 ## 参考
 
 - [multi-tenancy.md](../architecture/multi-tenancy.md)
-- [tenant-rls-b05.md](../architecture/supplements/tenant-rls-b05.md) — B-05 RLS 补充材料
+- [tenant-rls-b05.md](../architecture/supplements/tenant-rls-b05.md) — saas-api B-05 RLS
+- [billing-tenant-rls.md](../architecture/supplements/billing-tenant-rls.md) — billing-api RLS
 - [services-development-plan.md](../architecture/services-development-plan.md) — Sprint B
 - [auth-rbac.md](../architecture/auth-rbac.md)
 - `JwtService.CLAIM_TENANT_ID` — `services/saas-api`

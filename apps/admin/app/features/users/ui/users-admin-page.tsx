@@ -8,6 +8,7 @@ import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-a
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
+import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import {
   AdminDataTable,
   AdminTableBody,
@@ -75,7 +76,10 @@ export function UsersAdminPage() {
       <AdminPageHeader
         eyebrow="Users"
         title="用户"
-        description="跨租户用户列表；邀请新成员请前往对应租户的「成员」页生成邀请链接。"
+        description={appendAdminListTotal(
+          '跨租户用户列表；邀请新成员请前往对应租户的「成员」页生成邀请链接。',
+          { total, loaded: Boolean(usersQuery.data), unit: '个' },
+        )}
         actions={null}
       />
 

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { fetchAdminAuditLogs, type AdminAuditLogEntry } from '~/shared/api/admin-api'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
+import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import {
   AdminDataTable,
   AdminTableBody,
@@ -54,7 +55,10 @@ export function AuditLogsAdminPage() {
       <AdminPageHeader
         eyebrow="Operations"
         title="审计日志"
-        description="记录成员邀请、角色变更与平台计费操作（调账、SKU）；跨租户操作会标记 crossTenant。"
+        description={appendAdminListTotal(
+          '记录成员邀请、角色变更与平台计费操作（调账、SKU）；跨租户操作会标记 crossTenant。',
+          { total, loaded: Boolean(query.data), unit: '条' },
+        )}
       />
 
       <div className="flex flex-wrap items-center gap-3">

@@ -10,6 +10,7 @@ import {
 } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
+import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import {
   AdminDataTable,
   AdminTableBody,
@@ -56,13 +57,18 @@ export function MembersAdminPage({
     'status',
   )
 
+  const memberTotal = membersQuery.data?.members.length ?? 0
+
   const content = (
     <>
       {!embedded ? (
         <AdminPageHeader
           eyebrow="Members"
           title="租户成员"
-          description={`${resolvedTenantName} · 管理本租户成员与角色分配。`}
+          description={appendAdminListTotal(
+            `${resolvedTenantName} · 管理本租户成员与角色分配。`,
+            { total: memberTotal, loaded: Boolean(membersQuery.data), unit: '名' },
+          )}
           actions={
             canWrite ? (
               <Button onClick={() => setInviteOpen(true)}>邀请链接</Button>

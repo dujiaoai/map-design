@@ -8,6 +8,7 @@ import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-a
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
+import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import {
   AdminDataTable,
   AdminTableBody,
@@ -70,11 +71,10 @@ export function TenantsAdminPage() {
       <AdminPageHeader
         eyebrow="Tenants"
         title="租户"
-        description={
-          query.data
-            ? `管理平台全部租户；停用后该租户用户无法登录。共 ${total} 个。`
-            : '管理平台全部租户；停用后该租户用户无法登录。'
-        }
+        description={appendAdminListTotal(
+          '管理平台全部租户；停用后该租户用户无法登录。',
+          { total, loaded: Boolean(query.data), unit: '个' },
+        )}
         actions={
           canWrite ? (
             <Button onClick={() => setCreateOpen(true)}>新建租户</Button>

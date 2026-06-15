@@ -81,6 +81,9 @@ export const adminPackageListSchema = z.object({
       sortOrder: z.number(),
     }),
   ),
+  page: z.number(),
+  size: z.number(),
+  total: z.number(),
 })
 
 export type AdminBillingStats = z.infer<typeof adminBillingStatsSchema>
@@ -242,6 +245,9 @@ export const adminCouponListSchema = z.object({
       createdAt: z.string().nullable().optional(),
     }),
   ),
+  page: z.number(),
+  size: z.number(),
+  total: z.number(),
 })
 
 export const adminCouponSchema = adminCouponListSchema.shape.items.element
@@ -290,6 +296,34 @@ function buildQuery(params: Record<string, string | number | undefined>) {
   }
   const query = search.toString()
   return query ? `?${query}` : ''
+}
+
+export function adminBillingPackagesQuery(params: {
+  status?: string
+  code?: string
+  page?: number
+  size?: number
+}) {
+  return buildQuery({
+    status: params.status && params.status !== 'all' ? params.status : undefined,
+    code: params.code,
+    page: params.page ?? 0,
+    size: params.size ?? 20,
+  })
+}
+
+export function adminBillingCouponsQuery(params: {
+  status?: string
+  code?: string
+  page?: number
+  size?: number
+}) {
+  return buildQuery({
+    status: params.status && params.status !== 'all' ? params.status : undefined,
+    code: params.code,
+    page: params.page ?? 0,
+    size: params.size ?? 20,
+  })
 }
 
 export function adminBillingWalletsQuery(params: {

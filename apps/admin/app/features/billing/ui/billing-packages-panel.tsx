@@ -1,8 +1,9 @@
 import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useConfirmDialog } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import {
+  adminBillingPackagesQuery,
   adminPackageListSchema,
   adminPackageSchema,
   type AdminPackage,
@@ -23,7 +24,10 @@ import {
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge } from '~/shared/ui/admin-status-badge'
+import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
+
+const PAGE_SIZE = 20
 
 const PACKAGE_STATUS_OPTIONS = [
   { value: 'all', label: '全部状态' },
@@ -44,12 +48,20 @@ export function BillingPackagesPanel({
   const [pendingCode, setPendingCode] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState('all')
   const [codeSearch, setCodeSearch] = useState('')
+  const [appliedCodeSearch, setAppliedCodeSearch] = useState('')
+  const [page, setPage] = useState(0)
   const { confirm, confirmDialog } = useConfirmDialog()
 
+  const filters = { status: statusFilter, code: appliedCodeSearch }
+
   const query = useQuery({
-    queryKey: billingAdminQueryKeys.packages(),
+    queryKey: billingAdminQueryKeys.packages(filters, page),
     queryFn: async () =>
-      adminPackageListSchema.parse(await billingAdminApi.get('/packages')),
+      adminPackageListSchema.parse(
+        await billingAdminApi.get(
+          `/packages${adminBillingPackagesQuery({ ...filters, page, size: PAGE_SIZE })}`,
+        ),
+      ),
   })
 
   const statusMutation = useMutation({
@@ -68,25 +80,17 @@ export function BillingPackagesPanel({
       )
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.packages() })
+      await queryClient.invalidateQueries({
+        queryKey: [...billingAdminQueryKeys.all, 'packages'],
+      })
     },
     onSettled: () => {
       setPendingCode(null)
     },
   })
 
-  const filteredItems = useMemo(() => {
-    const items = query.data?.items ?? []
-    const needle = codeSearch.trim().toLowerCase()
-    return items
-      .filter((pkg) => {
-        if (statusFilter !== 'all' && pkg.status !== statusFilter) return false
-        if (needle && !pkg.code.toLowerCase().includes(needle)) return false
-        return true
-      })
-      .sort((a, b) => a.sortOrder - b.sortOrder || a.code.localeCompare(b.code))
-  }, [query.data?.items, statusFilter, codeSearch])
-
+  const items = query.data?.items ?? []
+  const total = query.data?.total ?? 0
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
   const actionError = statusMutation.error ? formatAdminApiError(statusMutation.error) : null
 
@@ -107,16 +111,28 @@ export function BillingPackagesPanel({
           ) : null}
         </div>
         <div className="border-b border-border/60 px-6 py-4">
-          <div className="grid items-center justify-center gap-4 sm:grid-cols-[minmax(0,1fr)_140px]">
+          <div className="grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_140px_auto]">
             <AdminField label="搜索代码">
               <Input
                 value={codeSearch}
                 onChange={(event) => setCodeSearch(event.target.value)}
                 placeholder="pkg_1000"
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    setAppliedCodeSearch(codeSearch.trim())
+                    setPage(0)
+                  }
+                }}
               />
             </AdminField>
             <AdminField label="状态">
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value ?? 'all')} >
+              <Select
+                value={statusFilter}
+                onValueChange={(value) => {
+                  setStatusFilter(value ?? 'all')
+                  setPage(0)
+                }}
+              >
                 <SelectTrigger className="w-full mb-0">
                   <SelectValue />
                 </SelectTrigger>
@@ -129,6 +145,17 @@ export function BillingPackagesPanel({
                 </SelectContent>
               </Select>
             </AdminField>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setAppliedCodeSearch(codeSearch.trim())
+                setPage(0)
+              }}
+            >
+              查询
+            </Button>
           </div>
         </div>
         <div className="px-2 py-2">
@@ -141,14 +168,10 @@ export function BillingPackagesPanel({
             <AdminTableSkeleton columns={canWrite ? 7 : 6} />
           ) : errorMessage ? (
             <AdminEmptyState message={errorMessage} />
-          ) : filteredItems.length === 0 ? (
+          ) : items.length === 0 ? (
             <AdminEmptyState message="暂无匹配 SKU。" />
           ) : (
             <>
-              <p className="px-4 pb-2 text-sm text-muted-foreground">
-                共 {filteredItems.length} 个 SKU
-                {query.data ? `（总计 ${query.data.items.length}）` : null}
-              </p>
               <AdminDataTable>
                 <AdminTableHead>
                   <AdminTableRow>
@@ -161,7 +184,7 @@ export function BillingPackagesPanel({
                   </AdminTableRow>
                 </AdminTableHead>
                 <AdminTableBody>
-                  {filteredItems.map((pkg) => (
+                  {items.map((pkg) => (
                     <AdminTableRow key={pkg.id}>
                       <AdminTableCell>
                         <AdminIdCell value={pkg.code} label="SKU 代码" />
@@ -229,6 +252,12 @@ export function BillingPackagesPanel({
                   ))}
                 </AdminTableBody>
               </AdminDataTable>
+              <AdminTablePagination
+                page={page + 1}
+                pageSize={PAGE_SIZE}
+                total={total}
+                onPageChange={(next) => setPage(next - 1)}
+              />
             </>
           )}
         </div>

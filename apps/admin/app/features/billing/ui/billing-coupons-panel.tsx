@@ -10,9 +10,10 @@ import {
 } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { TicketIcon } from 'lucide-react'
-import { useId, useMemo, useState } from 'react'
+import { useId, useState } from 'react'
 
 import {
+  adminBillingCouponsQuery,
   adminCouponListSchema,
   adminCouponSchema,
   type AdminCoupon,
@@ -31,7 +32,10 @@ import {
 } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge, formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
+import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
+
+const PAGE_SIZE = 20
 
 const COUPON_KIND_OPTIONS = [
   { value: 'gift', label: '赠送积分' },
@@ -55,6 +59,8 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
 
   const [statusFilter, setStatusFilter] = useState('all')
   const [codeSearch, setCodeSearch] = useState('')
+  const [appliedCodeSearch, setAppliedCodeSearch] = useState('')
+  const [page, setPage] = useState(0)
   const [pendingCode, setPendingCode] = useState<string | null>(null)
   const [createCode, setCreateCode] = useState('')
   const [createKind, setCreateKind] = useState<'gift' | 'discount'>('gift')
@@ -63,10 +69,16 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
   const [createMaxTotal, setCreateMaxTotal] = useState('')
   const [createError, setCreateError] = useState<string | null>(null)
 
+  const filters = { status: statusFilter, code: appliedCodeSearch }
+
   const query = useQuery({
-    queryKey: billingAdminQueryKeys.coupons(),
+    queryKey: billingAdminQueryKeys.coupons(filters, page),
     queryFn: async () =>
-      adminCouponListSchema.parse(await billingAdminApi.get('/coupons')),
+      adminCouponListSchema.parse(
+        await billingAdminApi.get(
+          `/coupons${adminBillingCouponsQuery({ ...filters, page, size: PAGE_SIZE })}`,
+        ),
+      ),
   })
 
   const createMutation = useMutation({
@@ -103,7 +115,9 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
       setCreateDiscountCents('1000')
       setCreateMaxTotal('')
       setCreateError(null)
-      await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.coupons() })
+      await queryClient.invalidateQueries({
+        queryKey: [...billingAdminQueryKeys.all, 'coupons'],
+      })
     },
     onError: (error) => {
       setCreateError(formatAdminApiError(error))
@@ -126,23 +140,17 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
       )
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.coupons() })
+      await queryClient.invalidateQueries({
+        queryKey: [...billingAdminQueryKeys.all, 'coupons'],
+      })
     },
     onSettled: () => {
       setPendingCode(null)
     },
   })
 
-  const filteredItems = useMemo(() => {
-    const items = query.data?.items ?? []
-    const needle = codeSearch.trim().toLowerCase()
-    return items.filter((item) => {
-      if (statusFilter !== 'all' && item.status !== statusFilter) return false
-      if (needle && !item.code.toLowerCase().includes(needle)) return false
-      return true
-    })
-  }, [query.data?.items, statusFilter, codeSearch])
-
+  const items = query.data?.items ?? []
+  const total = query.data?.total ?? 0
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
 
   return (
@@ -235,17 +243,29 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
             ) : null}
           </div>
         ) : null}
-        <div className="flex flex-wrap items-end gap-3 px-6 py-5">
+        <div className="flex flex-wrap items-end gap-3 border-b border-border/60 px-6 py-5">
           <AdminField label="搜索兑换码">
             <Input
               value={codeSearch}
               onChange={(event) => setCodeSearch(event.target.value)}
               placeholder="WELCOME"
               className="w-[180px]"
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  setAppliedCodeSearch(codeSearch.trim())
+                  setPage(0)
+                }
+              }}
             />
           </AdminField>
           <AdminField label="状态">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => {
+                setStatusFilter(value ?? 'all')
+                setPage(0)
+              }}
+            >
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
               </SelectTrigger>
@@ -258,6 +278,17 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
               </SelectContent>
             </Select>
           </AdminField>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setAppliedCodeSearch(codeSearch.trim())
+              setPage(0)
+            }}
+          >
+            查询
+          </Button>
         </div>
       </AdminPanel>
 
@@ -270,12 +301,13 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
           <div className="px-6 py-5">
             <AdminEmptyState message={errorMessage} />
           </div>
-        ) : filteredItems.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="px-6 py-5">
             <AdminEmptyState message="暂无优惠券" />
           </div>
         ) : (
-          <AdminDataTable>
+          <>
+            <AdminDataTable>
             <AdminTableHead>
               <AdminTableRow>
                 <AdminTableHeaderCell>兑换码</AdminTableHeaderCell>
@@ -288,7 +320,7 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
               </AdminTableRow>
             </AdminTableHead>
             <AdminTableBody>
-              {filteredItems.map((coupon) => (
+              {items.map((coupon) => (
                 <AdminTableRow key={coupon.id}>
                   <AdminTableCell className="font-mono text-xs">{coupon.code}</AdminTableCell>
                   <AdminTableCell>
@@ -339,7 +371,14 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
                 </AdminTableRow>
               ))}
             </AdminTableBody>
-          </AdminDataTable>
+            </AdminDataTable>
+            <AdminTablePagination
+              page={page + 1}
+              pageSize={PAGE_SIZE}
+              total={total}
+              onPageChange={(next) => setPage(next - 1)}
+            />
+          </>
         )}
       </AdminPanel>
     </div>

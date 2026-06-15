@@ -1,8 +1,10 @@
 export const billingAdminQueryKeys = {
   all: ['admin', 'billing'] as const,
   stats: () => [...billingAdminQueryKeys.all, 'stats'] as const,
-  packages: () => [...billingAdminQueryKeys.all, 'packages'] as const,
-  coupons: () => [...billingAdminQueryKeys.all, 'coupons'] as const,
+  packages: (filters: { status?: string; code?: string }, page: number) =>
+    [...billingAdminQueryKeys.all, 'packages', filters, page] as const,
+  coupons: (filters: { status?: string; code?: string }, page: number) =>
+    [...billingAdminQueryKeys.all, 'coupons', filters, page] as const,
   wallets: (filters: { tenantId?: string; userId?: string }, page: number) =>
     [...billingAdminQueryKeys.all, 'wallets', filters, page] as const,
   rechargeOrders: (

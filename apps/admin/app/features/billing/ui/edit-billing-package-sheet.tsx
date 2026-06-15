@@ -58,7 +58,9 @@ export function EditBillingPackageSheet({
       )
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.packages() })
+      await queryClient.invalidateQueries({
+        queryKey: [...billingAdminQueryKeys.all, 'packages'],
+      })
       onOpenChange(false)
     },
   })

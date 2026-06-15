@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  adminBillingCouponsQuery,
   adminBillingLedgerQuery,
+  adminBillingPackagesQuery,
   adminBillingReconciliationQuery,
   adminBillingWalletsQuery,
   adminLedgerListSchema,
@@ -12,6 +14,30 @@ import {
   adminWalletListSchema,
   defaultReconciliationDateUtc,
 } from './billing-admin-api'
+
+describe('adminBillingPackagesQuery', () => {
+  it('builds pagination defaults and omits all status', () => {
+    expect(adminBillingPackagesQuery({})).toBe('?page=0&size=20')
+    expect(adminBillingPackagesQuery({ status: 'all' })).toBe('?page=0&size=20')
+  })
+
+  it('includes status and code filters', () => {
+    const query = adminBillingPackagesQuery({
+      status: 'active',
+      code: 'starter',
+      page: 1,
+    })
+    expect(query).toContain('status=active')
+    expect(query).toContain('code=starter')
+    expect(query).toContain('page=1')
+  })
+})
+
+describe('adminBillingCouponsQuery', () => {
+  it('builds pagination defaults', () => {
+    expect(adminBillingCouponsQuery({})).toBe('?page=0&size=20')
+  })
+})
 
 describe('adminBillingWalletsQuery', () => {
   it('builds query string with pagination defaults', () => {
@@ -162,6 +188,9 @@ describe('admin response schemas', () => {
           maxPerUser: 1,
         },
       ],
+      page: 0,
+      size: 20,
+      total: 1,
     })
     expect(parsed.items[0]?.code).toBe('WELCOME100')
   })

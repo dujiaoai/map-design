@@ -53,7 +53,9 @@ export function CreateBillingPackageSheet({
       return adminPackageSchema.parse(await billingAdminApi.post('/packages', payload))
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.packages() })
+      await queryClient.invalidateQueries({
+        queryKey: [...billingAdminQueryKeys.all, 'packages'],
+      })
       onOpenChange(false)
     },
   })

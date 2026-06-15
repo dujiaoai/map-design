@@ -1,6 +1,7 @@
 package com.yunyan.billingapi.application.transfer;
 
 import com.yunyan.billingapi.application.hold.InsufficientBalanceException;
+import com.yunyan.billingapi.application.tenant.TenantMembershipService;
 import com.yunyan.billingapi.application.wallet.WalletService;
 import com.yunyan.billingapi.domain.entity.BillingLedger;
 import com.yunyan.billingapi.domain.mapper.BillingLedgerMapper;
@@ -23,14 +24,17 @@ public class BillingTransferService {
   private final WalletService walletService;
   private final BillingWalletMapper walletMapper;
   private final BillingLedgerMapper ledgerMapper;
+  private final TenantMembershipService tenantMembershipService;
 
   public BillingTransferService(
       WalletService walletService,
       BillingWalletMapper walletMapper,
-      BillingLedgerMapper ledgerMapper) {
+      BillingLedgerMapper ledgerMapper,
+      TenantMembershipService tenantMembershipService) {
     this.walletService = walletService;
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
+    this.tenantMembershipService = tenantMembershipService;
   }
 
   @Transactional
@@ -45,6 +49,8 @@ public class BillingTransferService {
     if (actor.userId().equals(request.toUserId())) {
       throw AuthException.badRequest("Cannot transfer to yourself");
     }
+
+    tenantMembershipService.requireTenantMember(tenantId, request.toUserId());
 
     var amount = request.amount();
     var remark = normalizeRemark(request.remark(), request.toUserId());

@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.application.admin;
 
+import com.yunyan.billingapi.application.tenant.TenantMembershipService;
 import com.yunyan.billingapi.application.wallet.WalletService;
 import com.yunyan.billingapi.domain.entity.BillingLedger;
 import com.yunyan.billingapi.domain.mapper.BillingLedgerMapper;
@@ -25,21 +26,25 @@ public class AdminBillingAdjustService {
   private final BillingWalletMapper walletMapper;
   private final BillingLedgerMapper ledgerMapper;
   private final AdminAuditLogService adminAuditLogService;
+  private final TenantMembershipService tenantMembershipService;
 
   public AdminBillingAdjustService(
       WalletService walletService,
       BillingWalletMapper walletMapper,
       BillingLedgerMapper ledgerMapper,
-      AdminAuditLogService adminAuditLogService) {
+      AdminAuditLogService adminAuditLogService,
+      TenantMembershipService tenantMembershipService) {
     this.walletService = walletService;
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
     this.adminAuditLogService = adminAuditLogService;
+    this.tenantMembershipService = tenantMembershipService;
   }
 
   @Transactional
   public AdminAdjustResponse adjust(
       SaasPrincipal actor, UUID tenantId, AdminAdjustRequest request) {
+    tenantMembershipService.requireTenantMember(tenantId, request.userId());
     var idempotencyKey = request.idempotencyKey().trim();
     var existing = ledgerMapper.findByIdempotencyKey(idempotencyKey);
     if (existing != null) {

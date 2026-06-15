@@ -11,11 +11,13 @@ import com.yunyan.billingapi.security.InternalAuthFilter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,12 +32,20 @@ class BillingTransferControllerTest {
 
   @Autowired ObjectMapper objectMapper;
 
+  @Autowired JdbcTemplate jdbcTemplate;
+
+  @BeforeEach
+  void ensureMembershipSchema() {
+    BillingTestMembershipSupport.ensureSchema(jdbcTemplate);
+  }
+
   @Test
   void transfer_movesPointsFromAdminToMember() throws Exception {
     var tenantId = UUID.randomUUID();
     var adminId = UUID.randomUUID();
     var memberId = UUID.randomUUID();
     grantSignupBonus(tenantId, adminId);
+    BillingTestMembershipSupport.seedTenantMember(jdbcTemplate, tenantId, memberId, "active");
 
     var token =
         BillingJwtTestSupport.accessToken(
@@ -70,6 +80,7 @@ class BillingTransferControllerTest {
     var adminId = UUID.randomUUID();
     var memberId = UUID.randomUUID();
     grantSignupBonus(tenantId, adminId);
+    BillingTestMembershipSupport.seedTenantMember(jdbcTemplate, tenantId, memberId, "active");
 
     var token =
         BillingJwtTestSupport.accessToken(
@@ -140,6 +151,7 @@ class BillingTransferControllerTest {
     var token =
         BillingJwtTestSupport.accessToken(
             adminId, tenantId, List.of(PermissionCodes.BILLING_TRANSFER_CREATE));
+    BillingTestMembershipSupport.seedTenantMember(jdbcTemplate, tenantId, memberId, "active");
 
     mockMvc
         .perform(

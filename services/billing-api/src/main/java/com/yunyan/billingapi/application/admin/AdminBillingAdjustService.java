@@ -2,6 +2,7 @@ package com.yunyan.billingapi.application.admin;
 
 import com.yunyan.billingapi.application.metrics.BillingMetrics;
 import com.yunyan.billingapi.application.tenant.TenantMembershipService;
+import com.yunyan.billingapi.application.wallet.LowBalanceMonitor;
 import com.yunyan.billingapi.application.wallet.WalletService;
 import com.yunyan.billingapi.domain.entity.BillingLedger;
 import com.yunyan.billingapi.domain.mapper.BillingLedgerMapper;
@@ -29,6 +30,7 @@ public class AdminBillingAdjustService {
   private final AdminAuditLogService adminAuditLogService;
   private final TenantMembershipService tenantMembershipService;
   private final BillingMetrics billingMetrics;
+  private final LowBalanceMonitor lowBalanceMonitor;
 
   public AdminBillingAdjustService(
       WalletService walletService,
@@ -36,13 +38,15 @@ public class AdminBillingAdjustService {
       BillingLedgerMapper ledgerMapper,
       AdminAuditLogService adminAuditLogService,
       TenantMembershipService tenantMembershipService,
-      BillingMetrics billingMetrics) {
+      BillingMetrics billingMetrics,
+      LowBalanceMonitor lowBalanceMonitor) {
     this.walletService = walletService;
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
     this.adminAuditLogService = adminAuditLogService;
     this.tenantMembershipService = tenantMembershipService;
     this.billingMetrics = billingMetrics;
+    this.lowBalanceMonitor = lowBalanceMonitor;
   }
 
   @Transactional
@@ -66,6 +70,7 @@ public class AdminBillingAdjustService {
 
     var wallet = walletService.getOrCreateWallet(tenantId, request.userId());
     var currentBalance = wallet.getBalance() != null ? wallet.getBalance() : 0L;
+    var frozen = wallet.getFrozenBalance() != null ? wallet.getFrozenBalance() : 0L;
     var newBalance = currentBalance + request.amount();
     if (newBalance < 0) {
       throw AuthException.conflict("Adjust would make wallet balance negative");
@@ -76,6 +81,12 @@ public class AdminBillingAdjustService {
             wallet.getId(), newBalance, wallet.getVersion(), Instant.now());
     if (updated != 1) {
       throw AuthException.conflict("Wallet update conflict, retry");
+    }
+
+    if (request.amount() < 0) {
+      lowBalanceMonitor.checkAvailableCrossing(
+          LowBalanceMonitor.available(currentBalance, frozen),
+          LowBalanceMonitor.available(newBalance, frozen));
     }
 
     var ledger = new BillingLedger();

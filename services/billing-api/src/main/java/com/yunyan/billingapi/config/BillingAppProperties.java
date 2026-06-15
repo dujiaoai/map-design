@@ -15,6 +15,7 @@ public class BillingAppProperties {
   private final Refund refund = new Refund();
   private final Webhook webhook = new Webhook();
   private final RateLimit rateLimit = new RateLimit();
+  private final LowBalance lowBalance = new LowBalance();
 
   @Data
   public static class RateLimit {
@@ -42,6 +43,14 @@ public class BillingAppProperties {
   public static class RechargeRateLimit {
     private int userMaxAttempts = 20;
     private java.time.Duration userWindow = java.time.Duration.ofHours(1);
+  }
+
+  @Data
+  public static class LowBalance {
+    /** Emit billing.wallet.low_balance when available balance crosses below threshold. */
+    private boolean enabled = true;
+    /** Available balance (balance - frozen) threshold; aligns with saas-web LOW_BALANCE_THRESHOLD. */
+    private long threshold = 50L;
   }
 
   @Data

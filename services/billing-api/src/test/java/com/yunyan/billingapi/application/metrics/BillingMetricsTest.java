@@ -17,11 +17,13 @@ class BillingMetricsTest {
     metrics.recordRefundCompleted();
     metrics.recordHoldCreated();
     metrics.recordHoldConfirmed();
+    metrics.recordLowBalance();
 
     assertThat(registry.get("billing.recharge.completed").counter().count()).isEqualTo(1);
     assertThat(registry.get("billing.adjust.applied").counter().count()).isEqualTo(1);
     assertThat(registry.get("billing.refund.completed").counter().count()).isEqualTo(1);
     assertThat(registry.get("billing.hold.created").counter().count()).isEqualTo(1);
     assertThat(registry.get("billing.hold.confirmed").counter().count()).isEqualTo(1);
+    assertThat(registry.get("billing.wallet.low_balance").counter().count()).isEqualTo(1);
   }
 }

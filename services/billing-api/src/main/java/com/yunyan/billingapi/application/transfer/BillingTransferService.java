@@ -2,6 +2,7 @@ package com.yunyan.billingapi.application.transfer;
 
 import com.yunyan.billingapi.application.hold.InsufficientBalanceException;
 import com.yunyan.billingapi.application.tenant.TenantMembershipService;
+import com.yunyan.billingapi.application.wallet.LowBalanceMonitor;
 import com.yunyan.billingapi.application.wallet.WalletService;
 import com.yunyan.billingapi.domain.entity.BillingLedger;
 import com.yunyan.billingapi.domain.mapper.BillingLedgerMapper;
@@ -25,16 +26,19 @@ public class BillingTransferService {
   private final BillingWalletMapper walletMapper;
   private final BillingLedgerMapper ledgerMapper;
   private final TenantMembershipService tenantMembershipService;
+  private final LowBalanceMonitor lowBalanceMonitor;
 
   public BillingTransferService(
       WalletService walletService,
       BillingWalletMapper walletMapper,
       BillingLedgerMapper ledgerMapper,
-      TenantMembershipService tenantMembershipService) {
+      TenantMembershipService tenantMembershipService,
+      LowBalanceMonitor lowBalanceMonitor) {
     this.walletService = walletService;
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
     this.tenantMembershipService = tenantMembershipService;
+    this.lowBalanceMonitor = lowBalanceMonitor;
   }
 
   @Transactional
@@ -77,6 +81,8 @@ public class BillingTransferService {
     if (walletMapper.updateBalance(toWallet.getId(), toBalanceAfter, toWallet.getVersion(), now) != 1) {
       throw AuthException.conflict("Wallet update conflict, retry");
     }
+
+    lowBalanceMonitor.checkAvailableCrossing(available, fromBalanceAfter - fromFrozen);
 
     insertLedger(
         fromWallet.getId(),

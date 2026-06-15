@@ -2,6 +2,7 @@ package com.yunyan.billingapi.application.admin;
 
 import com.yunyan.billingapi.application.metrics.BillingMetrics;
 import com.yunyan.billingapi.application.payment.PaymentGatewayRegistry;
+import com.yunyan.billingapi.application.wallet.LowBalanceMonitor;
 import com.yunyan.billingapi.domain.entity.BillingLedger;
 import com.yunyan.billingapi.domain.mapper.BillingLedgerMapper;
 import com.yunyan.billingapi.domain.mapper.BillingRechargeOrderMapper;
@@ -27,6 +28,7 @@ public class AdminBillingRefundService {
   private final AdminAuditLogService adminAuditLogService;
   private final AdminBillingRefundStateService refundStateService;
   private final BillingMetrics billingMetrics;
+  private final LowBalanceMonitor lowBalanceMonitor;
 
   public AdminBillingRefundService(
       BillingRechargeOrderMapper orderMapper,
@@ -35,7 +37,8 @@ public class AdminBillingRefundService {
       PaymentGatewayRegistry paymentGatewayRegistry,
       AdminAuditLogService adminAuditLogService,
       AdminBillingRefundStateService refundStateService,
-      BillingMetrics billingMetrics) {
+      BillingMetrics billingMetrics,
+      LowBalanceMonitor lowBalanceMonitor) {
     this.orderMapper = orderMapper;
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
@@ -43,6 +46,7 @@ public class AdminBillingRefundService {
     this.adminAuditLogService = adminAuditLogService;
     this.refundStateService = refundStateService;
     this.billingMetrics = billingMetrics;
+    this.lowBalanceMonitor = lowBalanceMonitor;
   }
 
   @Transactional
@@ -78,6 +82,7 @@ public class AdminBillingRefundService {
 
     var points = order.getPoints() != null ? order.getPoints() : 0L;
     var balance = wallet.getBalance() != null ? wallet.getBalance() : 0L;
+    var frozen = wallet.getFrozenBalance() != null ? wallet.getFrozenBalance() : 0L;
     if (balance < points) {
       throw AuthException.conflict("Insufficient wallet balance for refund");
     }
@@ -105,6 +110,10 @@ public class AdminBillingRefundService {
       if (walletMapper.updateBalance(wallet.getId(), newBalance, wallet.getVersion(), now) != 1) {
         throw AuthException.conflict("Wallet update conflict, retry");
       }
+
+      lowBalanceMonitor.checkAvailableCrossing(
+          LowBalanceMonitor.available(balance, frozen),
+          LowBalanceMonitor.available(newBalance, frozen));
 
       var ledger = new BillingLedger();
       ledger.setId(java.util.UUID.randomUUID());

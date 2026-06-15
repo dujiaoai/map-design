@@ -3,6 +3,7 @@ package com.yunyan.billingapi.application.hold;
 import com.yunyan.billing.dto.EstimateResult;
 import com.yunyan.billing.dto.WalletHoldRequest;
 import com.yunyan.billingapi.application.metrics.BillingMetrics;
+import com.yunyan.billingapi.application.wallet.LowBalanceMonitor;
 import com.yunyan.billingapi.application.wallet.WalletService;
 import com.yunyan.billingapi.config.BillingAppProperties;
 import com.yunyan.billingapi.domain.entity.BillingConsumptionRecord;
@@ -33,6 +34,7 @@ public class HoldService {
   private final BillingWalletMapper walletMapper;
   private final BillingLedgerMapper ledgerMapper;
   private final BillingMetrics billingMetrics;
+  private final LowBalanceMonitor lowBalanceMonitor;
 
   public HoldService(
       BillingAppProperties billingAppProperties,
@@ -41,7 +43,8 @@ public class HoldService {
       BillingConsumptionRecordMapper recordMapper,
       BillingWalletMapper walletMapper,
       BillingLedgerMapper ledgerMapper,
-      BillingMetrics billingMetrics) {
+      BillingMetrics billingMetrics,
+      LowBalanceMonitor lowBalanceMonitor) {
     this.billingAppProperties = billingAppProperties;
     this.walletService = walletService;
     this.ruleMapper = ruleMapper;
@@ -49,6 +52,7 @@ public class HoldService {
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
     this.billingMetrics = billingMetrics;
+    this.lowBalanceMonitor = lowBalanceMonitor;
   }
 
   public EstimateResult estimate(WalletHoldRequest request) {
@@ -87,6 +91,10 @@ public class HoldService {
     if (updated == 0) {
       throw AuthException.conflict("Wallet update conflict, retry hold");
     }
+
+    lowBalanceMonitor.checkAvailableCrossing(
+        LowBalanceMonitor.available(balance, frozen),
+        LowBalanceMonitor.available(newBalance, newFrozen));
 
     var record = new BillingConsumptionRecord();
     record.setId(UUID.randomUUID());

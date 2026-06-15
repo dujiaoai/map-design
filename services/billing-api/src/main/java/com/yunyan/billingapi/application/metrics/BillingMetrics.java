@@ -12,6 +12,7 @@ public class BillingMetrics {
   private final Counter refundCompleted;
   private final Counter holdCreated;
   private final Counter holdConfirmed;
+  private final Counter lowBalance;
 
   public BillingMetrics(MeterRegistry meterRegistry) {
     this.rechargeCompleted =
@@ -34,6 +35,10 @@ public class BillingMetrics {
         Counter.builder("billing.hold.confirmed")
             .description("Held consumption records confirmed")
             .register(meterRegistry);
+    this.lowBalance =
+        Counter.builder("billing.wallet.low_balance")
+            .description("Wallets whose available balance crossed below the low threshold")
+            .register(meterRegistry);
   }
 
   public void recordRechargeCompleted() {
@@ -54,5 +59,9 @@ public class BillingMetrics {
 
   public void recordHoldConfirmed() {
     holdConfirmed.increment();
+  }
+
+  public void recordLowBalance() {
+    lowBalance.increment();
   }
 }

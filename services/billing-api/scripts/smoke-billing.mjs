@@ -173,6 +173,21 @@ async function main() {
   }
   passed.push('wechat-oauth-config')
 
+  const platformAccount = await api(`${billingBase}/wire-transfers/platform-account`, {
+    headers: auth,
+  })
+  if (
+    !platformAccount.ok ||
+    typeof platformAccount.body?.enabled !== 'boolean' ||
+    typeof platformAccount.body?.accountName !== 'string'
+  ) {
+    fail(
+      'wire-transfer-platform-account',
+      `HTTP ${platformAccount.status} ${JSON.stringify(platformAccount.body)}`,
+    )
+  }
+  passed.push('wire-transfer-platform-account')
+
   const packageCode = packages.body.items[0].code
   const channel = process.env.SMOKE_RECHARGE_CHANNEL ?? 'mock'
 

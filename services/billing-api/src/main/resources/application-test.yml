@@ -34,3 +34,10 @@ billing:
     ttl-minutes: 30
   rate-limit:
     enabled: false
+  wire-transfer:
+    platform-account:
+      enabled: true
+      account-name: 云眼地图测试收款户
+      bank-name: 中国银行深圳分行
+      account-no: "6222021234567890123"
+      transfer-remark: 请在附言注明企业名称与申请单号

@@ -38,6 +38,26 @@ class BillingWireTransferControllerTest {
   }
 
   @Test
+  void platformAccount_returnsConfiguredTestProfile() throws Exception {
+    var tenantId = UUID.randomUUID();
+    var userId = UUID.randomUUID();
+    var userToken =
+        BillingJwtTestSupport.accessToken(
+            userId, tenantId, List.of(PermissionCodes.BILLING_RECHARGE_CREATE));
+
+    mockMvc
+        .perform(
+            get("/v1/billing/wire-transfers/platform-account")
+                .header("Authorization", "Bearer " + userToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.enabled").value(true))
+        .andExpect(jsonPath("$.accountName").value("云眼地图测试收款户"))
+        .andExpect(jsonPath("$.bankName").value("中国银行深圳分行"))
+        .andExpect(jsonPath("$.accountNo").value("6222021234567890123"))
+        .andExpect(jsonPath("$.transferRemark").value("请在附言注明企业名称与申请单号"));
+  }
+
+  @Test
   void userSubmitsWireTransfer_adminApprovesOrRejects() throws Exception {
     var tenantId = UUID.randomUUID();
     var userId = UUID.randomUUID();

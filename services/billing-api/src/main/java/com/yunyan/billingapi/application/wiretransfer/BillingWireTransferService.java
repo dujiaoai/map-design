@@ -1,11 +1,13 @@
 package com.yunyan.billingapi.application.wiretransfer;
 
+import com.yunyan.billingapi.config.BillingAppProperties;
 import com.yunyan.billingapi.domain.entity.BillingWireTransferRequest;
 import com.yunyan.billingapi.domain.mapper.BillingWireTransferMapper;
 import com.yunyan.billingapi.security.AuthException;
 import com.yunyan.billingapi.security.SaasPrincipal;
 import com.yunyan.billingapi.web.dto.CreateWireTransferRequest;
 import com.yunyan.billingapi.web.dto.WireTransferListResponse;
+import com.yunyan.billingapi.web.dto.WireTransferPlatformAccountResponse;
 import com.yunyan.billingapi.web.dto.WireTransferRequestDto;
 import java.time.Instant;
 import java.util.UUID;
@@ -21,9 +23,30 @@ public class BillingWireTransferService {
   public static final String STATUS_REJECTED = "rejected";
 
   private final BillingWireTransferMapper wireTransferMapper;
+  private final BillingAppProperties billingAppProperties;
 
-  public BillingWireTransferService(BillingWireTransferMapper wireTransferMapper) {
+  public BillingWireTransferService(
+      BillingWireTransferMapper wireTransferMapper, BillingAppProperties billingAppProperties) {
     this.wireTransferMapper = wireTransferMapper;
+    this.billingAppProperties = billingAppProperties;
+  }
+
+  public WireTransferPlatformAccountResponse getPlatformAccount() {
+    var account = billingAppProperties.getWireTransfer().getPlatformAccount();
+    var configured =
+        account.isEnabled()
+            && StringUtils.hasText(account.getAccountName())
+            && StringUtils.hasText(account.getBankName())
+            && StringUtils.hasText(account.getAccountNo());
+    if (!configured) {
+      return new WireTransferPlatformAccountResponse(false, "", "", "", "");
+    }
+    return new WireTransferPlatformAccountResponse(
+        true,
+        account.getAccountName().trim(),
+        account.getBankName().trim(),
+        account.getAccountNo().trim(),
+        StringUtils.hasText(account.getTransferRemark()) ? account.getTransferRemark().trim() : "");
   }
 
   @Transactional

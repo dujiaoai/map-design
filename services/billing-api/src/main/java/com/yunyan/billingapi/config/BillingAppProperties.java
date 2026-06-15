@@ -18,6 +18,23 @@ public class BillingAppProperties {
   private final LowBalance lowBalance = new LowBalance();
   private final MembershipSync membershipSync = new MembershipSync();
   private final Coupon coupon = new Coupon();
+  private final WireTransfer wireTransfer = new WireTransfer();
+
+  @Data
+  public static class WireTransfer {
+    /** Platform bank account shown to tenants for corporate wire remittance. */
+    private final PlatformAccount platformAccount = new PlatformAccount();
+  }
+
+  @Data
+  public static class PlatformAccount {
+    private boolean enabled = false;
+    private String accountName = "";
+    private String bankName = "";
+    private String accountNo = "";
+    /** Suggested remittance remark, e.g. company name or request no. */
+    private String transferRemark = "";
+  }
 
   @Data
   public static class Coupon {

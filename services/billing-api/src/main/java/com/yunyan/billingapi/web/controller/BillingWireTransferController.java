@@ -5,6 +5,7 @@ import com.yunyan.billingapi.domain.permission.PermissionCodes;
 import com.yunyan.billingapi.security.SaasPrincipal;
 import com.yunyan.billingapi.web.dto.CreateWireTransferRequest;
 import com.yunyan.billingapi.web.dto.WireTransferListResponse;
+import com.yunyan.billingapi.web.dto.WireTransferPlatformAccountResponse;
 import com.yunyan.billingapi.web.dto.WireTransferRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -38,6 +39,13 @@ public class BillingWireTransferController {
       @AuthenticationPrincipal SaasPrincipal principal,
       @Valid @RequestBody CreateWireTransferRequest request) {
     return billingWireTransferService.createRequest(principal, request);
+  }
+
+  @GetMapping("/platform-account")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.BILLING_RECHARGE_CREATE + "')")
+  @Operation(summary = "平台对公收款账户（配置项）")
+  public WireTransferPlatformAccountResponse getPlatformAccount() {
+    return billingWireTransferService.getPlatformAccount();
   }
 
   @GetMapping

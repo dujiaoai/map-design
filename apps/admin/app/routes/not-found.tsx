@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 
 import { getAdminHomePath } from '~/shared/auth/admin-access'
 import { auth } from '~/shared/auth/client'
+import { AdminErrorPage } from '~/shared/ui/admin-error-page'
 
 import type { Route } from './+types/not-found'
 
@@ -21,15 +22,15 @@ export default function NotFoundRoute() {
   const homeLabel = session ? '返回概览' : '返回登录'
 
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-4 bg-background px-6 text-center">
-      <p className="admin-display text-6xl font-semibold text-primary/80">404</p>
-      <h1 className="text-xl font-medium">页面未找到</h1>
-      <p className="max-w-md text-sm text-muted-foreground">
-        您访问的地址不存在或已被移除，请检查链接后重试。
-      </p>
-      <Button nativeButton={false} render={<Link to={homePath} />}>
-        {homeLabel}
-      </Button>
-    </main>
+    <AdminErrorPage
+      code="404"
+      title="页面未找到"
+      description="您访问的地址不存在或已被移除，请检查链接后重试。"
+      actions={
+        <Button nativeButton={false} render={<Link to={homePath} />}>
+          {homeLabel}
+        </Button>
+      }
+    />
   )
 }

@@ -17,6 +17,18 @@ public class BillingAppProperties {
   private final RateLimit rateLimit = new RateLimit();
   private final LowBalance lowBalance = new LowBalance();
   private final MembershipSync membershipSync = new MembershipSync();
+  private final Coupon coupon = new Coupon();
+
+  @Data
+  public static class Coupon {
+    /** single — one coupon per recharge order (default). */
+    private String stackingMode = "single";
+    private int maxCouponsPerRecharge = 1;
+    /** Reject checkout when payable would drop below this amount (cents). */
+    private long minPayableCentsAfterDiscount = 0L;
+    /** Block a second pending recharge order that also uses a coupon. */
+    private boolean blockConcurrentPendingRechargeCoupons = true;
+  }
 
   @Data
   public static class RateLimit {

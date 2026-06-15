@@ -182,6 +182,18 @@ public interface BillingRechargeOrderMapper {
       @Param("userId") UUID userId,
       @Param("status") String status);
 
+  @Select(
+      """
+      SELECT COUNT(*) FROM billing_recharge_order
+      WHERE tenant_id = #{tenantId}
+        AND user_id = #{userId}
+        AND status = 'pending'
+        AND coupon_code IS NOT NULL
+        AND coupon_code <> ''
+      """)
+  long countPendingWithCouponForUser(
+      @Param("tenantId") UUID tenantId, @Param("userId") UUID userId);
+
   @Select("SELECT COUNT(*) FROM billing_recharge_order WHERE status = #{status}")
   long countByStatus(@Param("status") String status);
 

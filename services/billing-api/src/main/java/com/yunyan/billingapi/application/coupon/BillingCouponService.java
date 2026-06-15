@@ -13,6 +13,7 @@ import com.yunyan.billingapi.security.SaasPrincipal;
 import com.yunyan.billingapi.web.dto.RedeemCouponRequest;
 import com.yunyan.billingapi.web.dto.RedeemCouponResponse;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -33,18 +34,21 @@ public class BillingCouponService {
   private final WalletService walletService;
   private final BillingWalletMapper walletMapper;
   private final BillingLedgerMapper ledgerMapper;
+  private final BillingCouponStackingPolicy stackingPolicy;
 
   public BillingCouponService(
       BillingCouponMapper couponMapper,
       BillingCouponRedemptionMapper redemptionMapper,
       WalletService walletService,
       BillingWalletMapper walletMapper,
-      BillingLedgerMapper ledgerMapper) {
+      BillingLedgerMapper ledgerMapper,
+      BillingCouponStackingPolicy stackingPolicy) {
     this.couponMapper = couponMapper;
     this.redemptionMapper = redemptionMapper;
     this.walletService = walletService;
     this.walletMapper = walletMapper;
     this.ledgerMapper = ledgerMapper;
+    this.stackingPolicy = stackingPolicy;
   }
 
   @Transactional
@@ -157,6 +161,8 @@ public class BillingCouponService {
       throw AuthException.badRequest("Coupon discount is invalid");
     }
     var appliedDiscount = Math.min(discountCents, Math.max(listPriceCents, 0L));
+    stackingPolicy.assertRechargeCheckoutAllowed(
+        principal, List.of(code), listPriceCents, appliedDiscount);
     return new RechargeDiscountQuote(code, appliedDiscount);
   }
 

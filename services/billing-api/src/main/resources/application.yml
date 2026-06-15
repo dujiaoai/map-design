@@ -99,6 +99,11 @@ billing:
       url: ${BILLING_SAAS_DATASOURCE_URL:}
       username: ${BILLING_SAAS_DATASOURCE_USERNAME:saas}
       password: ${BILLING_SAAS_DATASOURCE_PASSWORD:saas}
+  coupon:
+    stacking-mode: ${BILLING_COUPON_STACKING_MODE:single}
+    max-coupons-per-recharge: ${BILLING_COUPON_MAX_PER_RECHARGE:1}
+    min-payable-cents-after-discount: ${BILLING_COUPON_MIN_PAYABLE_CENTS:0}
+    block-concurrent-pending-recharge-coupons: ${BILLING_COUPON_BLOCK_CONCURRENT_PENDING:true}
 
 springdoc:
   api-docs:

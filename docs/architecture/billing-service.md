@@ -1,6 +1,6 @@
 # 平台计费服务（billing-api）
 
-> 状态：F-1～F-3+、F-2 主体、F-4 运营财务骨架、F-5 SDK **已落地**（2026-06-15）；**安全/限流/观测加固** ✅（2026-06-15）；F-5 优惠券、F-6 对公 **待办** · 产品细节见 [billing-credits-prd.md](../product/billing-credits-prd.md)
+> 状态：F-1～F-6 骨架、F-5 SDK **已落地**（2026-06-15）；**安全/限流/观测加固** ✅；billing 独立 DB 等待办 · 产品细节见 [billing-credits-prd.md](../product/billing-credits-prd.md)
 
 ## 定位
 
@@ -137,7 +137,7 @@ services/
 | F-5 | `packages/billing-client` TS SDK | ✅ |
 | F-4 | 退款/对账/通知/发票 | 退款 ✅；日对账 ✅；站内通知 ✅；发票申请骨架 ✅（无电子票对接） |
 | F-5 | 优惠券/用户间划拨 | 划拨 API + UI ✅；members_can_recharge ✅；优惠券兑换骨架 ✅ |
-| F-6 | 可选 billing 独立 DB + 对公转账 | 待办 |
+| F-6 | 可选 billing 独立 DB + 对公转账 | 对公预付申请骨架 ✅；独立 DB 待办 |
 | sec | Webhook 验签/限流、Caller 白名单、RFC7807、Micrometer、Admin ledger | ✅ 2026-06-15 |
 
 完整 PRD、API 契约、前端组件：[billing-credits-prd.md](../product/billing-credits-prd.md)

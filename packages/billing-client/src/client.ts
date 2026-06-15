@@ -16,6 +16,8 @@ import {
   type TransferRequest,
   type TransferResponse,
   type WalletResponse,
+  type WechatOAuthConfig,
+  type WechatOpenIdResponse,
   transferResponseSchema,
   billingNotificationListSchema,
   billingNotificationMarkAllReadSchema,
@@ -24,6 +26,8 @@ import {
   redeemCouponResponseSchema,
   wireTransferListResponseSchema,
   wireTransferRequestSchema,
+  wechatOAuthConfigSchema,
+  wechatOpenIdResponseSchema,
   type CreateWireTransferRequest,
   type RedeemCouponResponse,
   type WireTransferListResponse,
@@ -87,7 +91,19 @@ export function createBillingClient(options: BillingClientOptions) {
           channel: input.channel ?? 'mock',
           ...(input.couponCode ? { couponCode: input.couponCode } : {}),
           ...(input.payScene ? { payScene: input.payScene } : {}),
+          ...(input.wechatOpenId ? { wechatOpenId: input.wechatOpenId } : {}),
         }),
+      )
+    },
+
+    async getWechatOAuthConfig(): Promise<WechatOAuthConfig> {
+      return wechatOAuthConfigSchema.parse(await api.get('/wechat/oauth/config'))
+    },
+
+    async exchangeWechatOAuthCode(code: string): Promise<WechatOpenIdResponse> {
+      const params = new URLSearchParams({ code })
+      return wechatOpenIdResponseSchema.parse(
+        await api.get(`/wechat/oauth/openid?${params.toString()}`),
       )
     },
 

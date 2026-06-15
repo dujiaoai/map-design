@@ -23,11 +23,15 @@ export {
   wireTransferRequestSchema,
   wireTransferListResponseSchema,
   createWireTransferRequestSchema,
+  wechatOAuthConfigSchema,
+  wechatOpenIdResponseSchema,
 } from './src/schemas'
 export type {
   CreateRechargeOrderRequest,
   CreateInvoiceRequest,
   CreateWireTransferRequest,
+  WechatOAuthConfig,
+  WechatOpenIdResponse,
   EstimateResponse,
   LedgerEntry,
   LedgerListResponse,

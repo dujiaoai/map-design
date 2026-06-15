@@ -92,9 +92,23 @@ export const createRechargeOrderRequestSchema = z.object({
   channel: z.string().optional(),
   couponCode: z.string().optional(),
   payScene: z.enum(['native', 'h5', 'jsapi', 'wap']).optional(),
+  wechatOpenId: z.string().optional(),
 })
 
 export type CreateRechargeOrderRequest = z.infer<typeof createRechargeOrderRequestSchema>
+
+export const wechatOAuthConfigSchema = z.object({
+  appId: z.string(),
+  enabled: z.boolean(),
+})
+
+export type WechatOAuthConfig = z.infer<typeof wechatOAuthConfigSchema>
+
+export const wechatOpenIdResponseSchema = z.object({
+  openId: z.string(),
+})
+
+export type WechatOpenIdResponse = z.infer<typeof wechatOpenIdResponseSchema>
 
 export const transferRequestSchema = z.object({
   toUserId: z.string(),

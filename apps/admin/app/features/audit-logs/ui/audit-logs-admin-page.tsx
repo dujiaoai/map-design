@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 
 import { buildAuditBillingLink } from '~/features/audit-logs/lib/audit-log-billing-nav'
+import { buildAuditUsersLink } from '~/features/audit-logs/lib/audit-log-users-nav'
 import { fetchAdminAuditLogs, type AdminAuditLogEntry } from '~/shared/api/admin-api'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
@@ -49,6 +50,7 @@ const BILLING_PERMISSIONS = [
 export function AuditLogsAdminPage() {
   const { can, canAny } = useAdminPermissions()
   const canViewBilling = canAny([...BILLING_PERMISSIONS])
+  const canReadUsers = can('admin:users:read')
   const canReadTenants = can('admin:tenants:read')
   const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
   const [actionFilter, setActionFilter] = useState<string>('all')
@@ -175,7 +177,12 @@ export function AuditLogsAdminPage() {
               </AdminTableHead>
               <AdminTableBody>
                 {query.data.logs.map((log) => (
-                  <AuditLogRow key={log.id} log={log} canReadTenants={canReadTenants} />
+                  <AuditLogRow
+                    key={log.id}
+                    log={log}
+                    canReadTenants={canReadTenants}
+                    canReadUsers={canReadUsers}
+                  />
                 ))}
               </AdminTableBody>
             </AdminDataTable>
@@ -195,18 +202,31 @@ export function AuditLogsAdminPage() {
 function AuditLogRow({
   log,
   canReadTenants,
+  canReadUsers,
 }: {
   log: AdminAuditLogEntry
   canReadTenants: boolean
+  canReadUsers: boolean
 }) {
   const billingLink = buildAuditBillingLink(log.action, log.targetTenantId)
+  const usersLink = canReadUsers ? buildAuditUsersLink(log.actorEmail, log.targetTenantId) : null
 
   return (
     <AdminTableRow>
       <AdminTableCell className="text-muted-foreground">
         {formatAdminDate(log.createdAt)}
       </AdminTableCell>
-      <AdminTableCell>{log.actorEmail}</AdminTableCell>
+      <AdminTableCell>
+        {log.actorEmail}
+        {usersLink ? (
+          <Link
+            to={usersLink}
+            className="ml-2 text-xs text-primary underline-offset-4 hover:underline"
+          >
+            查用户
+          </Link>
+        ) : null}
+      </AdminTableCell>
       <AdminTableCell>
         <span className="font-mono text-xs">{log.action}</span>
         {billingLink ? (

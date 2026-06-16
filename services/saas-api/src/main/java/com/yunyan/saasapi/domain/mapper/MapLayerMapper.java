@@ -19,4 +19,10 @@ public interface MapLayerMapper extends BaseMapper<MapLayer> {
       ORDER BY sort_order ASC, name ASC
       """)
   List<MapLayer> selectByTenantId(@Param("tenantId") UUID tenantId);
+
+  @Select(
+      """
+      SELECT COUNT(*) FROM map_layer WHERE tenant_id = #{tenantId}
+      """)
+  long countByTenantId(@Param("tenantId") UUID tenantId);
 }

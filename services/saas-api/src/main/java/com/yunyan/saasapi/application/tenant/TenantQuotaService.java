@@ -25,6 +25,7 @@ public class TenantQuotaService {
   private final TenantRepository tenantRepository;
   private final UserRepository userRepository;
   private final TenantService tenantService;
+  private final TenantStorageUsageService tenantStorageUsageService;
 
   public TenantQuotasResponse getQuotas(SaasPrincipal principal, UUID tenantId) {
     tenantService.getFeatures(principal, tenantId);
@@ -63,12 +64,13 @@ public class TenantQuotaService {
   private TenantQuotasResponse buildResponse(SysTenant tenant) {
     var limits = PlanQuotaCatalog.forPlan(tenant.getPlan());
     var seatUsed = userRepository.countSeatUsage(tenant.getId());
+    var storageUsed = tenantStorageUsageService.countUsedBytes(tenant.getId());
     return new TenantQuotasResponse(
         tenant.getId().toString(),
         normalizePlan(tenant.getPlan()),
         new SeatQuotaDto(limits.maxSeats(), seatUsed),
         new RateQuotaDto(limits.apiRatePerMinute()),
-        new StorageQuotaDto(limits.storageBytes(), 0L));
+        new StorageQuotaDto(limits.storageBytes(), storageUsed));
   }
 
   private static String normalizePlan(String plan) {

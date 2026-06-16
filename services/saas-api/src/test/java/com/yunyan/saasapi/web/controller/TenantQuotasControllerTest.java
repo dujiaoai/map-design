@@ -25,7 +25,8 @@ import org.springframework.test.web.servlet.MockMvc;
     scripts = {
       "/sql/auth-test-seed.sql",
       "/sql/tenants-multi-membership-seed.sql",
-      "/sql/tenants-features-seed.sql"
+      "/sql/tenants-features-seed.sql",
+      "/sql/map-layers-seed.sql"
     })
 class TenantQuotasControllerTest {
 
@@ -55,7 +56,7 @@ class TenantQuotasControllerTest {
         .andExpect(jsonPath("$.seats.used").value(2))
         .andExpect(jsonPath("$.apiRate.limitPerMinute").value(60))
         .andExpect(jsonPath("$.storage.limitBytes").value(1073741824))
-        .andExpect(jsonPath("$.storage.usedBytes", is(0)));
+        .andExpect(jsonPath("$.storage.usedBytes", is(196608)));
   }
 
   @Test

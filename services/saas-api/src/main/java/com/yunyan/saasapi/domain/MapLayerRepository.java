@@ -18,6 +18,10 @@ public class MapLayerRepository {
     return mapLayerMapper.selectByTenantId(tenantId);
   }
 
+  public long countByTenantId(UUID tenantId) {
+    return mapLayerMapper.countByTenantId(tenantId);
+  }
+
   public Optional<MapLayer> findById(UUID id) {
     return Optional.ofNullable(mapLayerMapper.selectById(id));
   }

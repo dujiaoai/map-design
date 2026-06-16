@@ -4,6 +4,7 @@ import com.yunyan.saasapi.application.admin.AdminListParams;
 import com.yunyan.saasapi.application.admin.TenantAdminService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
+import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantFeaturesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantListResponse;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -69,23 +71,29 @@ public class AdminTenantsController {
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
   @Operation(summary = "全量替换租户能力", description = "能力码须为 catalog 子集")
   public AdminTenantFeaturesResponse updateTenantFeatures(
-      @PathVariable UUID tenantId, @Valid @RequestBody UpdateTenantFeaturesRequest request) {
-    return tenantFeatureAdminService.replaceFeatures(tenantId, request);
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @Valid @RequestBody UpdateTenantFeaturesRequest request) {
+    return tenantFeatureAdminService.replaceFeatures(principal, tenantId, request);
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
   @Operation(summary = "创建租户")
-  public AdminTenantDto createTenant(@Valid @RequestBody CreateTenantRequest request) {
-    return tenantAdminService.createTenant(request);
+  public AdminTenantDto createTenant(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @Valid @RequestBody CreateTenantRequest request) {
+    return tenantAdminService.createTenant(principal, request);
   }
 
   @PatchMapping("/{tenantId}")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
   @Operation(summary = "更新租户", description = "可修改 name、plan、status（active/suspended）")
   public AdminTenantDto patchTenant(
-      @PathVariable UUID tenantId, @Valid @RequestBody PatchTenantRequest request) {
-    return tenantAdminService.patchTenant(tenantId, request);
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @Valid @RequestBody PatchTenantRequest request) {
+    return tenantAdminService.patchTenant(principal, tenantId, request);
   }
 }

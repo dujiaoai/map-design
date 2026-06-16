@@ -3,6 +3,7 @@ package com.yunyan.saasapi.application.admin;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.entity.SysTenant;
 import com.yunyan.saasapi.security.AuthException;
+import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantListResponse;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
@@ -22,6 +23,7 @@ public class TenantAdminService {
   private static final String DEFAULT_PLAN = "free";
 
   private final TenantRepository tenantRepository;
+  private final AdminAuditLogService adminAuditLogService;
 
   public AdminTenantListResponse listTenants(AdminListParams params) {
     var result = tenantRepository.findTenants(params);
@@ -42,7 +44,7 @@ public class TenantAdminService {
   }
 
   @Transactional
-  public AdminTenantDto createTenant(CreateTenantRequest request) {
+  public AdminTenantDto createTenant(SaasPrincipal principal, CreateTenantRequest request) {
     var slug = normalizeSlug(request.slug());
     if (tenantRepository.findBySlug(slug).isPresent()) {
       throw AuthException.conflict("Tenant slug already exists");
@@ -56,11 +58,17 @@ public class TenantAdminService {
     tenant.setStatus(STATUS_ACTIVE);
     tenant.setCreatedAt(Instant.now());
     tenantRepository.insert(tenant);
+    adminAuditLogService.recordTenantAction(
+        principal,
+        "tenant.create",
+        tenant.getId(),
+        "Created tenant " + slug + " plan=" + tenant.getPlan());
     return toDto(tenant);
   }
 
   @Transactional
-  public AdminTenantDto patchTenant(UUID tenantId, PatchTenantRequest request) {
+  public AdminTenantDto patchTenant(
+      SaasPrincipal principal, UUID tenantId, PatchTenantRequest request) {
     if (!hasPatchFields(request)) {
       throw AuthException.badRequest("At least one of name, plan, or status is required");
     }
@@ -81,6 +89,24 @@ public class TenantAdminService {
     }
 
     tenantRepository.update(tenant);
+    var changes = new StringBuilder();
+    if (StringUtils.hasText(request.name())) {
+      changes.append("name ");
+    }
+    if (StringUtils.hasText(request.plan())) {
+      changes.append("plan=");
+      changes.append(tenant.getPlan());
+      changes.append(' ');
+    }
+    if (StringUtils.hasText(request.status())) {
+      changes.append("status=");
+      changes.append(tenant.getStatus());
+    }
+    adminAuditLogService.recordTenantAction(
+        principal,
+        "tenant.update",
+        tenantId,
+        "Updated tenant " + tenant.getSlug() + ": " + changes.toString().trim());
     return toDto(tenant);
   }
 

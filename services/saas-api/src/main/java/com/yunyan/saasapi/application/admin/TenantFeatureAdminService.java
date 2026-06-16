@@ -3,6 +3,7 @@ package com.yunyan.saasapi.application.admin;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.tenant.TenantFeatureCatalog;
 import com.yunyan.saasapi.security.AuthException;
+import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantFeaturesResponse;
 import com.yunyan.saasapi.web.dto.admin.FeatureCatalogEntryDto;
 import com.yunyan.saasapi.web.dto.admin.FeatureCatalogResponse;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TenantFeatureAdminService {
 
   private final TenantRepository tenantRepository;
+  private final AdminAuditLogService adminAuditLogService;
 
   public FeatureCatalogResponse getCatalog() {
     var features =
@@ -37,11 +39,16 @@ public class TenantFeatureAdminService {
 
   @Transactional
   public AdminTenantFeaturesResponse replaceFeatures(
-      UUID tenantId, UpdateTenantFeaturesRequest request) {
+      SaasPrincipal principal, UUID tenantId, UpdateTenantFeaturesRequest request) {
     requireTenant(tenantId);
     var normalized = normalizeFeatureCodes(request.featureCodes());
     validateCatalogSubset(normalized);
     tenantRepository.replaceFeatureCodes(tenantId, normalized);
+    adminAuditLogService.recordTenantAction(
+        principal,
+        "tenant.features.update",
+        tenantId,
+        "Features -> " + String.join(",", normalized));
     return new AdminTenantFeaturesResponse(tenantId.toString(), normalized);
   }
 

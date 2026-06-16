@@ -30,6 +30,28 @@ public class AdminAuditLogService {
   }
 
   @Transactional
+  public void recordTenantAction(
+      SaasPrincipal principal, String action, UUID tenantId, String detail) {
+    if (principal == null) {
+      return;
+    }
+
+    var log = new SysAdminAuditLog();
+    log.setId(UUID.randomUUID());
+    log.setActorUserId(principal.userId());
+    log.setActorEmail(principal.email());
+    log.setActorTenantId(principal.tenantId());
+    log.setAction(action);
+    log.setResourceType("tenant");
+    log.setResourceId(tenantId.toString());
+    log.setTargetTenantId(tenantId);
+    log.setCrossTenant(isCrossTenant(principal, tenantId));
+    log.setDetail(detail);
+    log.setCreatedAt(Instant.now());
+    adminAuditLogRepository.insert(log);
+  }
+
+  @Transactional
   public void recordMemberAction(
       SaasPrincipal principal,
       String action,

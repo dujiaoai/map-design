@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted（Phase 2 全链路 + 本地联调 runbook 已落地；显式账号绑定仍 Later）
+Accepted（Phase 2 全链路 + 本地联调 + provider subject 绑定表已落地）
 
 ## Context
 
@@ -45,17 +45,18 @@ Phase 1 骨架期 `authorizationCodeFlowAvailable` 恒为 `false`；Phase 2 在 
 | 能力 | 状态 | 说明 |
 | --- | --- | --- |
 | `GET /v1/auth/oidc/{providerId}/authorize` | ✅ | 返回 `authorizationUrl` + `state`；PKCE S256；state 存 Redis（test 用 InMemory） |
-| `POST /v1/auth/oidc/{providerId}/callback` | ✅ | code 换 token；OIDC 邮箱映射已有 `sys_user`；签发现有 JWT `LoginResponse` |
+| `POST /v1/auth/oidc/{providerId}/callback` | ✅ | code 换 token；**provider `sub` 绑定表**优先，邮箱匹配首次自动 bind |
 | Admin MFA 与 OIDC | ✅ | 平台管理员 OIDC 回调后若已绑 TOTP，仍走 `mfaRequired` step-up |
 | `@repo/auth` + Admin UI | ✅ | `startOidcAuthorize` / `completeOidcLogin`；登录页 IdP 按钮；`/auth/oidc/callback/:providerId` |
 | saas-web UI | ✅ | 同上，`client=web`；登录页 IdP 按钮 + callback；MFA step-up |
 | 本地联调 runbook | ✅ | `application-oidc.example.yml` + [oidc-dev-setup.md](../runbooks/oidc-dev-setup.md) |
+| Provider subject 绑定 | ✅ | `sys_user_oauth_bind`（FND-07j）；`(provider_id, provider_subject)` 唯一 |
 
 ### 5. 仍 Later
 
 | 能力 | 说明 |
 | --- | --- |
-| 账号链接 | 同邮箱自动关联 vs 显式 bind 表 |
+| 账号管理 UI | `/account` 展示/解绑 IdP；Admin 用户详情 |
 
 ### 6. 安全
 
@@ -73,11 +74,11 @@ Phase 1 骨架期 `authorizationCodeFlowAvailable` 恒为 `false`；Phase 2 在 
 ### 负面
 
 - Admin 未配置 IdP 或缺 `client-secret` 时 `authorizationCodeFlowAvailable=false`，登录页不展示 IdP 按钮。
-- Phase 2 后续用户 bind 表与真实 IdP E2E 工作量独立估算。
+- Phase 2 后续账号解绑 UI 工作量独立估算。
 
 ## References
 
 - [0008-platform-admin-mfa.md](./0008-platform-admin-mfa.md)
 - [auth-rbac.md](../architecture/auth-rbac.md)
-- [platform-foundation-backlog.md](../architecture/supplements/platform-foundation-backlog.md) FND-07f～FND-07i
+- [platform-foundation-backlog.md](../architecture/supplements/platform-foundation-backlog.md) FND-07f～FND-07j
 - [oidc-dev-setup.md](../runbooks/oidc-dev-setup.md)

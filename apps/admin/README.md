@@ -125,4 +125,4 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 
 ## Later（P4 余项）
 
-邮箱邀请、OAuth 显式账号绑定。
+邮箱邀请、OIDC 账号解绑 UI。

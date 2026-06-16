@@ -28,7 +28,8 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | P3 | FND-07g | OAuth2/OIDC 授权码登录（Admin） | ✅ |
 | P3 | FND-07h | OAuth2/OIDC 授权码登录（saas-web） | ✅ |
 | P3 | FND-07i | OIDC 本地联调配置与 runbook | ✅ |
-| Later | FND-07 | `/v1/menus`、OAuth 账号绑定、Plan 配额等 | 远期 |
+| P3 | FND-07j | OIDC provider subject 绑定表 | ✅ |
+| Later | FND-07 | `/v1/menus`、OIDC 解绑 UI、Plan 配额等 | 远期 |
 
 ---
 
@@ -182,7 +183,15 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 **交付（2026-06）**：`application-oidc.example.yml`；`application-dev.yml` / `application-docker.yml` Keycloak 环境变量占位；`.env.example` / `deploy/.env.docker.example`；[oidc-dev-setup.md](../../runbooks/oidc-dev-setup.md)（Keycloak 快速启动、redirect URI、探活与 E2E）。
 
-**不含**：生产 IdP 运维、显式 OAuth bind 表。
+**不含**：生产 IdP 运维、provider subject 绑定表（→ FND-07j）。
+
+---
+
+## FND-07j · OIDC provider subject 绑定表 ✅
+
+**交付（2026-06）**：Flyway V28 `sys_user_oauth_bind`；`(provider_id, provider_subject)` 唯一；回调优先按 IdP `sub` 解析用户并校验租户；邮箱首次匹配成功时自动 bind。
+
+**不含**：Account/Admin 解绑 UI。
 
 ---
 
@@ -190,7 +199,7 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 | 项 | 说明 |
 | --- | --- |
-| OAuth 账号绑定 | 显式 bind 表 vs 仅邮箱映射 |
+| OIDC 解绑 UI | `/account` 与 Admin 用户详情 |
 | `/v1/menus` | 服务端动态菜单（当前 mock-nav） |
 | Plan 配额 | seat / rate / storage |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |

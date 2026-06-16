@@ -9,7 +9,7 @@
 | --- | --- |
 | 流程 | OAuth 2.0 Authorization Code + **PKCE (S256)** |
 | 客户端 | saas-web（`:5175`）与 Admin（`:5181`）登录页 IdP 按钮 |
-| 用户映射 | OIDC `email` 须与已有 `sys_user.email` 一致（同租户 slug） |
+| 用户映射 | OIDC `sub` 绑定表优先；首次邮箱匹配自动 bind；须与已有 `sys_user.email` + 租户 slug 一致 |
 | 不含 | 显式 OAuth bind 表、生产 IdP 运维 |
 
 ---
@@ -128,7 +128,8 @@ curl -s "http://localhost:8082/v1/auth/oidc/keycloak/authorize?client=web&tenant
 2. 打开 http://localhost:5175/login ，填写租户 `demo`
 3. 点击「使用 Keycloak (local) 登录」→ 跳转 IdP → 授权
 4. 回调 `/auth/oidc/callback/keycloak` 后进入工作台 `/`
-5. Admin 重复：http://localhost:5181/login ，回调后进入运营概览
+5. 再次 OIDC 登录时后端按 IdP `sub` 查 `sys_user_oauth_bind`（无需重复邮箱匹配）
+6. Admin 重复：http://localhost:5181/login ，回调后进入运营概览
 
 **平台管理员 MFA**：若账号已绑 TOTP，OIDC 回调后会进入 MFA step-up（与密码登录相同）。
 
@@ -141,7 +142,8 @@ curl -s "http://localhost:8082/v1/auth/oidc/keycloak/authorize?client=web&tenant
 | 登录页无 IdP 按钮 | `SAAS_OAUTH2_ENABLED=false` 或 client-secret 未配 |
 | `redirect_uri mismatch` | Keycloak Valid redirect URIs 与 `SAAS_*_BASE_URL` 不一致 |
 | `OIDC state expired` | authorize 与 callback 间隔 > 10 分钟，或 Redis 未连 |
-| `用户不存在` / 401 | IdP email 与 `sys_user` 不匹配，或 tenant slug 错误 |
+| `用户不存在` / 401 | IdP email 与 `sys_user` 不匹配，或 tenant slug 错误；首次登录成功后写入 bind |
+| `OIDC subject already linked` | 同一 IdP `sub` 已绑定其它 SaaS 用户 |
 | Docker 回调 404 | `SAAS_WEB_BASE_URL` 仍指向 5175 而非 8084 |
 
 ---

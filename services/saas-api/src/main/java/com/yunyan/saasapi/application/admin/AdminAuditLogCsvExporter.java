@@ -14,12 +14,15 @@ final class AdminAuditLogCsvExporter {
   static byte[] toCsvBytes(List<SysAdminAuditLog> logs) {
     var builder = new StringBuilder();
     builder.append(
-        "id,created_at,actor_email,action,resource_type,resource_id,target_tenant_id,cross_tenant,detail\n");
+        "id,created_at,actor_user_id,actor_email,action,resource_type,resource_id,target_tenant_id,cross_tenant,detail\n");
     for (var log : logs) {
       builder
           .append(csvCell(log.getId() == null ? null : log.getId().toString()))
           .append(',')
           .append(csvCell(formatInstant(log.getCreatedAt())))
+          .append(',')
+          .append(
+              csvCell(log.getActorUserId() == null ? null : log.getActorUserId().toString()))
           .append(',')
           .append(csvCell(log.getActorEmail()))
           .append(',')

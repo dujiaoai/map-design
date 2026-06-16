@@ -118,6 +118,23 @@ class AdminAuditLogsControllerTest {
         .andExpect(content().string(startsWith("\uFEFF")));
   }
 
+  @Test
+  void exportAuditLogs_writesAuditExportAction() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            get("/v1/admin/audit-logs/export")
+                .header("Authorization", "Bearer " + token)
+                .accept("text/csv"))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(get("/v1/admin/audit-logs").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.logs[*].action", hasItem("audit.export")));
+  }
+
   private String loginAccessToken(String email) throws Exception {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }

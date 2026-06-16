@@ -12,7 +12,8 @@ public record AuditLogListParams(
     Boolean crossTenant,
     UUID tenantId,
     Long from,
-    Long to) {
+    Long to,
+    UUID actorUserId) {
 
   public AdminListParams toListParams() {
     return new AdminListParams(q, page, size);
@@ -45,5 +46,9 @@ public record AuditLogListParams(
       return null;
     }
     return Instant.ofEpochMilli(to);
+  }
+
+  public UUID normalizedActorUserId() {
+    return actorUserId;
   }
 }

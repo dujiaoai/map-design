@@ -17,6 +17,7 @@ class AdminAuditLogCsvExporterTest {
     log.setId(UUID.fromString("11111111-1111-1111-1111-111111111111"));
     log.setCreatedAt(Instant.parse("2026-06-15T08:00:00Z"));
     log.setActorEmail("ops@demo.local");
+    log.setActorUserId(UUID.fromString("33333333-3333-3333-3333-333333333333"));
     log.setAction("billing.wallet.adjust");
     log.setResourceType("billing_wallet");
     log.setResourceId("wallet-1");
@@ -28,6 +29,7 @@ class AdminAuditLogCsvExporterTest {
 
     assertThat(csv).startsWith("\uFEFF");
     assertThat(csv).contains("ops@demo.local");
+    assertThat(csv).contains("33333333-3333-3333-3333-333333333333");
     assertThat(csv).contains("\"note with \"\"quotes\"\", comma\"");
   }
 }

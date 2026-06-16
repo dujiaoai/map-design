@@ -29,6 +29,7 @@ public class AdminAuditLogRepository {
     applyActionFilter(wrapper, params.normalizedAction());
     applyCrossTenantFilter(wrapper, params.normalizedCrossTenant());
     applyTenantFilter(wrapper, params.normalizedTenantId());
+    applyActorFilter(wrapper, params.normalizedActorUserId());
     applyCreatedAtFilter(wrapper, params.normalizedFrom(), params.normalizedTo());
 
     if (params.toListParams().isPaginated()) {
@@ -67,6 +68,15 @@ public class AdminAuditLogRepository {
       return;
     }
     wrapper.eq(SysAdminAuditLog::getTargetTenantId, tenantId);
+  }
+
+  private static void applyActorFilter(
+      com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysAdminAuditLog> wrapper,
+      UUID actorUserId) {
+    if (actorUserId == null) {
+      return;
+    }
+    wrapper.eq(SysAdminAuditLog::getActorUserId, actorUserId);
   }
 
   private static void applyCreatedAtFilter(

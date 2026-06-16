@@ -30,19 +30,45 @@ public class AdminAuditLogService {
     return new AdminAuditLogListResponse(logs);
   }
 
-  public byte[] exportCsv(AuditLogListParams params) {
-    var exportParams =
-        new AuditLogListParams(
-            params.q(),
-            1,
-            EXPORT_MAX_ROWS,
-            params.action(),
-            params.crossTenant(),
-            params.tenantId(),
-            params.from(),
-            params.to());
+  @Transactional
+  public byte[] exportCsv(SaasPrincipal principal, AuditLogListParams params) {
+    var exportParams = toExportParams(params);
     var page = adminAuditLogRepository.findLogs(exportParams);
-    return AdminAuditLogCsvExporter.toCsvBytes(page.items());
+    var rows = page.items();
+    recordAuditExport(principal, params, rows.size());
+    return AdminAuditLogCsvExporter.toCsvBytes(rows);
+  }
+
+  private static AuditLogListParams toExportParams(AuditLogListParams params) {
+    return new AuditLogListParams(
+        params.q(),
+        1,
+        EXPORT_MAX_ROWS,
+        params.action(),
+        params.crossTenant(),
+        params.tenantId(),
+        params.from(),
+        params.to(),
+        params.actorUserId());
+  }
+
+  @Transactional
+  public void recordAuditExport(SaasPrincipal principal, AuditLogListParams params, int rowCount) {
+    if (principal == null) {
+      return;
+    }
+    var detail =
+        new StringBuilder("rows=")
+            .append(rowCount)
+            .append(" action=")
+            .append(params.normalizedAction() == null ? "*" : params.normalizedAction());
+    if (params.normalizedTenantId() != null) {
+      detail.append(" tenantId=").append(params.normalizedTenantId());
+    }
+    if (params.normalizedActorUserId() != null) {
+      detail.append(" actorUserId=").append(params.normalizedActorUserId());
+    }
+    recordPlatformUserAction(principal, "audit.export", null, detail.toString());
   }
 
   @Transactional
@@ -148,6 +174,7 @@ public class AdminAuditLogService {
     var createdAt = log.getCreatedAt() == null ? 0L : log.getCreatedAt().toEpochMilli();
     return new AdminAuditLogDto(
         log.getId().toString(),
+        log.getActorUserId() == null ? null : log.getActorUserId().toString(),
         log.getActorEmail(),
         log.getAction(),
         log.getResourceType(),

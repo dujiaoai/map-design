@@ -3,6 +3,7 @@ package com.yunyan.saasapi.web.controller;
 import com.yunyan.saasapi.application.admin.AdminAuditLogService;
 import com.yunyan.saasapi.application.admin.AuditLogListParams;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
+import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditLogListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,28 +43,33 @@ public class AdminAuditLogsController {
       @RequestParam(required = false) Boolean crossTenant,
       @RequestParam(required = false) UUID tenantId,
       @RequestParam(required = false) Long from,
-      @RequestParam(required = false) Long to) {
+      @RequestParam(required = false) Long to,
+      @RequestParam(required = false) UUID actorUserId) {
     return adminAuditLogService.listLogs(
-        new AuditLogListParams(q, page, size, action, crossTenant, tenantId, from, to));
+        new AuditLogListParams(
+            q, page, size, action, crossTenant, tenantId, from, to, actorUserId));
   }
 
   @GetMapping(value = "/export", produces = "text/csv")
   @PreAuthorize(PermissionCodes.ADMIN_AUDIT_EXPORT_AUTHORITIES)
   @Operation(
       summary = "导出审计日志 CSV",
-      description = "与列表相同筛选条件；最多导出 "
-          + AdminAuditLogService.EXPORT_MAX_ROWS
-          + " 条，按 created_at 倒序")
+      description =
+          "与列表相同筛选条件；最多导出 "
+              + AdminAuditLogService.EXPORT_MAX_ROWS
+              + " 条，按 created_at 倒序；写入 audit.export 审计")
   public ResponseEntity<byte[]> exportAuditLogs(
+      @AuthenticationPrincipal SaasPrincipal principal,
       @RequestParam(required = false) String q,
       @RequestParam(required = false) String action,
       @RequestParam(required = false) Boolean crossTenant,
       @RequestParam(required = false) UUID tenantId,
       @RequestParam(required = false) Long from,
-      @RequestParam(required = false) Long to) {
-    var csv =
-        adminAuditLogService.exportCsv(
-            new AuditLogListParams(q, null, null, action, crossTenant, tenantId, from, to));
+      @RequestParam(required = false) Long to,
+      @RequestParam(required = false) UUID actorUserId) {
+    var params =
+        new AuditLogListParams(q, null, null, action, crossTenant, tenantId, from, to, actorUserId);
+    var csv = adminAuditLogService.exportCsv(principal, params);
     var filename = "audit-logs-" + Instant.now().toString().substring(0, 10) + ".csv";
     return ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")

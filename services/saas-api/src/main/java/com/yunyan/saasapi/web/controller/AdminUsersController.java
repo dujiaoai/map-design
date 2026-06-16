@@ -54,8 +54,10 @@ public class AdminUsersController {
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_USERS_WRITE + "')")
   @Operation(summary = "更新用户", description = "可修改 displayName、status（active/disabled）")
   public AdminUserDto patchUser(
-      @PathVariable UUID userId, @Valid @RequestBody PatchUserRequest request) {
-    return userAdminService.patchUser(userId, request);
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID userId,
+      @Valid @RequestBody PatchUserRequest request) {
+    return userAdminService.patchUser(principal, userId, request);
   }
 
   @PutMapping("/{userId}/roles")

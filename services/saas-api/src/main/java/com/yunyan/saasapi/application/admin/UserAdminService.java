@@ -65,7 +65,8 @@ public class UserAdminService {
   }
 
   @Transactional
-  public AdminUserDto patchUser(UUID userId, PatchUserRequest request) {
+  public AdminUserDto patchUser(
+      SaasPrincipal principal, UUID userId, PatchUserRequest request) {
     if (!hasPatchFields(request)) {
       throw AuthException.badRequest("At least one of displayName or status is required");
     }
@@ -91,7 +92,17 @@ public class UserAdminService {
         tenantRepository
             .findById(user.getTenantId())
             .orElseThrow(() -> AuthException.notFound("Tenant not found"));
-    return toDto(user, tenant);
+    var result = toDto(user, tenant);
+    var detail = new StringBuilder("Updated user " + result.email());
+    if (StringUtils.hasText(request.displayName())) {
+      detail.append(" displayName");
+    }
+    if (StringUtils.hasText(request.status())) {
+      detail.append(" status=").append(user.getStatus());
+    }
+    adminAuditLogService.recordPlatformUserAction(
+        principal, "user.update", userId, detail.toString());
+    return result;
   }
 
   @Transactional

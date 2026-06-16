@@ -15,7 +15,7 @@ import {
 } from '@repo/ui'
 import { UserCircleIcon } from 'lucide-react'
 
-import { ProfileForm, ResetPasswordForm } from '~/features/account'
+import { ProfileForm, ResetPasswordForm, OauthBindsPanel } from '~/features/account'
 import {
   formatAdminSessionRoles,
   sessionToNavUserData,
@@ -91,6 +91,8 @@ export function AdminAccountSheet({
                   }
                 />
               </AdminPanel>
+
+              <OauthBindsPanel />
 
               <Tabs key={defaultTab} defaultValue={defaultTab} className="gap-4">
                 <TabsList className="grid w-full grid-cols-2">

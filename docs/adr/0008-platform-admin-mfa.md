@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted（骨架阶段；TOTP 注册/校验为后续迭代）
+Accepted（Phase 2 TOTP 注册/登录 step-up 已落地；代操作门控仍 Later）
 
 ## Context
 

@@ -63,7 +63,42 @@ public record AdminListParams(
     };
   }
 
+  /** 用户列表允许排序的列；无 sortBy 时由 Repository 使用 tenantId+email 默认序 */
+  public boolean hasUserSort() {
+    return StringUtils.hasText(sortBy);
+  }
+
+  public String normalizedUserSortBy() {
+    if (!StringUtils.hasText(sortBy)) {
+      return "email";
+    }
+    return switch (sortBy.trim()) {
+      case "email", "displayName", "lastLoginAt", "createdAt", "tenantId" -> sortBy.trim();
+      case "tenantSlug" -> "tenantId";
+      default -> "email";
+    };
+  }
+
+  /** 审计列表允许排序的列；缺省 createdAt 降序 */
+  public String normalizedAuditSortBy() {
+    if (!StringUtils.hasText(sortBy)) {
+      return "createdAt";
+    }
+    return switch (sortBy.trim()) {
+      case "createdAt", "actorEmail", "action" -> sortBy.trim();
+      default -> "createdAt";
+    };
+  }
+
+  /** 无 sortDir 时审计默认降序，其余升序 */
   public boolean sortDescending() {
     return StringUtils.hasText(sortDir) && "desc".equalsIgnoreCase(sortDir.trim());
+  }
+
+  public boolean auditSortDescending() {
+    if (!StringUtils.hasText(sortDir)) {
+      return true;
+    }
+    return "desc".equalsIgnoreCase(sortDir.trim());
   }
 }

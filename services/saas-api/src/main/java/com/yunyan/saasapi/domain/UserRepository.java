@@ -54,10 +54,8 @@ public class UserRepository {
 
   private AdminPagedResult<SysUser> findUsersForAdminWithRlsBypass(
       Optional<UUID> tenantId, AdminListParams params, List<UUID> tenantIdsFromSearch) {
-    var wrapper =
-        Wrappers.<SysUser>lambdaQuery()
-            .orderByAsc(SysUser::getTenantId)
-            .orderByAsc(SysUser::getEmail);
+    var wrapper = Wrappers.<SysUser>lambdaQuery();
+    applyUserSort(wrapper, params);
     tenantId.ifPresent(id -> wrapper.eq(SysUser::getTenantId, id));
 
     var query = params.normalizedQuery();
@@ -164,5 +162,23 @@ public class UserRepository {
                 .map(SysUserRole::getUserId)
                 .distinct()
                 .toList());
+  }
+
+  private void applyUserSort(
+      com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysUser> wrapper,
+      AdminListParams params) {
+    if (!params.hasUserSort()) {
+      wrapper.orderByAsc(SysUser::getTenantId).orderByAsc(SysUser::getEmail);
+      return;
+    }
+    var ascending = !params.sortDescending();
+    switch (params.normalizedUserSortBy()) {
+      case "displayName" -> wrapper.orderBy(true, ascending, SysUser::getDisplayName);
+      case "lastLoginAt" -> wrapper.orderBy(true, ascending, SysUser::getLastLoginAt);
+      case "createdAt" -> wrapper.orderBy(true, ascending, SysUser::getCreatedAt);
+      case "tenantId" -> wrapper.orderBy(true, ascending, SysUser::getTenantId);
+      default -> wrapper.orderBy(true, ascending, SysUser::getEmail);
+    }
+    wrapper.orderByAsc(SysUser::getId);
   }
 }

@@ -1,7 +1,7 @@
 import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
 import { PencilIcon, ScrollTextIcon } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
 import { AUDIT_READ_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
@@ -11,7 +11,7 @@ import { AdminAntTable, adminAntSortOrder, createAdminAntSortHandler } from '~/s
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
-import { sortAdminTableRows, useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
+import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
@@ -38,11 +38,28 @@ export function UsersAdminPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const { searchInput, setSearchInput, page, setPage, queryParams } =
+  const { searchInput, setSearchInput, page, setPage, queryParams: baseQueryParams } =
     useAdminPagedListState(qFromUrl)
 
   useAdminListSearchShortcut(searchInputRef)
   const { sort, toggleSort, clearSort } = useAdminTableSort<UserSortKey>()
+
+  const handleToggleSort = useCallback(
+    (key: UserSortKey) => {
+      toggleSort(key)
+      setPage(1)
+    },
+    [toggleSort, setPage],
+  )
+
+  const listParams = useMemo(
+    () => ({
+      ...baseQueryParams,
+      status: statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'disabled' | 'invited'),
+      ...(sort ? { sortBy: sort.key, sortDir: sort.direction } : {}),
+    }),
+    [baseQueryParams, statusFilter, sort],
+  )
 
   useEffect(() => {
     setSearchInput(qFromUrl)
@@ -54,15 +71,8 @@ export function UsersAdminPage() {
   })
 
   const usersQuery = useAdminPagedQuery({
-    queryKey: adminQueryKeys.users(tenantFilterId, {
-      ...queryParams,
-      status: statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'disabled' | 'invited'),
-    }),
-    queryFn: () =>
-      fetchAdminUsers(tenantFilterId, {
-        ...queryParams,
-        status: statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'disabled' | 'invited'),
-      }),
+    queryKey: adminQueryKeys.users(tenantFilterId, listParams),
+    queryFn: () => fetchAdminUsers(tenantFilterId, listParams),
   })
 
   const tenantLabel = useMemo(() => {
@@ -73,18 +83,11 @@ export function UsersAdminPage() {
 
   const userSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName', 'tenantSlug']
   const filteredUsers = useMemo(() => {
-    const filtered = filterAdminTableRows(usersQuery.data?.users, {
+    return filterAdminTableRows(usersQuery.data?.users, {
       search: '',
       searchKeys: userSearchKeys,
     })
-    return sortAdminTableRows(filtered, sort, {
-      email: (user) => user.email.toLowerCase(),
-      displayName: (user) => (user.displayName ?? '').toLowerCase(),
-      tenantSlug: (user) => (user.tenantSlug ?? '').toLowerCase(),
-      lastLoginAt: (user) => user.lastLoginAt ?? '',
-      createdAt: (user) => user.createdAt,
-    })
-  }, [usersQuery.data?.users, sort])
+  }, [usersQuery.data?.users])
 
   const total = usersQuery.data?.total ?? usersQuery.data?.users.length ?? 0
   const showActions = canWrite || canViewAudit
@@ -269,7 +272,7 @@ export function UsersAdminPage() {
         ]}
       />
 
-      <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="page" />
+      <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="server" />
 
       <AdminPanel className="p-0">
         {usersQuery.isLoading ? (
@@ -296,11 +299,11 @@ export function UsersAdminPage() {
             rowKey="id"
             columns={columns}
             dataSource={filteredUsers}
-            onChange={createAdminAntSortHandler(toggleSort)}
+            onChange={createAdminAntSortHandler(handleToggleSort)}
             showSorterTooltip={false}
             pagination={{
               current: page,
-              pageSize: queryParams.size,
+              pageSize: baseQueryParams.size,
               total,
               onChange: setPage,
             }}

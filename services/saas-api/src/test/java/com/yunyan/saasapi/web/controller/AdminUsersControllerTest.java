@@ -67,6 +67,20 @@ class AdminUsersControllerTest {
   }
 
   @Test
+  void listUsers_withSortParams_returnsOk() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/users")
+                .param("page", "1")
+                .param("size", "10")
+                .param("sortBy", "email")
+                .param("sortDir", "desc")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.users").isArray());
+  }
+
+  @Test
   void listUsers_withTenantFilter_returnsTenantMembers() throws Exception {
     mockMvc
         .perform(

@@ -6,6 +6,7 @@ import com.yunyan.saasapi.domain.mapper.SysUserOauthBindMapper;
 import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.TenantRlsBypass;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,25 @@ import org.springframework.util.StringUtils;
 public class UserOauthBindRepository {
 
   private final SysUserOauthBindMapper sysUserOauthBindMapper;
+
+  public List<SysUserOauthBind> findByUserId(UUID userId) {
+    return TenantRlsBypass.call(
+        () ->
+            sysUserOauthBindMapper.selectList(
+                Wrappers.<SysUserOauthBind>lambdaQuery()
+                    .eq(SysUserOauthBind::getUserId, userId)
+                    .orderByDesc(SysUserOauthBind::getLastUsedAt)));
+  }
+
+  public boolean deleteByUserIdAndProviderId(UUID userId, String providerId) {
+    return TenantRlsBypass.call(
+        () ->
+            sysUserOauthBindMapper.delete(
+                    Wrappers.<SysUserOauthBind>lambdaQuery()
+                        .eq(SysUserOauthBind::getUserId, userId)
+                        .eq(SysUserOauthBind::getProviderId, providerId))
+                > 0);
+  }
 
   public Optional<UUID> findUserIdByProviderSubject(String providerId, String providerSubject) {
     return TenantRlsBypass.call(

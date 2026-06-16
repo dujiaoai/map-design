@@ -1,18 +1,18 @@
 package com.yunyan.saasapi.web.controller;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.yunyan.saasapi.application.auth.AuthService;
 import com.yunyan.saasapi.application.auth.UserOauthBindService;
-import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.advice.GlobalExceptionHandler;
-import com.yunyan.saasapi.web.dto.auth.SessionDto;
-import com.yunyan.saasapi.web.dto.auth.SessionTenantDto;
-import com.yunyan.saasapi.web.dto.auth.SessionUserDto;
+import com.yunyan.saasapi.web.dto.auth.UserOauthBindsResponse;
+import com.yunyan.saasapi.web.dto.auth.UserOauthBindsResponse.UserOauthBindItemDto;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -27,52 +27,56 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
-class UsersControllerMeTest {
+class UsersControllerOauthBindTest {
 
-  @Mock
-  AuthService authService;
-
-  @Mock
-  UserOauthBindService userOauthBindService;
+  @Mock AuthService authService;
+  @Mock UserOauthBindService userOauthBindService;
 
   MockMvc mockMvc;
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(new UsersController(authService, userOauthBindService))
-        .setControllerAdvice(new GlobalExceptionHandler())
-        .build();
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(new UsersController(authService, userOauthBindService))
+            .setControllerAdvice(new GlobalExceptionHandler())
+            .build();
   }
 
   @Test
-  void me_withPrincipal_returns200AndSessionJson() throws Exception {
-    when(authService.getCurrentSession(org.mockito.ArgumentMatchers.any()))
-        .thenReturn(sampleSession());
+  void listMyOauthBinds_returnsBinds() throws Exception {
+    when(userOauthBindService.listForCurrentUser(org.mockito.ArgumentMatchers.any()))
+        .thenReturn(
+            new UserOauthBindsResponse(
+                List.of(
+                    new UserOauthBindItemDto(
+                        "keycloak",
+                        "Keycloak (local)",
+                        "admin@test.local",
+                        Instant.parse("2026-06-01T00:00:00Z"),
+                        Instant.parse("2026-06-15T12:00:00Z")))));
 
     setPrincipal();
 
     mockMvc
-        .perform(get("/v1/users/me"))
+        .perform(get("/v1/users/me/oauth-binds"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.user.email").value("admin@test.local"))
-        .andExpect(jsonPath("$.user.roles[0]").value("TENANT_ADMIN"))
-        .andExpect(jsonPath("$.tenant.slug").value("test"))
-        .andExpect(jsonPath("$.expiresAt").value(1_710_000_900_000L));
+        .andExpect(jsonPath("$.binds.length()").value(1))
+        .andExpect(jsonPath("$.binds[0].providerId").value("keycloak"))
+        .andExpect(jsonPath("$.binds[0].providerDisplayName").value("Keycloak (local)"));
 
     SecurityContextHolder.clearContext();
   }
 
   @Test
-  void me_whenServiceUnauthorized_returns401ProblemDetail() throws Exception {
-    when(authService.getCurrentSession(org.mockito.ArgumentMatchers.any()))
-        .thenThrow(AuthException.unauthorized("Not authenticated"));
-
+  void unbindMyOauthProvider_returns204() throws Exception {
     setPrincipal();
 
     mockMvc
-        .perform(get("/v1/users/me"))
-        .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.title").value("Unauthorized"));
+        .perform(delete("/v1/users/me/oauth-binds/keycloak"))
+        .andExpect(status().isNoContent());
+
+    verify(userOauthBindService)
+        .unbindForCurrentUser(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq("keycloak"));
 
     SecurityContextHolder.clearContext();
   }
@@ -87,25 +91,9 @@ class UsersControllerMeTest {
             List.of("TENANT_ADMIN"),
             List.of("workspace:use"),
             null,
-            Instant.ofEpochMilli(1_710_000_900_000L));
+            Instant.parse("2026-06-15T12:00:00Z"));
     SecurityContextHolder.getContext()
         .setAuthentication(
             new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities()));
-  }
-
-  private static SessionDto sampleSession() {
-    return new SessionDto(
-        new SessionUserDto(
-            "22222222-2222-2222-2222-222222222201",
-            "admin@test.local",
-            "Test Admin",
-            null,
-            null,
-            List.of("TENANT_ADMIN"),
-            List.of("workspace:use")),
-        new SessionTenantDto(
-            "11111111-1111-1111-1111-111111111101", "Test Tenant", "test"),
-        1_710_000_900_000L,
-        null);
   }
 }

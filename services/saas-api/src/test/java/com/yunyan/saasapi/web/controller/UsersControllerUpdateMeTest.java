@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yunyan.saasapi.application.auth.AuthService;
+import com.yunyan.saasapi.application.auth.UserOauthBindService;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.advice.GlobalExceptionHandler;
 import com.yunyan.saasapi.web.dto.auth.SessionDto;
@@ -35,6 +36,9 @@ class UsersControllerUpdateMeTest {
   @Mock
   AuthService authService;
 
+  @Mock
+  UserOauthBindService userOauthBindService;
+
   MockMvc mockMvc;
 
   ObjectMapper objectMapper = new ObjectMapper();
@@ -44,7 +48,7 @@ class UsersControllerUpdateMeTest {
     var validator = new LocalValidatorFactoryBean();
     validator.afterPropertiesSet();
 
-    mockMvc = MockMvcBuilders.standaloneSetup(new UsersController(authService))
+    mockMvc = MockMvcBuilders.standaloneSetup(new UsersController(authService, userOauthBindService))
         .setControllerAdvice(new GlobalExceptionHandler())
         .setValidator(validator)
         .build();

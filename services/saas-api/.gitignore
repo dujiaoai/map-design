@@ -1,0 +1,2 @@
+# 本地覆盖 OIDC client-secret（复制 application-oidc.example.yml 后使用）
+application-oidc.yml

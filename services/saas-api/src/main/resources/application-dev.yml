@@ -4,3 +4,18 @@ saas:
     enabled: false
   billing:
     enabled: true
+  # OIDC：默认关闭；配齐 SAAS_OAUTH2_KEYCLOAK_CLIENT_SECRET 后设 SAAS_OAUTH2_ENABLED=true
+  # 详见 application-oidc.example.yml 与 docs/runbooks/oidc-dev-setup.md
+  auth:
+    oauth2:
+      enabled: ${SAAS_OAUTH2_ENABLED:false}
+      providers:
+        - id: keycloak
+          display-name: Keycloak (local)
+          issuer-uri: ${SAAS_OAUTH2_KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/yunyan}
+          client-id: ${SAAS_OAUTH2_KEYCLOAK_CLIENT_ID:saas-local}
+          client-secret: ${SAAS_OAUTH2_KEYCLOAK_CLIENT_SECRET:}
+          scopes:
+            - openid
+            - profile
+            - email

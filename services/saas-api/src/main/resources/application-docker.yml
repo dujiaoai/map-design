@@ -14,6 +14,9 @@ server:
 saas:
   jwt:
     secret: ${SAAS_JWT_SECRET:docker-only-change-me-use-32chars-min!!}
+  app:
+    web-base-url: ${SAAS_WEB_BASE_URL:http://localhost:8084}
+    admin-base-url: ${SAAS_ADMIN_BASE_URL:http://localhost:8083}
   billing:
     enabled: ${SAAS_BILLING_ENABLED:true}
     base-url: ${SAAS_BILLING_API_BASE_URL:http://billing-api:8083}
@@ -21,6 +24,18 @@ saas:
   auth:
     password:
       strength-enabled: true
+    oauth2:
+      enabled: ${SAAS_OAUTH2_ENABLED:false}
+      providers:
+        - id: keycloak
+          display-name: Keycloak
+          issuer-uri: ${SAAS_OAUTH2_KEYCLOAK_ISSUER_URI:}
+          client-id: ${SAAS_OAUTH2_KEYCLOAK_CLIENT_ID:}
+          client-secret: ${SAAS_OAUTH2_KEYCLOAK_CLIENT_SECRET:}
+          scopes:
+            - openid
+            - profile
+            - email
   cors:
     allowed-origins:
       - http://localhost:8084

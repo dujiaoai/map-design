@@ -10,6 +10,8 @@ export const AUDIT_ACTION_OPTIONS = [
   { value: 'user.roles.update', label: '更新用户角色' },
   { value: 'member.invite-link.create', label: '创建邀请链接' },
   { value: 'member.invite-link.revoke', label: '撤销邀请链接' },
+  { value: 'member.invite.email', label: '邮箱邀请成员' },
+  { value: 'member.invite.resend', label: '重发邀请邮件' },
   { value: 'member.update', label: '更新成员' },
   { value: 'member.roles.update', label: '更新成员角色' },
   { value: 'tenant_role.create', label: '创建租户角色' },

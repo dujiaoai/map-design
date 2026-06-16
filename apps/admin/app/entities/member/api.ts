@@ -2,12 +2,23 @@ import type { AdminUserSummary, PatchUserPayload } from '~/entities/user'
 import { buildAdminListQuery, type AdminListQuery } from '~/shared/api/admin-list-query'
 import { api } from '~/shared/api/client'
 
-import type { TenantMemberListResponse } from './model'
+import type { InviteMemberByEmailPayload, TenantMemberListResponse } from './model'
 
 export function fetchTenantMembers(tenantId: string, params?: AdminListQuery) {
   return api.get<TenantMemberListResponse>(
     `/admin/tenants/${tenantId}/members${buildAdminListQuery(params)}`,
   )
+}
+
+export function inviteTenantMemberByEmail(
+  tenantId: string,
+  payload: InviteMemberByEmailPayload,
+) {
+  return api.post<AdminUserSummary>(`/admin/tenants/${tenantId}/members/invite`, payload)
+}
+
+export function resendTenantMemberInvite(tenantId: string, userId: string) {
+  return api.post<AdminUserSummary>(`/admin/tenants/${tenantId}/members/${userId}/resend-invite`)
 }
 
 export function patchTenantMember(

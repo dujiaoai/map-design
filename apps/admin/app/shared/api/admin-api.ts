@@ -2,10 +2,12 @@ export type { AdminListQuery } from './admin-list-query'
 export { buildAdminListQuery } from './admin-list-query'
 export type { AdminAuditLogEntry, AdminAuditLogListResponse } from '~/entities/audit-log'
 export { fetchAdminAuditLogs } from '~/entities/audit-log'
-export type { TenantMemberListResponse } from '~/entities/member'
+export type { TenantMemberListResponse, InviteMemberByEmailPayload } from '~/entities/member'
 export {
   fetchTenantMembers,
+  inviteTenantMemberByEmail,
   patchTenantMember,
+  resendTenantMemberInvite,
   updateTenantMemberRoles,
 } from '~/entities/member'
 export type {

@@ -23,6 +23,7 @@ import { z } from 'zod'
 import {
   fetchAssignableRoles,
   patchTenantMember,
+  resendTenantMemberInvite,
   updateTenantMemberRoles,
   type AdminUserSummary,
 } from '~/shared/api/admin-api'
@@ -86,6 +87,13 @@ export function EditMemberSheet({
 
   const isInvited = member?.status === 'invited'
 
+  const resendInviteMutation = useMutation({
+    mutationFn: () => resendTenantMemberInvite(tenantId, member!.id),
+    onSuccess: async () => {
+      toast.success('邀请邮件已重发')
+    },
+  })
+
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
       await patchTenantMember(tenantId, member!.id, {
@@ -120,7 +128,23 @@ export function EditMemberSheet({
           </AdminField>
           <AdminField label="状态">
             {isInvited ? (
-              <p className="text-sm text-muted-foreground">待激活（邀请链接注册未完成）</p>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  待激活（邮件邀请或链接注册未完成）
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={resendInviteMutation.isPending}
+                  onClick={() => void resendInviteMutation.mutateAsync()}
+                >
+                  {resendInviteMutation.isPending ? '发送中…' : '重发邀请邮件'}
+                </Button>
+                {resendInviteMutation.isError ? (
+                  <AdminFormError message={formatAdminApiError(resendInviteMutation.error)} />
+                ) : null}
+              </div>
             ) : (
               <Select
                 value={status}

@@ -163,6 +163,29 @@ public class AdminAuditLogService {
     adminAuditLogRepository.insert(log);
   }
 
+  @Transactional
+  public void recordImpersonationAction(
+      SaasPrincipal principal, String action, UUID targetTenantId, String reason) {
+    if (principal == null) {
+      return;
+    }
+
+    var detail = reason == null ? null : "reason=" + reason.trim();
+    var log = new SysAdminAuditLog();
+    log.setId(UUID.randomUUID());
+    log.setActorUserId(principal.userId());
+    log.setActorEmail(principal.email());
+    log.setActorTenantId(principal.tenantId());
+    log.setAction(action);
+    log.setResourceType("tenant");
+    log.setResourceId(targetTenantId == null ? null : targetTenantId.toString());
+    log.setTargetTenantId(targetTenantId);
+    log.setCrossTenant(true);
+    log.setDetail(detail);
+    log.setCreatedAt(Instant.now());
+    adminAuditLogRepository.insert(log);
+  }
+
   private static boolean isCrossTenant(SaasPrincipal principal, UUID targetTenantId) {
     if (!principal.roleCodes().contains(PLATFORM_ADMIN)) {
       return false;

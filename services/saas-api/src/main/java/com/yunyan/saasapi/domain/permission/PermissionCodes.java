@@ -26,6 +26,7 @@ public final class PermissionCodes {
   public static final String ADMIN_BILLING_REFUND = "admin:billing:refund";
   public static final String ADMIN_AUDIT_READ = "admin:audit:read";
   public static final String ADMIN_AUDIT_EXPORT = "admin:audit:export";
+  public static final String ADMIN_IMPERSONATE = "admin:impersonate";
 
   /** Legacy fallback while tenants:read still grants audit list access. */
   public static final String ADMIN_AUDIT_READ_AUTHORITIES =
@@ -54,6 +55,7 @@ public final class PermissionCodes {
     ADMIN_ROLES_WRITE,
     ADMIN_AUDIT_READ,
     ADMIN_AUDIT_EXPORT,
+    ADMIN_IMPERSONATE,
     ADMIN_BILLING_READ,
     ADMIN_BILLING_ADJUST,
     ADMIN_BILLING_PACKAGES_WRITE,
@@ -76,6 +78,7 @@ public final class PermissionCodes {
     ADMIN_ROLES_WRITE,
     ADMIN_AUDIT_READ,
     ADMIN_AUDIT_EXPORT,
+    ADMIN_IMPERSONATE,
     ADMIN_MEMBERS_READ,
     ADMIN_MEMBERS_WRITE
   };

@@ -65,7 +65,7 @@ pnpm --filter @repo/saas-web validate      # typecheck + lint + test
 - `/login`：配置 `VITE_API_URL` 后走 `auth.login()` → `POST /v1/auth/login`（邮箱 + 密码 + 租户 slug）；已配置 OIDC 时可用 IdP 按钮（须填租户）；未配置时降级为 `auth.devLogin()` 占位会话
 - `/register`：`auth.register()` → `POST /v1/auth/register`（邮箱 + 密码 ≥8 位 + 租户 slug + 可选显示名），成功后查收验证邮件；`/verify-email?token=...` 确认后登录
 - Bootstrap / 顶栏用户：`useWorkspaceSession` + `GET /v1/users/me`；**无** `ruoyi-profile-store`（C-08～C-12）
-- 侧栏：`mock-nav-items` + **C-09 ✅** `filterNavMainItemsForTenant`（`useEnabledTenantFeatures`）
+- 侧栏：**FND-08 ✅** `GET /v1/menus` + `useWorkspaceNavMainItems`（无 API 时 mock-nav + C-09）
 - Account 抽屉：`GET/PUT /v1/users/me`、`POST /v1/users/me/password`（C-10）
 - 侧栏 TeamSwitcher：`GET /v1/tenants`；切换租户 = 目标 slug 重新登录（C-11）
 - 组件内：`useSession()`、`useTenant()`（须在 Provider 内）

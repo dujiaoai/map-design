@@ -31,7 +31,9 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | P3 | FND-07j | OIDC provider subject 绑定表 | ✅ |
 | P3 | FND-07k | OIDC 绑定列表与解绑 UI | ✅ |
 | P3 | FND-07l | Admin 用户编辑页代管 IdP 解绑 | ✅ |
-| Later | FND-07 | `/v1/menus`、Plan 配额等 | 远期 |
+| P3 | FND-08a | 服务端工作台菜单 API（GET /v1/menus） | ✅ |
+| P3 | FND-08b | saas-web 侧栏/命令面板消费 /v1/menus | ✅ |
+| Later | FND-08 | Plan 配额等 | 远期 |
 
 ---
 
@@ -211,13 +213,37 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 ---
 
+## FND-08a · 服务端工作台菜单 API ✅
+
+**交付（2026-06）**：`GET /v1/menus`（`workspace:use`）；`WorkspaceMenuCatalog` 与 mock-nav 对齐；按 tenant features 过滤定制 map-module；返回侧栏 `sections` + 全量 `items`（含 map-tool）。
+
+**不含**：RBAC 按权限码裁剪菜单、Admin 菜单配置 UI、DB 持久化菜单树。
+
+---
+
+## FND-08b · saas-web 消费 /v1/menus ✅
+
+**交付（2026-06）**：`useWorkspaceNavMainItems` / `useWorkspaceNavSectionDefs`；侧栏与命令面板优先 API；未配置 `VITE_API_URL` 时 fallback mock-nav + C-09。
+
+**不含**：URL 深链 / 工具 meta 全量切 API（仍用 mock 注册表）。
+
+---
+
+## FND-08 · 远期（Later）
+
+| 项 | 说明 |
+| --- | --- |
+| Plan 配额 | seat / rate / storage |
+| 菜单 RBAC / Admin 配置 | 权限码裁剪、运营可编辑菜单树 |
+| Marketing 完整站 | 官网除 `/pricing` 外页面 |
+
+---
+
 ## FND-07 · 远期（Later）
 
 | 项 | 说明 |
 | --- | --- |
-| `/v1/menus` | 服务端动态菜单（当前 mock-nav） |
-| Plan 配额 | seat / rate / storage |
-| Marketing 完整站 | 官网除 `/pricing` 外页面 |
+| — | OAuth2/OIDC Phase 2 已闭环（FND-07f～l）；见上文 |
 
 ---
 

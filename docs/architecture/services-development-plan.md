@@ -17,7 +17,7 @@
 - **登录 / 注册 / 刷新 / 登出** → `/v1/auth/*`
 - **用户信息** → `GET/PUT /v1/users/me`、`POST /v1/users/me/password`
 - **Bootstrap** → `GET /v1/users/me`（**非** RuoYi `getInfo`/`getRouters`）✅
-- **侧栏** → `mock-nav-items` + **`filterNavMainItemsForTenant`**（C-09 ✅）
+- **侧栏** → **FND-08 ✅** `GET /v1/menus` + `useWorkspaceNavMainItems`（mock-nav fallback）
 
 **仍不做（Sprint C/D 内）：**
 
@@ -382,7 +382,9 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | FND-07j | OIDC provider subject 绑定表 | ✅ |
 | FND-07k | OIDC 绑定列表与解绑 UI | ✅ |
 | FND-07l | Admin 用户编辑页代管 IdP 解绑 | ✅ |
-| FND-07 | `/v1/menus` | Later |
+| FND-08a | 服务端工作台菜单 API | ✅ |
+| FND-08b | saas-web 消费 /v1/menus | ✅ |
+| FND-08 | Plan 配额 | Later |
 
 **仍不做（本阶段）**：Sprint E 地图/机库/专题业务 API。
 
@@ -445,8 +447,8 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | RBAC-P1 ✅ | D+ | 平台用户角色分配 + 角色权限变更会话吊销 |
 | RBAC-P2 ✅ | D+ | 租户自定义角色与权限配置 |
 | E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
-| FND-01～FND-07l | 基础完善 | 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) |
-| FND-07 | Later | `/v1/menus` |
+| FND-01～FND-08b | 基础完善 | 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) |
+| FND-08 | Later | Plan 配额 |
 
 ### 建议默认顺序（仅供参考，非强制）
 

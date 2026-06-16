@@ -12,15 +12,25 @@ import {
 import { formatBillingPrice } from '~/features/billing/lib/billing-format'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
+import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge } from '~/shared/ui/admin-status-badge'
+import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 const PAGE_SIZE = 20
+
+const PACKAGE_TABLE_COLUMNS = [
+  { key: 'code', label: '代码' },
+  { key: 'points', label: '积分' },
+  { key: 'price', label: '售价' },
+  { key: 'status', label: '状态' },
+  { key: 'sortOrder', label: '排序' },
+] as const
 
 const PACKAGE_STATUS_OPTIONS = [
   { value: 'all', label: '全部状态' },
@@ -44,6 +54,7 @@ export function BillingPackagesPanel({
   const [appliedCodeSearch, setAppliedCodeSearch] = useState('')
   const [page, setPage] = useState(0)
   const { confirm, confirmDialog } = useConfirmDialog()
+  const columnPrefs = useAdminTableColumnPrefs('billing-packages', [...PACKAGE_TABLE_COLUMNS])
 
   const filters = { status: statusFilter, code: appliedCodeSearch }
 
@@ -178,8 +189,12 @@ export function BillingPackagesPanel({
         ),
       })
     }
-    return cols
-  }, [canWrite, confirm, onEditPackage, pendingCode, statusMutation])
+    return cols.filter((column) => {
+      const key = String(column.key)
+      if (key === 'actions') return canWrite
+      return columnPrefs.isColumnVisible(key)
+    })
+  }, [canWrite, columnPrefs.isColumnVisible, columnPrefs.visible, confirm, onEditPackage, pendingCode, statusMutation])
 
   return (
     <>
@@ -232,6 +247,7 @@ export function BillingPackagesPanel({
                 </SelectContent>
               </Select>
             </AdminField>
+            <div className="flex flex-wrap items-end gap-2">
             <Button
               type="button"
               variant="outline"
@@ -243,6 +259,13 @@ export function BillingPackagesPanel({
             >
               查询
             </Button>
+            <AdminTableColumnPicker
+              columns={[...PACKAGE_TABLE_COLUMNS]}
+              visible={columnPrefs.visible}
+              onVisibleChange={columnPrefs.setColumnVisible}
+              onReset={columnPrefs.resetColumns}
+            />
+            </div>
           </div>
         </div>
         <div className="px-2 py-2">

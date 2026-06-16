@@ -8,6 +8,7 @@ import com.yunyan.saasapi.web.dto.admin.AdminUserDto;
 import com.yunyan.saasapi.web.dto.admin.AdminUserListResponse;
 import com.yunyan.saasapi.web.dto.admin.PatchUserRequest;
 import com.yunyan.saasapi.web.dto.admin.UpdateUserRolesRequest;
+import com.yunyan.saasapi.web.dto.auth.UserOauthBindsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,8 +16,11 @@ import jakarta.validation.Valid;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -70,5 +74,25 @@ public class AdminUsersController {
       @PathVariable UUID userId,
       @Valid @RequestBody UpdateUserRolesRequest request) {
     return userAdminService.updateUserRoles(principal, userId, request);
+  }
+
+  @GetMapping("/{userId}/oauth-binds")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_USERS_READ + "')")
+  @Operation(summary = "列出用户 IdP 绑定", description = "平台运营查看指定用户的企业 IdP 登录绑定")
+  public UserOauthBindsResponse listUserOauthBinds(@PathVariable UUID userId) {
+    return userAdminService.listUserOauthBinds(userId);
+  }
+
+  @DeleteMapping("/{userId}/oauth-binds/{providerId}")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_USERS_WRITE + "')")
+  @Operation(
+      summary = "代理解除用户 IdP 绑定",
+      description = "平台运营代管解绑；写入审计 action user.oauth.unbind")
+  public ResponseEntity<Void> unbindUserOauth(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID userId,
+      @PathVariable String providerId) {
+    userAdminService.unbindUserOauth(principal, userId, providerId);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

@@ -23,18 +23,25 @@ public class UserOauthBindService {
 
   public UserOauthBindsResponse listForCurrentUser(SaasPrincipal principal) {
     requirePrincipal(principal);
-    var binds = userOauthBindRepository.findByUserId(principal.userId());
+    return listForUserId(principal.userId());
+  }
+
+  public UserOauthBindsResponse listForUserId(UUID userId) {
+    var binds = userOauthBindRepository.findByUserId(userId);
     return new UserOauthBindsResponse(binds.stream().map(this::toDto).toList());
   }
 
   public void unbindForCurrentUser(SaasPrincipal principal, String providerId) {
     requirePrincipal(principal);
+    unbindForUserId(principal.userId(), providerId);
+  }
+
+  public void unbindForUserId(UUID userId, String providerId) {
     if (!StringUtils.hasText(providerId)) {
       throw AuthException.badRequest("providerId is required");
     }
     var removed =
-        userOauthBindRepository.deleteByUserIdAndProviderId(
-            principal.userId(), providerId.trim());
+        userOauthBindRepository.deleteByUserIdAndProviderId(userId, providerId.trim());
     if (!removed) {
       throw AuthException.notFound("OAuth bind not found");
     }

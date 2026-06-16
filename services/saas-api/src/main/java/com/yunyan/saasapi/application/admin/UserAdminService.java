@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.application.admin;
 
+import com.yunyan.saasapi.application.auth.UserOauthBindService;
 import com.yunyan.saasapi.application.auth.UserSessionRevoker;
 import com.yunyan.saasapi.domain.RoleRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
@@ -13,6 +14,7 @@ import com.yunyan.saasapi.web.dto.admin.AdminUserDto;
 import com.yunyan.saasapi.web.dto.admin.AdminUserListResponse;
 import com.yunyan.saasapi.web.dto.admin.PatchUserRequest;
 import com.yunyan.saasapi.web.dto.admin.UpdateUserRolesRequest;
+import com.yunyan.saasapi.web.dto.auth.UserOauthBindsResponse;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,6 +43,7 @@ public class UserAdminService {
   private final TenantRepository tenantRepository;
   private final RoleRepository roleRepository;
   private final UserSessionRevoker userSessionRevoker;
+  private final UserOauthBindService userOauthBindService;
   private final AdminAuditLogService adminAuditLogService;
 
   public AdminUserListResponse listUsers(Optional<UUID> tenantId, AdminListParams params) {
@@ -136,6 +139,31 @@ public class UserAdminService {
         userId,
         "Platform roles -> " + String.join(",", requestedPlatformRoles));
     return result;
+  }
+
+  public UserOauthBindsResponse listUserOauthBinds(UUID userId) {
+    requireUser(userId);
+    return userOauthBindService.listForUserId(userId);
+  }
+
+  @Transactional
+  public void unbindUserOauth(SaasPrincipal principal, UUID userId, String providerId) {
+    var user = requireUser(userId);
+    userOauthBindService.unbindForUserId(userId, providerId);
+    adminAuditLogService.recordPlatformUserAction(
+        principal,
+        "user.oauth.unbind",
+        userId,
+        "Removed OAuth bind provider="
+            + providerId.trim()
+            + " for "
+            + user.getEmail());
+  }
+
+  private SysUser requireUser(UUID userId) {
+    return userRepository
+        .findById(userId)
+        .orElseThrow(() -> AuthException.notFound("User not found"));
   }
 
   private List<SysRole> resolveRolesByCodes(List<String> roleCodes) {

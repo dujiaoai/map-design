@@ -57,7 +57,7 @@ public class AdminSystemFlagsService {
             adminMfaService.countEnrolledPlatformAdmins()),
         new AdminSystemFlagsResponse.OidcFlags(
             oidcAuthService.isEnabled(),
-            false,
+            oidcAuthService.isAuthorizationCodeFlowAvailable(),
             oidcAuthService.countConfiguredProviders()),
         new AdminSystemFlagsResponse.RuntimeFlags(activeProfiles(), jwtProperties.effectivePermEpoch()));
   }

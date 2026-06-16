@@ -161,6 +161,24 @@ public class AuthService {
     return buildLoginResponse(user);
   }
 
+  public LoginResponse loginAfterOidc(String email, String tenantSlug) {
+    var lookup = userAuthRepository.lookupForLogin(email, tenantSlug);
+    return switch (lookup.status()) {
+      case TENANT_SUSPENDED -> throw AuthException.forbidden("Tenant is suspended");
+      case TENANT_REQUIRED -> throw AuthException.badRequest("Tenant slug is required");
+      case NOT_FOUND -> throw AuthException.unauthorized("No account linked for OIDC email");
+      case ACCOUNT_DISABLED -> throw AuthException.forbidden("Account is disabled");
+      case INVITE_PENDING ->
+          throw AuthException.forbidden("Invite pending, check your email to set a password");
+      case EMAIL_VERIFICATION_PENDING ->
+          throw AuthException.forbidden("Email not verified, check your inbox to complete registration");
+      case FOUND -> {
+        userAuthRepository.touchLastLoginAt(lookup.user().id());
+        yield resolveLoginAfterPassword(lookup.user());
+      }
+    };
+  }
+
   private LoginResponse resolveLoginAfterPassword(AuthenticatedUser user) {
     if (!AdminMfaService.hasPlatformAdminAccess(user.permissionCodes())) {
       return buildLoginResponse(user);

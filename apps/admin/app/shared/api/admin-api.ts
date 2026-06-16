@@ -234,6 +234,18 @@ export function updateTenantFeatures(tenantId: string, featureCodes: string[]) {
   })
 }
 
+export interface TenantQuotasResponse {
+  tenantId: string
+  plan: string
+  seats: { limit: number | null; used: number }
+  apiRate: { limitPerMinute: number }
+  storage: { limitBytes: number; usedBytes: number }
+}
+
+export function fetchTenantQuotas(tenantId: string) {
+  return api.get<TenantQuotasResponse>(`/tenants/${tenantId}/quotas`)
+}
+
 export interface AdminUserSummary {
   id: string
   email: string

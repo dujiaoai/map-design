@@ -8,6 +8,7 @@ export const adminQueryKeys = {
   tenant: (tenantId: string) => ['admin', 'tenants', tenantId] as const,
   featureCatalog: ['admin', 'feature-catalog'] as const,
   tenantFeatures: (tenantId: string) => ['admin', 'tenants', tenantId, 'features'] as const,
+  tenantQuotas: (tenantId: string) => ['admin', 'tenants', tenantId, 'quotas'] as const,
   users: (tenantId?: string, params?: AdminListQuery) =>
     ['admin', 'users', tenantId ?? 'all', params ?? {}] as const,
   sessionTenants: ['admin', 'session-tenants'] as const,

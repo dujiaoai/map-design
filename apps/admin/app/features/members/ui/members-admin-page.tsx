@@ -34,6 +34,7 @@ import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badg
 
 import { EditMemberSheet } from './edit-member-sheet'
 import { InviteMemberSheet } from './invite-member-sheet'
+import { TenantQuotaSummary } from './tenant-quota-summary'
 
 type MemberSortKey = 'email' | 'displayName' | 'lastLoginAt' | 'createdAt'
 
@@ -127,6 +128,8 @@ export function MembersAdminPage({
           onClear={showTenantClear ? () => void navigate('/members') : undefined}
         />
       ) : null}
+
+      <TenantQuotaSummary tenantId={tenantId} />
 
       <AdminTableToolbar
         searchInputRef={searchInputRef}

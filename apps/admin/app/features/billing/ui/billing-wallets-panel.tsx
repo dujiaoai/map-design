@@ -26,6 +26,14 @@ import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 const PAGE_SIZE = 20
 const LOW_BALANCE_THRESHOLD = 100
 
+const WALLET_TABLE_COLUMNS = [
+  { key: 'tenantId', label: '租户 ID' },
+  { key: 'userId', label: '用户 ID' },
+  { key: 'availableBalance', label: '可用积分' },
+  { key: 'frozenBalance', label: '冻结' },
+  { key: 'balance', label: '余额' },
+] as const
+
 type WalletRow = AdminWalletList['items'][number]
 
 export function BillingWalletsPanel({
@@ -43,6 +51,7 @@ export function BillingWalletsPanel({
   const [filters, setFilters] = useState<{ tenantId?: string; userId?: string }>({})
   const [page, setPage] = useState(0)
   const [filterError, setFilterError] = useState<string | null>(null)
+  const columnPrefs = useAdminTableColumnPrefs('billing-wallets', [...WALLET_TABLE_COLUMNS])
 
   const applySeed = useCallback((seed: BillingFilterSeed) => {
     setTenantId(seed.tenantId ?? '')
@@ -158,8 +167,12 @@ export function BillingWalletsPanel({
         ),
       })
     }
-    return cols
-  }, [onNavigate])
+    return cols.filter((column) => {
+      const key = String(column.key)
+      if (key === 'actions') return Boolean(onNavigate)
+      return columnPrefs.isColumnVisible(key)
+    })
+  }, [columnPrefs.isColumnVisible, columnPrefs.visible, onNavigate])
 
   return (
     <AdminPanel>
@@ -214,6 +227,12 @@ export function BillingWalletsPanel({
             >
               重置
             </Button>
+            <AdminTableColumnPicker
+              columns={[...WALLET_TABLE_COLUMNS]}
+              visible={columnPrefs.visible}
+              onVisibleChange={columnPrefs.setColumnVisible}
+              onReset={columnPrefs.resetColumns}
+            />
           </div>
         </form>
         {filterError ? (

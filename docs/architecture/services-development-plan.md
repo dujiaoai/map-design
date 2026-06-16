@@ -371,7 +371,8 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | FND-05 | 可观测性最小集（MDC + billing 探活） | ✅ |
 | FND-06 | Admin `/system` 平台配置 | ✅ |
 | FND-07a | Platform Admin 租户代操作（impersonation MVP） | ✅ |
-| FND-07 | OAuth2/OIDC、Admin MFA | Later |
+| FND-07b | Admin MFA 骨架（配置 + 只读 API） | ✅ |
+| FND-07 | OAuth2/OIDC、Admin MFA TOTP 完整流程 | Later |
 
 **仍不做（本阶段）**：Sprint E 地图/机库/专题业务 API。
 
@@ -434,8 +435,8 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | RBAC-P1 ✅ | D+ | 平台用户角色分配 + 角色权限变更会话吊销 |
 | RBAC-P2 ✅ | D+ | 租户自定义角色与权限配置 |
 | E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
-| FND-01～FND-07a | 基础完善 | 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) |
-| FND-07 | Later | OAuth2/OIDC、Admin MFA |
+| FND-01～FND-07b | 基础完善 | 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) |
+| FND-07 | Later | OAuth2/OIDC、Admin MFA TOTP 完整流程 |
 
 ### 建议默认顺序（仅供参考，非强制）
 

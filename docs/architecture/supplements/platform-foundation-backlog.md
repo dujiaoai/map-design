@@ -20,7 +20,8 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | P2 | FND-05 | 可观测性最小集（MDC + 依赖健康探活） | ✅ |
 | P3 | FND-06 | Admin `/system` 平台配置 | ✅ |
 | P3 | FND-07a | Platform Admin 租户代操作（impersonation MVP） | ✅ |
-| Later | FND-07 | OAuth2/OIDC、Admin MFA | 远期 |
+| P3 | FND-07b | Admin MFA 骨架（配置 + 只读 API + 系统页） | ✅ |
+| Later | FND-07 | OAuth2/OIDC、Admin MFA TOTP 完整流程 | 远期 |
 
 ---
 
@@ -114,12 +115,20 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 ---
 
+## FND-07b · Admin MFA 骨架 ✅
+
+**交付（2026-06）**：ADR [0008](../../adr/0008-platform-admin-mfa.md)；`saas.auth.admin-mfa.enforcement-enabled`；`GET /v1/admin/mfa/status`；`system/flags.mfa`；Admin 系统页展示强制开关与当前账号状态。
+
+**不含**：TOTP 注册/校验、登录 step-up、代操作 MFA 门控（→ FND-07 Phase 2）。
+
+---
+
 ## FND-07 · 远期（Later）
 
 | 项 | 说明 |
 | --- | --- |
 | OAuth2/OIDC | X-01 |
-| Admin MFA | 高权限账号 |
+| Admin MFA Phase 2 | TOTP enroll/verify、登录 step-up、代操作门控 |
 | `/v1/menus` | 服务端动态菜单（当前 mock-nav） |
 | Plan 配额 | seat / rate / storage |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |

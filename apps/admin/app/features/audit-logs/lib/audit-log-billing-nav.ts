@@ -4,6 +4,11 @@ const BILLING_ACTION_TABS: Record<string, BillingTab> = {
   'billing.wallet.adjust': 'adjust',
   'billing.package.write': 'packages',
   'billing.recharge.refund': 'orders',
+  'billing.coupon.write': 'coupons',
+  'billing.invoice.issue': 'invoices',
+  'billing.invoice.reject': 'invoices',
+  'billing.wire_transfer.approve': 'wire-transfers',
+  'billing.wire_transfer.reject': 'wire-transfers',
 }
 
 export function resolveAuditActionBillingTab(action: string): BillingTab | null {

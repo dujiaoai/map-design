@@ -31,15 +31,23 @@ import { formatAdminDate } from '~/shared/ui/admin-status-badge'
 
 const AUDIT_ACTION_OPTIONS = [
   { value: 'all', label: '全部动作' },
-  { value: 'member.invite', label: '邀请成员' },
-  { value: 'member.invite.resend', label: '重发邀请' },
+  { value: 'tenant.create', label: '创建租户' },
+  { value: 'tenant.update', label: '更新租户' },
+  { value: 'tenant.features.update', label: '更新租户能力' },
+  { value: 'user.update', label: '更新平台用户' },
   { value: 'member.invite-link.create', label: '创建邀请链接' },
   { value: 'member.invite-link.revoke', label: '撤销邀请链接' },
   { value: 'member.update', label: '更新成员' },
   { value: 'member.roles.update', label: '更新角色' },
+  { value: 'role.permissions.update', label: '更新角色权限' },
   { value: 'billing.wallet.adjust', label: '计费调账' },
   { value: 'billing.package.write', label: 'SKU 变更' },
   { value: 'billing.recharge.refund', label: '充值退款' },
+  { value: 'billing.coupon.write', label: '优惠券变更' },
+  { value: 'billing.invoice.issue', label: '开具发票' },
+  { value: 'billing.invoice.reject', label: '驳回发票' },
+  { value: 'billing.wire_transfer.approve', label: '对公入账' },
+  { value: 'billing.wire_transfer.reject', label: '驳回对公转账' },
 ] as const
 
 const AUDIT_BILLING_SEARCH = 'billing.'
@@ -118,7 +126,7 @@ export function AuditLogsAdminPage() {
         eyebrow="Operations"
         title="审计日志"
         description={appendAdminListTotal(
-          '记录成员邀请、角色变更与平台计费操作（调账、SKU）；跨租户操作会标记 crossTenant。',
+          '记录租户、成员、平台用户与计费写操作；跨租户操作会标记 crossTenant。',
           { total, loaded: Boolean(query.data), unit: '条' },
         )}
         actions={
@@ -200,7 +208,7 @@ export function AuditLogsAdminPage() {
 
       <AdminPanel className="p-0">
         {query.isLoading ? (
-          <AdminTableSkeleton columns={6} showPagination />
+          <AdminTableSkeleton columns={7} showPagination />
         ) : query.isError ? (
           <AdminEmptyState
             message="加载失败，请刷新重试"
@@ -243,6 +251,7 @@ export function AuditLogsAdminPage() {
                     direction={sort?.key === 'action' ? sort.direction : undefined}
                     onSort={() => toggleSort('action')}
                   />
+                  <AdminTableHeaderCell>资源</AdminTableHeaderCell>
                   <AdminTableHeaderCell>详情</AdminTableHeaderCell>
                   <AdminTableHeaderCell>目标租户</AdminTableHeaderCell>
                   <AdminTableHeaderCell>跨租户</AdminTableHeaderCell>
@@ -310,6 +319,16 @@ function AuditLogRow({
             查看计费
           </Link>
         ) : null}
+      </AdminTableCell>
+      <AdminTableCell>
+        {log.resourceId ? (
+          <div className="space-y-0.5">
+            <span className="font-mono text-[10px] text-muted-foreground">{log.resourceType}</span>
+            <AdminIdCell value={log.resourceId} label="资源" />
+          </div>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
       </AdminTableCell>
       <AdminTableCell className="max-w-md truncate">{log.detail ?? '—'}</AdminTableCell>
       <AdminTableCell>

@@ -7,10 +7,13 @@ describe('resolveAuditActionBillingTab', () => {
     expect(resolveAuditActionBillingTab('billing.wallet.adjust')).toBe('adjust')
     expect(resolveAuditActionBillingTab('billing.package.write')).toBe('packages')
     expect(resolveAuditActionBillingTab('billing.recharge.refund')).toBe('orders')
+    expect(resolveAuditActionBillingTab('billing.coupon.write')).toBe('coupons')
+    expect(resolveAuditActionBillingTab('billing.invoice.issue')).toBe('invoices')
+    expect(resolveAuditActionBillingTab('billing.wire_transfer.approve')).toBe('wire-transfers')
   })
 
   it('returns null for non-billing actions', () => {
-    expect(resolveAuditActionBillingTab('member.invite')).toBeNull()
+    expect(resolveAuditActionBillingTab('member.update')).toBeNull()
   })
 })
 

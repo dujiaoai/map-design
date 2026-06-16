@@ -10,3 +10,4 @@
 | [0004](./0004-tenant-isolation-strategy.md) | 租户隔离策略 | Accepted |
 | [0005](./0005-ruoyi-transitional-backend.md) | RuoYi 过渡后端策略 | Accepted |
 | [0006](./0006-esm-remote-plugin-over-mf.md) | Cloud ESM Remote Plugin | Accepted |
+| [0007](./0007-platform-admin-impersonation.md) | Platform Admin 租户代操作 | Accepted |

@@ -67,4 +67,4 @@ Plan 维度限制：seat 数、API rate、storage（待业务 API 排期）。
 
 ## 跨租户（Platform Admin）
 
-`PLATFORM_ADMIN` 可列出全部租户；**跨租户写操作**须 future **impersonation + 审计日志**（操作人、目标租户、时间、原因）。本期未实现 `act_as_tenant` claim。
+`PLATFORM_ADMIN` 可列出全部租户；**跨租户写操作**须 **impersonation**（JWT `act_as_tenant` claim + 审计，见 [ADR-0007](../adr/0007-platform-admin-impersonation.md)）。

@@ -1,8 +1,10 @@
 import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
-import { PencilIcon } from 'lucide-react'
+import { PencilIcon, ScrollTextIcon } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 
+import { AUDIT_READ_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
+import { buildAuditLogsLink } from '~/features/audit-logs/lib/audit-log-nav'
 import { fetchAdminTenants, fetchAdminUsers, type AdminUserSummary } from '~/shared/api/admin-api'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
@@ -33,8 +35,9 @@ import { EditUserSheet } from './edit-user-sheet'
 type UserSortKey = 'email' | 'displayName' | 'tenantSlug' | 'lastLoginAt' | 'createdAt'
 
 export function UsersAdminPage() {
-  const { can } = useAdminPermissions()
+  const { can, canAny } = useAdminPermissions()
   const canWrite = can('admin:users:write')
+  const canViewAudit = canAny([...AUDIT_READ_PERMISSIONS])
   const [searchParams, setSearchParams] = useSearchParams()
   const tenantFilterId = searchParams.get('tenantId') ?? undefined
   const qFromUrl = searchParams.get('q') ?? ''
@@ -171,7 +174,10 @@ export function UsersAdminPage() {
 
       <AdminPanel className="p-0">
         {usersQuery.isLoading ? (
-          <AdminTableSkeleton columns={canWrite ? 8 : 7} showPagination />
+          <AdminTableSkeleton
+            columns={canWrite || canViewAudit ? 8 : 7}
+            showPagination
+          />
         ) : usersQuery.isError ? (
           <AdminEmptyState
             message="加载失败，请刷新重试"
@@ -226,7 +232,7 @@ export function UsersAdminPage() {
                     direction={sort?.key === 'createdAt' ? sort.direction : undefined}
                     onSort={() => toggleSort('createdAt')}
                   />
-                  {canWrite ? (
+                  {canWrite || canViewAudit ? (
                     <AdminTableHeaderCell className="text-right">操作</AdminTableHeaderCell>
                   ) : null}
                 </tr>
@@ -255,12 +261,34 @@ export function UsersAdminPage() {
                     <AdminTableCell className="text-muted-foreground">
                       {formatAdminDate(user.createdAt)}
                     </AdminTableCell>
-                    {canWrite ? (
+                    {canWrite || canViewAudit ? (
                       <AdminTableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => setEditingUser(user)}>
-                          <PencilIcon className="size-3.5" />
-                          编辑
-                        </Button>
+                        <div className="flex justify-end gap-1">
+                          {canViewAudit ? (
+                            <Button
+                              nativeButton={false}
+                              variant="ghost"
+                              size="sm"
+                              render={
+                                <Link
+                                  to={buildAuditLogsLink({
+                                    actorUserId: user.id,
+                                    tenantId: tenantFilterId,
+                                  })}
+                                />
+                              }
+                            >
+                              <ScrollTextIcon className="size-3.5" />
+                              审计
+                            </Button>
+                          ) : null}
+                          {canWrite ? (
+                            <Button variant="ghost" size="sm" onClick={() => setEditingUser(user)}>
+                              <PencilIcon className="size-3.5" />
+                              编辑
+                            </Button>
+                          ) : null}
+                        </div>
                       </AdminTableCell>
                     ) : null}
                   </AdminTableRow>

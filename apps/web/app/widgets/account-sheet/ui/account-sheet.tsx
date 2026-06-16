@@ -16,7 +16,7 @@ import {
   toast,
 } from '@repo/ui'
 
-import { ProfileForm, ResetPasswordForm } from '~/features/account'
+import { ProfileForm, ResetPasswordForm, OauthBindsPanel } from '~/features/account'
 import { formatSessionRoles, sessionToNavUserData } from '~/features/account/lib/session-display'
 import { useSessionQuery } from '~/shared/queries/session-queries'
 import { usesSaasSessionBootstrap } from '~/shared/session/fetch-saas-session'
@@ -111,6 +111,8 @@ export function AccountSheet({
                   }
                 />
               </div>
+
+              {saasAccount ? <OauthBindsPanel /> : null}
 
               <Tabs key={defaultTab} defaultValue={defaultTab} className="gap-4">
                 <TabsList className="grid w-full grid-cols-2">

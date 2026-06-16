@@ -52,6 +52,12 @@ DELETE FROM map_layer WHERE tenant_id IN (
   'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01',
   '11111111-1111-1111-1111-111111111102'
 );
+DELETE FROM uav_dock WHERE tenant_id IN (
+  '11111111-1111-1111-1111-111111111101',
+  '99999999-9999-9999-9999-999999999901',
+  'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaa01',
+  '11111111-1111-1111-1111-111111111102'
+);
 DELETE FROM sys_tenant_invite_link WHERE tenant_id IN (
   '11111111-1111-1111-1111-111111111101',
   '99999999-9999-9999-9999-999999999901',

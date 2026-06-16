@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SaasTenantLineHandler implements TenantLineHandler {
 
-  private static final Set<String> TENANT_TABLES = Set.of("sys_user", "map_layer");
+  private static final Set<String> TENANT_TABLES = Set.of("sys_user", "map_layer", "uav_dock");
 
   @Override
   public Expression getTenantId() {

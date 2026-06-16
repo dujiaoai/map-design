@@ -138,4 +138,4 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 
 ## Later（P4 余项）
 
-邮箱邀请。
+~~邮箱邀请。~~ ✅ 成员页「邀请成员」Sheet：邮箱邀请 Tab + 编辑 invited 成员/用户重发邮件；API `POST .../members/invite`。

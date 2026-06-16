@@ -38,6 +38,10 @@ public class SaasAppProperties {
   public static class AdminMfa {
     /** 为 true 时平台管理员须完成 TOTP（Phase 2 登录 step-up） */
     private boolean enforcementEnabled = false;
+    /** AES-256 密钥（Base64，32 字节）用于加密 TOTP secret */
+    private String secretEncryptionKey = "MDEyMzQ1Njc4OUFCREVGMDEyMzQ1Njc4OUFCDEF=";
+    /** otpauth URI issuer */
+    private String totpIssuer = "YunYan Admin";
   }
 
   @Data

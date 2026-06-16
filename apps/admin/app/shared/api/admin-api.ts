@@ -523,3 +523,11 @@ export async function updateAccountProfile(values: {
 export function updateAccountPassword(oldPassword: string, newPassword: string) {
   return api.post('/users/me/password', { oldPassword, newPassword })
 }
+
+export function startImpersonation(body: { tenantId: string; reason: string }) {
+  return api.post('/admin/impersonation', body)
+}
+
+export function stopImpersonation() {
+  return api.delete('/admin/impersonation')
+}

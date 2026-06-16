@@ -1,6 +1,7 @@
 import { SidebarInset, SidebarProvider } from '@repo/ui'
 
 import { AdminAccountSheet } from '~/widgets/account-sheet'
+import { AdminImpersonationBanner } from '~/features/impersonation/ui/admin-impersonation-banner'
 
 import { AdminChromeProvider, useAdminChrome } from '../model/admin-chrome-context'
 import { AdminAppSidebar } from './admin-app-sidebar'
@@ -16,6 +17,7 @@ function AdminShellLayout({ children }: { children: React.ReactNode }) {
         <AdminAppSidebar />
         <SidebarInset className="flex h-full min-h-0 flex-col overflow-hidden">
           <AdminShellHeader />
+          <AdminImpersonationBanner />
           <div className="admin-scroll-area min-h-0 flex-1 w-full">
             <div className="admin-shell-main-inner">{children}</div>
           </div>

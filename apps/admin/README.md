@@ -77,6 +77,7 @@ pnpm --filter @repo/saas-admin dev
 - **P4++++++++++++ 审计 P1/P2**：租户/用户/计费写操作落库；动作枚举同步；资源列；`tenantId`/`from`/`to` 筛选；详情 Sheet
 - **P4+++++++++++++ 审计 P3**：独立 `admin:audit:read` / `admin:audit:export`；CSV 导出（最多 5000 条）；`audit.export` 自审计
 - **P4++++++++++++++ 审计完善**：`actorUserId` 筛选；DTO/CSV 含操作人 ID；租户详情快捷跳转审计
+- **FND-07 代操作**：`admin:impersonate`；租户详情「代操作」Sheet；全局 banner 退出；用户行审计快捷链接
 
 ## 主流运维控制台 UX 对照
 
@@ -117,4 +118,4 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 
 ## Later（P4 余项）
 
-邮箱邀请、impersonation 审计深化、Admin MFA（FND-07）。
+邮箱邀请、Admin MFA（FND-07 Later）。

@@ -10,17 +10,19 @@ import {
   ShieldPlusIcon,
   SparklesIcon,
   UsersIcon,
+  UserCogIcon,
 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
 import { AUDIT_READ_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
 import { buildAuditLogsLink } from '~/features/audit-logs/lib/audit-log-nav'
+import { StartImpersonationSheet } from '~/features/impersonation/ui/start-impersonation-sheet'
 import { MembersAdminPage } from '~/features/members/ui/members-admin-page'
 import { TenantCustomRolesPanel } from '~/features/roles/ui/tenant-custom-roles-panel'
 import { resolveTenantDetailTab } from '~/features/tenants/lib/tenant-detail-nav'
 import { fetchAdminTenant, type AdminTenantSummary } from '~/shared/api/admin-api'
-import { canAccessAdminMembers } from '~/shared/auth/admin-access'
+import { canAccessAdminMembers, isPlatformAdmin } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import {
@@ -50,9 +52,13 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
   const canReadUsers = can('admin:users:read')
   const canViewBilling = canAny([...BILLING_PERMISSIONS])
   const canViewAudit = canAny([...AUDIT_READ_PERMISSIONS])
+  const homeTenantId = session?.homeTenant?.id ?? session?.tenant?.id
+  const canImpersonate =
+    can('admin:impersonate') && isPlatformAdmin(session) && homeTenantId !== tenantId
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [editOpen, setEditOpen] = useState(false)
+  const [impersonateOpen, setImpersonateOpen] = useState(false)
 
   const activeTab = useMemo(
     () => resolveTenantDetailTab(searchParams.get('tab'), { canReadMembers }),
@@ -179,7 +185,9 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
             canReadUsers={canReadUsers}
             canViewBilling={canViewBilling}
             canViewAudit={canViewAudit}
+            canImpersonate={canImpersonate}
             onOpenMembers={() => setActiveTab('members')}
+            onImpersonate={() => setImpersonateOpen(true)}
           />
         </TabsContent>
 
@@ -201,6 +209,12 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
       </Tabs>
 
       <EditTenantSheet tenant={tenant} open={editOpen} onOpenChange={setEditOpen} />
+      <StartImpersonationSheet
+        tenantId={tenantId}
+        tenantLabel={`${tenant.name} (${tenant.slug})`}
+        open={impersonateOpen}
+        onOpenChange={setImpersonateOpen}
+      />
     </div>
   )
 }
@@ -212,7 +226,9 @@ function TenantInfoPanel({
   canReadUsers,
   canViewBilling,
   canViewAudit,
+  canImpersonate,
   onOpenMembers,
+  onImpersonate,
 }: {
   tenant: AdminTenantSummary
   tenantId: string
@@ -220,9 +236,12 @@ function TenantInfoPanel({
   canReadUsers: boolean
   canViewBilling: boolean
   canViewAudit: boolean
+  canImpersonate: boolean
   onOpenMembers: () => void
+  onImpersonate: () => void
 }) {
-  const hasQuickLinks = canReadMembers || canReadUsers || canViewBilling || canViewAudit
+  const hasQuickLinks =
+    canReadMembers || canReadUsers || canViewBilling || canViewAudit || canImpersonate
 
   return (
     <AdminPanel>
@@ -281,6 +300,12 @@ function TenantInfoPanel({
             >
               <ScrollTextIcon className="size-3.5" />
               审计日志
+            </Button>
+          ) : null}
+          {canImpersonate ? (
+            <Button type="button" variant="outline" size="sm" onClick={onImpersonate}>
+              <UserCogIcon className="size-3.5" />
+              代操作
             </Button>
           ) : null}
         </div>

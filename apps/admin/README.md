@@ -75,7 +75,8 @@ pnpm --filter @repo/saas-admin dev
 - **P4+++++++++ 计费与复制反馈**：SKU/优惠券/调账/对公入账 Toast；`AdminIdCell` 复制 Toast；概览刷新 Toast
 - **P4++++++++++ 排序透明化**：`AdminTableSortHint` 标明当前页/已加载范围 + 清除排序；租户自定义角色 Toast
 - **P4++++++++++++ 审计 P1/P2**：租户/用户/计费写操作落库；动作枚举同步；资源列；`tenantId`/`from`/`to` 筛选；详情 Sheet
-- **P4+++++++++++++ 审计 P3**：独立 `admin:audit:read` / `admin:audit:export`；CSV 导出（最多 5000 条）
+- **P4+++++++++++++ 审计 P3**：独立 `admin:audit:read` / `admin:audit:export`；CSV 导出（最多 5000 条）；`audit.export` 自审计
+- **P4++++++++++++++ 审计完善**：`actorUserId` 筛选；DTO/CSV 含操作人 ID；租户详情快捷跳转审计
 
 ## 主流运维控制台 UX 对照
 

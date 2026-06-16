@@ -30,6 +30,15 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>
 
+function isValidAdminMfaCode(code: string) {
+  const trimmed = code.trim()
+  if (/^\d{6}$/.test(trimmed)) {
+    return true
+  }
+  const normalized = trimmed.replace(/[\s-]/g, '').toUpperCase()
+  return /^[A-Z2-9]{8}$/.test(normalized)
+}
+
 const adminLoginFieldInputClassName =
   'admin-login-input h-11 rounded-[10px] border-white/10 bg-[var(--admin-login-field-bg)] text-[var(--text-on-dark)] shadow-none placeholder:text-white/35 focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/30'
 
@@ -123,7 +132,7 @@ export default function LoginRoute() {
 
   async function onSubmitMfa(event: React.FormEvent) {
     event.preventDefault()
-    if (!mfaChallenge || mfaCode.length !== 6) return
+    if (!mfaChallenge || !isValidAdminMfaCode(mfaCode)) return
 
     setIsMfaSubmitting(true)
     setSubmitError(null)
@@ -157,21 +166,19 @@ export default function LoginRoute() {
           {mfaChallenge ? (
             <div className="admin-login-field space-y-4" style={{ '--field-i': 0 } as CSSProperties}>
               <p className="text-sm text-white/65">
-                账号 {mfaChallenge.email ?? '已验证'} 已启用 TOTP，请输入验证器 6 位码。
+                账号 {mfaChallenge.email ?? '已验证'} 已启用 TOTP，请输入验证器 6 位码或恢复码。
               </p>
               <div className="space-y-1.5">
                 <label className="text-sm text-white/65" htmlFor="admin-mfa-code">
-                  动态验证码
+                  动态验证码 / 恢复码
                 </label>
                 <Input
                   id="admin-mfa-code"
                   className={adminLoginFieldInputClassName}
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  placeholder="000000"
+                  autoComplete="off"
+                  placeholder="000000 或 XXXX-XXXX"
                   value={mfaCode}
-                  onChange={(event) => setMfaCode(event.target.value.replace(/\D/g, ''))}
+                  onChange={(event) => setMfaCode(event.target.value.toUpperCase())}
                 />
               </div>
               {submitError ? (
@@ -181,7 +188,7 @@ export default function LoginRoute() {
               ) : null}
               <Button
                 className="h-11 w-full rounded-[10px] text-base"
-                disabled={isMfaSubmitting || mfaCode.length !== 6}
+                disabled={isMfaSubmitting || !isValidAdminMfaCode(mfaCode)}
                 type="submit"
               >
                 {isMfaSubmitting ? '验证中…' : '完成登录'}

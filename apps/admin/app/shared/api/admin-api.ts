@@ -65,6 +65,8 @@ export interface AdminMfaStatusResponse {
   totpEnrollmentAvailable: boolean
   enrolled: boolean
   verifiedAt: number | null
+  recoveryCodesRemaining: number
+  recoveryCodes?: string[] | null
 }
 
 export function fetchAdminMfaStatus() {
@@ -90,6 +92,10 @@ export function disableAdminTotp(code: string) {
     method: 'DELETE',
     body: { code },
   })
+}
+
+export function regenerateAdminRecoveryCodes(code: string) {
+  return api.post<AdminMfaStatusResponse>('/admin/mfa/recovery-codes/regenerate', { code })
 }
 
 export function fetchAdminSystemFlags() {

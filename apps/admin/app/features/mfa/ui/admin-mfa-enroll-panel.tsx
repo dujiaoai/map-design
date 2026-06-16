@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import {
   disableAdminTotp,
   enrollAdminTotp,
+  regenerateAdminRecoveryCodes,
   verifyAdminTotp,
 } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
@@ -18,9 +19,38 @@ import { ShieldIcon } from 'lucide-react'
 
 interface AdminMfaEnrollPanelProps {
   enrolled: boolean
+  recoveryCodesRemaining: number
 }
 
-export function AdminMfaEnrollPanel({ enrolled }: AdminMfaEnrollPanelProps) {
+function RecoveryCodesBanner({
+  codes,
+  onDismiss,
+}: {
+  codes: string[]
+  onDismiss: () => void
+}) {
+  return (
+    <div className="space-y-3 rounded-lg border border-amber-500/40 bg-amber-500/5 p-4">
+      <p className="text-sm font-medium text-foreground">请妥善保存以下恢复码</p>
+      <p className="text-xs text-muted-foreground">
+        每条仅可使用一次；丢失验证器时可用于登录或注销 TOTP。关闭后将无法再次查看明文。
+      </p>
+      <ul className="grid gap-1 font-mono text-sm">
+        {codes.map((code) => (
+          <li key={code}>{code}</li>
+        ))}
+      </ul>
+      <Button type="button" variant="outline" size="sm" onClick={onDismiss}>
+        我已保存
+      </Button>
+    </div>
+  )
+}
+
+export function AdminMfaEnrollPanel({
+  enrolled,
+  recoveryCodesRemaining,
+}: AdminMfaEnrollPanelProps) {
   const queryClient = useQueryClient()
   const [enrollData, setEnrollData] = useState<{
     secret: string
@@ -28,6 +58,8 @@ export function AdminMfaEnrollPanel({ enrolled }: AdminMfaEnrollPanelProps) {
   } | null>(null)
   const [verifyCode, setVerifyCode] = useState('')
   const [disableCode, setDisableCode] = useState('')
+  const [regenerateCode, setRegenerateCode] = useState('')
+  const [issuedRecoveryCodes, setIssuedRecoveryCodes] = useState<string[] | null>(null)
 
   const enrollMutation = useMutation({
     mutationFn: enrollAdminTotp,
@@ -40,9 +72,12 @@ export function AdminMfaEnrollPanel({ enrolled }: AdminMfaEnrollPanelProps) {
 
   const verifyMutation = useMutation({
     mutationFn: () => verifyAdminTotp(verifyCode.trim()),
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       setEnrollData(null)
       setVerifyCode('')
+      if (data.recoveryCodes?.length) {
+        setIssuedRecoveryCodes(data.recoveryCodes)
+      }
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.mfaStatus })
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.systemFlags })
       toast.success('TOTP 已绑定')
@@ -54,9 +89,23 @@ export function AdminMfaEnrollPanel({ enrolled }: AdminMfaEnrollPanelProps) {
     mutationFn: () => disableAdminTotp(disableCode.trim()),
     onSuccess: async () => {
       setDisableCode('')
+      setIssuedRecoveryCodes(null)
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.mfaStatus })
       await queryClient.invalidateQueries({ queryKey: adminQueryKeys.systemFlags })
       toast.success('TOTP 已注销')
+    },
+    onError: () => toast.error('验证码或恢复码无效'),
+  })
+
+  const regenerateMutation = useMutation({
+    mutationFn: () => regenerateAdminRecoveryCodes(regenerateCode.trim()),
+    onSuccess: async (data) => {
+      setRegenerateCode('')
+      if (data.recoveryCodes?.length) {
+        setIssuedRecoveryCodes(data.recoveryCodes)
+      }
+      await queryClient.invalidateQueries({ queryKey: adminQueryKeys.mfaStatus })
+      toast.success('已重新生成恢复码')
     },
     onError: () => toast.error('验证码无效'),
   })
@@ -66,13 +115,20 @@ export function AdminMfaEnrollPanel({ enrolled }: AdminMfaEnrollPanelProps) {
       <AdminPanelHeader
         icon={ShieldIcon}
         title="TOTP 双因素认证"
-        description="平台管理员可选绑定；绑定后登录须输入 6 位动态码。"
+        description="平台管理员可选绑定；绑定后登录须输入 6 位动态码或恢复码。"
       />
       <div className="space-y-4 px-4 py-4 md:px-5">
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm text-muted-foreground">当前账号</span>
           <AdminFlagBadge enabled={enrolled} label={enrolled ? '已绑定' : '未绑定'} />
         </div>
+
+        {issuedRecoveryCodes ? (
+          <RecoveryCodesBanner
+            codes={issuedRecoveryCodes}
+            onDismiss={() => setIssuedRecoveryCodes(null)}
+          />
+        ) : null}
 
         {!enrolled ? (
           <>
@@ -121,29 +177,57 @@ export function AdminMfaEnrollPanel({ enrolled }: AdminMfaEnrollPanelProps) {
             )}
           </>
         ) : (
-          <div className="space-y-3 rounded-lg border border-border/60 p-4">
-            <p className="text-sm text-muted-foreground">注销须输入当前验证器 6 位码。</p>
-            <div className="space-y-1.5">
-              <Label htmlFor="totp-disable">验证码</Label>
-              <Input
-                id="totp-disable"
-                inputMode="numeric"
-                maxLength={6}
-                placeholder="000000"
-                value={disableCode}
-                onChange={(event) => setDisableCode(event.target.value.replace(/\D/g, ''))}
-              />
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              剩余恢复码：<span className="font-medium text-foreground">{recoveryCodesRemaining}</span>
+            </p>
+            <div className="space-y-3 rounded-lg border border-border/60 p-4">
+              <p className="text-sm text-muted-foreground">重新生成恢复码须输入当前验证器 6 位码；旧码将全部作废。</p>
+              <div className="space-y-1.5">
+                <Label htmlFor="totp-regenerate">验证码</Label>
+                <Input
+                  id="totp-regenerate"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="000000"
+                  value={regenerateCode}
+                  onChange={(event) => setRegenerateCode(event.target.value.replace(/\D/g, ''))}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={regenerateCode.length !== 6 || regenerateMutation.isPending}
+                onClick={() => {
+                  void regenerateMutation.mutate()
+                }}
+              >
+                {regenerateMutation.isPending ? '生成中…' : '重新生成恢复码'}
+              </Button>
             </div>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={disableCode.length !== 6 || disableMutation.isPending}
-              onClick={() => {
-                void disableMutation.mutate()
-              }}
-            >
-              {disableMutation.isPending ? '注销中…' : '注销 TOTP'}
-            </Button>
+            <div className="space-y-3 rounded-lg border border-border/60 p-4">
+              <p className="text-sm text-muted-foreground">注销须输入当前验证器 6 位码或一次性恢复码。</p>
+              <div className="space-y-1.5">
+                <Label htmlFor="totp-disable">验证码 / 恢复码</Label>
+                <Input
+                  id="totp-disable"
+                  autoComplete="off"
+                  placeholder="000000 或 XXXX-XXXX"
+                  value={disableCode}
+                  onChange={(event) => setDisableCode(event.target.value.toUpperCase())}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={!disableCode.trim() || disableMutation.isPending}
+                onClick={() => {
+                  void disableMutation.mutate()
+                }}
+              >
+                {disableMutation.isPending ? '注销中…' : '注销 TOTP'}
+              </Button>
+            </div>
           </div>
         )}
       </div>

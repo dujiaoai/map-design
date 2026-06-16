@@ -229,7 +229,10 @@ export function SystemAdminPage() {
         </AdminPanel>
 
         {flags.mfa.totpEnrollmentAvailable && mfaQuery.data ? (
-          <AdminMfaEnrollPanel enrolled={mfaQuery.data.enrolled} />
+          <AdminMfaEnrollPanel
+            enrolled={mfaQuery.data.enrolled}
+            recoveryCodesRemaining={mfaQuery.data.recoveryCodesRemaining ?? 0}
+          />
         ) : null}
 
         <AdminPanel>

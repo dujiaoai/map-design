@@ -2,6 +2,7 @@ package com.yunyan.saasapi.application.email;
 
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.application.auth.EmailNormalizer;
+import com.yunyan.saasapi.application.tenant.TenantQuotaService;
 import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
 import com.yunyan.saasapi.domain.RoleRepository;
 import com.yunyan.saasapi.domain.UserRepository;
@@ -32,6 +33,7 @@ public class UserInviteService {
   private final EmailVerificationTokenRepository emailVerificationTokenRepository;
   private final EmailDeliveryService emailDeliveryService;
   private final SaasAppProperties saasAppProperties;
+  private final TenantQuotaService tenantQuotaService;
 
   @Transactional
   public void createInvitedUserAndSendEmail(
@@ -40,6 +42,8 @@ public class UserInviteService {
     if (userRepository.findByTenantIdAndEmail(tenant.getId(), normalizedEmail).isPresent()) {
       throw AuthException.conflict("Email already registered for this tenant");
     }
+
+    tenantQuotaService.ensureSeatAvailable(tenant.getId());
 
     var role =
         roleRepository

@@ -1,0 +1,1 @@
+UPDATE sys_tenant SET plan = 'solo' WHERE id = '99999999-9999-9999-9999-999999999901';

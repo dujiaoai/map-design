@@ -4,6 +4,7 @@ import com.yunyan.saasapi.application.auth.AuthenticatedUser;
 import com.yunyan.saasapi.application.auth.EmailNormalizer;
 import com.yunyan.saasapi.application.auth.PasswordPolicyService;
 import com.yunyan.saasapi.application.auth.UserAuthRepository;
+import com.yunyan.saasapi.application.tenant.TenantQuotaService;
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.RoleRepository;
 import com.yunyan.saasapi.domain.TenantInviteLinkRepository;
@@ -39,6 +40,7 @@ public class TenantInviteLinkService {
   private final EmailTokenHasher emailTokenHasher;
   private final PasswordPolicyService passwordPolicyService;
   private final SaasAppProperties saasAppProperties;
+  private final TenantQuotaService tenantQuotaService;
 
   public InviteLinkPreviewResponse preview(String rawToken) {
     var link = requireUsableLink(rawToken.trim());
@@ -62,6 +64,8 @@ public class TenantInviteLinkService {
     if (userRepository.findByTenantIdAndEmail(tenant.getId(), normalizedEmail).isPresent()) {
       throw AuthException.conflict("Email already registered for this tenant");
     }
+
+    tenantQuotaService.ensureSeatAvailable(tenant.getId());
 
     if (!tenantInviteLinkRepository.tryIncrementUseCount(link.getId())) {
       throw AuthException.badRequest("Invite link is no longer available");

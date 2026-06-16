@@ -316,6 +316,18 @@ flowchart TD
 
 **不含**：地图引擎图层同步、树形目录、拖拽排序 UI。
 
+#### E-03 · 机库列表 API ✅
+
+**交付（2026-06）**：`uav_dock` 表；`GET /v1/uav/docks`、`GET /v1/uav/docks/{id}`；`workspace:use` RBAC；租户隔离 + PG RLS。
+
+**不含**：CRUD、直播/WebSocket、cloud/uav ESM 桥接。
+
+#### E-03b · 机库列表 UI ✅
+
+**交付（2026-06）**：`UavDockListPanel`；SaaS 会话下「机库列表」消费 `/v1/uav/docks`；无 API 时 mock 列表。
+
+**不含**：地图打点、远程模块加载。
+
 ### Sprint F · 平台计费（F-1～F-6 骨架 + sec 加固已落地 · 2026-06-14）
 
 **PRD：** [billing-credits-prd.md](../product/billing-credits-prd.md)  
@@ -404,7 +416,9 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | FND-08 | 附件真实计量 / 菜单 RBAC 等 | Later |
 | E-01 | 地图图层 CRUD | ✅ |
 | E-02 | 专题图层目录 UI | ✅ |
-| E-* | 机库、专题、projects 等 | Later |
+| E-03 | 机库列表 API | ✅ |
+| E-03b | 机库列表 UI | ✅ |
+| E-* | projects、直播等 | Later |
 
 **仍不做（本阶段）**：Sprint E 机库/专题/projects 等业务 API。
 
@@ -466,7 +480,7 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | RBAC-P0 ✅ | D+ | PLATFORM_ADMIN 成员权限 + Admin 侧栏门控对齐 |
 | RBAC-P1 ✅ | D+ | 平台用户角色分配 + 角色权限变更会话吊销 |
 | RBAC-P2 ✅ | D+ | 租户自定义角色与权限配置 |
-| E-* | Later | 机库、专题、projects 等 — **E-01 layers CRUD ✅** |
+| E-* | Later | projects 等 — **E-01～E-03b ✅** |
 | FND-01～FND-08f | 基础完善 | 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) |
 | FND-08 | Later | 附件真实计量 / 菜单 RBAC 等 |
 

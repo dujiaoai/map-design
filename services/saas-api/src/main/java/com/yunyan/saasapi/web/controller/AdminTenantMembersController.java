@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.web.controller;
 
+import com.yunyan.saasapi.application.admin.AdminListParams;
 import com.yunyan.saasapi.application.admin.TenantMemberAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -43,10 +45,17 @@ public class AdminTenantMembersController {
           + "')")
   @Operation(
       summary = "列出租户成员",
-      description = "TENANT_ADMIN 仅可访问 JWT 当前租户；PLATFORM_ADMIN 可跨租户")
+      description =
+          "TENANT_ADMIN 仅可访问 JWT 当前租户；PLATFORM_ADMIN 可跨租户；可选 q/status/sortBy/sortDir 筛选与排序")
   public TenantMemberListResponse listMembers(
-      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
-    return tenantMemberAdminService.listMembers(principal, tenantId);
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @RequestParam(required = false) String q,
+      @RequestParam(required = false) String status,
+      @RequestParam(required = false) String sortBy,
+      @RequestParam(required = false) String sortDir) {
+    return tenantMemberAdminService.listMembers(
+        principal, tenantId, new AdminListParams(q, null, null, status, sortBy, sortDir));
   }
 
   @PatchMapping("/{userId}")

@@ -40,14 +40,16 @@ public class TenantMemberAdminService {
   private final AdminAuditLogService adminAuditLogService;
   private final UserSessionRevoker userSessionRevoker;
 
-  public TenantMemberListResponse listMembers(SaasPrincipal principal, UUID tenantId) {
+  public TenantMemberListResponse listMembers(
+      SaasPrincipal principal, UUID tenantId, AdminListParams params) {
     ensureOwnTenant(principal, tenantId);
     return withTargetTenant(
         tenantId,
         () -> {
           var tenant = requireTenant(tenantId);
-          var users = userRepository.findAllUsers(Optional.of(tenantId));
-          var members = users.stream().map(user -> toDto(user, tenant)).toList();
+          var result =
+              userRepository.findUsersForAdmin(Optional.of(tenantId), params, List.of());
+          var members = result.items().stream().map(user -> toDto(user, tenant)).toList();
           return new TenantMemberListResponse(members);
         });
   }

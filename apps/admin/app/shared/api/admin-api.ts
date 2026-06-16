@@ -422,8 +422,10 @@ export interface TenantMemberListResponse {
   members: AdminUserSummary[]
 }
 
-export function fetchTenantMembers(tenantId: string) {
-  return api.get<TenantMemberListResponse>(`/admin/tenants/${tenantId}/members`)
+export function fetchTenantMembers(tenantId: string, params?: AdminListQuery) {
+  return api.get<TenantMemberListResponse>(
+    `/admin/tenants/${tenantId}/members${buildAdminListQuery(params)}`,
+  )
 }
 
 export interface TenantInviteLinkSummary {

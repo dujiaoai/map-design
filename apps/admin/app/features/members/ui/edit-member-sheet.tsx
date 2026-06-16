@@ -95,7 +95,7 @@ export function EditMemberSheet({
       return updateTenantMemberRoles(tenantId, member!.id, [values.roleCode])
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: adminQueryKeys.members(tenantId) })
+      await queryClient.invalidateQueries({ queryKey: adminQueryKeys.membersRoot(tenantId) })
       onOpenChange(false)
       toast.success('成员已更新')
     },

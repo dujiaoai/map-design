@@ -1,9 +1,8 @@
 import { Badge, Button } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
-import { useSession } from '@repo/auth'
 import { useQuery } from '@tanstack/react-query'
 import { PencilIcon } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 
 import { fetchAdminTenant, fetchTenantMembers, type AdminUserSummary } from '~/shared/api/admin-api'
@@ -11,10 +10,9 @@ import { AdminAntTable, adminAntSortOrder, createAdminAntSortHandler } from '~/s
 import { isPlatformAdmin } from '~/shared/auth/admin-access'
 import {
   useAdminTableFilterState,
-  useFilteredAdminRows,
 } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
-import { sortAdminTableRows, useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
+import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
@@ -50,9 +48,32 @@ export function MembersAdminPage({
   const [inviteOpen, setInviteOpen] = useState(false)
   const [editingMember, setEditingMember] = useState<AdminUserSummary | null>(null)
 
+  const filter = useAdminTableFilterState()
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  useAdminListSearchShortcut(searchInputRef)
+  const { sort, toggleSort, clearSort } = useAdminTableSort<MemberSortKey>()
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(filter.search.trim())
+    }, 300)
+    return () => window.clearTimeout(timer)
+  }, [filter.search])
+
+  const listParams = useMemo(
+    () => ({
+      q: debouncedSearch || undefined,
+      status:
+        filter.status === 'all' ? undefined : (filter.status as 'active' | 'disabled' | 'invited'),
+      ...(sort ? { sortBy: sort.key, sortDir: sort.direction } : {}),
+    }),
+    [debouncedSearch, filter.status, sort],
+  )
+
   const membersQuery = useQuery({
-    queryKey: adminQueryKeys.members(tenantId),
-    queryFn: () => fetchTenantMembers(tenantId),
+    queryKey: adminQueryKeys.members(tenantId, listParams),
+    queryFn: () => fetchTenantMembers(tenantId, listParams),
   })
 
   const tenantQuery = useQuery({
@@ -66,29 +87,18 @@ export function MembersAdminPage({
   const tenantContextLabel = tenantQuery.data
     ? `${tenantQuery.data.name} (${tenantQuery.data.slug})`
     : resolvedTenantName
-  const filter = useAdminTableFilterState()
-  const searchInputRef = useRef<HTMLInputElement>(null)
-  useAdminListSearchShortcut(searchInputRef)
-  const { sort, toggleSort, clearSort } = useAdminTableSort<MemberSortKey>()
-  const memberSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName']
-  const filteredMembersRaw = useFilteredAdminRows(
-    membersQuery.data?.members,
-    filter,
-    memberSearchKeys,
-    'status',
-  )
-  const filteredMembers = useMemo(
-    () =>
-      sortAdminTableRows(filteredMembersRaw, sort, {
-        email: (member) => member.email.toLowerCase(),
-        displayName: (member) => (member.displayName ?? '').toLowerCase(),
-        lastLoginAt: (member) => member.lastLoginAt ?? '',
-        createdAt: (member) => member.createdAt,
-      }),
-    [filteredMembersRaw, sort],
-  )
 
-  const memberTotal = membersQuery.data?.members.length ?? 0
+  const members = membersQuery.data?.members ?? []
+
+  const hasMemberFilters =
+    debouncedSearch.length > 0 || filter.status !== 'all' || Boolean(sort)
+
+  const clearMemberFilters = useCallback(() => {
+    filter.resetFilters()
+    clearSort()
+  }, [filter, clearSort])
+
+  const memberTotal = members.length
 
   const columns = useMemo<TableColumnsType<AdminUserSummary>>(
     () => [
@@ -214,7 +224,7 @@ export function MembersAdminPage({
         ]}
       />
 
-      <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="loaded" />
+      <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="server" />
 
       <AdminPanel className="p-0">
         {membersQuery.isLoading ? (
@@ -225,30 +235,22 @@ export function MembersAdminPage({
             onRetry={() => void membersQuery.refetch()}
             isRetrying={membersQuery.isFetching}
           />
-        ) : !membersQuery.data?.members.length ? (
-          <AdminEmptyState message="暂无成员" />
-        ) : !filteredMembers.length ? (
+        ) : !members.length ? (
           <AdminEmptyState
-            message="无匹配成员"
+            message={hasMemberFilters ? '无匹配成员' : '暂无成员'}
             action={
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  filter.resetFilters()
-                  clearSort()
-                }}
-              >
-                清除筛选
-              </Button>
+              hasMemberFilters ? (
+                <Button type="button" variant="outline" size="sm" onClick={clearMemberFilters}>
+                  清除筛选
+                </Button>
+              ) : undefined
             }
           />
         ) : (
           <AdminAntTable<AdminUserSummary>
             rowKey="id"
             columns={columns}
-            dataSource={filteredMembers}
+            dataSource={members}
             onChange={createAdminAntSortHandler(toggleSort)}
             showSorterTooltip={false}
             pagination={false}

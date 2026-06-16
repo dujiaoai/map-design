@@ -69,6 +69,19 @@ class AdminTenantMembersControllerTest {
   }
 
   @Test
+  void listMembers_withSortAndFilterParams_returnsOk() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID + "/members")
+                .param("sortBy", "email")
+                .param("sortDir", "asc")
+                .param("status", "active")
+                .header("Authorization", "Bearer " + loginAccessToken("admin@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.members").isArray());
+  }
+
+  @Test
   void listMembers_withWrongTenant_returns403() throws Exception {
     mockMvc
         .perform(

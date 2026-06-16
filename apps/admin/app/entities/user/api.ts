@@ -1,8 +1,12 @@
 import { buildAdminListQuery, type AdminListQuery } from '~/shared/api/admin-list-query'
 import { api } from '~/shared/api/client'
-import type { UserOauthBindsResponse } from '~/shared/api/oauth-binds'
 
-import type { AdminUserListResponse, AdminUserSummary, PatchUserPayload } from './model'
+import type {
+  AdminUserListResponse,
+  AdminUserSummary,
+  PatchUserPayload,
+  UserOauthBindsResponse,
+} from './model'
 
 export function fetchAdminUsers(tenantId?: string, params?: AdminListQuery) {
   const queryParams = tenantId ? { ...params, tenantId } : params

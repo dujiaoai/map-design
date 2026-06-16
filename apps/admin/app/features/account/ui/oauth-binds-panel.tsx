@@ -2,7 +2,7 @@ import { Button, toast } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link2OffIcon } from 'lucide-react'
 
-import { fetchMyOauthBinds, unbindMyOauthProvider } from '~/shared/api/oauth-binds'
+import { fetchMyOauthBinds, unbindMyOauthProvider } from '~/entities/account'
 import { AdminConfigRow, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
 
 function formatBindTime(iso: string) {

@@ -22,3 +22,15 @@ export interface PatchUserPayload {
   displayName?: string
   status?: 'active' | 'disabled'
 }
+
+export interface UserOauthBindItem {
+  providerId: string
+  providerDisplayName: string
+  emailSnapshot: string | null
+  createdAt: string
+  lastUsedAt: string
+}
+
+export interface UserOauthBindsResponse {
+  binds: UserOauthBindItem[]
+}

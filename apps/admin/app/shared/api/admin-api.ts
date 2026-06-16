@@ -84,7 +84,7 @@ export {
   patchAdminTenant,
   updateTenantFeatures,
 } from '~/entities/tenant'
-export type { AdminUserListResponse, AdminUserSummary, PatchUserPayload } from '~/entities/user'
+export type { AdminUserListResponse, AdminUserSummary, PatchUserPayload, UserOauthBindItem, UserOauthBindsResponse } from '~/entities/user'
 export {
   fetchAdminUserOauthBinds,
   fetchAdminUsers,
@@ -115,8 +115,9 @@ export { fetchOidcProviders, startOidcAuthorize } from '~/entities/admin-oidc'
 export type { SessionTenantListResponse, SessionTenantSummary } from '~/entities/account'
 export {
   fetchSessionTenants,
+  fetchMyOauthBinds,
+  unbindMyOauthProvider,
   updateAccountPassword,
   updateAccountProfile,
 } from '~/entities/account'
 export { startImpersonation, stopImpersonation } from '~/entities/impersonation'
-export type { UserOauthBindItem, UserOauthBindsResponse } from './oauth-binds'

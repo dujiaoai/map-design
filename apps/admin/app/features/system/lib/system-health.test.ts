@@ -24,7 +24,7 @@ const BASE_FLAGS: AdminSystemFlagsResponse = {
   },
   mfa: {
     enforcementEnabled: false,
-    totpEnrollmentAvailable: false,
+    totpEnrollmentAvailable: true,
     enrolledPlatformAdminCount: 0,
   },
   runtime: { activeProfiles: ['dev'], jwtPermEpoch: 1 },
@@ -99,7 +99,7 @@ describe('buildSystemHealthSignals', () => {
         ...BASE_FLAGS,
         mfa: {
           enforcementEnabled: true,
-          totpEnrollmentAvailable: false,
+          totpEnrollmentAvailable: true,
           enrolledPlatformAdminCount: 0,
         },
       },

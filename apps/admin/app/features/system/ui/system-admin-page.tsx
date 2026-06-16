@@ -14,6 +14,7 @@ import {
   buildSystemHealthSignals,
   summarizeSystemHealth,
 } from '~/features/system/lib/system-health'
+import { AdminMfaEnrollPanel } from '~/features/mfa/ui/admin-mfa-enroll-panel'
 import { fetchAdminPing, fetchAdminMfaStatus, fetchAdminSystemFlags } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
@@ -204,7 +205,7 @@ export function SystemAdminPage() {
               <AdminFlagBadge
                 enabled={flags.mfa.totpEnrollmentAvailable}
                 label={
-                  flags.mfa.totpEnrollmentAvailable ? '已开放' : '骨架未开放'
+                  flags.mfa.totpEnrollmentAvailable ? '已开放' : '未开放'
                 }
               />
             }
@@ -226,6 +227,10 @@ export function SystemAdminPage() {
             />
           ) : null}
         </AdminPanel>
+
+        {flags.mfa.totpEnrollmentAvailable && mfaQuery.data ? (
+          <AdminMfaEnrollPanel enrolled={mfaQuery.data.enrolled} />
+        ) : null}
 
         <AdminPanel>
           <AdminPanelHeader

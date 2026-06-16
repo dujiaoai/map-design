@@ -105,7 +105,7 @@ export function buildSystemHealthSignals(
       level: 'info',
       detail: flags.mfa.totpEnrollmentAvailable
         ? 'TOTP 可选，未强制'
-        : '骨架阶段，TOTP 注册尚未开放',
+        : 'TOTP 注册未开放',
     })
   }
 

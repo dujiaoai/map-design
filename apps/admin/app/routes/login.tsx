@@ -1,4 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
+import { isLoginMfaRequiredError } from '@repo/auth'
 import { Button, Checkbox, cn, Input } from '@repo/ui'
 import { Building2Icon, UserIcon } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
@@ -60,6 +61,11 @@ export default function LoginRoute() {
   const navigate = useNavigate()
   const [rememberMe, setRememberMe] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [mfaChallenge, setMfaChallenge] = useState<{ token: string; email?: string } | null>(
+    null,
+  )
+  const [mfaCode, setMfaCode] = useState('')
+  const [isMfaSubmitting, setIsMfaSubmitting] = useState(false)
   const saasEnabled = isSaasAuthEnabled()
 
   const {
@@ -106,7 +112,31 @@ export default function LoginRoute() {
       }
       void navigate(getAdminHomePath(auth.getSession()), { replace: true })
     } catch (error) {
+      if (isLoginMfaRequiredError(error)) {
+        setMfaChallenge({ token: error.challengeToken, email: error.userEmail })
+        setSubmitError(null)
+        return
+      }
       setSubmitError(formatLoginError(error))
+    }
+  }
+
+  async function onSubmitMfa(event: React.FormEvent) {
+    event.preventDefault()
+    if (!mfaChallenge || mfaCode.length !== 6) return
+
+    setIsMfaSubmitting(true)
+    setSubmitError(null)
+    try {
+      await auth.completeLoginMfa({
+        mfaChallengeToken: mfaChallenge.token,
+        code: mfaCode.trim(),
+      })
+      void navigate(getAdminHomePath(auth.getSession()), { replace: true })
+    } catch (error) {
+      setSubmitError(formatLoginError(error))
+    } finally {
+      setIsMfaSubmitting(false)
     }
   }
 
@@ -120,7 +150,56 @@ export default function LoginRoute() {
         <h1 className="admin-login-title">运营后台登录</h1>
         <p className="mt-2 text-sm text-white/55">PLATFORM_ADMIN / TENANT_ADMIN 账号</p>
 
-        <form className="mt-8 space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <form
+          className="mt-8 space-y-4"
+          onSubmit={mfaChallenge ? onSubmitMfa : handleSubmit(onSubmit)}
+        >
+          {mfaChallenge ? (
+            <div className="admin-login-field space-y-4" style={{ '--field-i': 0 } as CSSProperties}>
+              <p className="text-sm text-white/65">
+                账号 {mfaChallenge.email ?? '已验证'} 已启用 TOTP，请输入验证器 6 位码。
+              </p>
+              <div className="space-y-1.5">
+                <label className="text-sm text-white/65" htmlFor="admin-mfa-code">
+                  动态验证码
+                </label>
+                <Input
+                  id="admin-mfa-code"
+                  className={adminLoginFieldInputClassName}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  placeholder="000000"
+                  value={mfaCode}
+                  onChange={(event) => setMfaCode(event.target.value.replace(/\D/g, ''))}
+                />
+              </div>
+              {submitError ? (
+                <p className="rounded-lg border border-red-400/25 bg-red-500/10 px-3 py-2 text-sm text-red-100/90">
+                  {submitError}
+                </p>
+              ) : null}
+              <Button
+                className="h-11 w-full rounded-[10px] text-base"
+                disabled={isMfaSubmitting || mfaCode.length !== 6}
+                type="submit"
+              >
+                {isMfaSubmitting ? '验证中…' : '完成登录'}
+              </Button>
+              <button
+                type="button"
+                className="text-xs text-primary hover:underline"
+                onClick={() => {
+                  setMfaChallenge(null)
+                  setMfaCode('')
+                  setSubmitError(null)
+                }}
+              >
+                返回密码登录
+              </button>
+            </div>
+          ) : (
+            <>
           <div className="admin-login-field space-y-1.5" style={{ '--field-i': 0 } as CSSProperties}>
             <label className="text-sm text-white/65" htmlFor="admin-email">
               邮箱
@@ -200,6 +279,8 @@ export default function LoginRoute() {
               {isSubmitting ? '登录中…' : '进入控制台'}
             </Button>
           </div>
+            </>
+          )}
         </form>
 
         <p className="mt-6 text-center font-mono text-[11px] text-white/38">

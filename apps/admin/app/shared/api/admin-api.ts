@@ -71,6 +71,27 @@ export function fetchAdminMfaStatus() {
   return api.get<AdminMfaStatusResponse>('/admin/mfa/status')
 }
 
+export interface TotpEnrollResponse {
+  secret: string
+  otpauthUri: string
+  qrCodeDataUrl: string
+}
+
+export function enrollAdminTotp() {
+  return api.post<TotpEnrollResponse>('/admin/mfa/totp/enroll')
+}
+
+export function verifyAdminTotp(code: string) {
+  return api.post<AdminMfaStatusResponse>('/admin/mfa/totp/verify', { code })
+}
+
+export function disableAdminTotp(code: string) {
+  return api.request<AdminMfaStatusResponse>('/admin/mfa/totp', {
+    method: 'DELETE',
+    body: { code },
+  })
+}
+
 export function fetchAdminSystemFlags() {
   return api.get<AdminSystemFlagsResponse>('/admin/system/flags')
 }

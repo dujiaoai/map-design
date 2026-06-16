@@ -84,6 +84,31 @@ export function buildSystemHealthSignals(
       : '限流未启用',
   })
 
+  if (flags.mfa.enforcementEnabled && flags.mfa.enrolledPlatformAdminCount === 0) {
+    signals.push({
+      id: 'admin-mfa',
+      label: 'Admin MFA',
+      level: 'warn',
+      detail: '已开启强制 TOTP，尚无已注册平台管理员（Phase 2 enrollment）',
+    })
+  } else if (flags.mfa.enforcementEnabled) {
+    signals.push({
+      id: 'admin-mfa',
+      label: 'Admin MFA',
+      level: 'ok',
+      detail: `强制 TOTP · 已注册 ${flags.mfa.enrolledPlatformAdminCount} 人`,
+    })
+  } else {
+    signals.push({
+      id: 'admin-mfa',
+      label: 'Admin MFA',
+      level: 'info',
+      detail: flags.mfa.totpEnrollmentAvailable
+        ? 'TOTP 可选，未强制'
+        : '骨架阶段，TOTP 注册尚未开放',
+    })
+  }
+
   return signals
 }
 

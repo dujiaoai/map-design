@@ -49,10 +49,26 @@ export interface AdminSystemFlagsResponse {
     baseUrl: string
     membershipPushEnabled: boolean
   }
+  mfa: {
+    enforcementEnabled: boolean
+    totpEnrollmentAvailable: boolean
+    enrolledPlatformAdminCount: number
+  }
   runtime: {
     activeProfiles: string[]
     jwtPermEpoch: number
   }
+}
+
+export interface AdminMfaStatusResponse {
+  enforcementEnabled: boolean
+  totpEnrollmentAvailable: boolean
+  enrolled: boolean
+  verifiedAt: number | null
+}
+
+export function fetchAdminMfaStatus() {
+  return api.get<AdminMfaStatusResponse>('/admin/mfa/status')
 }
 
 export function fetchAdminSystemFlags() {

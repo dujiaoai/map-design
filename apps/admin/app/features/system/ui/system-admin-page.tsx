@@ -14,7 +14,7 @@ import {
   buildSystemHealthSignals,
   summarizeSystemHealth,
 } from '~/features/system/lib/system-health'
-import { fetchAdminPing, fetchAdminSystemFlags } from '~/shared/api/admin-api'
+import { fetchAdminPing, fetchAdminMfaStatus, fetchAdminSystemFlags } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
 import {
@@ -54,6 +54,11 @@ export function SystemAdminPage() {
   const query = useQuery({
     queryKey: adminQueryKeys.systemFlags,
     queryFn: fetchAdminSystemFlags,
+  })
+  const mfaQuery = useQuery({
+    queryKey: adminQueryKeys.mfaStatus,
+    queryFn: fetchAdminMfaStatus,
+    retry: false,
   })
   const pingQuery = useQuery({
     queryKey: adminQueryKeys.ping,
@@ -189,6 +194,37 @@ export function SystemAdminPage() {
             label="密码强度校验"
             value={<AdminFlagBadge enabled={flags.auth.passwordStrengthEnabled} />}
           />
+          <AdminConfigRow
+            label="Admin MFA 强制"
+            value={<AdminFlagBadge enabled={flags.mfa.enforcementEnabled} />}
+          />
+          <AdminConfigRow
+            label="TOTP 注册"
+            value={
+              <AdminFlagBadge
+                enabled={flags.mfa.totpEnrollmentAvailable}
+                label={
+                  flags.mfa.totpEnrollmentAvailable ? '已开放' : '骨架未开放'
+                }
+              />
+            }
+          />
+          <AdminConfigRow
+            label="已注册平台管理员"
+            value={String(flags.mfa.enrolledPlatformAdminCount)}
+            mono
+          />
+          {mfaQuery.data ? (
+            <AdminConfigRow
+              label="当前账号 TOTP"
+              value={
+                <AdminFlagBadge
+                  enabled={mfaQuery.data.enrolled}
+                  label={mfaQuery.data.enrolled ? '已绑定' : '未绑定'}
+                />
+              }
+            />
+          ) : null}
         </AdminPanel>
 
         <AdminPanel>

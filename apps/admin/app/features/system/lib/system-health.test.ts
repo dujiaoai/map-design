@@ -22,6 +22,11 @@ const BASE_FLAGS: AdminSystemFlagsResponse = {
     baseUrl: 'http://localhost:8083',
     membershipPushEnabled: false,
   },
+  mfa: {
+    enforcementEnabled: false,
+    totpEnrollmentAvailable: false,
+    enrolledPlatformAdminCount: 0,
+  },
   runtime: { activeProfiles: ['dev'], jwtPermEpoch: 1 },
 }
 
@@ -69,7 +74,7 @@ describe('buildSystemHealthSignals', () => {
       platformAdmin: true,
     })
     const summary = summarizeSystemHealth(signals)
-    expect(summary.overall).toBe('ok')
+    expect(summary.overall).toBe('info')
     expect(summary.warnings).toBe(0)
   })
 
@@ -86,5 +91,20 @@ describe('buildSystemHealthSignals', () => {
       platformAdmin: true,
     })
     expect(signals[0]?.id).toBe('admin-api')
+  })
+
+  it('marks admin mfa as warn when enforced but nobody enrolled', () => {
+    const signals = buildSystemHealthSignals(
+      {
+        ...BASE_FLAGS,
+        mfa: {
+          enforcementEnabled: true,
+          totpEnrollmentAvailable: false,
+          enrolledPlatformAdminCount: 0,
+        },
+      },
+      { status: 'ok', authenticated: true, platformAdmin: true },
+    )
+    expect(signals.find((s) => s.id === 'admin-mfa')?.level).toBe('warn')
   })
 })

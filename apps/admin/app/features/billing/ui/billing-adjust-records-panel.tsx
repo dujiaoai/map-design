@@ -12,6 +12,7 @@ import type { BillingFilterSeed } from '~/features/billing/lib/billing-filter-se
 import { useBillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
+import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
 import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntZeroBasedPagination } from '~/shared/ant'
@@ -19,9 +20,19 @@ import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
+import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 const PAGE_SIZE = 20
+
+const ADJUST_RECORD_TABLE_COLUMNS = [
+  { key: 'createdAt', label: '时间' },
+  { key: 'tenantId', label: '租户 ID' },
+  { key: 'userId', label: '用户 ID' },
+  { key: 'amount', label: '变动' },
+  { key: 'balanceAfter', label: '余额' },
+  { key: 'remark', label: '备注' },
+] as const
 
 type AdjustRecordRow = AdminAdjustRecordList['items'][number]
 
@@ -43,6 +54,9 @@ export function BillingAdjustRecordsPanel({
   const [filters, setFilters] = useState<{ tenantId?: string; userId?: string }>({})
   const [page, setPage] = useState(0)
   const [filterError, setFilterError] = useState<string | null>(null)
+  const columnPrefs = useAdminTableColumnPrefs('billing-adjust-records', [
+    ...ADJUST_RECORD_TABLE_COLUMNS,
+  ])
 
   const applySeed = useCallback((seed: BillingFilterSeed) => {
     setTenantId(seed.tenantId ?? '')
@@ -69,8 +83,8 @@ export function BillingAdjustRecordsPanel({
 
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
 
-  const columns = useMemo<TableColumnsType<AdjustRecordRow>>(
-    () => [
+  const columns = useMemo<TableColumnsType<AdjustRecordRow>>(() => {
+    const cols: TableColumnsType<AdjustRecordRow> = [
       {
         title: '时间',
         key: 'createdAt',
@@ -111,9 +125,9 @@ export function BillingAdjustRecordsPanel({
         dataIndex: 'remark',
         key: 'remark',
       },
-    ],
-    [],
-  )
+    ]
+    return cols.filter((column) => columnPrefs.isColumnVisible(String(column.key)))
+  }, [columnPrefs.isColumnVisible, columnPrefs.visible])
 
   return (
     <AdminPanel>
@@ -174,6 +188,12 @@ export function BillingAdjustRecordsPanel({
             >
               重置
             </Button>
+            <AdminTableColumnPicker
+              columns={[...ADJUST_RECORD_TABLE_COLUMNS]}
+              visible={columnPrefs.visible}
+              onVisibleChange={columnPrefs.setColumnVisible}
+              onReset={columnPrefs.resetColumns}
+            />
           </div>
         </form>
         {filterError ? <AdminFormError message={filterError} /> : null}

@@ -7,6 +7,7 @@ import com.yunyan.saasapi.web.dto.admin.AdminAuditLogListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +34,9 @@ public class AdminAuditLogsController {
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer size,
       @RequestParam(required = false) String action,
-      @RequestParam(required = false) Boolean crossTenant) {
-    return adminAuditLogService.listLogs(new AuditLogListParams(q, page, size, action, crossTenant));
+      @RequestParam(required = false) Boolean crossTenant,
+      @RequestParam(required = false) UUID tenantId) {
+    return adminAuditLogService.listLogs(
+        new AuditLogListParams(q, page, size, action, crossTenant, tenantId));
   }
 }

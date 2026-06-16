@@ -6,6 +6,7 @@ import com.yunyan.saasapi.application.admin.AuditLogListParams;
 import com.yunyan.saasapi.domain.entity.SysAdminAuditLog;
 import com.yunyan.saasapi.domain.mapper.SysAdminAuditLogMapper;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
@@ -26,6 +27,7 @@ public class AdminAuditLogRepository {
     applySearch(wrapper, params.toListParams().normalizedQuery());
     applyActionFilter(wrapper, params.normalizedAction());
     applyCrossTenantFilter(wrapper, params.normalizedCrossTenant());
+    applyTenantFilter(wrapper, params.normalizedTenantId());
 
     if (params.toListParams().isPaginated()) {
       var page = new Page<SysAdminAuditLog>(
@@ -54,6 +56,15 @@ public class AdminAuditLogRepository {
       return;
     }
     wrapper.eq(SysAdminAuditLog::isCrossTenant, crossTenant);
+  }
+
+  private static void applyTenantFilter(
+      com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysAdminAuditLog> wrapper,
+      UUID tenantId) {
+    if (tenantId == null) {
+      return;
+    }
+    wrapper.eq(SysAdminAuditLog::getTargetTenantId, tenantId);
   }
 
   private static void applySearch(

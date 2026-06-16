@@ -53,6 +53,9 @@ saas:
       enforcement-enabled: ${SAAS_ADMIN_MFA_ENFORCEMENT:false}
       secret-encryption-key: ${SAAS_ADMIN_MFA_SECRET_KEY:MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=}
       totp-issuer: ${SAAS_ADMIN_MFA_TOTP_ISSUER:YunYan Admin}
+    oauth2:
+      enabled: ${SAAS_OAUTH2_ENABLED:false}
+      providers: []
   invite:
     token-ttl: PT48H
     link-default-ttl: P7D

@@ -112,6 +112,9 @@ class AdminControllerTest {
         .andExpect(jsonPath("$.mfa.enforcementEnabled").isBoolean())
         .andExpect(jsonPath("$.mfa.totpEnrollmentAvailable").value(true))
         .andExpect(jsonPath("$.mfa.enrolledPlatformAdminCount").value(0))
+        .andExpect(jsonPath("$.oidc.enabled").value(false))
+        .andExpect(jsonPath("$.oidc.authorizationCodeFlowAvailable").value(false))
+        .andExpect(jsonPath("$.oidc.configuredProviderCount").value(0))
         .andExpect(jsonPath("$.runtime.activeProfiles").isArray());
   }
 

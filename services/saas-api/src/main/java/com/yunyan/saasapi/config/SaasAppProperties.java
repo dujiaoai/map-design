@@ -32,6 +32,24 @@ public class SaasAppProperties {
   public static class Auth {
     private final Password password = new Password();
     private final AdminMfa adminMfa = new AdminMfa();
+    private final OAuth2 oauth2 = new OAuth2();
+  }
+
+  @Data
+  public static class OAuth2 {
+    private boolean enabled = false;
+    private java.util.List<OAuth2Provider> providers = new java.util.ArrayList<>();
+  }
+
+  @Data
+  public static class OAuth2Provider {
+    private String id;
+    private String displayName;
+    private String issuerUri;
+    private String clientId;
+    private String clientSecret = "";
+    private java.util.List<String> scopes =
+        java.util.List.of("openid", "profile", "email");
   }
 
   @Data

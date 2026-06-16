@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.application.admin;
 
+import com.yunyan.saasapi.application.auth.OidcAuthService;
 import com.yunyan.saasapi.config.BillingApiProperties;
 import com.yunyan.saasapi.config.JwtProperties;
 import com.yunyan.saasapi.config.SaasAppProperties;
@@ -22,6 +23,7 @@ public class AdminSystemFlagsService {
   private final JwtProperties jwtProperties;
   private final Environment environment;
   private final AdminMfaService adminMfaService;
+  private final OidcAuthService oidcAuthService;
 
   public AdminSystemFlagsResponse getFlags() {
     var mail = saasAppProperties.getMail();
@@ -53,6 +55,10 @@ public class AdminSystemFlagsService {
             saasAppProperties.getAuth().getAdminMfa().isEnforcementEnabled(),
             true,
             adminMfaService.countEnrolledPlatformAdmins()),
+        new AdminSystemFlagsResponse.OidcFlags(
+            oidcAuthService.isEnabled(),
+            false,
+            oidcAuthService.countConfiguredProviders()),
         new AdminSystemFlagsResponse.RuntimeFlags(activeProfiles(), jwtProperties.effectivePermEpoch()));
   }
 

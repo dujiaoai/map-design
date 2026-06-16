@@ -10,6 +10,7 @@ public record AdminSystemFlagsResponse(
     TenantRlsFlags tenantRls,
     BillingFlags billing,
     MfaFlags mfa,
+    OidcFlags oidc,
     RuntimeFlags runtime) {
 
   public record RegistrationFlags(
@@ -33,6 +34,11 @@ public record AdminSystemFlagsResponse(
       boolean enforcementEnabled,
       boolean totpEnrollmentAvailable,
       int enrolledPlatformAdminCount) {}
+
+  public record OidcFlags(
+      boolean enabled,
+      boolean authorizationCodeFlowAvailable,
+      int configuredProviderCount) {}
 
   public record RuntimeFlags(List<String> activeProfiles, int jwtPermEpoch) {}
 }

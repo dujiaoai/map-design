@@ -108,9 +108,15 @@ pnpm --filter @repo/saas-admin dev
 | **跨页上下文** | 租户/筛选 banner + 清除 | ✅ `AdminTenantContextBanner` 等 |
 | **无障碍** | 搜索 `role=searchbox`、`aria-label` | ✅ 工具栏搜索；排序表头 `aria-sort`；reduced-motion 已处理 |
 | **批量操作** | 多选 + 危险操作确认 | ✅ 租户批量停用、用户批量禁用 |
-| **列配置** | 用户自定义可见列 | ✅ 四主表 + 计费钱包 localStorage 持久化 |
+| **列配置** | 用户自定义可见列 | ✅ 四主表 + 计费钱包/充值订单 localStorage 持久化 |
 | **虚拟滚动** | 大列表流畅滚动 | ✅ 四主表 + 计费九 Tab antd virtual；菜单项固定高度滚动 |
 | **RBAC 穿梭框** | 批量勾选权限 | ✅ 角色权限编辑 ≥12 项可切换 antd Transfer |
+
+## 分级改进路线图
+
+P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）与 Later（Playwright、entities 拆分、菜单拖拽、列配置、虚拟滚动、RBAC Transfer、typecheck 修复）**均已完成**。`pnpm --filter @repo/saas-admin validate` 可通过。
+
+后续产品 backlog 见下方「Later（P4 余项）」。技术延续：`entities/` 已拆 tenant / user / audit-log，其余域可按需迁移。
 
 ## 验证
 

@@ -9,6 +9,12 @@ export type { AdminListQuery } from './admin-list-query'
 export { buildAdminListQuery } from './admin-list-query'
 export type { AdminAuditLogEntry, AdminAuditLogListResponse } from '~/entities/audit-log'
 export { fetchAdminAuditLogs } from '~/entities/audit-log'
+export type { TenantMemberListResponse } from '~/entities/member'
+export {
+  fetchTenantMembers,
+  patchTenantMember,
+  updateTenantMemberRoles,
+} from '~/entities/member'
 export type {
   AdminTenantFeaturesResponse,
   AdminTenantListResponse,
@@ -281,16 +287,6 @@ export function updateRolePermissions(roleId: string, permissionCodes: string[])
   })
 }
 
-export interface TenantMemberListResponse {
-  members: AdminUserSummary[]
-}
-
-export function fetchTenantMembers(tenantId: string, params?: AdminListQuery) {
-  return api.get<TenantMemberListResponse>(
-    `/admin/tenants/${tenantId}/members${buildAdminListQuery(params)}`,
-  )
-}
-
 export interface TenantInviteLinkSummary {
   id: string
   roleCode: string
@@ -334,24 +330,6 @@ export function revokeTenantInviteLink(tenantId: string, linkId: string) {
   return api.delete<TenantInviteLinkSummary>(
     `/admin/tenants/${tenantId}/invite-links/${linkId}`,
   )
-}
-
-export function patchTenantMember(
-  tenantId: string,
-  userId: string,
-  payload: PatchUserPayload,
-) {
-  return api.patch<AdminUserSummary>(`/admin/tenants/${tenantId}/members/${userId}`, payload)
-}
-
-export function updateTenantMemberRoles(
-  tenantId: string,
-  userId: string,
-  roleCodes: string[],
-) {
-  return api.put<AdminUserSummary>(`/admin/tenants/${tenantId}/members/${userId}/roles`, {
-    roleCodes,
-  })
 }
 
 export interface TenantRoleSummary {

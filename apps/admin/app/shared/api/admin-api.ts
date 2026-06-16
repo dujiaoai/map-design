@@ -109,8 +109,20 @@ export interface OidcProvidersResponse {
   providers: Array<{ id: string; displayName: string }>
 }
 
+export interface OidcAuthorizeResponse {
+  authorizationUrl: string
+  state: string
+}
+
 export function fetchOidcProviders() {
   return api.get<OidcProvidersResponse>('/auth/oidc/providers')
+}
+
+export function startOidcAuthorize(providerId: string, tenantId: string) {
+  const params = new URLSearchParams({ client: 'admin', tenantId: tenantId.trim() })
+  return api.get<OidcAuthorizeResponse>(
+    `/auth/oidc/${encodeURIComponent(providerId)}/authorize?${params.toString()}`,
+  )
 }
 
 export function fetchAdminSystemFlags() {

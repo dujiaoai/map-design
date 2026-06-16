@@ -136,6 +136,37 @@ export function createAuthApi(options: AuthApiOptions) {
       return parseJson(res)
     },
 
+    async startOidcAuthorize(
+      providerId: string,
+      tenantId: string,
+      client: 'admin' | 'web' = 'web',
+    ) {
+      const params = new URLSearchParams({
+        client,
+        tenantId: tenantId.trim(),
+      })
+      const res = await fetchFn(`${base}/auth/oidc/${encodeURIComponent(providerId)}/authorize?${params}`, {
+        headers: { Accept: 'application/json' },
+      })
+      return parseJson(res)
+    },
+
+    async completeOidcCallback(credentials: {
+      providerId: string
+      code: string
+      state: string
+    }): Promise<LoginResponse> {
+      const res = await fetchFn(
+        `${base}/auth/oidc/${encodeURIComponent(credentials.providerId)}/callback`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ code: credentials.code, state: credentials.state }),
+        },
+      )
+      return parseJson(res)
+    },
+
     async refresh(refreshToken: string): Promise<AuthTokensResponse> {
       const res = await fetchFn(`${base}/auth/refresh`, {
         method: 'POST',

@@ -3,6 +3,7 @@ import { index, layout, type RouteConfig, route } from '@react-router/dev/routes
 export default [
   layout('layouts/auth-layout.tsx', [
     route('login', 'routes/login.tsx'),
+    route('auth/oidc/callback/:providerId', 'routes/auth.oidc.callback.$providerId.tsx'),
     route('forgot-password', 'routes/forgot-password.tsx'),
     route('reset-password', 'routes/reset-password.tsx'),
   ]),

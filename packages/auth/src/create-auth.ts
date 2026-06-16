@@ -9,6 +9,7 @@ import type {
   LoginCredentials,
   LoginMfaCredentials,
   LoginResponse,
+  OidcCallbackCredentials,
   RegisterCredentials,
   RegisterOrgCredentials,
   RegisterOrgResponse,
@@ -116,6 +117,29 @@ export function createAuth(options: CreateAuthOptions) {
       const response = loginResponseSchema.parse(raw)
       if (!response.accessToken || !response.refreshToken) {
         throw new Error('MFA 登录响应缺少 token')
+      }
+      const session = loginResponseToSession(response as LoginResponse & {
+        accessToken: string
+        refreshToken: string
+        expiresIn: number
+      })
+      persist(session, authTokensToTokenPair(response as LoginResponse & {
+        accessToken: string
+        refreshToken: string
+        expiresIn: number
+      }))
+      return session
+    },
+
+    async completeOidcLogin(credentials: OidcCallbackCredentials): Promise<Session> {
+      if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用 OIDC 登录接口')
+      const raw = await authApi.completeOidcCallback(credentials)
+      if (raw.mfaRequired && raw.mfaChallengeToken) {
+        throw new LoginMfaRequiredError(raw.mfaChallengeToken, raw.user.email)
+      }
+      const response = loginResponseSchema.parse(raw)
+      if (!response.accessToken || !response.refreshToken) {
+        throw new Error('OIDC 登录响应缺少 token')
       }
       const session = loginResponseToSession(response as LoginResponse & {
         accessToken: string

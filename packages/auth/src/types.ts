@@ -78,6 +78,17 @@ export interface LoginMfaCredentials {
   code: string
 }
 
+export interface OidcCallbackCredentials {
+  providerId: string
+  code: string
+  state: string
+}
+
+export interface OidcAuthorizeResponse {
+  authorizationUrl: string
+  state: string
+}
+
 export interface LoginCredentials {
   email: string
   password: string

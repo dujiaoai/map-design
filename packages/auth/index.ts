@@ -32,6 +32,8 @@ export {
   authTokensSchema,
   type LoginCredentials,
   type LoginMfaCredentials,
+  type OidcAuthorizeResponse,
+  type OidcCallbackCredentials,
   type LoginResponse,
   type RegisterCredentials,
   type RegisterOrgCredentials,

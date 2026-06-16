@@ -5,11 +5,11 @@ import { useQuery } from '@tanstack/react-query'
 import { Building2Icon, UserIcon } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, redirect, useNavigate } from 'react-router'
+import { Link, redirect, useLocation, useNavigate } from 'react-router'
 import { z } from 'zod'
 
 import { auth } from '~/shared/auth/client'
-import { fetchOidcProviders } from '~/shared/api/admin-api'
+import { fetchOidcProviders, startOidcAuthorize } from '~/shared/api/admin-api'
 import { getAdminHomePath, hasAdminAccess } from '~/shared/auth/admin-access'
 import {
   clearRememberLogin,
@@ -70,6 +70,7 @@ export async function clientLoader() {
 
 export default function LoginRoute() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [rememberMe, setRememberMe] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [mfaChallenge, setMfaChallenge] = useState<{ token: string; email?: string } | null>(
@@ -77,6 +78,7 @@ export default function LoginRoute() {
   )
   const [mfaCode, setMfaCode] = useState('')
   const [isMfaSubmitting, setIsMfaSubmitting] = useState(false)
+  const [oidcStartingProviderId, setOidcStartingProviderId] = useState<string | null>(null)
   const saasEnabled = isSaasAuthEnabled()
 
   const oidcQuery = useQuery({
@@ -90,11 +92,21 @@ export default function LoginRoute() {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: standardSchemaResolver(loginSchema),
     defaultValues: { email: '', password: '', tenantId: 'demo' },
   })
+
+  const tenantIdValue = watch('tenantId')
+
+  useEffect(() => {
+    const state = location.state as { mfaChallengeToken?: string; email?: string } | null
+    if (!state?.mfaChallengeToken) return
+    setMfaChallenge({ token: state.mfaChallengeToken, email: state.email })
+    window.history.replaceState({}, document.title)
+  }, [location.state])
 
   useEffect(() => {
     const saved = loadRememberLogin()
@@ -155,6 +167,27 @@ export default function LoginRoute() {
       setSubmitError(formatLoginError(error))
     } finally {
       setIsMfaSubmitting(false)
+    }
+  }
+
+  async function onStartOidc(providerId: string) {
+    if (!saasEnabled) {
+      setSubmitError('未配置 VITE_API_URL，无法连接 SaaS 登录接口')
+      return
+    }
+    const tenantId = tenantIdValue.trim()
+    if (!tenantId) {
+      setSubmitError('请先填写租户 slug')
+      return
+    }
+    setSubmitError(null)
+    setOidcStartingProviderId(providerId)
+    try {
+      const { authorizationUrl } = await startOidcAuthorize(providerId, tenantId)
+      window.location.assign(authorizationUrl)
+    } catch (error) {
+      setSubmitError(formatLoginError(error))
+      setOidcStartingProviderId(null)
     }
   }
 
@@ -295,12 +328,29 @@ export default function LoginRoute() {
               {isSubmitting ? '登录中…' : '进入控制台'}
             </Button>
           </div>
-          {oidcQuery.data?.enabled ? (
+          {oidcQuery.data?.enabled && oidcQuery.data.authorizationCodeFlowAvailable ? (
+            <div className="admin-login-field space-y-2 pt-1" style={{ '--field-i': 5 } as CSSProperties}>
+              <p className="text-center text-xs text-white/45">或使用企业账号</p>
+              {oidcQuery.data.providers.map((provider) => (
+                <Button
+                  key={provider.id}
+                  type="button"
+                  variant="outline"
+                  className="h-10 w-full rounded-[10px] border-white/15 bg-white/5 text-sm text-white/85 hover:bg-white/10"
+                  disabled={Boolean(oidcStartingProviderId) || isSubmitting}
+                  onClick={() => {
+                    void onStartOidc(provider.id)
+                  }}
+                >
+                  {oidcStartingProviderId === provider.id
+                    ? '跳转 IdP…'
+                    : `使用 ${provider.displayName} 登录`}
+                </Button>
+              ))}
+            </div>
+          ) : oidcQuery.data?.enabled ? (
             <p className="text-center text-xs text-white/45">
-              已配置 {oidcQuery.data.providers.length} 个 OIDC IdP；
-              {oidcQuery.data.authorizationCodeFlowAvailable
-                ? ' 可使用企业账号登录。'
-                : ' 授权码登录即将开放，请暂用邮箱密码。'}
+              已配置 {oidcQuery.data.providers.length} 个 OIDC IdP；授权码登录即将开放，请暂用邮箱密码。
             </p>
           ) : null}
             </>

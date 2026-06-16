@@ -79,3 +79,5 @@ mock-nav-items + registry
 ## 业务域（Sprint E）
 
 地图图层、机库、专题等 API **不在** [services-development-plan.md](./services-development-plan.md) Sprint C/D 范围内；单独 PRD 后排期。
+
+**已落地**：`GET/POST/PUT/DELETE /v1/layers`（E-01，2026-06）。

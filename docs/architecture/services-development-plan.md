@@ -294,15 +294,21 @@ flowchart TD
 
 ---
 
-### Sprint E · Later — 业务域 API（单独排期）
+### Sprint E · 业务域 API（2026-06 起）
 
-**不在 Sprint C/D 设计或实现。** 待身份、权限、后台基础验收后，按 [产品路线图](../product/roadmap.md) 拆 PRD：
+**不在 Sprint C/D 设计或实现。** 按 [产品路线图](../product/roadmap.md) 拆 PRD：
 
 | 域 | 示例 API | 前端 |
 | --- | --- | --- |
 | 地图工作台 | `/v1/layers`、`/v1/projects` | MapProvider / 插件 |
 | 机库 | `/v1/uav/*` | uav-workspace |
 | 其它专题 | 按 PRD | mock-nav 已有入口 |
+
+#### E-01 · 地图图层 CRUD ✅
+
+**交付（2026-06）**：`GET/POST/PUT/DELETE /v1/layers`（`GET /v1/layers` 列表此前已存在）；RBAC `workspace:map:read` / `write`；租户隔离。
+
+**不含**：图层 GeoJSON/样式 payload、附件存储、扣费 hold。
 
 ### Sprint F · 平台计费（F-1～F-6 骨架 + sec 加固已落地 · 2026-06-14）
 
@@ -389,8 +395,10 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | FND-08e | Admin 成员页配额摘要 | ✅ |
 | FND-08f | 租户 API 速率按 plan 限流 | ✅ |
 | FND-08 | Storage 用量 / 菜单 RBAC 等 | Later |
+| E-01 | 地图图层 CRUD | ✅ |
+| E-* | 机库、专题、projects 等 | Later |
 
-**仍不做（本阶段）**：Sprint E 地图/机库/专题业务 API。
+**仍不做（本阶段）**：Sprint E 机库/专题/projects 等业务 API。
 
 ---
 
@@ -450,7 +458,7 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | RBAC-P0 ✅ | D+ | PLATFORM_ADMIN 成员权限 + Admin 侧栏门控对齐 |
 | RBAC-P1 ✅ | D+ | 平台用户角色分配 + 角色权限变更会话吊销 |
 | RBAC-P2 ✅ | D+ | 租户自定义角色与权限配置 |
-| E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
+| E-* | Later | 机库、专题、projects 等 — **E-01 layers CRUD ✅** |
 | FND-01～FND-08f | 基础完善 | 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) |
 | FND-08 | Later | Storage 用量 / 菜单 RBAC 等 |
 

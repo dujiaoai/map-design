@@ -1,13 +1,13 @@
 import { cn } from '@repo/ui'
 import { useShallow } from 'zustand/react/shallow'
 
-import { MockModuleContent } from '~/entities/mock-workspace-content'
 import { mockModuleMeta } from '~/entities/navigation'
 import {
   resolveNativeSidebarModule,
 } from '~/features/map-workspace/lib/resolve-active-sidebar-module'
 import { useMapWorkspaceStore } from '~/features/map-workspace'
 import { DockPanelHeader, DockPanelScrollBody } from '~/widgets/dock-panel'
+import { WorkspaceModuleContent } from '~/widgets/workspace-module-content'
 
 function selectSidebarModuleState(state: ReturnType<typeof useMapWorkspaceStore.getState>) {
   return {
@@ -51,7 +51,7 @@ export function MapNativeModuleHost() {
         onClose={() => closeMapModule()}
       />
       <DockPanelScrollBody>
-        <MockModuleContent moduleId={nativeModule.moduleId} title={meta.title} />
+        <WorkspaceModuleContent moduleId={nativeModule.moduleId} title={meta.title} />
       </DockPanelScrollBody>
     </aside>
   )

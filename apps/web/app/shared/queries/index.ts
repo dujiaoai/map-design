@@ -3,12 +3,20 @@ export {
   removeSessionQueries,
 } from './invalidate-session-queries'
 export {
+  createMapLayer,
+  deleteMapLayer,
   layerDtoSchema,
   layerListResponseSchema,
   layerQueryKeys,
   layersQueryOptions,
+  updateMapLayer,
+  useCreateLayerMutation,
+  useDeleteLayerMutation,
   useLayersQuery,
+  useUpdateLayerMutation,
+  type CreateLayerInput,
   type MapLayerSummary,
+  type UpdateLayerInput,
 } from './layer-queries'
 export { sessionQueryKeys, sessionQueryOptions, useSessionQuery } from './session-queries'
 export {

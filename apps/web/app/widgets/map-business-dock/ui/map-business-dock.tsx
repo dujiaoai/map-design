@@ -1,4 +1,3 @@
-import { MockModuleContent } from '~/entities/mock-workspace-content'
 import { mockModuleMeta } from '~/entities/navigation'
 import { useMapWorkspaceStore } from '~/features/map-workspace'
 import {
@@ -6,6 +5,7 @@ import {
   DockPanelFrame,
   DockPanelScrollBody,
 } from '~/widgets/dock-panel'
+import { WorkspaceModuleContent } from '~/widgets/workspace-module-content'
 
 /** 地图画布左侧固定业务 Dock（展开时占位列，非浮层） */
 export function MapBusinessDock({
@@ -35,7 +35,7 @@ export function MapBusinessDock({
   if (embedded) {
     return (
       <DockPanelScrollBody>
-        <MockModuleContent moduleId={moduleId} title={meta.title} />
+        <WorkspaceModuleContent moduleId={moduleId} title={meta.title} />
       </DockPanelScrollBody>
     )
   }
@@ -60,7 +60,7 @@ export function MapBusinessDock({
       }
     >
       <DockPanelScrollBody>
-        <MockModuleContent moduleId={moduleId} title={meta.title} />
+        <WorkspaceModuleContent moduleId={moduleId} title={meta.title} />
       </DockPanelScrollBody>
     </DockPanelFrame>
   )

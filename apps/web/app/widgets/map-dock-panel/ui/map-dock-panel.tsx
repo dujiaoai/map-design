@@ -1,4 +1,3 @@
-import { MockModuleContent } from '~/entities/mock-workspace-content'
 import { mockDockModuleMeta } from '~/entities/navigation'
 import { useMapWorkspaceStore } from '~/features/map-workspace'
 import {
@@ -6,6 +5,7 @@ import {
   DockPanelFrame,
   DockPanelScrollBody,
 } from '~/widgets/dock-panel'
+import { WorkspaceModuleContent } from '~/widgets/workspace-module-content'
 
 /** 机库模块左侧固定 Dock（与非数据业务模块全局互斥） */
 export function MapDockPanel({
@@ -35,7 +35,7 @@ export function MapDockPanel({
   if (embedded) {
     return (
       <DockPanelScrollBody>
-        <MockModuleContent moduleId={activeDockModuleId} title={meta.title} />
+        <WorkspaceModuleContent moduleId={activeDockModuleId} title={meta.title} />
       </DockPanelScrollBody>
     )
   }
@@ -60,7 +60,7 @@ export function MapDockPanel({
       }
     >
       <DockPanelScrollBody>
-        <MockModuleContent moduleId={activeDockModuleId} title={meta.title} />
+        <WorkspaceModuleContent moduleId={activeDockModuleId} title={meta.title} />
       </DockPanelScrollBody>
     </DockPanelFrame>
   )

@@ -1,8 +1,9 @@
-import { Button, Label, Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, cn } from '@repo/ui'
+import { Button, Input, Label, Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, cn } from '@repo/ui'
+import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { startImpersonation } from '~/shared/api/admin-api'
+import { fetchAdminMfaStatus, startImpersonation } from '~/shared/api/admin-api'
 
 import { applyLoginResponse } from '../lib/apply-login-response'
 
@@ -18,7 +19,16 @@ export function StartImpersonationSheet({
   onOpenChange: (open: boolean) => void
 }) {
   const [reason, setReason] = useState('')
+  const [totpCode, setTotpCode] = useState('')
   const [pending, setPending] = useState(false)
+
+  const mfaQuery = useQuery({
+    queryKey: ['admin', 'mfa', 'status'],
+    queryFn: fetchAdminMfaStatus,
+    enabled: open,
+  })
+
+  const totpRequired = mfaQuery.data?.enrolled === true
 
   async function handleSubmit() {
     const trimmed = reason.trim()
@@ -26,12 +36,21 @@ export function StartImpersonationSheet({
       toast.error('请填写代操作原因')
       return
     }
+    if (totpRequired && totpCode.length !== 6) {
+      toast.error('请输入验证器 6 位动态码')
+      return
+    }
     setPending(true)
     try {
-      const response = await startImpersonation({ tenantId, reason: trimmed })
+      const response = await startImpersonation({
+        tenantId,
+        reason: trimmed,
+        ...(totpRequired ? { totpCode } : {}),
+      })
       applyLoginResponse(response)
       toast.success(`已开始代操作：${tenantLabel}`)
       setReason('')
+      setTotpCode('')
       onOpenChange(false)
     } catch {
       toast.error('开始代操作失败，请重试')
@@ -65,8 +84,26 @@ export function StartImpersonationSheet({
             )}
           />
         </div>
+        {totpRequired ? (
+          <div className="space-y-2">
+            <Label htmlFor="impersonation-totp">验证器动态码</Label>
+            <Input
+              id="impersonation-totp"
+              inputMode="numeric"
+              maxLength={6}
+              placeholder="000000"
+              value={totpCode}
+              onChange={(event) => setTotpCode(event.target.value.replace(/\D/g, ''))}
+            />
+            <p className="text-xs text-muted-foreground">已绑定 TOTP，代操作前须二次验证。</p>
+          </div>
+        ) : null}
         <SheetFooter className="mt-auto gap-2 sm:flex-col sm:space-x-0">
-          <Button type="button" disabled={pending} onClick={() => void handleSubmit()}>
+          <Button
+            type="button"
+            disabled={pending || (totpRequired && totpCode.length !== 6)}
+            onClick={() => void handleSubmit()}
+          >
             开始代操作
           </Button>
           <Button type="button" variant="outline" disabled={pending} onClick={() => onOpenChange(false)}>

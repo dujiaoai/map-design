@@ -561,7 +561,7 @@ export function updateAccountPassword(oldPassword: string, newPassword: string) 
   return api.post('/users/me/password', { oldPassword, newPassword })
 }
 
-export function startImpersonation(body: { tenantId: string; reason: string }) {
+export function startImpersonation(body: { tenantId: string; reason: string; totpCode?: string }) {
   return api.post('/admin/impersonation', body)
 }
 

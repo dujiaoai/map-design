@@ -11,6 +11,8 @@ WHERE role_id IN (
 DELETE FROM sys_role
 WHERE tenant_id NOT IN ('00000000-0000-0000-0000-000000000000');
 
+DELETE FROM sys_user_mfa_totp;
+
 DELETE FROM sys_user_role
 WHERE user_id IN (
   SELECT id FROM sys_user WHERE tenant_id IN (

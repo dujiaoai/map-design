@@ -141,6 +141,10 @@ public class AdminMfaService {
   }
 
   static boolean isPlatformAdmin(SaasPrincipal principal) {
-    return principal.permissionCodes().contains(PermissionCodes.ADMIN_TENANTS_READ);
+    return hasPlatformAdminAccess(principal.permissionCodes());
+  }
+
+  public static boolean hasPlatformAdminAccess(java.util.List<String> permissionCodes) {
+    return permissionCodes.contains(com.yunyan.saasapi.domain.permission.PermissionCodes.ADMIN_TENANTS_READ);
   }
 }

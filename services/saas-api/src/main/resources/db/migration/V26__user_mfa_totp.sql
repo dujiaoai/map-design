@@ -1,5 +1,5 @@
 CREATE TABLE sys_user_mfa_totp (
-    user_id            UUID PRIMARY KEY,
+    user_id            UUID PRIMARY KEY REFERENCES sys_user(id) ON DELETE CASCADE,
     secret_ciphertext  VARCHAR(512) NOT NULL,
     verified_at        TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP

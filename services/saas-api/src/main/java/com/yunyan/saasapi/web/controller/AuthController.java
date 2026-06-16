@@ -6,6 +6,7 @@ import com.yunyan.saasapi.web.dto.auth.AcceptInviteRequest;
 import com.yunyan.saasapi.web.dto.auth.InviteLinkPreviewResponse;
 import com.yunyan.saasapi.web.dto.auth.JoinViaInviteLinkRequest;
 import com.yunyan.saasapi.web.dto.auth.AuthTokensDto;
+import com.yunyan.saasapi.web.dto.auth.LoginMfaVerifyRequest;
 import com.yunyan.saasapi.web.dto.auth.LoginRequest;
 import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.RefreshRequest;
@@ -137,6 +138,14 @@ public class AuthController {
       content = @Content(mediaType = "application/problem+json"))
   LoginResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
     return authService.login(request, ClientIpResolver.resolve(httpRequest));
+  }
+
+  @PostMapping("/login/mfa")
+  @Operation(
+      summary = "登录 MFA step-up",
+      description = "密码验证通过后、已绑定 TOTP 的平台管理员须提交 challenge token 与 6 位码换取 token 对。")
+  LoginResponse verifyLoginMfa(@Valid @RequestBody LoginMfaVerifyRequest request) {
+    return authService.verifyLoginMfa(request);
   }
 
   @PostMapping("/accept-invite")

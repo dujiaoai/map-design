@@ -1,12 +1,16 @@
 package com.yunyan.saasapi.application.auth;
 
+import com.yunyan.saasapi.application.admin.AdminMfaService;
 import com.yunyan.saasapi.security.AuthException;
+import com.yunyan.saasapi.config.SaasAppProperties;
+import com.yunyan.saasapi.security.mfa.MfaLoginChallengeStore;
 import com.yunyan.saasapi.security.AccessTokenDenylist;
 import com.yunyan.saasapi.security.JwtService;
 import com.yunyan.saasapi.config.JwtProperties;
 import com.yunyan.saasapi.security.RefreshRotationGraceStore;
 import com.yunyan.saasapi.security.RefreshTokenStore;
 import com.yunyan.saasapi.web.dto.auth.AuthTokensDto;
+import com.yunyan.saasapi.web.dto.auth.LoginMfaVerifyRequest;
 import com.yunyan.saasapi.web.dto.auth.LoginRequest;
 import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.LoginUserDto;
@@ -71,6 +75,11 @@ public class AuthService {
   private final PasswordPolicyService passwordPolicyService;
   private final TenantInviteLinkService tenantInviteLinkService;
   private final TenantRepository tenantRepository;
+  private final AdminMfaService adminMfaService;
+  private final MfaLoginChallengeStore mfaLoginChallengeStore;
+  private final SaasAppProperties saasAppProperties;
+
+  private static final Duration MFA_LOGIN_CHALLENGE_TTL = Duration.ofMinutes(5);
 
   public void requestRegistration(RegisterRequest request, String clientIp) {
     authRateLimitService.checkRegister(clientIp, request.email());
@@ -132,9 +141,40 @@ public class AuthService {
         }
         authRateLimitService.clearLoginFailures(normalizedEmail, tenantSlug);
         userAuthRepository.touchLastLoginAt(lookup.user().id());
-        yield buildLoginResponse(lookup.user());
+        yield resolveLoginAfterPassword(lookup.user());
       }
     };
+  }
+
+  public LoginResponse verifyLoginMfa(LoginMfaVerifyRequest request) {
+    var userId =
+        mfaLoginChallengeStore
+            .consume(request.mfaChallengeToken())
+            .orElseThrow(() -> AuthException.unauthorized("MFA challenge expired or invalid"));
+    if (!adminMfaService.verifyEnrolledCode(userId, request.code())) {
+      throw AuthException.unauthorized("Invalid TOTP code");
+    }
+    var user =
+        userAuthRepository
+            .findById(userId)
+            .orElseThrow(() -> AuthException.unauthorized("User not found"));
+    return buildLoginResponse(user);
+  }
+
+  private LoginResponse resolveLoginAfterPassword(AuthenticatedUser user) {
+    if (!AdminMfaService.hasPlatformAdminAccess(user.permissionCodes())) {
+      return buildLoginResponse(user);
+    }
+    if (saasAppProperties.getAuth().getAdminMfa().isEnforcementEnabled()
+        && !adminMfaService.isEnrolled(user.id())) {
+      throw AuthException.forbidden("Admin MFA enrollment required before login");
+    }
+    if (adminMfaService.isEnrolled(user.id())) {
+      var challengeToken = UUID.randomUUID().toString();
+      mfaLoginChallengeStore.store(challengeToken, user.id(), MFA_LOGIN_CHALLENGE_TTL);
+      return buildMfaChallengeResponse(user, challengeToken);
+    }
+    return buildLoginResponse(user);
   }
 
   public AuthTokensDto refresh(RefreshRequest request) {
@@ -403,7 +443,25 @@ public class AuthService {
         tokens.refreshToken(),
         tokens.expiresIn(),
         loginUser,
-        responseHomeTenant);
+        responseHomeTenant,
+        null,
+        null);
+  }
+
+  private LoginResponse buildMfaChallengeResponse(AuthenticatedUser user, String challengeToken) {
+    var homeTenant =
+        new SessionTenantDto(user.tenantId().toString(), user.tenantName(), user.tenantSlug());
+    var loginUser =
+        new LoginUserDto(
+            user.id().toString(),
+            user.email(),
+            user.displayName(),
+            user.phone(),
+            user.avatarUrl(),
+            user.roleCodes(),
+            user.permissionCodes(),
+            homeTenant);
+    return new LoginResponse(null, null, 0, loginUser, null, true, challengeToken);
   }
 
   private AuthTokensDto issueTokens(AuthenticatedUser user) {

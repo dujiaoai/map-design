@@ -45,7 +45,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/v1/ping").permitAll()
             .requestMatchers("/internal/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/v1/auth/invite-links/preview").permitAll()
-            .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/register", "/v1/auth/register-org", "/v1/auth/register-personal", "/v1/auth/register/confirm", "/v1/auth/register/resend", "/v1/auth/refresh", "/v1/auth/accept-invite", "/v1/auth/join-via-invite-link", "/v1/auth/password-reset/request", "/v1/auth/password-reset/confirm")
+            .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/login/mfa", "/v1/auth/register", "/v1/auth/register-org", "/v1/auth/register-personal", "/v1/auth/register/confirm", "/v1/auth/register/resend", "/v1/auth/refresh", "/v1/auth/accept-invite", "/v1/auth/join-via-invite-link", "/v1/auth/password-reset/request", "/v1/auth/password-reset/confirm")
                 .permitAll()
             .requestMatchers(HttpMethod.GET, "/v1/admin/ping").permitAll()
             .requestMatchers("/v1/admin/**")

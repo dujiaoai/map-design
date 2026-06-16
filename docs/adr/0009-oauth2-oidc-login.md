@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted（Phase 1 配置与只读 API 已落地；Authorization Code + PKCE 仍 Later）
+Accepted（Phase 2 Admin 授权码 + PKCE 已落地；saas-web 登录与显式账号绑定仍 Later）
 
 ## Context
 
@@ -28,46 +28,55 @@ SaaS 主路径当前为 Email/Password + JWT（[auth-rbac.md](../architecture/au
 | `saas.auth.oauth2.providers[].client-secret` | — | **仅环境变量/密钥管理**；不得出现在 flags API |
 | `saas.auth.oauth2.providers[].scopes` | `openid,profile,email` | 授权 scope 列表 |
 
-回调 URL 约定（Phase 2 实现）：`{web-base-url}/auth/oidc/callback/{providerId}` 与 `{admin-base-url}/auth/oidc/callback/{providerId}`。
+回调 URL：`{web-base-url}/auth/oidc/callback/{providerId}`（saas-web，Later）与 `{admin-base-url}/auth/oidc/callback/{providerId}`（Admin ✅）。
 
 ### 3. 骨架 API（Phase 1 — 本期）
 
 | 方法 | 路径 | 鉴权 | 行为 |
 | --- | --- | --- | --- |
-| GET | `/v1/auth/oidc/providers` | 公开 | `enabled`、`authorizationCodeFlowAvailable`（骨架期恒 `false`）、已配置 provider 摘要（id + displayName） |
+| GET | `/v1/auth/oidc/providers` | 公开 | `enabled`、`authorizationCodeFlowAvailable`、已配置 provider 摘要（id + displayName） |
+
+Phase 1 骨架期 `authorizationCodeFlowAvailable` 恒为 `false`；Phase 2 在 provider 配齐 `client-secret` 且全局 `enabled=true` 时为 `true`。
 
 `GET /v1/admin/system/flags` 增加 `oidc` 段：`enabled`、`authorizationCodeFlowAvailable`、`configuredProviderCount`。
 
-### 4. 后续迭代（Phase 2 — 明确不做于骨架）
+### 4. Phase 2（FND-07g — Admin ✅）
+
+| 能力 | 状态 | 说明 |
+| --- | --- | --- |
+| `GET /v1/auth/oidc/{providerId}/authorize` | ✅ | 返回 `authorizationUrl` + `state`；PKCE S256；state 存 Redis（test 用 InMemory） |
+| `POST /v1/auth/oidc/{providerId}/callback` | ✅ | code 换 token；OIDC 邮箱映射已有 `sys_user`；签发现有 JWT `LoginResponse` |
+| Admin MFA 与 OIDC | ✅ | 平台管理员 OIDC 回调后若已绑 TOTP，仍走 `mfaRequired` step-up |
+| `@repo/auth` + Admin UI | ✅ | `startOidcAuthorize` / `completeOidcLogin`；登录页 IdP 按钮；`/auth/oidc/callback/:providerId` |
+
+### 5. 仍 Later
 
 | 能力 | 说明 |
 | --- | --- |
-| `GET /v1/auth/oidc/{providerId}/authorize` | 302 至 IdP；PKCE state/nonce 存 Redis |
-| `POST /v1/auth/oidc/{providerId}/callback` | code 换 token；邮箱映射/绑定 `sys_user` |
+| saas-web 登录 | 同上 authorize/callback，`client=web` |
 | 账号链接 | 同邮箱自动关联 vs 显式 bind 表 |
-| Admin MFA 与 OIDC | 平台管理员 OIDC 登录后是否仍须 TOTP step-up |
-| `@repo/auth` | `loginWithOidc(providerId)` 与 callback route |
+| 真实 IdP 联调 | `application-dev.yml` provider 示例与 E2E |
 
-### 5. 安全
+### 6. 安全
 
 - Client secret 永不通过 REST 暴露；Swagger 标注 provider 为配置项。
 - PKCE 必选；state 一次性；callback 仅允许配置的 redirect URI。
-- 骨架期无写操作与 redirect，无新增审计 action。
+- 骨架期无写操作与 redirect，无新增审计 action（Phase 2 callback 写 session/JWT，审计沿用 `auth.login`）。
 
 ## Consequences
 
 ### 正面
 
 - 登录页与 Admin 系统页可展示 IdP 策略阶段；联调契约稳定。
-- Phase 2 可在 `enabled=true` 下逐 provider 上线。
+- Phase 2 Admin 可在 `enabled=true` 且 provider 配齐 secret 后逐 IdP 上线；saas-web 仍待接按钮与 callback 路由。
 
 ### 负面
 
-- 骨架期 `authorizationCodeFlowAvailable=false`，按钮不可用。
-- Phase 2 需 Redis session、用户绑定迁移与 E2E，工作量独立估算。
+- Admin 未配置 IdP 或缺 `client-secret` 时 `authorizationCodeFlowAvailable=false`，登录页不展示 IdP 按钮。
+- Phase 2 后续 saas-web、用户 bind 表与真实 IdP E2E 工作量独立估算。
 
 ## References
 
 - [0008-platform-admin-mfa.md](./0008-platform-admin-mfa.md)
 - [auth-rbac.md](../architecture/auth-rbac.md)
-- [platform-foundation-backlog.md](../architecture/supplements/platform-foundation-backlog.md) FND-07f
+- [platform-foundation-backlog.md](../architecture/supplements/platform-foundation-backlog.md) FND-07f、FND-07g

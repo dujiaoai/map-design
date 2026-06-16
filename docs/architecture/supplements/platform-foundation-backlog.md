@@ -22,7 +22,11 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | P3 | FND-07a | Platform Admin 租户代操作（impersonation MVP） | ✅ |
 | P3 | FND-07b | Admin MFA 骨架（配置 + 只读 API + 系统页） | ✅ |
 | P3 | FND-07c | Admin MFA TOTP 注册/注销 + 登录 step-up | ✅ |
-| Later | FND-07 | `/v1/menus`、Plan 配额等 | 远期 |
+| P3 | FND-07d | 代操作 MFA 门控 | ✅ |
+| P3 | FND-07e | Admin MFA recovery codes | ✅ |
+| P3 | FND-07f | OAuth2/OIDC 骨架（发现 API + flags） | ✅ |
+| P3 | FND-07g | OAuth2/OIDC 授权码登录（Admin） | ✅ |
+| Later | FND-07 | `/v1/menus`、saas-web OIDC、Plan 配额等 | 远期 |
 
 ---
 
@@ -152,7 +156,15 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 **交付（2026-06）**：ADR [0009](../../adr/0009-oauth2-oidc-login.md)；`saas.auth.oauth2` 配置；`GET /auth/oidc/providers`；`system/flags.oidc`；Admin 系统页与登录页可观测摘要。
 
-**不含**：Authorization Code + PKCE redirect/callback、用户绑定、saas-web 登录按钮。
+**不含**：Authorization Code + PKCE redirect/callback、用户绑定、saas-web 登录按钮（→ FND-07g）。
+
+---
+
+## FND-07g · OAuth2/OIDC 授权码登录（Admin）✅
+
+**交付（2026-06）**：`GET /auth/oidc/{providerId}/authorize`、`POST /auth/oidc/{providerId}/callback`（PKCE S256 + Redis state）；OIDC 邮箱映射已有用户；Admin MFA step-up；`@repo/auth` `startOidcAuthorize` / `completeOidcLogin`；Admin 登录页 IdP 按钮 + `/auth/oidc/callback/:providerId`。ADR [0009](../../adr/0009-oauth2-oidc-login.md) Phase 2 节已更新。
+
+**不含**：saas-web 登录按钮与 callback、显式账号 bind 表、真实 IdP 联调 runbook。
 
 ---
 
@@ -160,7 +172,8 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 | 项 | 说明 |
 | --- | --- |
-| OAuth2/OIDC Phase 2 | 授权码流程、账号绑定、saas-web 登录 |
+| saas-web OIDC | 登录页 IdP 按钮 + callback（复用 Phase 2 API，`client=web`） |
+| OAuth 账号绑定 | 显式 bind 表 vs 仅邮箱映射 |
 | `/v1/menus` | 服务端动态菜单（当前 mock-nav） |
 | Plan 配额 | seat / rate / storage |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |

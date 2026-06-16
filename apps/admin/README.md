@@ -41,7 +41,8 @@ pnpm --filter @repo/saas-admin dev
 
 | 路径 | 说明 | 权限 |
 | --- | --- | --- |
-| `/login` | SaaS 登录 | 公开 |
+| `/login` | SaaS 登录（邮箱密码 + OIDC IdP 按钮） | 公开 |
+| `/auth/oidc/callback/:providerId` | OIDC 授权码回调 | 公开 |
 | `/` | 运营概览（`GET /v1/admin/stats` + ping） | `admin:tenants:read` 等 |
 | `/tenants` | 租户列表、创建、编辑；服务端分页/搜索 | `admin:tenants:read` |
 | `/tenants/:tenantId` | 租户详情（`?tab=` 信息 / 成员 / 自定义角色 / 能力；快捷跳转用户与计费） | `admin:tenants:read` |
@@ -82,7 +83,8 @@ pnpm --filter @repo/saas-admin dev
 - **FND-07c MFA TOTP**：系统页绑定/注销 TOTP；登录 MFA 6 位码 step-up
 - **FND-07d 代操作 MFA**：已绑定 TOTP 时代操作 Sheet 须输入 6 位动态码
 - **FND-07e 恢复码**：绑定/重新生成后一次性展示；登录与注销可消费
-- **FND-07f OIDC 骨架**：系统页/登录页展示 IdP 配置阶段（授权码流程待 Phase 2）
+- **FND-07f OIDC 骨架**：系统页/登录页展示 IdP 配置阶段
+- **FND-07g OIDC 授权码（Admin）**：登录页 IdP 按钮；`/auth/oidc/callback/:providerId`；MFA step-up 与密码登录一致
 
 ## 主流运维控制台 UX 对照
 
@@ -123,4 +125,4 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 
 ## Later（P4 余项）
 
-邮箱邀请、OAuth2/OIDC（FND-07 Later）。
+邮箱邀请、saas-web OIDC 登录、OAuth 显式账号绑定。

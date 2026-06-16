@@ -256,11 +256,20 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 ---
 
+## FND-08f · 租户 API 速率按 plan 限流 ✅
+
+**交付（2026-06）**：`TenantApiRateLimitFilter`（JWT 之后）按 `PlanQuotaCatalog.apiRatePerMinute` 对已认证 `/v1/**` 请求限流；豁免 auth、ping、internal、swagger；429 + `Retry-After`。
+
+**配置**：`saas.rate-limit.tenant-api.*`（`enabled`、`window`、`plan-cache-ttl`；`max-per-minute-override` 仅 dev/test）。
+
+**不含**：独立 API 网关层、billing-api 限流、按用户/IP 细分。
+
+---
+
 ## FND-08 · 远期（Later）
 
 | 项 | 说明 |
 | --- | --- |
-| API rate enforcement | 网关/Filter 按 plan 限流 |
 | Storage 用量统计 | 附件/图层存储 Sprint E 汇总 usedBytes |
 | 菜单 RBAC / Admin 配置 | 权限码裁剪、运营可编辑菜单树 |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |

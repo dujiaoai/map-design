@@ -387,7 +387,8 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | FND-08c | Plan 配额查询 API | ✅ |
 | FND-08d | 成员 seat 配额门控 | ✅ |
 | FND-08e | Admin 成员页配额摘要 | ✅ |
-| FND-08 | API rate / storage enforcement | Later |
+| FND-08f | 租户 API 速率按 plan 限流 | ✅ |
+| FND-08 | Storage 用量 / 菜单 RBAC 等 | Later |
 
 **仍不做（本阶段）**：Sprint E 地图/机库/专题业务 API。
 
@@ -450,8 +451,8 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | RBAC-P1 ✅ | D+ | 平台用户角色分配 + 角色权限变更会话吊销 |
 | RBAC-P2 ✅ | D+ | 租户自定义角色与权限配置 |
 | E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
-| FND-01～FND-08b | 基础完善 | 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) |
-| FND-08 | Later | Plan 配额 |
+| FND-01～FND-08f | 基础完善 | 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) |
+| FND-08 | Later | Storage 用量 / 菜单 RBAC 等 |
 
 ### 建议默认顺序（仅供参考，非强制）
 

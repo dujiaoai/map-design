@@ -27,6 +27,11 @@ const BASE_FLAGS: AdminSystemFlagsResponse = {
     totpEnrollmentAvailable: true,
     enrolledPlatformAdminCount: 0,
   },
+  oidc: {
+    enabled: false,
+    authorizationCodeFlowAvailable: false,
+    configuredProviderCount: 0,
+  },
   runtime: { activeProfiles: ['dev'], jwtPermEpoch: 1 },
 }
 

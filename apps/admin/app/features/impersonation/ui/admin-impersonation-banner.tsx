@@ -2,7 +2,7 @@ import { Button } from '@repo/ui'
 import { useSession } from '@repo/auth'
 import { UserCogIcon } from 'lucide-react'
 import { useState } from 'react'
-import { toast } from 'sonner'
+import { toast } from '@repo/ui'
 
 import { stopImpersonation } from '~/shared/api/admin-api'
 import { AdminPanel } from '~/shared/ui/admin-page-shell'

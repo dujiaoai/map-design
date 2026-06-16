@@ -3,7 +3,7 @@ import type { TableColumnsType } from 'antd'
 import { CreditCardIcon, DownloadIcon } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { toast } from 'sonner'
+import { toast } from '@repo/ui'
 
 import { AUDIT_ACTION_OPTIONS } from '~/features/audit-logs/lib/audit-log-actions'
 import { downloadAdminAuditLogsCsv } from '~/features/audit-logs/lib/audit-log-export'

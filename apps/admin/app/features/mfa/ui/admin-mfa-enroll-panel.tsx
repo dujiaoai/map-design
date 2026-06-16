@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Input, Label } from '@repo/ui'
 import { useState } from 'react'
-import { toast } from 'sonner'
+import { toast } from '@repo/ui'
 
 import {
   disableAdminTotp,

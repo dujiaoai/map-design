@@ -16,6 +16,35 @@ export {
   updateTenantMemberRoles,
 } from '~/entities/member'
 export type {
+  AdminPermission,
+  AdminPermissionListResponse,
+  AdminPermissionModule,
+  AdminPermissionModuleListResponse,
+} from '~/entities/permission'
+export {
+  createAdminPermission,
+  createAdminPermissionModule,
+  deleteAdminPermission,
+  deleteAdminPermissionModule,
+  fetchAdminPermissionModules,
+  fetchAdminPermissions,
+  fetchTenantAssignablePermissions,
+  patchAdminPermission,
+  patchAdminPermissionModule,
+} from '~/entities/permission'
+export type {
+  AdminRoleListResponse,
+  AdminRoleSummary,
+  RolePermissionsResponse,
+} from '~/entities/role'
+export {
+  fetchAdminRoles,
+  fetchRolePermissions,
+  fetchTenantRolePermissions,
+  updateRolePermissions,
+  updateTenantRolePermissions,
+} from '~/entities/role'
+export type {
   AdminTenantFeaturesResponse,
   AdminTenantListResponse,
   AdminTenantSummary,
@@ -173,120 +202,6 @@ export function fetchAdminSystemFlags() {
   return api.get<AdminSystemFlagsResponse>('/admin/system/flags')
 }
 
-export interface AdminRoleSummary {
-  id: string
-  code: string
-  name?: string
-  system?: boolean
-}
-
-export interface AdminRoleListResponse {
-  roles: AdminRoleSummary[]
-}
-
-export function fetchAdminRoles() {
-  return api.get<AdminRoleListResponse>('/admin/roles')
-}
-
-export interface AdminPermission {
-  id: string
-  code: string
-  name: string
-  description: string
-  scope: 'platform' | 'tenant' | 'workspace'
-  moduleId: string | null
-  moduleCode: string | null
-  moduleName: string | null
-  system: boolean
-}
-
-export interface AdminPermissionListResponse {
-  permissions: AdminPermission[]
-}
-
-export function fetchAdminPermissions() {
-  return api.get<AdminPermissionListResponse>('/admin/permissions')
-}
-
-export interface AdminPermissionModule {
-  id: string
-  code: string
-  name: string
-  description: string | null
-  scope: 'platform' | 'tenant' | 'workspace'
-  system: boolean
-  sortOrder: number
-  permissions: AdminPermission[]
-}
-
-export interface AdminPermissionModuleListResponse {
-  modules: AdminPermissionModule[]
-}
-
-export function fetchAdminPermissionModules() {
-  return api.get<AdminPermissionModuleListResponse>('/admin/permission-modules')
-}
-
-export function createAdminPermissionModule(body: {
-  code: string
-  name: string
-  description?: string
-  scope: AdminPermissionModule['scope']
-  sortOrder?: number
-}) {
-  return api.post<AdminPermissionModule>('/admin/permission-modules', body)
-}
-
-export function patchAdminPermissionModule(
-  moduleId: string,
-  body: {
-    name?: string
-    description?: string | null
-    scope?: AdminPermissionModule['scope']
-    sortOrder?: number
-  },
-) {
-  return api.patch<AdminPermissionModule>(`/admin/permission-modules/${moduleId}`, body)
-}
-
-export function deleteAdminPermissionModule(moduleId: string) {
-  return api.delete(`/admin/permission-modules/${moduleId}`)
-}
-
-export function createAdminPermission(
-  moduleId: string,
-  body: { action: string; name: string; description?: string },
-) {
-  return api.post<AdminPermission>(`/admin/permission-modules/${moduleId}/permissions`, body)
-}
-
-export function patchAdminPermission(
-  permissionId: string,
-  body: { name?: string; description?: string | null },
-) {
-  return api.patch<AdminPermission>(`/admin/permissions/${permissionId}`, body)
-}
-
-export function deleteAdminPermission(permissionId: string) {
-  return api.delete(`/admin/permissions/${permissionId}`)
-}
-
-export interface RolePermissionsResponse {
-  roleId: string
-  roleCode: string
-  permissions: AdminPermission[]
-}
-
-export function fetchRolePermissions(roleId: string) {
-  return api.get<RolePermissionsResponse>(`/admin/roles/${roleId}/permissions`)
-}
-
-export function updateRolePermissions(roleId: string, permissionCodes: string[]) {
-  return api.put<RolePermissionsResponse>(`/admin/roles/${roleId}/permissions`, {
-    permissionCodes,
-  })
-}
-
 export interface TenantInviteLinkSummary {
   id: string
   roleCode: string
@@ -357,10 +272,6 @@ export interface AssignableRoleListResponse {
   roles: AssignableRoleSummary[]
 }
 
-export function fetchTenantAssignablePermissions(tenantId: string) {
-  return api.get<AdminPermissionListResponse>(`/admin/tenants/${tenantId}/assignable-permissions`)
-}
-
 export function fetchTenantCustomRoles(tenantId: string) {
   return api.get<TenantRoleListResponse>(`/admin/tenants/${tenantId}/roles`)
 }
@@ -390,21 +301,6 @@ export function patchTenantCustomRole(
 
 export function deleteTenantCustomRole(tenantId: string, roleId: string) {
   return api.delete<void>(`/admin/tenants/${tenantId}/roles/${roleId}`)
-}
-
-export function fetchTenantRolePermissions(tenantId: string, roleId: string) {
-  return api.get<RolePermissionsResponse>(`/admin/tenants/${tenantId}/roles/${roleId}/permissions`)
-}
-
-export function updateTenantRolePermissions(
-  tenantId: string,
-  roleId: string,
-  permissionCodes: string[],
-) {
-  return api.put<RolePermissionsResponse>(
-    `/admin/tenants/${tenantId}/roles/${roleId}/permissions`,
-    { permissionCodes },
-  )
 }
 
 export interface SessionTenantSummary {

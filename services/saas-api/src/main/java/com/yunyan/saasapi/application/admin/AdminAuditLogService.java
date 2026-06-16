@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminAuditLogService {
 
   private static final String PLATFORM_ADMIN = "PLATFORM_ADMIN";
+  public static final int EXPORT_MAX_ROWS = 5000;
 
   private final AdminAuditLogRepository adminAuditLogRepository;
 
@@ -27,6 +28,21 @@ public class AdminAuditLogService {
           logs, page.total(), params.toListParams().resolvePage(), params.toListParams().resolveSize());
     }
     return new AdminAuditLogListResponse(logs);
+  }
+
+  public byte[] exportCsv(AuditLogListParams params) {
+    var exportParams =
+        new AuditLogListParams(
+            params.q(),
+            1,
+            EXPORT_MAX_ROWS,
+            params.action(),
+            params.crossTenant(),
+            params.tenantId(),
+            params.from(),
+            params.to());
+    var page = adminAuditLogRepository.findLogs(exportParams);
+    return AdminAuditLogCsvExporter.toCsvBytes(page.items());
   }
 
   @Transactional

@@ -24,6 +24,25 @@ public final class PermissionCodes {
   public static final String ADMIN_BILLING_ADJUST = "admin:billing:adjust";
   public static final String ADMIN_BILLING_PACKAGES_WRITE = "admin:billing:packages:write";
   public static final String ADMIN_BILLING_REFUND = "admin:billing:refund";
+  public static final String ADMIN_AUDIT_READ = "admin:audit:read";
+  public static final String ADMIN_AUDIT_EXPORT = "admin:audit:export";
+
+  /** Legacy fallback while tenants:read still grants audit list access. */
+  public static final String ADMIN_AUDIT_READ_AUTHORITIES =
+      "hasAnyAuthority('"
+          + ADMIN_AUDIT_READ
+          + "','"
+          + ADMIN_TENANTS_READ
+          + "')";
+
+  public static final String ADMIN_AUDIT_EXPORT_AUTHORITIES =
+      "hasAnyAuthority('"
+          + ADMIN_AUDIT_EXPORT
+          + "','"
+          + ADMIN_AUDIT_READ
+          + "','"
+          + ADMIN_TENANTS_READ
+          + "')";
 
   /** Platform-scoped permissions; any one grants access to `/v1/admin/**` (D-02). */
   public static final String[] PLATFORM_ADMIN_AUTHORITIES = {
@@ -33,6 +52,8 @@ public final class PermissionCodes {
     ADMIN_USERS_WRITE,
     ADMIN_ROLES_READ,
     ADMIN_ROLES_WRITE,
+    ADMIN_AUDIT_READ,
+    ADMIN_AUDIT_EXPORT,
     ADMIN_BILLING_READ,
     ADMIN_BILLING_ADJUST,
     ADMIN_BILLING_PACKAGES_WRITE,
@@ -53,6 +74,8 @@ public final class PermissionCodes {
     ADMIN_USERS_WRITE,
     ADMIN_ROLES_READ,
     ADMIN_ROLES_WRITE,
+    ADMIN_AUDIT_READ,
+    ADMIN_AUDIT_EXPORT,
     ADMIN_MEMBERS_READ,
     ADMIN_MEMBERS_WRITE
   };

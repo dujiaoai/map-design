@@ -1,8 +1,11 @@
 package com.yunyan.saasapi.web.controller;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -91,6 +94,28 @@ class AdminAuditLogsControllerTest {
                         + OTHER_TENANT_ID
                         + "')].action",
                     hasItem("member.invite-link.create")));
+  }
+
+  @Test
+  void exportAuditLogs_returnsCsvAttachment() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            post("/v1/admin/tenants/" + OTHER_TENANT_ID + "/invite-links")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("roleCode", "MEMBER"))))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(
+            get("/v1/admin/audit-logs/export")
+                .header("Authorization", "Bearer " + token)
+                .accept("text/csv"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("attachment")))
+        .andExpect(content().string(startsWith("\uFEFF")));
   }
 
   private String loginAccessToken(String email) throws Exception {

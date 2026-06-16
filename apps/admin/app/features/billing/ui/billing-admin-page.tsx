@@ -1,4 +1,4 @@
-import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui'
+import { Button } from '@repo/ui'
 import { useQueryClient } from '@tanstack/react-query'
 import { RefreshCwIcon } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
@@ -9,6 +9,7 @@ import {
   type BillingNavigateTarget,
   type BillingTab,
   parseBillingTab,
+  resolveAccessibleBillingTab,
 } from '~/features/billing/lib/billing-admin-nav'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { BillingAdjustPanel } from '~/features/billing/ui/billing-adjust-panel'
@@ -23,6 +24,7 @@ import { BillingPackagesPanel } from '~/features/billing/ui/billing-packages-pan
 import { BillingReconciliationPanel } from '~/features/billing/ui/billing-reconciliation-panel'
 import { BillingRechargeOrdersPanel } from '~/features/billing/ui/billing-recharge-orders-panel'
 import { BillingStatsSummary } from '~/features/billing/ui/billing-stats-summary'
+import { BillingTabNav } from '~/features/billing/ui/billing-tab-nav'
 import { BillingUsagePanel } from '~/features/billing/ui/billing-usage-panel'
 import { BillingWalletsPanel } from '~/features/billing/ui/billing-wallets-panel'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
@@ -44,6 +46,11 @@ export function BillingAdminPage() {
   const canViewPackages = canRead || canWritePackages
   const canViewOrders = canRead || canRefund
 
+  const tabVisibility = useMemo(
+    () => ({ canRead, canAdjust, canWritePackages, canRefund }),
+    [canRead, canAdjust, canWritePackages, canRefund],
+  )
+
   const hasAnyBillingCapability =
     canRead || canAdjust || canWritePackages || canRefund
 
@@ -55,7 +62,15 @@ export function BillingAdminPage() {
     return 'overview'
   }, [canRead, canWritePackages, canRefund, canAdjust])
 
-  const activeTab = parseBillingTab(searchParams.get('tab'), defaultTab)
+  const activeTab = useMemo(
+    () =>
+      resolveAccessibleBillingTab(
+        parseBillingTab(searchParams.get('tab'), defaultTab),
+        defaultTab,
+        tabVisibility,
+      ),
+    [searchParams, defaultTab, tabVisibility],
+  )
 
   const filterSeed = useMemo(
     () => ({
@@ -155,56 +170,36 @@ export function BillingAdminPage() {
         </AdminPanel>
       ) : null}
       {hasAnyBillingCapability ? (
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
-          <TabsList className="h-auto flex-wrap">
-            {canRead ? (
-              <>
-                <TabsTrigger value="overview">概览</TabsTrigger>
-                <TabsTrigger value="wallets">用户钱包</TabsTrigger>
-                <TabsTrigger value="ledger">积分流水</TabsTrigger>
-                <TabsTrigger value="reconciliation">日对账</TabsTrigger>
-                <TabsTrigger value="invoices">发票申请</TabsTrigger>
-                <TabsTrigger value="wire-transfers">对公转账</TabsTrigger>
-                <TabsTrigger value="usage">消费汇总</TabsTrigger>
-              </>
+        <div className="space-y-4">
+          <BillingTabNav
+            activeTab={activeTab}
+            visibility={tabVisibility}
+            onSelectTab={setActiveTab}
+          />
+
+          <div className="mt-4">
+            {activeTab === 'overview' && canRead ? (
+              <BillingStatsSummary onNavigate={navigateBilling} />
             ) : null}
-            {canViewPackages ? <TabsTrigger value="packages">充值 SKU</TabsTrigger> : null}
-            {canViewPackages ? <TabsTrigger value="coupons">优惠券</TabsTrigger> : null}
-            {canViewOrders ? <TabsTrigger value="orders">充值订单</TabsTrigger> : null}
-            {canAdjust ? <TabsTrigger value="adjust">人工调账</TabsTrigger> : null}
-          </TabsList>
-
-          {canRead ? (
-            <>
-              <TabsContent value="overview" className="mt-4">
-                <BillingStatsSummary onNavigate={navigateBilling} />
-              </TabsContent>
-              <TabsContent value="wallets" className="mt-4">
-                <BillingWalletsPanel
-                  filterSeed={filterSeed}
-                  onNavigate={navigateBilling}
-                />
-              </TabsContent>
-              <TabsContent value="ledger" className="mt-4">
-                <BillingLedgerPanel filterSeed={filterSeed} />
-              </TabsContent>
-              <TabsContent value="reconciliation" className="mt-4">
-                <BillingReconciliationPanel />
-              </TabsContent>
-              <TabsContent value="invoices" className="mt-4">
-                <BillingInvoicesPanel filterSeed={filterSeed} />
-              </TabsContent>
-              <TabsContent value="wire-transfers" className="mt-4">
-                <BillingWireTransfersPanel filterSeed={filterSeed} />
-              </TabsContent>
-              <TabsContent value="usage" className="mt-4">
-                <BillingUsagePanel filterSeed={filterSeed} />
-              </TabsContent>
-            </>
-          ) : null}
-
-          {canViewPackages ? (
-            <TabsContent value="packages" className="mt-4">
+            {activeTab === 'wallets' && canRead ? (
+              <BillingWalletsPanel filterSeed={filterSeed} onNavigate={navigateBilling} />
+            ) : null}
+            {activeTab === 'ledger' && canRead ? (
+              <BillingLedgerPanel filterSeed={filterSeed} />
+            ) : null}
+            {activeTab === 'reconciliation' && canRead ? (
+              <BillingReconciliationPanel />
+            ) : null}
+            {activeTab === 'invoices' && canRead ? (
+              <BillingInvoicesPanel filterSeed={filterSeed} />
+            ) : null}
+            {activeTab === 'wire-transfers' && canRead ? (
+              <BillingWireTransfersPanel filterSeed={filterSeed} />
+            ) : null}
+            {activeTab === 'usage' && canRead ? (
+              <BillingUsagePanel filterSeed={filterSeed} />
+            ) : null}
+            {activeTab === 'packages' && canViewPackages ? (
               <BillingPackagesPanel
                 canWrite={canWritePackages}
                 onCreatePackage={
@@ -212,30 +207,20 @@ export function BillingAdminPage() {
                 }
                 onEditPackage={(pkg) => setEditingPackage(pkg)}
               />
-            </TabsContent>
-          ) : null}
-
-          {canViewPackages ? (
-            <TabsContent value="coupons" className="mt-4">
+            ) : null}
+            {activeTab === 'coupons' && canViewPackages ? (
               <BillingCouponsPanel canWrite={canWritePackages} />
-            </TabsContent>
-          ) : null}
-
-          {canViewOrders ? (
-            <TabsContent value="orders" className="mt-4">
-              <BillingRechargeOrdersPanel
-                canRefund={canRefund}
-                filterSeed={filterSeed}
-              />
-            </TabsContent>
-          ) : null}
-
-          {canAdjust ? (
-            <TabsContent value="adjust" className="mt-4 space-y-6">
-              <BillingAdjustPanel filterSeed={filterSeed} />
-            </TabsContent>
-          ) : null}
-        </Tabs>
+            ) : null}
+            {activeTab === 'orders' && canViewOrders ? (
+              <BillingRechargeOrdersPanel canRefund={canRefund} filterSeed={filterSeed} />
+            ) : null}
+            {activeTab === 'adjust' && canAdjust ? (
+              <div className="space-y-6">
+                <BillingAdjustPanel filterSeed={filterSeed} />
+              </div>
+            ) : null}
+          </div>
+        </div>
       ) : null}
 
       {canWritePackages ? (

@@ -7,6 +7,8 @@ import { buildAdminListQuery, type AdminListQuery } from './admin-list-query'
 
 export type { AdminListQuery } from './admin-list-query'
 export { buildAdminListQuery } from './admin-list-query'
+export type { AdminAuditLogEntry, AdminAuditLogListResponse } from '~/entities/audit-log'
+export { fetchAdminAuditLogs } from '~/entities/audit-log'
 export type {
   AdminTenantFeaturesResponse,
   AdminTenantListResponse,
@@ -441,30 +443,6 @@ export interface SessionTenantListResponse {
 
 export function fetchSessionTenants() {
   return api.get<SessionTenantListResponse>('/tenants')
-}
-
-export interface AdminAuditLogEntry {
-  id: string
-  actorUserId: string | null
-  actorEmail: string
-  action: string
-  resourceType: string
-  resourceId: string | null
-  targetTenantId: string | null
-  crossTenant: boolean
-  detail: string | null
-  createdAt: number
-}
-
-export interface AdminAuditLogListResponse {
-  logs: AdminAuditLogEntry[]
-  total?: number
-  page?: number
-  size?: number
-}
-
-export function fetchAdminAuditLogs(params?: AdminListQuery) {
-  return api.get<AdminAuditLogListResponse>(`/admin/audit-logs${buildAdminListQuery(params)}`)
 }
 
 export async function updateAccountProfile(values: {

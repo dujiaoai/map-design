@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { AUDIT_READ_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
 
@@ -45,7 +46,7 @@ const QUICK_LINKS: {
     label: '审计',
     description: '成员与计费操作记录',
     icon: ScrollTextIcon,
-    permissions: ['admin:tenants:read'],
+    permissions: [...AUDIT_READ_PERMISSIONS],
   },
   {
     to: '/billing',

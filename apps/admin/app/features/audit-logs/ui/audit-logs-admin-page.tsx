@@ -1,14 +1,17 @@
 import { Badge, Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
-import { CreditCardIcon } from 'lucide-react'
+import { CreditCardIcon, DownloadIcon } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { toast } from 'sonner'
 
 import { AUDIT_ACTION_OPTIONS } from '~/features/audit-logs/lib/audit-log-actions'
+import { downloadAdminAuditLogsCsv } from '~/features/audit-logs/lib/audit-log-export'
 import { buildAuditBillingLink } from '~/features/audit-logs/lib/audit-log-billing-nav'
 import {
   dateInputToFromEpoch,
   dateInputToToEpoch,
 } from '~/features/audit-logs/lib/audit-log-date-range'
+import { AUDIT_EXPORT_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
 import { buildAuditUsersLink } from '~/features/audit-logs/lib/audit-log-users-nav'
 import { AuditLogDetailSheet } from '~/features/audit-logs/ui/audit-log-detail-sheet'
 import { fetchAdminAuditLogs, fetchAdminTenants, type AdminAuditLogEntry } from '~/shared/api/admin-api'
@@ -51,6 +54,7 @@ const BILLING_PERMISSIONS = [
 export function AuditLogsAdminPage() {
   const { can, canAny } = useAdminPermissions()
   const canViewBilling = canAny([...BILLING_PERMISSIONS])
+  const canExportAudit = canAny([...AUDIT_EXPORT_PERMISSIONS])
   const canReadUsers = can('admin:users:read')
   const canReadTenants = can('admin:tenants:read')
   const [searchParams, setSearchParams] = useSearchParams()
@@ -65,6 +69,7 @@ export function AuditLogsAdminPage() {
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
   const [detailLog, setDetailLog] = useState<AdminAuditLogEntry | null>(null)
+  const [exporting, setExporting] = useState(false)
 
   const fromEpoch = dateInputToFromEpoch(fromDate)
   const toEpoch = dateInputToToEpoch(toDate)
@@ -137,6 +142,18 @@ export function AuditLogsAdminPage() {
     [query.data?.logs, sort],
   )
 
+  async function handleExportCsv() {
+    setExporting(true)
+    try {
+      await downloadAdminAuditLogsCsv(listQuery)
+      toast.success('审计日志 CSV 已开始下载')
+    } catch {
+      toast.error('导出失败，请稍后重试')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <div className="space-y-6 admin-stagger">
       <AdminPageHeader
@@ -147,17 +164,31 @@ export function AuditLogsAdminPage() {
           { total, loaded: Boolean(query.data), unit: '条' },
         )}
         actions={
-          canViewBilling ? (
-            <Button
-              nativeButton={false}
-              variant="outline"
-              size="sm"
-              render={<Link to="/billing" />}
-            >
-              <CreditCardIcon className="size-3.5" />
-              计费运营
-            </Button>
-          ) : null
+          <>
+            {canExportAudit ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={exporting}
+                onClick={() => void handleExportCsv()}
+              >
+                <DownloadIcon className="size-3.5" />
+                导出 CSV
+              </Button>
+            ) : null}
+            {canViewBilling ? (
+              <Button
+                nativeButton={false}
+                variant="outline"
+                size="sm"
+                render={<Link to="/billing" />}
+              >
+                <CreditCardIcon className="size-3.5" />
+                计费运营
+              </Button>
+            ) : null}
+          </>
         }
       />
 

@@ -13,6 +13,8 @@ import {
   UsersRoundIcon,
 } from 'lucide-react'
 
+import { AUDIT_READ_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
+
 export interface AdminNavItem {
   to: string
   label: string
@@ -68,7 +70,7 @@ export const adminNavItems: AdminNavItem[] = [
     to: '/audit-logs',
     label: '审计',
     icon: ScrollTextIcon,
-    permissions: ['admin:tenants:read'],
+    permissions: [...AUDIT_READ_PERMISSIONS],
   },
   {
     to: '/billing',

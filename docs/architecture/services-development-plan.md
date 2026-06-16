@@ -384,7 +384,10 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | FND-07l | Admin 用户编辑页代管 IdP 解绑 | ✅ |
 | FND-08a | 服务端工作台菜单 API | ✅ |
 | FND-08b | saas-web 消费 /v1/menus | ✅ |
-| FND-08 | Plan 配额 | Later |
+| FND-08c | Plan 配额查询 API | ✅ |
+| FND-08d | 成员 seat 配额门控 | ✅ |
+| FND-08e | Admin 成员页配额摘要 | ✅ |
+| FND-08 | API rate / storage enforcement | Later |
 
 **仍不做（本阶段）**：Sprint E 地图/机库/专题业务 API。
 

@@ -63,7 +63,7 @@
 
 ## 配额
 
-Plan 维度限制：seat 数、API rate、storage（待业务 API 排期）。
+Plan 维度限制：`GET /v1/tenants/{id}/quotas`（FND-08c ✅）；seat 门控于成员加入（FND-08d ✅）；API rate / storage 实时 enforcement 仍 Later。
 
 ## 跨租户（Platform Admin）
 

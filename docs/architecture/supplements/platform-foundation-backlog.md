@@ -33,7 +33,10 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | P3 | FND-07l | Admin 用户编辑页代管 IdP 解绑 | ✅ |
 | P3 | FND-08a | 服务端工作台菜单 API（GET /v1/menus） | ✅ |
 | P3 | FND-08b | saas-web 侧栏/命令面板消费 /v1/menus | ✅ |
-| Later | FND-08 | Plan 配额等 | 远期 |
+| P3 | FND-08c | Plan 配额目录与 GET /tenants/{id}/quotas | ✅ |
+| P3 | FND-08d | 成员加入 seat 配额门控 | ✅ |
+| P3 | FND-08e | Admin 成员页配额摘要 | ✅ |
+| Later | FND-08 | API rate / storage 实时 enforcement | 远期 |
 
 ---
 
@@ -229,11 +232,36 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 ---
 
+---
+
+## FND-08c · Plan 配额目录与查询 API ✅
+
+**交付（2026-06）**：`PlanQuotaCatalog`（free/solo/pro/enterprise）；`GET /v1/tenants/{tenantId}/quotas` 返回 seat / apiRate / storage 上限与 seat 占用。
+
+**不含**：DB 自定义配额、Admin 改 plan 联动 billing。
+
+---
+
+## FND-08d · 成员加入 seat 配额门控 ✅
+
+**交付（2026-06）**：邀请链接加入与邮件邀请创建前 `ensureSeatAvailable`；超限返回 403。
+
+**不含**：禁用用户释放席位后的异步重算、超额 grace period。
+
+---
+
+## FND-08e · Admin 成员页配额摘要 ✅
+
+**交付（2026-06）**：成员页 `TenantQuotaSummary` 展示 plan、席位、API 速率与存储上限。
+
+---
+
 ## FND-08 · 远期（Later）
 
 | 项 | 说明 |
 | --- | --- |
-| Plan 配额 | seat / rate / storage |
+| API rate enforcement | 网关/Filter 按 plan 限流 |
+| Storage 用量统计 | 附件/图层存储 Sprint E 汇总 usedBytes |
 | 菜单 RBAC / Admin 配置 | 权限码裁剪、运营可编辑菜单树 |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |
 

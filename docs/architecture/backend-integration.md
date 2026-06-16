@@ -19,7 +19,7 @@
 | 注册 | `POST /v1/auth/register` | C |
 | 登录、刷新、登出 | `/v1/auth/login`、`/refresh`、`/logout` | C |
 | 用户信息 | `GET/PUT /v1/users/me`、`POST .../password` | C |
-| 租户、能力 | `/v1/tenants`、`/features` | B（已就绪） |
+| 租户、能力 | `/v1/tenants`、`/features`、**`/quotas`（FND-08c ✅）** | B（已就绪） |
 | 侧栏导航 | **FND-08 ✅** `GET /v1/menus` + mock fallback | C-09 tenant features 过滤保留于 fallback |
 | 权限配置、后台 | `/v1/admin/*` | D ✅（Admin P0～P3 增强） |
 | 地图 / 机库 / 专题 | `/v1/layers`、`/v1/uav/*` 等 | **E（Later）** |

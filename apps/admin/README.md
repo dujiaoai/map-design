@@ -51,7 +51,7 @@ pnpm --filter @repo/saas-admin dev
 | `/roles` | 系统角色权限（平台级） | `admin:roles:read` |
 | `/account` | 账号资料与改密 | 已登录 |
 | `/billing` | 计费运营（钱包、SKU、订单、调账、对账等 Tab） | `admin:billing:*` |
-| `/audit-logs` | 审计日志列表（租户/动作/日期/跨租户筛选） | `admin:tenants:read` |
+| `/audit-logs` | 审计日志列表（租户/动作/日期/跨租户筛选；CSV 导出） | `admin:audit:read`（兼容 `admin:tenants:read`） |
 | `/system` | 平台配置只读摘要与健康条（`GET /v1/admin/system/flags`） | `admin:tenants:read` |
 | `/403` | 无运营权限 | — |
 | `*` | 404 友好页 | — |
@@ -75,6 +75,7 @@ pnpm --filter @repo/saas-admin dev
 - **P4+++++++++ 计费与复制反馈**：SKU/优惠券/调账/对公入账 Toast；`AdminIdCell` 复制 Toast；概览刷新 Toast
 - **P4++++++++++ 排序透明化**：`AdminTableSortHint` 标明当前页/已加载范围 + 清除排序；租户自定义角色 Toast
 - **P4++++++++++++ 审计 P1/P2**：租户/用户/计费写操作落库；动作枚举同步；资源列；`tenantId`/`from`/`to` 筛选；详情 Sheet
+- **P4+++++++++++++ 审计 P3**：独立 `admin:audit:read` / `admin:audit:export`；CSV 导出（最多 5000 条）
 
 ## 主流运维控制台 UX 对照
 
@@ -115,4 +116,4 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 
 ## Later（P4 余项）
 
-邮箱邀请、审计 CSV 导出、impersonation 审计深化、Admin MFA（FND-07）。
+邮箱邀请、impersonation 审计深化、Admin MFA（FND-07）。

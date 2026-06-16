@@ -77,7 +77,7 @@ pnpm --filter @repo/saas-web dev
 | `/members` | 成员管理；`?tenantId=`（平台可跨租户，租户管理员仅本租户） |
 | `/roles` | 角色与权限配置（未保存切换确认） |
 | `/account` | 当前账号资料（`PUT /users/me`）与改密 |
-| `/audit-logs` | 平台审计日志（`GET /v1/admin/audit-logs`）；租户/动作/日期/跨租户筛选；详情 Sheet；跨页跳转 |
+| `/audit-logs` | 平台审计日志（筛选 + CSV 导出 + 详情 Sheet）；权限 `admin:audit:read` |
 | `/billing` | 平台计费运营（SKU/调账/退款/对账/发票/对公） |
 | `/system` | 平台配置只读摘要（`GET /v1/admin/system/flags`） |
 | `/403` | 无运营权限 |
@@ -92,7 +92,7 @@ pnpm --filter @repo/saas-web dev
 | 租户能力 | `GET /v1/admin/feature-catalog`；`GET/PUT /v1/admin/tenants/{id}/features` |
 | 用户 CRUD + 分页 | `GET/PATCH /v1/admin/users`（成员邀请见 invite-links） |
 | 成员与角色 | `GET/PATCH /v1/admin/tenants/{id}/members`；`PUT .../roles`；邀请见 invite-links |
-| 审计日志 | `GET /v1/admin/audit-logs`（租户/成员/计费/RBAC 写操作 + `tenantId`/`from`/`to`/`crossTenant` 筛选） |
+| 审计日志 | `GET /v1/admin/audit-logs`、`GET /v1/admin/audit-logs/export`；`admin:audit:read` / `admin:audit:export` |
 | 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
 
 列表页 loading 使用 Skeleton；Vitest + MockMvc 覆盖 P0～P3 核心路径。

@@ -1,12 +1,13 @@
-import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
+import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast, useConfirmDialog } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { PencilIcon, ScrollTextIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
 import { AUDIT_READ_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
 import { buildAuditLogsLink } from '~/features/audit-logs/lib/audit-log-nav'
-import { fetchAdminTenants, fetchAdminUsers, type AdminUserSummary } from '~/shared/api/admin-api'
+import { fetchAdminTenants, fetchAdminUsers, patchAdminUser, type AdminUserSummary } from '~/shared/api/admin-api'
 import { AdminAntTable, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
@@ -16,6 +17,7 @@ import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
+import { AdminTableBulkBar } from '~/shared/ui/admin-table-bulk-bar'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
@@ -35,8 +37,11 @@ export function UsersAdminPage() {
   const qFromUrl = searchParams.get('q') ?? ''
 
   const [editingUser, setEditingUser] = useState<AdminUserSummary | null>(null)
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const queryClient = useQueryClient()
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const { searchInput, setSearchInput, page, setPage, queryParams: baseQueryParams } =
     useAdminPagedListState(qFromUrl)
@@ -91,6 +96,41 @@ export function UsersAdminPage() {
 
   const total = usersQuery.data?.total ?? usersQuery.data?.users.length ?? 0
   const showActions = canWrite || canViewAudit
+
+  const selectedUsers = useMemo(
+    () => filteredUsers.filter((user) => selectedRowKeys.includes(user.id)),
+    [filteredUsers, selectedRowKeys],
+  )
+
+  const disableableSelectedUsers = useMemo(
+    () => selectedUsers.filter((user) => user.status !== 'disabled'),
+    [selectedUsers],
+  )
+
+  const bulkDisableMutation = useMutation({
+    mutationFn: async (userIds: string[]) => {
+      await Promise.all(userIds.map((userId) => patchAdminUser(userId, { status: 'disabled' })))
+    },
+    onSuccess: async (_data, userIds) => {
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
+      setSelectedRowKeys([])
+      toast.success(`已禁用 ${userIds.length} 个用户`)
+    },
+    onError: () => {
+      toast.error('批量禁用失败，请稍后重试')
+    },
+  })
+
+  async function handleBulkDisable() {
+    if (disableableSelectedUsers.length === 0) return
+    const confirmed = await confirm({
+      description: `确定禁用已选的 ${disableableSelectedUsers.length} 个用户？禁用后无法登录。`,
+      confirmLabel: '批量禁用',
+      destructive: true,
+    })
+    if (!confirmed) return
+    bulkDisableMutation.mutate(disableableSelectedUsers.map((user) => user.id))
+  }
 
   function clearUserFilters() {
     setSearchInput('')
@@ -274,6 +314,25 @@ export function UsersAdminPage() {
 
       <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="server" />
 
+      {canWrite ? (
+        <AdminTableBulkBar
+          selectedCount={selectedRowKeys.length}
+          onClearSelection={() => setSelectedRowKeys([])}
+        >
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            disabled={
+              disableableSelectedUsers.length === 0 || bulkDisableMutation.isPending
+            }
+            onClick={() => void handleBulkDisable()}
+          >
+            {bulkDisableMutation.isPending ? '处理中…' : '批量禁用'}
+          </Button>
+        </AdminTableBulkBar>
+      ) : null}
+
       <AdminPanel className="p-0">
         {usersQuery.isLoading ? (
           <AdminTableSkeleton columns={showActions ? 8 : 7} showPagination />
@@ -301,6 +360,17 @@ export function UsersAdminPage() {
             dataSource={filteredUsers}
             onChange={createAdminAntSortHandler(handleToggleSort)}
             showSorterTooltip={false}
+            rowSelection={
+              canWrite
+                ? {
+                    selectedRowKeys,
+                    onChange: (keys) => setSelectedRowKeys(keys.map(String)),
+                    getCheckboxProps: (user) => ({
+                      disabled: user.status === 'disabled',
+                    }),
+                  }
+                : undefined
+            }
             pagination={{
               current: page,
               pageSize: baseQueryParams.size,
@@ -319,6 +389,8 @@ export function UsersAdminPage() {
         }}
         tenantFilterId={tenantFilterId}
       />
+
+      {confirmDialog}
     </div>
   )
 }

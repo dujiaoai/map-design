@@ -7,6 +7,39 @@
   body {
     @apply antialiased;
   }
+
+  /*
+   * Admin 浅色：雾蓝灰分层运维台，避免 #fff 弹层/面板刺眼
+   * 仅作用于 html 无 .dark 时（Admin ThemeToggle）
+   */
+  html:not(.dark) {
+    --background: #e6ecf2;
+    --foreground: #0f172a;
+    --card: #eef2f6;
+    --card-foreground: #0f172a;
+    --popover: #f3f6f9;
+    --popover-foreground: #0f172a;
+    --primary: #30758c;
+    --primary-foreground: #f8fafc;
+    --secondary: #e2e9f1;
+    --secondary-foreground: #0f172a;
+    --muted: #dfe6ee;
+    --muted-foreground: #64748b;
+    --accent: #e2e9f1;
+    --accent-foreground: #0c1222;
+    --border: #c5d0dc;
+    --input: #c5d0dc;
+    --ring: color-mix(in srgb, #30758c 42%, transparent);
+    --sidebar: #eef2f6;
+    --sidebar-foreground: #0f172a;
+    --sidebar-accent: #e2e9f1;
+    --sidebar-accent-foreground: #0c1222;
+    --sidebar-border: #c5d0dc;
+    --surface-light-canvas: #e6ecf2;
+    --surface-light-panel: #eef2f6;
+    --surface-light-elevated: #f3f6f9;
+    --surface-light-instrument: #e8edf3;
+  }
 }
 
 .admin-display {
@@ -24,6 +57,13 @@
   background-size: 48px 48px;
   mask-image: radial-gradient(circle at 20% 0%, black, transparent 72%);
   opacity: 0.35;
+}
+
+html:not(.dark) .admin-shell-grid {
+  opacity: 0.22;
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--primary) 12%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px);
 }
 
 .admin-data-table th,

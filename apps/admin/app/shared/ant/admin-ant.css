@@ -38,6 +38,29 @@ html:not(.dark) .admin-ant-root .admin-ant-table .ant-table-pagination {
   border-top-color: #c5d0dc;
 }
 
+html:not(.dark) .admin-ant-root .admin-ant-table .ant-table-thead > tr > th {
+  background: #e8edf3 !important;
+  color: #475569;
+}
+
+html:not(.dark) .admin-ant-root .admin-ant-table .ant-table-tbody > tr.ant-table-row:hover > td {
+  background: #e2e9f1 !important;
+}
+
+html:not(.dark) .admin-ant-root .ant-picker-dropdown .ant-picker-panel-container {
+  background: #f3f6f9;
+  box-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.1),
+    0 0 0 1px #c5d0dc;
+}
+
+html:not(.dark) .admin-ant-root .ant-select-dropdown {
+  background: #f3f6f9;
+  box-shadow:
+    0 12px 32px rgba(15, 23, 42, 0.1),
+    0 0 0 1px #c5d0dc;
+}
+
 .admin-ant-root .admin-ant-modal .ant-modal-content {
   box-shadow:
     0 24px 48px rgba(15, 23, 42, 0.12),

@@ -88,6 +88,40 @@ class AuthMfaLoginControllerTest {
         .andExpect(jsonPath("$.mfaRequired").isEmpty());
   }
 
+  @Test
+  void loginMfa_withRecoveryCode_returnsTokens() throws Exception {
+    var recoveryCode = enrollPlatformAdminTotpWithRecoveryCode();
+
+    var loginBody =
+        mockMvc
+            .perform(
+                post("/v1/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            Map.of(
+                                "email", "platform@test.local",
+                                "password", "password",
+                                "tenantId", "test"))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    var challengeToken = (String) JsonPath.read(loginBody, "$.mfaChallengeToken");
+
+    mockMvc
+        .perform(
+            post("/v1/auth/login/mfa")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("mfaChallengeToken", challengeToken, "code", recoveryCode))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.accessToken").isString())
+        .andExpect(jsonPath("$.refreshToken").isString());
+  }
+
   private String enrollPlatformAdminTotp() throws Exception {
     var accessToken = loginAccessToken("platform@test.local");
 
@@ -113,6 +147,37 @@ class AuthMfaLoginControllerTest {
         .andExpect(status().isOk());
 
     return secret;
+  }
+
+  private String enrollPlatformAdminTotpWithRecoveryCode() throws Exception {
+    var accessToken = loginAccessToken("platform@test.local");
+
+    var enrollBody =
+        mockMvc
+            .perform(
+                post("/v1/admin/mfa/totp/enroll")
+                    .header("Authorization", "Bearer " + accessToken))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    var secret = (String) JsonPath.read(enrollBody, "$.secret");
+    var code = totpSupport.currentCode(secret);
+
+    var verifyBody =
+        mockMvc
+            .perform(
+                post("/v1/admin/mfa/totp/verify")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(Map.of("code", code))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    return (String) JsonPath.read(verifyBody, "$.recoveryCodes[0]");
   }
 
   private String loginAccessToken(String email) throws Exception {

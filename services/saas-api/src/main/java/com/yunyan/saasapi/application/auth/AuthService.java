@@ -151,8 +151,8 @@ public class AuthService {
         mfaLoginChallengeStore
             .consume(request.mfaChallengeToken())
             .orElseThrow(() -> AuthException.unauthorized("MFA challenge expired or invalid"));
-    if (!adminMfaService.verifyEnrolledCode(userId, request.code())) {
-      throw AuthException.unauthorized("Invalid TOTP code");
+    if (!adminMfaService.verifyEnrolledCodeOrRecovery(userId, request.code())) {
+      throw AuthException.unauthorized("Invalid TOTP or recovery code");
     }
     var user =
         userAuthRepository

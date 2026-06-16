@@ -143,7 +143,7 @@ public class AuthController {
   @PostMapping("/login/mfa")
   @Operation(
       summary = "登录 MFA step-up",
-      description = "密码验证通过后、已绑定 TOTP 的平台管理员须提交 challenge token 与 6 位码换取 token 对。")
+      description = "密码验证通过后、已绑定 TOTP 的平台管理员须提交 challenge token 与 6 位码或一次性恢复码换取 token 对。")
   LoginResponse verifyLoginMfa(@Valid @RequestBody LoginMfaVerifyRequest request) {
     return authService.verifyLoginMfa(request);
   }

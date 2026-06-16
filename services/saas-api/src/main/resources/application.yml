@@ -83,6 +83,10 @@ saas:
       ip-window: PT1H
       email-max-attempts: 1
       email-window: PT15M
+    tenant-api:
+      enabled: true
+      window: PT1M
+      plan-cache-ttl: PT5M
   billing:
     enabled: ${SAAS_BILLING_ENABLED:false}
     base-url: ${SAAS_BILLING_API_BASE_URL:http://localhost:8083}

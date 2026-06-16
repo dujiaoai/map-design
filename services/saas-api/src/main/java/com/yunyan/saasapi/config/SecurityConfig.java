@@ -3,6 +3,7 @@ package com.yunyan.saasapi.config;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.BillingInternalAuthFilter;
 import com.yunyan.saasapi.security.JwtAuthFilter;
+import com.yunyan.saasapi.security.TenantApiRateLimitFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +33,7 @@ public class SecurityConfig {
   SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       JwtAuthFilter jwtAuthFilter,
+      TenantApiRateLimitFilter tenantApiRateLimitFilter,
       BillingInternalAuthFilter billingInternalAuthFilter,
       CorsConfigurationSource corsConfigurationSource)
       throws Exception {
@@ -59,6 +61,7 @@ public class SecurityConfig {
         .formLogin(form -> form.disable())
         .addFilterBefore(billingInternalAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterAfter(tenantApiRateLimitFilter, JwtAuthFilter.class)
         .build();
   }
 

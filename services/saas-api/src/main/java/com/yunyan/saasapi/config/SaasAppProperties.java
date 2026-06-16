@@ -96,6 +96,18 @@ public class SaasAppProperties {
     private LoginRateLimit login = new LoginRateLimit();
     private ThrottledEmailEndpoint register = new ThrottledEmailEndpoint();
     private ThrottledEmailEndpoint passwordReset = new ThrottledEmailEndpoint();
+    private TenantApiRateLimit tenantApi = new TenantApiRateLimit();
+  }
+
+  @Data
+  public static class TenantApiRateLimit {
+    /** 对已认证 /v1/** 请求按租户 plan 限流 */
+    private boolean enabled = true;
+    private Duration window = Duration.ofMinutes(1);
+    /** 租户 plan 缓存 TTL，避免每次请求查库 */
+    private Duration planCacheTtl = Duration.ofMinutes(5);
+    /** 非空时覆盖 PlanQuotaCatalog（仅 dev/test） */
+    private Integer maxPerMinuteOverride;
   }
 
   @Data

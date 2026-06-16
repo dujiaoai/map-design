@@ -45,6 +45,31 @@ export {
   updateTenantRolePermissions,
 } from '~/entities/role'
 export type {
+  CreateTenantInviteLinkPayload,
+  CreateTenantInviteLinkResponse,
+  TenantInviteLinkListResponse,
+  TenantInviteLinkSummary,
+} from '~/entities/invite-link'
+export {
+  createTenantInviteLink,
+  fetchTenantInviteLinks,
+  revokeTenantInviteLink,
+} from '~/entities/invite-link'
+export type {
+  AssignableRoleListResponse,
+  AssignableRoleSummary,
+  CreateTenantRolePayload,
+  TenantRoleListResponse,
+  TenantRoleSummary,
+} from '~/entities/tenant-role'
+export {
+  createTenantCustomRole,
+  deleteTenantCustomRole,
+  fetchAssignableRoles,
+  fetchTenantCustomRoles,
+  patchTenantCustomRole,
+} from '~/entities/tenant-role'
+export type {
   AdminTenantFeaturesResponse,
   AdminTenantListResponse,
   AdminTenantSummary,
@@ -200,107 +225,6 @@ export function startOidcAuthorize(providerId: string, tenantId: string) {
 
 export function fetchAdminSystemFlags() {
   return api.get<AdminSystemFlagsResponse>('/admin/system/flags')
-}
-
-export interface TenantInviteLinkSummary {
-  id: string
-  roleCode: string
-  label: string | null
-  maxUses: number | null
-  useCount: number
-  expiresAt: number | null
-  revokedAt: number | null
-  createdAt: number
-  status: 'active' | 'expired' | 'revoked' | 'exhausted'
-}
-
-export interface TenantInviteLinkListResponse {
-  links: TenantInviteLinkSummary[]
-}
-
-export interface CreateTenantInviteLinkPayload {
-  roleCode?: string
-  label?: string
-  maxUses?: number
-  expiresInHours?: number
-}
-
-export interface CreateTenantInviteLinkResponse {
-  link: TenantInviteLinkSummary
-  inviteUrl: string
-}
-
-export function fetchTenantInviteLinks(tenantId: string) {
-  return api.get<TenantInviteLinkListResponse>(`/admin/tenants/${tenantId}/invite-links`)
-}
-
-export function createTenantInviteLink(
-  tenantId: string,
-  payload: CreateTenantInviteLinkPayload,
-) {
-  return api.post<CreateTenantInviteLinkResponse>(`/admin/tenants/${tenantId}/invite-links`, payload)
-}
-
-export function revokeTenantInviteLink(tenantId: string, linkId: string) {
-  return api.delete<TenantInviteLinkSummary>(
-    `/admin/tenants/${tenantId}/invite-links/${linkId}`,
-  )
-}
-
-export interface TenantRoleSummary {
-  id: string
-  code: string
-  name: string
-  description?: string | null
-  system: boolean
-  permissionCount: number
-  memberCount: number
-}
-
-export interface TenantRoleListResponse {
-  roles: TenantRoleSummary[]
-}
-
-export interface AssignableRoleSummary {
-  id: string
-  code: string
-  name: string
-  system: boolean
-}
-
-export interface AssignableRoleListResponse {
-  roles: AssignableRoleSummary[]
-}
-
-export function fetchTenantCustomRoles(tenantId: string) {
-  return api.get<TenantRoleListResponse>(`/admin/tenants/${tenantId}/roles`)
-}
-
-export function fetchAssignableRoles(tenantId: string) {
-  return api.get<AssignableRoleListResponse>(`/admin/tenants/${tenantId}/assignable-roles`)
-}
-
-export interface CreateTenantRolePayload {
-  code: string
-  name: string
-  description?: string
-  permissionCodes?: string[]
-}
-
-export function createTenantCustomRole(tenantId: string, payload: CreateTenantRolePayload) {
-  return api.post<TenantRoleSummary>(`/admin/tenants/${tenantId}/roles`, payload)
-}
-
-export function patchTenantCustomRole(
-  tenantId: string,
-  roleId: string,
-  payload: { name?: string; description?: string },
-) {
-  return api.patch<TenantRoleSummary>(`/admin/tenants/${tenantId}/roles/${roleId}`, payload)
-}
-
-export function deleteTenantCustomRole(tenantId: string, roleId: string) {
-  return api.delete<void>(`/admin/tenants/${tenantId}/roles/${roleId}`)
 }
 
 export interface SessionTenantSummary {

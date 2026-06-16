@@ -31,6 +31,13 @@ public class SaasAppProperties {
   @Data
   public static class Auth {
     private final Password password = new Password();
+    private final AdminMfa adminMfa = new AdminMfa();
+  }
+
+  @Data
+  public static class AdminMfa {
+    /** 为 true 时平台管理员须完成 TOTP（Phase 2 登录 step-up） */
+    private boolean enforcementEnabled = false;
   }
 
   @Data

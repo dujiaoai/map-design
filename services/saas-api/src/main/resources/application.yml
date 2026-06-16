@@ -49,6 +49,8 @@ saas:
   auth:
     password:
       strength-enabled: ${SAAS_PASSWORD_STRENGTH:false}
+    admin-mfa:
+      enforcement-enabled: ${SAAS_ADMIN_MFA_ENFORCEMENT:false}
   invite:
     token-ttl: PT48H
     link-default-ttl: P7D

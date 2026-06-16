@@ -21,6 +21,7 @@ public class AdminSystemFlagsService {
   private final BillingApiProperties billingApiProperties;
   private final JwtProperties jwtProperties;
   private final Environment environment;
+  private final AdminMfaService adminMfaService;
 
   public AdminSystemFlagsResponse getFlags() {
     var mail = saasAppProperties.getMail();
@@ -48,6 +49,10 @@ public class AdminSystemFlagsService {
             billingApiProperties.isEnabled(),
             billingApiProperties.getBaseUrl(),
             membershipSync.isPushEnabled()),
+        new AdminSystemFlagsResponse.MfaFlags(
+            saasAppProperties.getAuth().getAdminMfa().isEnforcementEnabled(),
+            false,
+            adminMfaService.countEnrolledPlatformAdmins()),
         new AdminSystemFlagsResponse.RuntimeFlags(activeProfiles(), jwtProperties.effectivePermEpoch()));
   }
 

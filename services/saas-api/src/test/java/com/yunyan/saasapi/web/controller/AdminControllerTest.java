@@ -109,6 +109,9 @@ class AdminControllerTest {
         .andExpect(jsonPath("$.rateLimit.enabled").isBoolean())
         .andExpect(jsonPath("$.tenantRls.enabled").isBoolean())
         .andExpect(jsonPath("$.billing.integrationEnabled").isBoolean())
+        .andExpect(jsonPath("$.mfa.enforcementEnabled").isBoolean())
+        .andExpect(jsonPath("$.mfa.totpEnrollmentAvailable").value(false))
+        .andExpect(jsonPath("$.mfa.enrolledPlatformAdminCount").value(0))
         .andExpect(jsonPath("$.runtime.activeProfiles").isArray());
   }
 

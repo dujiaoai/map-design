@@ -9,6 +9,7 @@ public record AdminSystemFlagsResponse(
     RateLimitFlags rateLimit,
     TenantRlsFlags tenantRls,
     BillingFlags billing,
+    MfaFlags mfa,
     RuntimeFlags runtime) {
 
   public record RegistrationFlags(
@@ -27,6 +28,11 @@ public record AdminSystemFlagsResponse(
 
   public record BillingFlags(
       boolean integrationEnabled, String baseUrl, boolean membershipPushEnabled) {}
+
+  public record MfaFlags(
+      boolean enforcementEnabled,
+      boolean totpEnrollmentAvailable,
+      int enrolledPlatformAdminCount) {}
 
   public record RuntimeFlags(List<String> activeProfiles, int jwtPermEpoch) {}
 }

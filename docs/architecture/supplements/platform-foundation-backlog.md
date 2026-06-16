@@ -29,7 +29,8 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | P3 | FND-07h | OAuth2/OIDC 授权码登录（saas-web） | ✅ |
 | P3 | FND-07i | OIDC 本地联调配置与 runbook | ✅ |
 | P3 | FND-07j | OIDC provider subject 绑定表 | ✅ |
-| Later | FND-07 | `/v1/menus`、OIDC 解绑 UI、Plan 配额等 | 远期 |
+| P3 | FND-07k | OIDC 绑定列表与解绑 UI | ✅ |
+| Later | FND-07 | `/v1/menus`、Plan 配额等 | 远期 |
 
 ---
 
@@ -191,7 +192,15 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 **交付（2026-06）**：Flyway V28 `sys_user_oauth_bind`；`(provider_id, provider_subject)` 唯一；回调优先按 IdP `sub` 解析用户并校验租户；邮箱首次匹配成功时自动 bind。
 
-**不含**：Account/Admin 解绑 UI。
+**不含**：Account/Admin 解绑 UI（→ FND-07k）。
+
+---
+
+## FND-07k · OIDC 绑定列表与解绑 UI ✅
+
+**交付（2026-06）**：`GET/DELETE /v1/users/me/oauth-binds/{providerId}`；saas-web 与 Admin 账号 Drawer `OauthBindsPanel`（列表 + 解除绑定 + Toast）。
+
+**不含**：Admin 用户详情页代管他人解绑。
 
 ---
 
@@ -199,7 +208,6 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 | 项 | 说明 |
 | --- | --- |
-| OIDC 解绑 UI | `/account` 与 Admin 用户详情 |
 | `/v1/menus` | 服务端动态菜单（当前 mock-nav） |
 | Plan 配额 | seat / rate / storage |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |

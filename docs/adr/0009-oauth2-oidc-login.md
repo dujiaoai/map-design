@@ -51,12 +51,13 @@ Phase 1 骨架期 `authorizationCodeFlowAvailable` 恒为 `false`；Phase 2 在 
 | saas-web UI | ✅ | 同上，`client=web`；登录页 IdP 按钮 + callback；MFA step-up |
 | 本地联调 runbook | ✅ | `application-oidc.example.yml` + [oidc-dev-setup.md](../runbooks/oidc-dev-setup.md) |
 | Provider subject 绑定 | ✅ | `sys_user_oauth_bind`（FND-07j）；`(provider_id, provider_subject)` 唯一 |
+| 绑定管理 UI | ✅ | `GET/DELETE /users/me/oauth-binds`；Account Drawer（FND-07k） |
 
 ### 5. 仍 Later
 
 | 能力 | 说明 |
 | --- | --- |
-| 账号管理 UI | `/account` 展示/解绑 IdP；Admin 用户详情 |
+| Admin 用户详情代理解绑 | 平台运营代管他人 IdP 绑定 |
 
 ### 6. 安全
 
@@ -74,11 +75,11 @@ Phase 1 骨架期 `authorizationCodeFlowAvailable` 恒为 `false`；Phase 2 在 
 ### 负面
 
 - Admin 未配置 IdP 或缺 `client-secret` 时 `authorizationCodeFlowAvailable=false`，登录页不展示 IdP 按钮。
-- Phase 2 后续账号解绑 UI 工作量独立估算。
+- Phase 2 后续 Admin 代理解绑等运维能力工作量独立估算。
 
 ## References
 
 - [0008-platform-admin-mfa.md](./0008-platform-admin-mfa.md)
 - [auth-rbac.md](../architecture/auth-rbac.md)
-- [platform-foundation-backlog.md](../architecture/supplements/platform-foundation-backlog.md) FND-07f～FND-07j
+- [platform-foundation-backlog.md](../architecture/supplements/platform-foundation-backlog.md) FND-07f～FND-07k
 - [oidc-dev-setup.md](../runbooks/oidc-dev-setup.md)

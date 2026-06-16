@@ -129,7 +129,8 @@ curl -s "http://localhost:8082/v1/auth/oidc/keycloak/authorize?client=web&tenant
 3. 点击「使用 Keycloak (local) 登录」→ 跳转 IdP → 授权
 4. 回调 `/auth/oidc/callback/keycloak` 后进入工作台 `/`
 5. 再次 OIDC 登录时后端按 IdP `sub` 查 `sys_user_oauth_bind`（无需重复邮箱匹配）
-6. Admin 重复：http://localhost:5181/login ，回调后进入运营概览
+6. 账号 Drawer →「企业 IdP 登录绑定」可查看绑定并「解除绑定」
+7. Admin 重复：http://localhost:5181/login ，账号 Drawer 同样可解绑
 
 **平台管理员 MFA**：若账号已绑 TOTP，OIDC 回调后会进入 MFA step-up（与密码登录相同）。
 

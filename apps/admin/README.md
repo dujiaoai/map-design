@@ -85,6 +85,7 @@ pnpm --filter @repo/saas-admin dev
 - **FND-07e 恢复码**：绑定/重新生成后一次性展示；登录与注销可消费
 - **FND-07f OIDC 骨架**：系统页/登录页展示 IdP 配置阶段
 - **FND-07g OIDC 授权码（Admin）**：登录页 IdP 按钮；`/auth/oidc/callback/:providerId`；MFA step-up 与密码登录一致
+- **FND-07k OIDC 解绑**：账号 Drawer「企业 IdP 登录绑定」列表与解除绑定
 
 ## 主流运维控制台 UX 对照
 
@@ -125,4 +126,4 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 
 ## Later（P4 余项）
 
-邮箱邀请、OIDC 账号解绑 UI。
+邮箱邀请。

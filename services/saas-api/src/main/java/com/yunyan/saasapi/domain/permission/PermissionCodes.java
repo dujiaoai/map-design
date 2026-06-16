@@ -28,22 +28,12 @@ public final class PermissionCodes {
   public static final String ADMIN_AUDIT_EXPORT = "admin:audit:export";
   public static final String ADMIN_IMPERSONATE = "admin:impersonate";
 
-  /** Legacy fallback while tenants:read still grants audit list access. */
+  /** Requires explicit audit permission (no tenants:read fallback). */
   public static final String ADMIN_AUDIT_READ_AUTHORITIES =
-      "hasAnyAuthority('"
-          + ADMIN_AUDIT_READ
-          + "','"
-          + ADMIN_TENANTS_READ
-          + "')";
+      "hasAuthority('" + ADMIN_AUDIT_READ + "')";
 
   public static final String ADMIN_AUDIT_EXPORT_AUTHORITIES =
-      "hasAnyAuthority('"
-          + ADMIN_AUDIT_EXPORT
-          + "','"
-          + ADMIN_AUDIT_READ
-          + "','"
-          + ADMIN_TENANTS_READ
-          + "')";
+      "hasAuthority('" + ADMIN_AUDIT_EXPORT + "')";
 
   /** Platform-scoped permissions; any one grants access to `/v1/admin/**` (D-02). */
   public static final String[] PLATFORM_ADMIN_AUTHORITIES = {

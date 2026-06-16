@@ -50,6 +50,25 @@ class AdminAuditLogsControllerTest {
   }
 
   @Test
+  @Sql(
+      scripts = {
+        "/sql/auth-test-seed.sql",
+        "/sql/reset-role-permissions.sql",
+        "/sql/revoke-platform-audit-permissions.sql"
+      })
+  void listAuditLogs_withTenantsReadOnly_returns403() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(get("/v1/admin/tenants").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(get("/v1/admin/audit-logs").header("Authorization", "Bearer " + token))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
   void crossTenantInviteLinkCreate_writesAuditLogWithCrossTenantFlag() throws Exception {
     var token = loginAccessToken("platform@test.local");
 

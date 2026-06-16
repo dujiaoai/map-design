@@ -5,6 +5,7 @@ import com.yunyan.saasapi.application.admin.TenantMemberAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminUserDto;
+import com.yunyan.saasapi.web.dto.admin.InviteMemberByEmailRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchUserRequest;
 import com.yunyan.saasapi.web.dto.admin.TenantMemberListResponse;
 import com.yunyan.saasapi.web.dto.admin.UpdateMemberRolesRequest;
@@ -19,6 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,6 +58,38 @@ public class AdminTenantMembersController {
       @RequestParam(required = false) String sortDir) {
     return tenantMemberAdminService.listMembers(
         principal, tenantId, new AdminListParams(q, null, null, status, sortBy, sortDir));
+  }
+
+  @PostMapping("/invite")
+  @PreAuthorize(
+      "hasAuthority('"
+          + PermissionCodes.ADMIN_MEMBERS_WRITE
+          + "') or hasAuthority('"
+          + PLATFORM_ADMIN_AUTHORITY
+          + "')")
+  @Operation(
+      summary = "邮箱邀请成员",
+      description = "创建 invited 状态用户并发送 accept-invite 邮件；受租户席位配额限制")
+  public AdminUserDto inviteMemberByEmail(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @Valid @RequestBody InviteMemberByEmailRequest request) {
+    return tenantMemberAdminService.inviteMemberByEmail(principal, tenantId, request);
+  }
+
+  @PostMapping("/{userId}/resend-invite")
+  @PreAuthorize(
+      "hasAuthority('"
+          + PermissionCodes.ADMIN_MEMBERS_WRITE
+          + "') or hasAuthority('"
+          + PLATFORM_ADMIN_AUTHORITY
+          + "')")
+  @Operation(summary = "重发邀请邮件", description = "仅 status=invited 的成员可重发")
+  public AdminUserDto resendMemberInvite(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @PathVariable UUID userId) {
+    return tenantMemberAdminService.resendMemberInviteEmail(principal, tenantId, userId);
   }
 
   @PatchMapping("/{userId}")

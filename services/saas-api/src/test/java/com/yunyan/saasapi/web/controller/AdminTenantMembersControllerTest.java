@@ -1,5 +1,7 @@
 package com.yunyan.saasapi.web.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,6 +40,8 @@ class AdminTenantMembersControllerTest {
   @Autowired MockMvc mockMvc;
 
   @Autowired ObjectMapper objectMapper;
+
+  @Autowired JdbcTemplate jdbcTemplate;
 
   @Test
   void listMembers_withoutToken_returns401() throws Exception {
@@ -147,6 +152,73 @@ class AdminTenantMembersControllerTest {
                             "tenantId", "test"))))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.detail").value("Account is disabled"));
+  }
+
+  @Test
+  void inviteMemberByEmail_createsInvitedUserAndQueuesEmail() throws Exception {
+    var email = "email-invite-" + System.currentTimeMillis() + "@test.local";
+
+    var body =
+        mockMvc
+            .perform(
+                post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members/invite")
+                    .header("Authorization", "Bearer " + loginAccessToken("admin@test.local"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            Map.of("email", email, "displayName", "Email Invitee", "roleCode", "MEMBER"))))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.email").value(email))
+            .andExpect(jsonPath("$.status").value("invited"))
+            .andExpect(jsonPath("$.roles[0]").value("MEMBER"))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    var userId = JsonPath.read(body, "$.id").toString();
+    var outboxCount =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM sys_email_outbox WHERE to_email = ? AND template = 'member-invite'",
+            Integer.class,
+            email);
+    assertEquals(1, outboxCount);
+
+    mockMvc
+        .perform(
+            post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members/" + userId + "/resend-invite")
+                .header("Authorization", "Bearer " + loginAccessToken("admin@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("invited"));
+
+    var resentCount =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM sys_email_outbox WHERE to_email = ? AND template = 'member-invite'",
+            Integer.class,
+            email);
+    assertTrue(resentCount >= 2);
+  }
+
+  @Test
+  void inviteMemberByEmail_duplicateEmail_returns409() throws Exception {
+    var email = "dup-invite-" + System.currentTimeMillis() + "@test.local";
+    var payload =
+        objectMapper.writeValueAsString(Map.of("email", email, "roleCode", "MEMBER"));
+
+    mockMvc
+        .perform(
+            post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members/invite")
+                .header("Authorization", "Bearer " + loginAccessToken("admin@test.local"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/v1/admin/tenants/" + TEST_TENANT_ID + "/members/invite")
+                .header("Authorization", "Bearer " + loginAccessToken("admin@test.local"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+        .andExpect(status().isConflict());
   }
 
   private String createMemberViaInviteLink(String email, String password) throws Exception {

@@ -1,6 +1,8 @@
 package com.yunyan.saasapi.application.admin;
 
+import com.yunyan.saasapi.application.auth.EmailNormalizer;
 import com.yunyan.saasapi.application.auth.UserSessionRevoker;
+import com.yunyan.saasapi.application.email.UserInviteService;
 import com.yunyan.saasapi.domain.RoleRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.UserRepository;
@@ -11,6 +13,7 @@ import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.security.TenantContext;
 import com.yunyan.saasapi.web.dto.admin.AdminUserDto;
+import com.yunyan.saasapi.web.dto.admin.InviteMemberByEmailRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchUserRequest;
 import com.yunyan.saasapi.web.dto.admin.TenantMemberListResponse;
 import com.yunyan.saasapi.web.dto.admin.UpdateMemberRolesRequest;
@@ -39,6 +42,7 @@ public class TenantMemberAdminService {
   private final RoleRepository roleRepository;
   private final AdminAuditLogService adminAuditLogService;
   private final UserSessionRevoker userSessionRevoker;
+  private final UserInviteService userInviteService;
 
   public TenantMemberListResponse listMembers(
       SaasPrincipal principal, UUID tenantId, AdminListParams params) {
@@ -115,6 +119,65 @@ public class TenantMemberAdminService {
         tenantId,
         userId,
         "Roles -> " + String.join(",", result.roles()));
+    return result;
+  }
+
+  @Transactional
+  public AdminUserDto inviteMemberByEmail(
+      SaasPrincipal principal, UUID tenantId, InviteMemberByEmailRequest request) {
+    ensureOwnTenant(principal, tenantId);
+    var result =
+        withTargetTenant(
+            tenantId,
+            () -> {
+              var tenant = requireActiveTenant(tenantId);
+              var roleCode =
+                  StringUtils.hasText(request.roleCode())
+                      ? request.roleCode().trim()
+                      : DEFAULT_ROLE;
+              var role =
+                  roleRepository
+                      .findRoleForTenantMember(tenantId, roleCode)
+                      .orElseThrow(
+                          () -> AuthException.badRequest("Unknown role code: " + roleCode));
+              validateAssignableRole(role);
+              userInviteService.createInvitedUserAndSendEmail(
+                  tenant, request.email(), request.displayName(), role.getCode());
+              var normalizedEmail = EmailNormalizer.normalize(request.email());
+              var user =
+                  userRepository
+                      .findByTenantIdAndEmail(tenantId, normalizedEmail)
+                      .orElseThrow(() -> new IllegalStateException("Invited user not found"));
+              return toDto(user, tenant);
+            });
+    adminAuditLogService.recordMemberAction(
+        principal,
+        "member.invite.email",
+        tenantId,
+        UUID.fromString(result.id()),
+        "Invited " + result.email());
+    return result;
+  }
+
+  @Transactional
+  public AdminUserDto resendMemberInviteEmail(
+      SaasPrincipal principal, UUID tenantId, UUID userId) {
+    ensureOwnTenant(principal, tenantId);
+    var result =
+        withTargetTenant(
+            tenantId,
+            () -> {
+              var tenant = requireActiveTenant(tenantId);
+              var user = requireMemberInTenant(tenantId, userId);
+              userInviteService.resendInviteEmail(tenant, user);
+              return toDto(user, tenant);
+            });
+    adminAuditLogService.recordMemberAction(
+        principal,
+        "member.invite.resend",
+        tenantId,
+        userId,
+        "Resent invite to " + result.email());
     return result;
   }
 

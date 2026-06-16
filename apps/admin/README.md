@@ -51,7 +51,7 @@ pnpm --filter @repo/saas-admin dev
 | `/roles` | 系统角色权限（平台级） | `admin:roles:read` |
 | `/account` | 账号资料与改密 | 已登录 |
 | `/billing` | 计费运营（钱包、SKU、订单、调账、对账等 Tab） | `admin:billing:*` |
-| `/audit-logs` | 审计日志列表 | `admin:tenants:read` |
+| `/audit-logs` | 审计日志列表（租户/动作/日期/跨租户筛选） | `admin:tenants:read` |
 | `/system` | 平台配置只读摘要与健康条（`GET /v1/admin/system/flags`） | `admin:tenants:read` |
 | `/403` | 无运营权限 | — |
 | `*` | 404 友好页 | — |
@@ -74,7 +74,7 @@ pnpm --filter @repo/saas-admin dev
 - **P4++++++++ 列表排序与 a11y**：用户/审计日志列排序；表头 `aria-sort`；邀请链接复制 Toast
 - **P4+++++++++ 计费与复制反馈**：SKU/优惠券/调账/对公入账 Toast；`AdminIdCell` 复制 Toast；概览刷新 Toast
 - **P4++++++++++ 排序透明化**：`AdminTableSortHint` 标明当前页/已加载范围 + 清除排序；租户自定义角色 Toast
-- **P4+++++++++++ 筛选闭环**：清除筛选同步重置列排序；RBAC 权限搜索 `/` 快捷键与 a11y
+- **P4++++++++++++ 审计 P1/P2**：租户/用户/计费写操作落库；动作枚举同步；资源列；`tenantId`/`from`/`to` 筛选；详情 Sheet
 
 ## 主流运维控制台 UX 对照
 
@@ -90,11 +90,11 @@ pnpm --filter @repo/saas-admin dev
 | **操作反馈** | Toast 确认成功操作 | ✅ 全平台 CRUD、计费 11 Tab、复制、概览刷新 |
 | **键盘效率** | 快捷键聚焦搜索 | ✅ 四主列表 + RBAC 权限树搜索 `/` + kbd 提示 |
 | **表格列排序** | 可点击表头排序 | 🟡 四主表客户端排序 + 范围提示与清除 |
-| **筛选控件** | 一致的 chip/toggle，非原生 checkbox | ✅ 审计筛选 toggle；表单用 `@repo/ui` Checkbox |
+| **筛选控件** | 一致的 chip/toggle，非原生 checkbox | ✅ 审计：动作/租户/日期/仅计费/成员/跨租户 |
 | **危险操作** | Confirm / Sheet，非 `prompt` | ✅ 计费驳回 Sheet、`AlertDialog` |
 | **跨页上下文** | 租户/筛选 banner + 清除 | ✅ `AdminTenantContextBanner` 等 |
 | **无障碍** | 搜索 `role=searchbox`、`aria-label` | ✅ 工具栏搜索；排序表头 `aria-sort`；reduced-motion 已处理 |
-| **待增强** | 批量操作、服务端全量排序 | 📋 Later（P4 运维 UX 基线已收尾） |
+| **待增强** | 批量操作、服务端全量排序 | 📋 Later（P4 运维 UX 基线已收尾；审计导出/独立权限见 FND-07） |
 
 ## 验证
 
@@ -115,4 +115,4 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 
 ## Later（P4 余项）
 
-邮箱邀请、impersonation 审计深化、Admin MFA（FND-07）。
+邮箱邀请、审计 CSV 导出、impersonation 审计深化、Admin MFA（FND-07）。

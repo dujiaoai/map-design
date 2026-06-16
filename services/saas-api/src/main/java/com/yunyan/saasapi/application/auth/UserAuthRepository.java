@@ -43,6 +43,30 @@ public class UserAuthRepository {
     return Optional.empty();
   }
 
+  public LoginLookupResult lookupForLoginByUserId(UUID userId, String tenantSlug) {
+    return TenantRlsBypass.call(() -> lookupForLoginByUserIdWithRlsBypass(userId, tenantSlug));
+  }
+
+  private LoginLookupResult lookupForLoginByUserIdWithRlsBypass(UUID userId, String tenantSlug) {
+    if (!StringUtils.hasText(tenantSlug)) {
+      return LoginLookupResult.tenantRequired();
+    }
+    var tenant =
+        sysTenantMapper.selectOne(
+            Wrappers.<SysTenant>lambdaQuery().eq(SysTenant::getSlug, tenantSlug.trim()));
+    if (tenant == null) {
+      return LoginLookupResult.notFound();
+    }
+    if (!isTenantActive(tenant)) {
+      return LoginLookupResult.tenantSuspended();
+    }
+    var user = sysUserMapper.selectById(userId);
+    if (user == null || !tenant.getId().equals(user.getTenantId())) {
+      return LoginLookupResult.notFound();
+    }
+    return resolveUserLoginStatus(user, tenant);
+  }
+
   private LoginLookupResult lookupForLoginWithRlsBypass(String email, String tenantSlug) {
     var normalizedEmail = EmailNormalizer.normalize(email);
     if (StringUtils.hasText(tenantSlug)) {

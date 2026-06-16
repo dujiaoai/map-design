@@ -108,8 +108,10 @@ public class OidcAuthService {
     var token =
         oidcTokenClient.exchangeAuthorizationCode(
             provider, discovery, session.redirectUri(), request.code(), session.codeVerifier());
-    var email = oidcUserInfoClient.fetchVerifiedEmail(discovery.userinfoEndpoint(), token.accessToken());
-    return authService.loginAfterOidc(email, session.tenantSlug());
+    var userInfo =
+        oidcUserInfoClient.fetchUserInfo(discovery.userinfoEndpoint(), token.accessToken());
+    return authService.loginAfterOidc(
+        providerId, userInfo.subject(), userInfo.email(), session.tenantSlug());
   }
 
   private void assertFlowEnabled() {

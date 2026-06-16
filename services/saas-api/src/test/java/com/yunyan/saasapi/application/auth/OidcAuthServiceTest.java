@@ -15,6 +15,7 @@ import com.yunyan.saasapi.application.auth.oidc.OidcDiscoveryDocument;
 import com.yunyan.saasapi.application.auth.oidc.OidcPkceSupport;
 import com.yunyan.saasapi.application.auth.oidc.OidcTokenClient;
 import com.yunyan.saasapi.application.auth.oidc.OidcTokenClient.OidcTokenResponse;
+import com.yunyan.saasapi.application.auth.oidc.OidcUserInfo;
 import com.yunyan.saasapi.application.auth.oidc.OidcUserInfoClient;
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.config.SaasAppProperties.OAuth2Provider;
@@ -114,12 +115,12 @@ class OidcAuthServiceTest {
                 "https://idp.example/userinfo"));
     when(tokenClient.exchangeAuthorizationCode(any(), any(), any(), eq("code-1"), eq("verifier")))
         .thenReturn(new OidcTokenResponse("access-token", null));
-    when(userInfoClient.fetchVerifiedEmail("https://idp.example/userinfo", "access-token"))
-        .thenReturn("platform@test.local");
+    when(userInfoClient.fetchUserInfo("https://idp.example/userinfo", "access-token"))
+        .thenReturn(new OidcUserInfo("sub-123", "platform@test.local"));
 
     service.completeCallback("google", new OidcCallbackRequest("code-1", "state-1"));
 
-    verify(authService).loginAfterOidc("platform@test.local", "test");
+    verify(authService).loginAfterOidc("google", "sub-123", "platform@test.local", "test");
   }
 
   private void enableGoogleProvider() {

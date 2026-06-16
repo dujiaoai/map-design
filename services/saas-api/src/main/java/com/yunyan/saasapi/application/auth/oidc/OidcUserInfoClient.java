@@ -11,7 +11,7 @@ public class OidcUserInfoClient {
 
   private final RestClient restClient = RestClient.create();
 
-  public String fetchVerifiedEmail(String userinfoEndpoint, String accessToken) {
+  public OidcUserInfo fetchUserInfo(String userinfoEndpoint, String accessToken) {
     if (!StringUtils.hasText(userinfoEndpoint)) {
       throw AuthException.badRequest("OIDC userinfo endpoint unavailable");
     }
@@ -22,7 +22,14 @@ public class OidcUserInfoClient {
             .header("Authorization", "Bearer " + accessToken)
             .retrieve()
             .body(JsonNode.class);
-    if (body == null || !body.hasNonNull("email")) {
+    if (body == null || !body.hasNonNull("sub")) {
+      throw AuthException.unauthorized("OIDC userinfo missing subject");
+    }
+    var subject = body.get("sub").asText();
+    if (!StringUtils.hasText(subject)) {
+      throw AuthException.unauthorized("OIDC userinfo missing subject");
+    }
+    if (!body.hasNonNull("email")) {
       throw AuthException.unauthorized("OIDC userinfo missing email");
     }
     var email = body.get("email").asText();
@@ -32,6 +39,6 @@ public class OidcUserInfoClient {
     if (body.has("email_verified") && !body.get("email_verified").asBoolean(true)) {
       throw AuthException.forbidden("OIDC email not verified");
     }
-    return email.trim();
+    return new OidcUserInfo(subject.trim(), email.trim());
   }
 }

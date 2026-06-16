@@ -35,6 +35,7 @@ import com.yunyan.saasapi.application.email.TenantInviteLinkService;
 import com.yunyan.saasapi.application.email.UserInviteService;
 import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
+import com.yunyan.saasapi.domain.UserOauthBindRepository;
 import com.yunyan.saasapi.domain.UserRepository;
 import com.yunyan.saasapi.web.dto.auth.AcceptInviteRequest;
 import com.yunyan.saasapi.web.dto.auth.ChangePasswordRequest;
@@ -57,6 +58,7 @@ import org.springframework.util.StringUtils;
 public class AuthService {
 
   private final UserAuthRepository userAuthRepository;
+  private final UserOauthBindRepository userOauthBindRepository;
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
@@ -161,12 +163,45 @@ public class AuthService {
     return buildLoginResponse(user);
   }
 
-  public LoginResponse loginAfterOidc(String email, String tenantSlug) {
+  public LoginResponse loginAfterOidc(
+      String providerId, String providerSubject, String email, String tenantSlug) {
+    var boundUserId =
+        userOauthBindRepository.findUserIdByProviderSubject(providerId, providerSubject);
+    if (boundUserId.isPresent()) {
+      userOauthBindRepository.touchLastUsed(providerId, providerSubject);
+      return finishOidcLogin(
+          userAuthRepository.lookupForLoginByUserId(boundUserId.get(), tenantSlug));
+    }
     var lookup = userAuthRepository.lookupForLogin(email, tenantSlug);
+    return finishOidcLoginWithAutoBind(providerId, providerSubject, email, lookup);
+  }
+
+  private LoginResponse finishOidcLoginWithAutoBind(
+      String providerId, String providerSubject, String email, LoginLookupResult lookup) {
     return switch (lookup.status()) {
       case TENANT_SUSPENDED -> throw AuthException.forbidden("Tenant is suspended");
       case TENANT_REQUIRED -> throw AuthException.badRequest("Tenant slug is required");
       case NOT_FOUND -> throw AuthException.unauthorized("No account linked for OIDC email");
+      case ACCOUNT_DISABLED -> throw AuthException.forbidden("Account is disabled");
+      case INVITE_PENDING ->
+          throw AuthException.forbidden("Invite pending, check your email to set a password");
+      case EMAIL_VERIFICATION_PENDING ->
+          throw AuthException.forbidden("Email not verified, check your inbox to complete registration");
+      case FOUND -> {
+        userOauthBindRepository.bindUser(
+            lookup.user().id(), providerId, providerSubject, email);
+        userAuthRepository.touchLastLoginAt(lookup.user().id());
+        yield resolveLoginAfterPassword(lookup.user());
+      }
+    };
+  }
+
+  private LoginResponse finishOidcLogin(LoginLookupResult lookup) {
+    return switch (lookup.status()) {
+      case TENANT_SUSPENDED -> throw AuthException.forbidden("Tenant is suspended");
+      case TENANT_REQUIRED -> throw AuthException.badRequest("Tenant slug is required");
+      case NOT_FOUND ->
+          throw AuthException.unauthorized("OIDC account is not linked to this tenant");
       case ACCOUNT_DISABLED -> throw AuthException.forbidden("Account is disabled");
       case INVITE_PENDING ->
           throw AuthException.forbidden("Invite pending, check your email to set a password");

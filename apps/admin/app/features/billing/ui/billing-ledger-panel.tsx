@@ -17,6 +17,7 @@ import {
 } from '~/features/billing/lib/billing-format'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
+import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
 import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntZeroBasedPagination } from '~/shared/ant'
@@ -24,9 +25,20 @@ import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
+import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 const PAGE_SIZE = 20
+
+const LEDGER_TABLE_COLUMNS = [
+  { key: 'createdAt', label: '时间' },
+  { key: 'userId', label: '用户 ID' },
+  { key: 'entryType', label: '类型' },
+  { key: 'amount', label: '变动' },
+  { key: 'balanceAfter', label: '余额' },
+  { key: 'productCode', label: '产品' },
+  { key: 'remark', label: '备注' },
+] as const
 
 type LedgerRow = AdminLedgerList['items'][number]
 
@@ -45,6 +57,7 @@ export function BillingLedgerPanel({ filterSeed }: { filterSeed?: BillingFilterS
   }>({})
   const [page, setPage] = useState(0)
   const [filterError, setFilterError] = useState<string | null>(null)
+  const columnPrefs = useAdminTableColumnPrefs('billing-ledger', [...LEDGER_TABLE_COLUMNS])
 
   const applySeed = useCallback((seed: BillingFilterSeed) => {
     if (!seed.tenantId) return
@@ -85,8 +98,8 @@ export function BillingLedgerPanel({ filterSeed }: { filterSeed?: BillingFilterS
 
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
 
-  const columns = useMemo<TableColumnsType<LedgerRow>>(
-    () => [
+  const columns = useMemo<TableColumnsType<LedgerRow>>(() => {
+    const cols: TableColumnsType<LedgerRow> = [
       {
         title: '时间',
         key: 'createdAt',
@@ -133,9 +146,9 @@ export function BillingLedgerPanel({ filterSeed }: { filterSeed?: BillingFilterS
         className: 'max-w-[240px] truncate',
         render: (_value, entry) => <span title={entry.remark}>{entry.remark}</span>,
       },
-    ],
-    [],
-  )
+    ]
+    return cols.filter((column) => columnPrefs.isColumnVisible(String(column.key)))
+  }, [columnPrefs.isColumnVisible, columnPrefs.visible])
 
   return (
     <AdminPanel>
@@ -222,6 +235,12 @@ export function BillingLedgerPanel({ filterSeed }: { filterSeed?: BillingFilterS
             >
               重置
             </Button>
+            <AdminTableColumnPicker
+              columns={[...LEDGER_TABLE_COLUMNS]}
+              visible={columnPrefs.visible}
+              onVisibleChange={columnPrefs.setColumnVisible}
+              onReset={columnPrefs.resetColumns}
+            />
           </div>
         </form>
         {filterError ? <AdminFormError message={filterError} /> : null}

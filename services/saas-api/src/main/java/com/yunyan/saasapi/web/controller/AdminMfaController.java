@@ -4,6 +4,7 @@ import com.yunyan.saasapi.application.admin.AdminMfaService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminMfaStatusResponse;
+import com.yunyan.saasapi.web.dto.admin.RegenerateRecoveryCodesRequest;
 import com.yunyan.saasapi.web.dto.admin.TotpDisableRequest;
 import com.yunyan.saasapi.web.dto.admin.TotpEnrollResponse;
 import com.yunyan.saasapi.web.dto.admin.TotpVerifyRequest;
@@ -58,10 +59,22 @@ public class AdminMfaController {
   @DeleteMapping("/totp")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
   @SecurityRequirement(name = "bearerAuth")
-  @Operation(summary = "注销 TOTP", description = "须提交当前有效 6 位码。")
+  @Operation(summary = "注销 TOTP", description = "须提交当前有效 6 位码或一次性恢复码。")
   public AdminMfaStatusResponse disableTotp(
       @AuthenticationPrincipal SaasPrincipal principal,
       @Valid @RequestBody TotpDisableRequest request) {
     return adminMfaService.disableTotp(principal, request);
+  }
+
+  @PostMapping("/recovery-codes/regenerate")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(
+      summary = "重新生成恢复码",
+      description = "须 TOTP 6 位码；旧未使用恢复码全部作废，新码仅本次响应明文展示。")
+  public AdminMfaStatusResponse regenerateRecoveryCodes(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @Valid @RequestBody RegenerateRecoveryCodesRequest request) {
+    return adminMfaService.regenerateRecoveryCodes(principal, request);
   }
 }

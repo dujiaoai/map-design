@@ -1,23 +1,30 @@
 package com.yunyan.saasapi.application.admin;
 
 import com.yunyan.saasapi.config.SaasAppProperties;
+import com.yunyan.saasapi.domain.UserMfaRecoveryCodeRepository;
 import com.yunyan.saasapi.domain.UserMfaTotpRepository;
+import com.yunyan.saasapi.domain.entity.SysUserMfaRecoveryCode;
 import com.yunyan.saasapi.domain.entity.SysUserMfaTotp;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
+import com.yunyan.saasapi.security.mfa.MfaRecoveryCodeSupport;
 import com.yunyan.saasapi.security.mfa.MfaPendingEnrollStore;
 import com.yunyan.saasapi.security.mfa.MfaSecretCipher;
 import com.yunyan.saasapi.security.mfa.TotpSupport;
 import com.yunyan.saasapi.web.dto.admin.AdminMfaStatusResponse;
+import com.yunyan.saasapi.web.dto.admin.RegenerateRecoveryCodesRequest;
 import com.yunyan.saasapi.web.dto.admin.TotpDisableRequest;
 import com.yunyan.saasapi.web.dto.admin.TotpEnrollResponse;
 import com.yunyan.saasapi.web.dto.admin.TotpVerifyRequest;
 import com.yunyan.saasapi.security.AuthException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -30,9 +37,12 @@ public class AdminMfaService {
 
   private final SaasAppProperties saasAppProperties;
   private final UserMfaTotpRepository userMfaTotpRepository;
+  private final UserMfaRecoveryCodeRepository userMfaRecoveryCodeRepository;
   private final MfaPendingEnrollStore mfaPendingEnrollStore;
   private final MfaSecretCipher mfaSecretCipher;
   private final TotpSupport totpSupport;
+  private final MfaRecoveryCodeSupport mfaRecoveryCodeSupport;
+  private final PasswordEncoder passwordEncoder;
   private final AdminAuditLogService adminAuditLogService;
 
   public AdminMfaStatusResponse getStatus(SaasPrincipal principal) {
@@ -43,7 +53,8 @@ public class AdminMfaService {
         adminMfa.isEnforcementEnabled(),
         true,
         enrolled.isPresent(),
-        enrolled.map(row -> row.getVerifiedAt().toEpochMilli()).orElse(null));
+        enrolled.map(row -> row.getVerifiedAt().toEpochMilli()).orElse(null),
+        userMfaRecoveryCodeRepository.countUnusedByUserId(principal.userId()));
   }
 
   public int countEnrolledPlatformAdmins() {
@@ -61,6 +72,13 @@ public class AdminMfaService {
     }
     var secret = mfaSecretCipher.decrypt(row.getSecretCiphertext());
     return totpSupport.verifyCode(secret, code);
+  }
+
+  public boolean verifyEnrolledCodeOrRecovery(UUID userId, String code) {
+    if (mfaRecoveryCodeSupport.looksLikeRecoveryCode(code)) {
+      return consumeRecoveryCode(userId, code);
+    }
+    return verifyEnrolledCode(userId, code);
   }
 
   @Transactional
@@ -100,9 +118,42 @@ public class AdminMfaService {
     row.setVerifiedAt(now);
     row.setCreatedAt(now);
     userMfaTotpRepository.upsert(row);
+    var recoveryCodes = issueRecoveryCodes(principal.userId());
     adminAuditLogService.recordPlatformUserAction(
         principal, "mfa.totp.verify", principal.userId(), "enrolled");
-    return getStatus(principal);
+    adminAuditLogService.recordPlatformUserAction(
+        principal, "mfa.recovery.issue", principal.userId(), "count=" + recoveryCodes.size());
+    var status = getStatus(principal);
+    return new AdminMfaStatusResponse(
+        status.enforcementEnabled(),
+        status.totpEnrollmentAvailable(),
+        status.enrolled(),
+        status.verifiedAt(),
+        status.recoveryCodesRemaining(),
+        recoveryCodes);
+  }
+
+  @Transactional
+  public AdminMfaStatusResponse regenerateRecoveryCodes(
+      SaasPrincipal principal, RegenerateRecoveryCodesRequest request) {
+    requirePlatformAdmin(principal);
+    if (!userMfaTotpRepository.findByUserId(principal.userId()).isPresent()) {
+      throw AuthException.badRequest("TOTP not enrolled");
+    }
+    if (!verifyEnrolledCode(principal.userId(), request.code())) {
+      throw AuthException.unauthorized("Invalid TOTP code");
+    }
+    var recoveryCodes = issueRecoveryCodes(principal.userId());
+    adminAuditLogService.recordPlatformUserAction(
+        principal, "mfa.recovery.regenerate", principal.userId(), "count=" + recoveryCodes.size());
+    var status = getStatus(principal);
+    return new AdminMfaStatusResponse(
+        status.enforcementEnabled(),
+        status.totpEnrollmentAvailable(),
+        status.enrolled(),
+        status.verifiedAt(),
+        status.recoveryCodesRemaining(),
+        recoveryCodes);
   }
 
   @Transactional
@@ -112,11 +163,11 @@ public class AdminMfaService {
         userMfaTotpRepository
             .findByUserId(principal.userId())
             .orElseThrow(() -> AuthException.badRequest("TOTP not enrolled"));
-    var secret = mfaSecretCipher.decrypt(row.getSecretCiphertext());
-    if (!totpSupport.verifyCode(secret, request.code())) {
-      throw AuthException.unauthorized("Invalid TOTP code");
+    if (!verifyEnrolledCodeOrRecovery(principal.userId(), request.code())) {
+      throw AuthException.unauthorized("Invalid TOTP or recovery code");
     }
     userMfaTotpRepository.deleteByUserId(principal.userId());
+    userMfaRecoveryCodeRepository.deleteByUserId(principal.userId());
     mfaPendingEnrollStore.clear(principal.userId());
     adminAuditLogService.recordPlatformUserAction(
         principal, "mfa.totp.disable", principal.userId(), null);
@@ -160,5 +211,36 @@ public class AdminMfaService {
 
   public static boolean hasPlatformAdminAccess(java.util.List<String> permissionCodes) {
     return permissionCodes.contains(com.yunyan.saasapi.domain.permission.PermissionCodes.ADMIN_TENANTS_READ);
+  }
+
+  private List<String> issueRecoveryCodes(UUID userId) {
+    var plaintextCodes = mfaRecoveryCodeSupport.generateCodes();
+    var now = Instant.now();
+    var rows = new ArrayList<SysUserMfaRecoveryCode>(plaintextCodes.size());
+    for (var code : plaintextCodes) {
+      var row = new SysUserMfaRecoveryCode();
+      row.setId(UUID.randomUUID());
+      row.setUserId(userId);
+      row.setCodeHash(
+          passwordEncoder.encode(mfaRecoveryCodeSupport.normalize(code)));
+      row.setCreatedAt(now);
+      rows.add(row);
+    }
+    userMfaRecoveryCodeRepository.replaceAll(userId, rows);
+    return plaintextCodes;
+  }
+
+  private boolean consumeRecoveryCode(UUID userId, String code) {
+    var normalized = mfaRecoveryCodeSupport.normalize(code);
+    if (!mfaRecoveryCodeSupport.looksLikeRecoveryCode(normalized)) {
+      return false;
+    }
+    for (var row : userMfaRecoveryCodeRepository.findUnusedByUserId(userId)) {
+      if (passwordEncoder.matches(normalized, row.getCodeHash())) {
+        userMfaRecoveryCodeRepository.markUsed(row.getId(), Instant.now());
+        return true;
+      }
+    }
+    return false;
   }
 }

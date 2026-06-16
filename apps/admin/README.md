@@ -114,15 +114,15 @@ pnpm --filter @repo/saas-admin dev
 
 ## 分级改进路线图
 
-P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）与 Later（Playwright、entities 拆分、菜单拖拽、列配置、虚拟滚动、RBAC Transfer、typecheck 修复）**均已完成**。`pnpm --filter @repo/saas-admin validate` 可通过。
+P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）、Later（Playwright、entities 拆分、菜单拖拽、列配置、虚拟滚动、RBAC Transfer、typecheck 修复）与 **P4（邮箱邀请）均已完成**。`pnpm --filter @repo/saas-admin validate` 可通过。
 
-后续产品 backlog 见下方「Later（P4 余项）」。技术延续：`entities/` 已覆盖业务域与 `admin-platform` / `admin-mfa` / `admin-oidc` / `account` / `impersonation`；`admin-api.ts` 现为纯 re-export barrel。
+`admin-api.ts` 为纯 re-export barrel；OAuth 绑定类型在 `entities/user`，当前用户 OAuth 在 `entities/account`。
 
 ## 验证
 
 ```bash
 pnpm --filter @repo/saas-admin validate
-pnpm --filter @repo/saas-admin test:e2e   # Playwright：登录页、路由守卫、概览 mock 冒烟（需 dev :5181）
+pnpm --filter @repo/saas-admin test:e2e   # Playwright：登录 mock、路由守卫、概览 mock（需 dev :5181，webServer 超时 180s）
 cd services/saas-api && mvn test -Dtest=Admin*ControllerTest
 ```
 

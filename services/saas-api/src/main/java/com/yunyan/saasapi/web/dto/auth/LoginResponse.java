@@ -7,4 +7,5 @@ public record LoginResponse(
     @Schema(description = "JWT access token") String accessToken,
     @Schema(description = "JWT refresh token") String refreshToken,
     @Schema(description = "access token 有效秒数", example = "900") long expiresIn,
-    LoginUserDto user) {}
+    LoginUserDto user,
+    @Schema(description = "代操作时的登录主租户") SessionTenantDto homeTenant) {}

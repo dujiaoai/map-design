@@ -14,12 +14,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 public record SaasPrincipal(
     UUID userId,
     UUID tenantId,
+    UUID actAsTenantId,
     String email,
     List<String> roleCodes,
     List<String> permissionCodes,
     String accessTokenJti,
     Instant accessTokenExpiresAt)
     implements UserDetails {
+
+  public UUID effectiveTenantId() {
+    return actAsTenantId != null ? actAsTenantId : tenantId;
+  }
+
+  public boolean isImpersonating() {
+    return actAsTenantId != null && !actAsTenantId.equals(tenantId);
+  }
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

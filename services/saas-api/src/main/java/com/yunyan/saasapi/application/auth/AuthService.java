@@ -30,6 +30,7 @@ import com.yunyan.saasapi.application.email.SecurityNotificationService;
 import com.yunyan.saasapi.application.email.TenantInviteLinkService;
 import com.yunyan.saasapi.application.email.UserInviteService;
 import com.yunyan.saasapi.domain.EmailVerificationTokenRepository;
+import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.UserRepository;
 import com.yunyan.saasapi.web.dto.auth.AcceptInviteRequest;
 import com.yunyan.saasapi.web.dto.auth.ChangePasswordRequest;
@@ -69,6 +70,7 @@ public class AuthService {
   private final SecurityNotificationService securityNotificationService;
   private final PasswordPolicyService passwordPolicyService;
   private final TenantInviteLinkService tenantInviteLinkService;
+  private final TenantRepository tenantRepository;
 
   public void requestRegistration(RegisterRequest request, String clientIp) {
     authRateLimitService.checkRegister(clientIp, request.email());
@@ -164,7 +166,7 @@ public class AuthService {
             .findById(parsed.userId())
             .orElseThrow(() -> AuthException.unauthorized("User not found")));
 
-    var tokens = issueTokens(user);
+    var tokens = issueTokens(user, parsed.actAsTenantId());
     if (!gracePeriod.isZero() && !gracePeriod.isNegative()) {
       refreshRotationGraceStore.store(parsed.userId(), parsed.jti(), tokens, gracePeriod);
     }
@@ -221,9 +223,12 @@ public class AuthService {
       throw AuthException.unauthorized("Not authenticated");
     }
     var existing =
-        userAuthRepository
-            .findById(principal.userId())
-            .orElseThrow(() -> AuthException.unauthorized("User not found"));
+        TenantContext.withTenant(
+            principal.tenantId().toString(),
+            () ->
+                userAuthRepository
+                    .findById(principal.userId())
+                    .orElseThrow(() -> AuthException.unauthorized("User not found")));
     var phone =
         request.phone() != null
             ? PhoneValidator.normalizeOptional(request.phone())
@@ -232,19 +237,66 @@ public class AuthService {
         request.avatarUrl() != null
             ? normalizeOptionalText(request.avatarUrl())
             : existing.avatarUrl();
-    var user = userAuthRepository.updateProfile(
-        principal.userId(), request.name().trim(), phone, avatarUrl);
-    return toSessionDto(user, principal.accessTokenExpiresAt());
+    var user =
+        TenantContext.withTenant(
+            principal.tenantId().toString(),
+            () ->
+                userAuthRepository.updateProfile(
+                    principal.userId(), request.name().trim(), phone, avatarUrl));
+    return toSessionDto(user, principal);
   }
 
   public SessionDto getCurrentSession(SaasPrincipal principal) {
     if (principal == null) {
       throw AuthException.unauthorized("Not authenticated");
     }
-    var user = userAuthRepository
-        .findById(principal.userId())
-        .orElseThrow(() -> AuthException.unauthorized("User not found"));
-    return toSessionDto(user, principal.accessTokenExpiresAt());
+    var user =
+        TenantContext.withTenant(
+            principal.tenantId().toString(),
+            () ->
+                userAuthRepository
+                    .findById(principal.userId())
+                    .orElseThrow(() -> AuthException.unauthorized("User not found")));
+    return toSessionDto(user, principal);
+  }
+
+  private SessionDto toSessionDto(AuthenticatedUser user, SaasPrincipal principal) {
+    var homeTenant =
+        new SessionTenantDto(user.tenantId().toString(), user.tenantName(), user.tenantSlug());
+    if (!principal.isImpersonating()) {
+      return new SessionDto(
+          toSessionUser(user),
+          homeTenant,
+          principal.accessTokenExpiresAt().toEpochMilli(),
+          null);
+    }
+    var effective =
+        tenantRepository
+            .findById(principal.actAsTenantId())
+            .orElseThrow(() -> AuthException.unauthorized("Impersonation tenant not found"));
+    var effectiveTenant =
+        new SessionTenantDto(
+            effective.getId().toString(), effective.getName(), effective.getSlug());
+    return new SessionDto(
+        toSessionUser(user),
+        effectiveTenant,
+        principal.accessTokenExpiresAt().toEpochMilli(),
+        homeTenant);
+  }
+
+  private static SessionUserDto toSessionUser(AuthenticatedUser user) {
+    return new SessionUserDto(
+        user.id().toString(),
+        user.email(),
+        user.displayName(),
+        user.phone(),
+        user.avatarUrl(),
+        user.roleCodes(),
+        user.permissionCodes());
+  }
+
+  public LoginResponse issueSessionTokens(AuthenticatedUser user, UUID actAsTenantId) {
+    return buildLoginResponse(user, actAsTenantId);
   }
 
   @Transactional
@@ -308,7 +360,24 @@ public class AuthService {
   }
 
   private LoginResponse buildLoginResponse(AuthenticatedUser user) {
-    var tokens = issueTokens(user);
+    return buildLoginResponse(user, null);
+  }
+
+  private LoginResponse buildLoginResponse(AuthenticatedUser user, UUID actAsTenantId) {
+    var tokens = issueTokens(user, actAsTenantId);
+    var homeTenant =
+        new SessionTenantDto(user.tenantId().toString(), user.tenantName(), user.tenantSlug());
+    SessionTenantDto effectiveTenant = homeTenant;
+    SessionTenantDto responseHomeTenant = null;
+    if (actAsTenantId != null) {
+      var tenant =
+          tenantRepository
+              .findById(actAsTenantId)
+              .orElseThrow(() -> AuthException.badRequest("Tenant not found"));
+      effectiveTenant =
+          new SessionTenantDto(tenant.getId().toString(), tenant.getName(), tenant.getSlug());
+      responseHomeTenant = homeTenant;
+    }
     var loginUser = new LoginUserDto(
         user.id().toString(),
         user.email(),
@@ -317,16 +386,24 @@ public class AuthService {
         user.avatarUrl(),
         user.roleCodes(),
         user.permissionCodes(),
-        new SessionTenantDto(user.tenantId().toString(), user.tenantName(), user.tenantSlug()));
+        effectiveTenant);
     return new LoginResponse(
-        tokens.accessToken(), tokens.refreshToken(), tokens.expiresIn(), loginUser);
+        tokens.accessToken(),
+        tokens.refreshToken(),
+        tokens.expiresIn(),
+        loginUser,
+        responseHomeTenant);
   }
 
   private AuthTokensDto issueTokens(AuthenticatedUser user) {
+    return issueTokens(user, null);
+  }
+
+  private AuthTokensDto issueTokens(AuthenticatedUser user, UUID actAsTenantId) {
     // 账号曾禁用时写入的 user 级 denylist 可能仍残留；成功签发新 token 即视为可登录
     accessTokenDenylist.clearUserDeny(user.id());
-    var access = jwtService.issueAccessToken(user);
-    var refresh = jwtService.issueRefreshToken(user);
+    var access = jwtService.issueAccessToken(user, actAsTenantId);
+    var refresh = jwtService.issueRefreshToken(user, actAsTenantId);
     var refreshTtl = Duration.between(java.time.Instant.now(), refresh.expiresAt());
     if (refreshTtl.isNegative()) {
       refreshTtl = Duration.ZERO;
@@ -349,19 +426,5 @@ public class AuthService {
     }
     var trimmed = value.trim();
     return trimmed.isEmpty() ? null : trimmed;
-  }
-
-  private SessionDto toSessionDto(AuthenticatedUser user, Instant accessTokenExpiresAt) {
-    return new SessionDto(
-        new SessionUserDto(
-            user.id().toString(),
-            user.email(),
-            user.displayName(),
-            user.phone(),
-            user.avatarUrl(),
-            user.roleCodes(),
-            user.permissionCodes()),
-        new SessionTenantDto(user.tenantId().toString(), user.tenantName(), user.tenantSlug()),
-        accessTokenExpiresAt.toEpochMilli());
   }
 }

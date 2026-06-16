@@ -78,6 +78,7 @@ class UsersControllerMeTest {
         new SaasPrincipal(
             UUID.fromString("22222222-2222-2222-2222-222222222201"),
             UUID.fromString("11111111-1111-1111-1111-111111111101"),
+            null,
             "admin@test.local",
             List.of("TENANT_ADMIN"),
             List.of("workspace:use"),
@@ -100,6 +101,7 @@ class UsersControllerMeTest {
             List.of("workspace:use")),
         new SessionTenantDto(
             "11111111-1111-1111-1111-111111111101", "Test Tenant", "test"),
-        1_710_000_900_000L);
+        1_710_000_900_000L,
+        null);
   }
 }

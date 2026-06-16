@@ -152,6 +152,7 @@ class AuthControllerRegisterTest {
             List.of("MEMBER"),
             List.of("workspace:use"),
             new SessionTenantDto(
-                "11111111-1111-1111-1111-111111111101", "Test Tenant", "test")));
+                "11111111-1111-1111-1111-111111111101", "Test Tenant", "test")),
+        null);
   }
 }

@@ -64,12 +64,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       if (accessTokenDenylist.isUserDenied(parsed.userId())) {
         return;
       }
-      TenantContext.set(parsed.tenantId().toString());
+      var effectiveTenantId =
+          parsed.actAsTenantId() != null ? parsed.actAsTenantId() : parsed.tenantId();
+      TenantContext.set(effectiveTenantId.toString());
 
       var permissionCodes = resolvePermissionCodes(parsed.permissionCodes(), parsed.roleCodes());
       var principal = new SaasPrincipal(
           parsed.userId(),
           parsed.tenantId(),
+          parsed.actAsTenantId(),
           parsed.userId().toString(),
           parsed.roleCodes(),
           permissionCodes,
@@ -80,7 +83,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
           principal, null, principal.getAuthorities());
       authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
       SecurityContextHolder.getContext().setAuthentication(authentication);
-      RequestMdc.set(parsed.tenantId(), parsed.userId());
+      RequestMdc.set(effectiveTenantId, parsed.userId());
     } catch (AuthException ignored) {
       // 无效/过期/非 access token — 视为未认证，由 Security 返回 401
     }

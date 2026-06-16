@@ -109,7 +109,8 @@ pnpm --filter @repo/saas-admin dev
 | **无障碍** | 搜索 `role=searchbox`、`aria-label` | ✅ 工具栏搜索；排序表头 `aria-sort`；reduced-motion 已处理 |
 | **批量操作** | 多选 + 危险操作确认 | ✅ 租户批量停用、用户批量禁用 |
 | **列配置** | 用户自定义可见列 | ✅ 租户/用户列表 localStorage 持久化 |
-| **待增强** | 虚拟滚动 | 📋 Later |
+| **虚拟滚动** | 大列表流畅滚动 | ✅ 四主表 antd virtual；菜单项区域固定高度滚动 |
+| **RBAC 穿梭框** | 批量勾选权限 | 📋 Later |
 
 ## 验证
 

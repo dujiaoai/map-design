@@ -18,6 +18,7 @@ import { AuditLogDetailSheet } from '~/features/audit-logs/ui/audit-log-detail-s
 import {
   AdminAntDateRange,
   AdminAntTable,
+  ADMIN_LIST_TABLE_BODY_HEIGHT,
   adminAntSortOrder,
   createAdminAntSortHandler,
 } from '~/shared/ant'
@@ -493,6 +494,7 @@ export function AuditLogsAdminPage() {
           )
         ) : (
           <AdminAntTable<AdminAuditLogEntry>
+            bodyHeight={ADMIN_LIST_TABLE_BODY_HEIGHT}
             rowKey="id"
             columns={columns}
             dataSource={logs}

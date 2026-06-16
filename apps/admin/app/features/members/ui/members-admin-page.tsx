@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 
 import { fetchAdminTenant, fetchTenantMembers, type AdminUserSummary } from '~/shared/api/admin-api'
-import { AdminAntTable, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
+import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
 import { isPlatformAdmin } from '~/shared/auth/admin-access'
 import {
   useAdminTableFilterState,
@@ -248,6 +248,7 @@ export function MembersAdminPage({
           />
         ) : (
           <AdminAntTable<AdminUserSummary>
+            bodyHeight={ADMIN_LIST_TABLE_BODY_HEIGHT}
             rowKey="id"
             columns={columns}
             dataSource={members}

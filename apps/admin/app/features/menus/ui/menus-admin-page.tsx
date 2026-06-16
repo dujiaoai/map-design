@@ -269,7 +269,7 @@ export function MenusAdminPage() {
             </div>
           ) : null}
 
-          <div className="overflow-x-auto">
+          <div className="max-h-[520px] overflow-auto">
             <table className="w-full min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted-foreground">

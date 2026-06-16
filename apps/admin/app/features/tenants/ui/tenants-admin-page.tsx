@@ -6,7 +6,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
 import { fetchAdminTenants, patchAdminTenant, type AdminTenantSummary } from '~/shared/api/admin-api'
-import { AdminAntTable, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
+import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
@@ -327,6 +327,7 @@ export function TenantsAdminPage() {
           />
         ) : (
           <AdminAntTable<AdminTenantSummary>
+            bodyHeight={ADMIN_LIST_TABLE_BODY_HEIGHT}
             rowKey="id"
             columns={columns}
             dataSource={filteredTenants}

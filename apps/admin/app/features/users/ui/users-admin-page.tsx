@@ -8,7 +8,7 @@ import { Link, useSearchParams } from 'react-router'
 import { AUDIT_READ_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
 import { buildAuditLogsLink } from '~/features/audit-logs/lib/audit-log-nav'
 import { fetchAdminTenants, fetchAdminUsers, patchAdminUser, type AdminUserSummary } from '~/shared/api/admin-api'
-import { AdminAntTable, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
+import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
@@ -381,6 +381,7 @@ export function UsersAdminPage() {
           />
         ) : (
           <AdminAntTable<AdminUserSummary>
+            bodyHeight={ADMIN_LIST_TABLE_BODY_HEIGHT}
             rowKey="id"
             columns={columns}
             dataSource={filteredUsers}

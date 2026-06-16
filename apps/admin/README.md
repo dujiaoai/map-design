@@ -50,6 +50,8 @@ pnpm --filter @repo/saas-admin dev
 | `/members` | 成员管理；`?tenantId=`（平台可跨租户） | `admin:members:read` 或平台角色 |
 | `/tenant-roles` | 租户自定义角色与权限配置 | `admin:members:read` 或平台角色 |
 | `/roles` | 系统角色权限（平台级） | `admin:roles:read` |
+| `/permissions` | 权限目录（模块/权限项 CRUD；Ant Tree） | `admin:roles:read`（写：`admin:roles:write`） |
+| `/menus` | 工作台菜单配置（段/项显隐、排序、标题） | `admin:menus:read`（写：`admin:menus:write`） |
 | `/account` | 账号资料与改密 | 已登录 |
 | `/billing` | 计费运营（钱包、SKU、订单、调账、对账等 Tab） | `admin:billing:*` |
 | `/audit-logs` | 审计日志列表（租户/动作/日期/跨租户筛选；CSV 导出） | `admin:audit:read` / `admin:audit:export` |

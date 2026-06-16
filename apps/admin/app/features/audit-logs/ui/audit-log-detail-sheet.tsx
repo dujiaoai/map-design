@@ -41,7 +41,15 @@ export function AuditLogDetailSheet({
         </SheetHeader>
         <dl className="mt-6 space-y-4 text-sm">
           <DetailRow label="时间" value={formatAdminDate(log.createdAt)} />
-          <DetailRow label="操作人" value={log.actorEmail} />
+          <DetailRow
+            label="操作人"
+            value={
+              <div className="space-y-1">
+                <span>{log.actorEmail}</span>
+                {log.actorUserId ? <AdminIdCell value={log.actorUserId} label="用户" /> : null}
+              </div>
+            }
+          />
           <DetailRow label="动作" value={log.action} mono />
           <DetailRow label="资源类型" value={log.resourceType || '—'} mono />
           <DetailRow

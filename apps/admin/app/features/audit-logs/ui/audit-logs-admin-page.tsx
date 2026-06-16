@@ -59,6 +59,7 @@ export function AuditLogsAdminPage() {
   const canReadTenants = can('admin:tenants:read')
   const [searchParams, setSearchParams] = useSearchParams()
   const tenantFilterId = searchParams.get('tenantId') ?? undefined
+  const actorFilterId = searchParams.get('actorUserId') ?? undefined
 
   const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -81,6 +82,7 @@ export function AuditLogsAdminPage() {
     tenantId: tenantFilterId,
     from: fromEpoch,
     to: toEpoch,
+    actorUserId: actorFilterId,
   }
 
   const tenantsQuery = useAdminPagedQuery({
@@ -129,6 +131,7 @@ export function AuditLogsAdminPage() {
     crossTenantOnly ||
     searchInput.trim().length > 0 ||
     Boolean(tenantFilterId) ||
+    Boolean(actorFilterId) ||
     fromDate.length > 0 ||
     toDate.length > 0
 
@@ -197,8 +200,34 @@ export function AuditLogsAdminPage() {
           tenantId={tenantFilterId}
           tenantLabel={tenantLabel}
           showUsersLink
-          onClear={() => setSearchParams({})}
+          onClear={() => {
+            const next = new URLSearchParams(searchParams)
+            next.delete('tenantId')
+            setSearchParams(next)
+          }}
         />
+      ) : null}
+
+      {actorFilterId ? (
+        <AdminPanel className="flex flex-wrap items-center justify-between gap-3 border-primary/20 bg-primary/5 px-4 py-3 md:px-5">
+          <p className="text-sm">
+            <span className="text-muted-foreground">操作人筛选 · </span>
+            <AdminIdCell value={actorFilterId} label="用户" />
+          </p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              const next = new URLSearchParams(searchParams)
+              next.delete('actorUserId')
+              setSearchParams(next)
+              setPage(1)
+            }}
+          >
+            清除操作人
+          </Button>
+        </AdminPanel>
       ) : null}
 
       <div className="flex flex-wrap items-end gap-3">

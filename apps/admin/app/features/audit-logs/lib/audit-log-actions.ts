@@ -1,5 +1,6 @@
 export const AUDIT_ACTION_OPTIONS = [
   { value: 'all', label: '全部动作' },
+  { value: 'audit.export', label: '导出审计日志' },
   { value: 'tenant.create', label: '创建租户' },
   { value: 'tenant.update', label: '更新租户' },
   { value: 'tenant.features.update', label: '更新租户能力' },

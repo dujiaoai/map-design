@@ -78,6 +78,7 @@ export interface AdminListQuery {
   tenantId?: string
   from?: number
   to?: number
+  actorUserId?: string
 }
 
 export interface AdminTenantListResponse {
@@ -98,6 +99,7 @@ function buildAdminListQuery(params?: AdminListQuery) {
   if (params?.tenantId) search.set('tenantId', params.tenantId)
   if (params?.from != null) search.set('from', String(params.from))
   if (params?.to != null) search.set('to', String(params.to))
+  if (params?.actorUserId) search.set('actorUserId', params.actorUserId)
   const query = search.toString()
   return query ? `?${query}` : ''
 }
@@ -481,6 +483,7 @@ export function fetchSessionTenants() {
 
 export interface AdminAuditLogEntry {
   id: string
+  actorUserId: string | null
   actorEmail: string
   action: string
   resourceType: string

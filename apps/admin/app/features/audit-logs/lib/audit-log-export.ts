@@ -11,6 +11,7 @@ function buildExportQuery(params?: AdminListQuery) {
   if (params?.tenantId) search.set('tenantId', params.tenantId)
   if (params?.from != null) search.set('from', String(params.from))
   if (params?.to != null) search.set('to', String(params.to))
+  if (params?.actorUserId) search.set('actorUserId', params.actorUserId)
   const query = search.toString()
   return query ? `?${query}` : ''
 }

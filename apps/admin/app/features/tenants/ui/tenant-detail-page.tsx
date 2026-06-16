@@ -6,6 +6,7 @@ import {
   CreditCardIcon,
   InfoIcon,
   PencilIcon,
+  ScrollTextIcon,
   ShieldPlusIcon,
   SparklesIcon,
   UsersIcon,
@@ -13,6 +14,8 @@ import {
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
+import { AUDIT_READ_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
+import { buildAuditLogsLink } from '~/features/audit-logs/lib/audit-log-nav'
 import { MembersAdminPage } from '~/features/members/ui/members-admin-page'
 import { TenantCustomRolesPanel } from '~/features/roles/ui/tenant-custom-roles-panel'
 import { resolveTenantDetailTab } from '~/features/tenants/lib/tenant-detail-nav'
@@ -46,6 +49,7 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
   const canReadMembers = canAccessAdminMembers(session)
   const canReadUsers = can('admin:users:read')
   const canViewBilling = canAny([...BILLING_PERMISSIONS])
+  const canViewAudit = canAny([...AUDIT_READ_PERMISSIONS])
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [editOpen, setEditOpen] = useState(false)
@@ -174,6 +178,7 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
             canReadMembers={canReadMembers}
             canReadUsers={canReadUsers}
             canViewBilling={canViewBilling}
+            canViewAudit={canViewAudit}
             onOpenMembers={() => setActiveTab('members')}
           />
         </TabsContent>
@@ -206,6 +211,7 @@ function TenantInfoPanel({
   canReadMembers,
   canReadUsers,
   canViewBilling,
+  canViewAudit,
   onOpenMembers,
 }: {
   tenant: AdminTenantSummary
@@ -213,9 +219,10 @@ function TenantInfoPanel({
   canReadMembers: boolean
   canReadUsers: boolean
   canViewBilling: boolean
+  canViewAudit: boolean
   onOpenMembers: () => void
 }) {
-  const hasQuickLinks = canReadMembers || canReadUsers || canViewBilling
+  const hasQuickLinks = canReadMembers || canReadUsers || canViewBilling || canViewAudit
 
   return (
     <AdminPanel>
@@ -263,6 +270,17 @@ function TenantInfoPanel({
             >
               <CreditCardIcon className="size-3.5" />
               计费钱包
+            </Button>
+          ) : null}
+          {canViewAudit ? (
+            <Button
+              nativeButton={false}
+              variant="outline"
+              size="sm"
+              render={<Link to={buildAuditLogsLink({ tenantId })} />}
+            >
+              <ScrollTextIcon className="size-3.5" />
+              审计日志
             </Button>
           ) : null}
         </div>

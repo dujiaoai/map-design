@@ -114,6 +114,7 @@ pnpm --filter @repo/saas-admin dev
 
 ```bash
 pnpm --filter @repo/saas-admin validate
+pnpm --filter @repo/saas-admin test:e2e   # Playwright 登录页冒烟（需本机可启动 dev :5181）
 cd services/saas-api && mvn test -Dtest=Admin*ControllerTest
 ```
 

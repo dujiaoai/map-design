@@ -6,6 +6,9 @@ node_modules/
 build/
 .react-router/
 dist/
+.playwright/
+playwright-report/
+test-results/
 .env
 .env.*
 !.env.example

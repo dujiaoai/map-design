@@ -77,6 +77,9 @@ pnpm --filter @repo/saas-web dev
 | `/users` | 跨租户用户列表、邀请、编辑；可按 `?tenantId=` 筛选 |
 | `/members` | 成员管理；`?tenantId=`（平台可跨租户，租户管理员仅本租户） |
 | `/roles` | 角色与权限配置（未保存切换确认） |
+| `/permissions` | 权限目录（模块/权限项 CRUD）；`admin:roles:read` / `admin:roles:write` |
+| `/menus` | 工作台菜单配置（段/项显隐、排序）；`admin:menus:read` / `admin:menus:write` |
+| `/tenant-roles` | 租户自定义角色与权限 |
 | `/account` | 当前账号资料（`PUT /users/me`）与改密 |
 | `/audit-logs` | 平台审计日志（筛选 + CSV 导出 + 详情 Sheet）；权限 `admin:audit:read` |
 | `/billing` | 平台计费运营（SKU/调账/退款/对账/发票/对公） |
@@ -97,6 +100,8 @@ pnpm --filter @repo/saas-web dev
 | 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
 
 列表页 loading 使用 Skeleton；Vitest + MockMvc 覆盖 P0～P3 核心路径。
+
+**UI 组件**：Shell 与基础表单用 `@repo/ui`；Table/Tree/DatePicker/短 Modal 局部用 `antd`（`app/shared/ant/*` 封装）。表单载体 Sheet vs Modal 见 [frontend.md](./frontend.md) Admin 例外节。
 
 ### 规划（P4 · 进行中 / Later）
 

@@ -27,6 +27,34 @@
 - **禁止**：在 `apps/web` 单独 `shadcn init` 或复制一份 ui 组件
 - Skill：`repo-ui-package`（添加/导出）、`saas-theme-mode`（浅/深色）
 
+### Admin 例外（`apps/admin` · Strategy B）
+
+`saas-web` / `marketing` **禁止**单独引入 Ant Design。`saas-admin` 为数据密集型运维台，允许**局部**使用 `antd@^6` 重型组件，须经 `app/shared/ant/*` 封装，禁止页面直接散落 `import { Table } from 'antd'`。
+
+| 场景 | 组件 | 封装 |
+| --- | --- | --- |
+| 服务端分页列表 | Table | `AdminAntTable` |
+| RBAC 权限树 | Tree | `AdminAntTree` |
+| 审计/对账日期 | DatePicker / RangePicker | `AdminAntDate` / `AdminAntDateRange` |
+| 短表单弹窗（≤6 字段） | Modal | `AdminAntModal` |
+
+**仍用 `@repo/ui`**：Shell、侧栏、Button、Sheet/Drawer、Input、Select、Tabs、Toast、Checkbox、`AlertDialog`。
+
+主题：`AdminAntProvider` 随 Admin `ThemeToggle`（`html.dark`）切换 `adminAntDarkTheme` / `adminAntLightTheme`；浅色 token 见 `apps/admin/app/app.css` 中 `html:not(.dark)` 覆盖。
+
+#### Admin 表单载体规范
+
+| 载体 | 适用 | 示例 |
+| --- | --- | --- |
+| **Sheet**（`@repo/ui` Drawer） | 多 Tab、长表单、需保留列表上下文 | 编辑用户/租户/成员、计费 SKU、发票开具/驳回、代操作 |
+| **Modal**（`AdminAntModal`） | 短 CRUD（≤6 字段）、创建类一次性操作 | 新建权限模块、添加权限项 |
+| **AlertDialog** | 不可逆/危险确认 | 删除权限、注销 TOTP |
+| **内联 Panel** | 主从编辑（左列表 + 右表单），无遮罩 | 系统角色权限、菜单段配置 |
+
+新增 Admin CRUD 时先对照上表；勿混用 Dialog 与 Modal 做同一类「创建」交互。
+
+详见 [`apps/admin/README.md`](../../apps/admin/README.md) 与 [`apps.md`](./apps.md) Admin 节。
+
 ## 目录（FSD 简化）
 
 ```

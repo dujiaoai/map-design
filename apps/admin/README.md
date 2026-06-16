@@ -95,19 +95,19 @@ pnpm --filter @repo/saas-admin dev
 
 | 维度 | 主流期望 | Admin 现状 |
 | --- | --- | --- |
-| **信息架构** | 侧栏分组 + 面包屑/页眉 eyebrow | ✅ `AdminPageHeader` + 分组导航 |
+| **信息架构** | 侧栏分组 + 面包屑/页眉 eyebrow | ✅ 分组导航；计费页二级 Tab（概览/商品/资金/运营） |
 | **列表页** | 搜索 + 筛选 + 分页 + 总数 | ✅ `AdminTableToolbar` + 服务端分页 |
 | **加载态** | Skeleton，非空白闪烁 | ✅ `AdminTableSkeleton` / `AdminSidebarListSkeleton` |
 | **空态/错态** | 明确文案 + 可恢复操作 | ✅ 列表/计费/RBAC/概览 MetricCard 均支持重试 |
 | **筛选零结果** | 「清除筛选」恢复默认 | ✅ 租户/用户/成员/审计/计费 SKU·钱包·订单 |
 | **操作反馈** | Toast 确认成功操作 | ✅ 全平台 CRUD、计费 11 Tab、复制、概览刷新 |
 | **键盘效率** | 快捷键聚焦搜索 | ✅ 四主列表 + RBAC 权限树搜索 `/` + kbd 提示 |
-| **表格列排序** | 可点击表头排序 | 🟡 四主表客户端排序 + 范围提示与清除 |
+| **表格列排序** | 可点击表头排序 | 🟡 租户/用户/审计服务端排序；成员仍客户端排序 |
 | **筛选控件** | 一致的 chip/toggle，非原生 checkbox | ✅ 审计：动作/租户/日期/仅计费/成员/跨租户 |
 | **危险操作** | Confirm / Sheet，非 `prompt` | ✅ 计费驳回 Sheet、`AlertDialog` |
 | **跨页上下文** | 租户/筛选 banner + 清除 | ✅ `AdminTenantContextBanner` 等 |
 | **无障碍** | 搜索 `role=searchbox`、`aria-label` | ✅ 工具栏搜索；排序表头 `aria-sort`；reduced-motion 已处理 |
-| **待增强** | 批量操作、服务端全量排序 | 📋 Later（P4 运维 UX 基线已收尾；审计导出/独立权限见 FND-07） |
+| **待增强** | 批量操作、列配置 | 📋 Later |
 
 ## 验证
 

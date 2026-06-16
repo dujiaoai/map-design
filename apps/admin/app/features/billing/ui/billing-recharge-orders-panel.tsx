@@ -23,6 +23,7 @@ import { formatBillingPrice } from '~/features/billing/lib/billing-format'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { BillingRechargeRefundSheet } from '~/features/billing/ui/billing-recharge-refund-sheet'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
+import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
 import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntZeroBasedPagination } from '~/shared/ant'
@@ -30,9 +31,21 @@ import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge, formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
+import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 const PAGE_SIZE = 20
+
+const RECHARGE_ORDER_TABLE_COLUMNS = [
+  { key: 'orderNo', label: '订单号' },
+  { key: 'status', label: '状态' },
+  { key: 'tenantId', label: '租户' },
+  { key: 'userId', label: '用户' },
+  { key: 'points', label: '积分' },
+  { key: 'price', label: '金额' },
+  { key: 'channel', label: '渠道' },
+  { key: 'paidAt', label: '支付时间' },
+] as const
 
 export function BillingRechargeOrdersPanel({
   canRefund = false,
@@ -55,6 +68,9 @@ export function BillingRechargeOrdersPanel({
   const [page, setPage] = useState(0)
   const [refundingOrder, setRefundingOrder] = useState<AdminRechargeOrder | null>(null)
   const [filterError, setFilterError] = useState<string | null>(null)
+  const columnPrefs = useAdminTableColumnPrefs('billing-recharge-orders', [
+    ...RECHARGE_ORDER_TABLE_COLUMNS,
+  ])
 
   const applySeed = useCallback((seed: BillingFilterSeed) => {
     setTenantId(seed.tenantId ?? '')
@@ -172,8 +188,12 @@ export function BillingRechargeOrdersPanel({
           ),
       })
     }
-    return cols
-  }, [canRefund])
+    return cols.filter((column) => {
+      const key = String(column.key)
+      if (key === 'actions') return canRefund
+      return columnPrefs.isColumnVisible(key)
+    })
+  }, [canRefund, columnPrefs.isColumnVisible, columnPrefs.visible])
 
   return (
     <>
@@ -250,6 +270,12 @@ export function BillingRechargeOrdersPanel({
               >
                 重置
               </Button>
+              <AdminTableColumnPicker
+                columns={[...RECHARGE_ORDER_TABLE_COLUMNS]}
+                visible={columnPrefs.visible}
+                onVisibleChange={columnPrefs.setColumnVisible}
+                onReset={columnPrefs.resetColumns}
+              />
             </div>
           </form>
           {filterError ? <AdminFormError message={filterError} /> : null}

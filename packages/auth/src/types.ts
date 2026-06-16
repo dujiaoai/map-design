@@ -46,11 +46,13 @@ export const loginUserSchema = sessionUserSchema.extend({
 })
 
 export const loginResponseSchema = z.object({
-  accessToken: z.string(),
-  refreshToken: z.string(),
-  expiresIn: z.number(),
+  accessToken: z.string().optional(),
+  refreshToken: z.string().optional(),
+  expiresIn: z.number().default(0),
   user: loginUserSchema,
   homeTenant: sessionTenantSchema.nullish(),
+  mfaRequired: z.boolean().optional(),
+  mfaChallengeToken: z.string().optional(),
 })
 
 export const authTokensSchema = z.object({
@@ -69,6 +71,11 @@ export interface TokenPair {
   expiresIn?: number
   /** 本地计算的过期时间戳（毫秒） */
   expiresAt?: number
+}
+
+export interface LoginMfaCredentials {
+  mfaChallengeToken: string
+  code: string
 }
 
 export interface LoginCredentials {

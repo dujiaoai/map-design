@@ -13,6 +13,7 @@ export {
   formatAuthApiError,
 } from './src/format-auth-api-error'
 export { type AuthApi, type AuthApiOptions, createAuthApi } from './src/auth-api'
+export { LoginMfaRequiredError, isLoginMfaRequiredError } from './src/login-mfa-error'
 export { type AuthClient, type CreateAuthOptions, createAuth } from './src/create-auth'
 export { SessionProvider, useIsAuthenticated, useSession } from './src/react/session-context'
 export { TenantProvider, useTenant } from './src/react/tenant-provider'
@@ -30,6 +31,7 @@ export {
   type AuthTokensResponse,
   authTokensSchema,
   type LoginCredentials,
+  type LoginMfaCredentials,
   type LoginResponse,
   type RegisterCredentials,
   type RegisterOrgCredentials,

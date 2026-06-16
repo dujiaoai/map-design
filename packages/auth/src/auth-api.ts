@@ -1,6 +1,7 @@
 import type {
   AuthTokensResponse,
   LoginCredentials,
+  LoginMfaCredentials,
   LoginResponse,
   RegisterCredentials,
   RegisterOrgCredentials,
@@ -122,6 +123,15 @@ export function createAuthApi(options: AuthApiOptions) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(body),
+      })
+      return parseJson(res)
+    },
+
+    async verifyLoginMfa(credentials: LoginMfaCredentials): Promise<LoginResponse> {
+      const res = await fetchFn(`${base}/auth/login/mfa`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(credentials),
       })
       return parseJson(res)
     },

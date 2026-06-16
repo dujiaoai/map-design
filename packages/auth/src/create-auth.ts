@@ -1,3 +1,4 @@
+import { LoginMfaRequiredError } from './login-mfa-error'
 import { createAuthApi } from './auth-api'
 import { authTokensToTokenPair, loginResponseToSession } from './map-auth-response'
 import { requireAuthenticated, requireRole } from './session/roles'
@@ -6,6 +7,8 @@ import { createSessionStore } from './session/session-store'
 import { createTokenStorage } from './storage/token-storage'
 import type {
   LoginCredentials,
+  LoginMfaCredentials,
+  LoginResponse,
   RegisterCredentials,
   RegisterOrgCredentials,
   RegisterOrgResponse,
@@ -86,9 +89,44 @@ export function createAuth(options: CreateAuthOptions) {
 
     async login(credentials: LoginCredentials): Promise<Session> {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用登录接口')
-      const response = loginResponseSchema.parse(await authApi.login(credentials))
-      const session = loginResponseToSession(response)
-      persist(session, authTokensToTokenPair(response))
+      const raw = await authApi.login(credentials)
+      if (raw.mfaRequired && raw.mfaChallengeToken) {
+        throw new LoginMfaRequiredError(raw.mfaChallengeToken, raw.user.email)
+      }
+      const response = loginResponseSchema.parse(raw)
+      if (!response.accessToken || !response.refreshToken) {
+        throw new Error('登录响应缺少 token')
+      }
+      const session = loginResponseToSession(response as LoginResponse & {
+        accessToken: string
+        refreshToken: string
+        expiresIn: number
+      })
+      persist(session, authTokensToTokenPair(response as LoginResponse & {
+        accessToken: string
+        refreshToken: string
+        expiresIn: number
+      }))
+      return session
+    },
+
+    async completeLoginMfa(credentials: LoginMfaCredentials): Promise<Session> {
+      if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用 MFA 登录接口')
+      const raw = await authApi.verifyLoginMfa(credentials)
+      const response = loginResponseSchema.parse(raw)
+      if (!response.accessToken || !response.refreshToken) {
+        throw new Error('MFA 登录响应缺少 token')
+      }
+      const session = loginResponseToSession(response as LoginResponse & {
+        accessToken: string
+        refreshToken: string
+        expiresIn: number
+      })
+      persist(session, authTokensToTokenPair(response as LoginResponse & {
+        accessToken: string
+        refreshToken: string
+        expiresIn: number
+      }))
       return session
     },
 

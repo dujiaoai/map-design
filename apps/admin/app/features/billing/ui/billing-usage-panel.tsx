@@ -12,15 +12,24 @@ import type { BillingFilterSeed } from '~/features/billing/lib/billing-filter-se
 import { useBillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
+import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
 import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 const PAGE_SIZE = 20
+
+const USAGE_TABLE_COLUMNS = [
+  { key: 'tenantId', label: '租户 ID' },
+  { key: 'userId', label: '用户 ID' },
+  { key: 'totalPoints', label: '消耗点数' },
+  { key: 'eventCount', label: '事件数' },
+] as const
 
 type UsageRow = AdminUsageSummary['items'][number]
 
@@ -33,6 +42,7 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
   const [filters, setFilters] = useState<{ tenantId?: string; productCode?: string }>({})
   const [page, setPage] = useState(0)
   const [filterError, setFilterError] = useState<string | null>(null)
+  const columnPrefs = useAdminTableColumnPrefs('billing-usage', [...USAGE_TABLE_COLUMNS])
 
   const applySeed = useCallback((seed: BillingFilterSeed) => {
     if (!seed.tenantId) return
@@ -56,8 +66,8 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
 
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
 
-  const columns = useMemo<TableColumnsType<UsageRow>>(
-    () => [
+  const columns = useMemo<TableColumnsType<UsageRow>>(() => {
+    const cols: TableColumnsType<UsageRow> = [
       {
         title: '租户 ID',
         key: 'tenantId',
@@ -78,9 +88,9 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
         key: 'eventCount',
         render: (_value, item) => item.eventCount.toLocaleString('zh-CN'),
       },
-    ],
-    [],
-  )
+    ]
+    return cols.filter((column) => columnPrefs.isColumnVisible(String(column.key)))
+  }, [columnPrefs.isColumnVisible, columnPrefs.visible])
 
   return (
     <AdminPanel>
@@ -140,6 +150,12 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
             >
               重置
             </Button>
+            <AdminTableColumnPicker
+              columns={[...USAGE_TABLE_COLUMNS]}
+              visible={columnPrefs.visible}
+              onVisibleChange={columnPrefs.setColumnVisible}
+              onReset={columnPrefs.resetColumns}
+            />
           </div>
         </form>
         {filterError ? <AdminFormError message={filterError} /> : null}

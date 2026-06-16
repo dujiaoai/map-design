@@ -19,7 +19,8 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | P1 | FND-04 | saas-api RLS 扩展（租户业务表） | ✅ |
 | P2 | FND-05 | 可观测性最小集（MDC + 依赖健康探活） | ✅ |
 | P3 | FND-06 | Admin `/system` 平台配置 | ✅ |
-| Later | FND-07 | OAuth2/OIDC、Admin MFA、impersonation | 远期 |
+| P3 | FND-07a | Platform Admin 租户代操作（impersonation MVP） | ✅ |
+| Later | FND-07 | OAuth2/OIDC、Admin MFA | 远期 |
 
 ---
 
@@ -105,13 +106,20 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 ---
 
+## FND-07a · 租户代操作（impersonation MVP）✅
+
+**交付（2026-06）**：ADR [0007](../../adr/0007-platform-admin-impersonation.md)；JWT `act_as_tenant`；`POST/DELETE /v1/admin/impersonation`；`admin:impersonate`（V25）；`impersonation.start/stop` 审计；Admin 代操作 Sheet + banner。
+
+**不含**：MFA 二次确认、代操作时长上限、saas-web 入口。
+
+---
+
 ## FND-07 · 远期（Later）
 
 | 项 | 说明 |
 | --- | --- |
 | OAuth2/OIDC | X-01 |
 | Admin MFA | 高权限账号 |
-| impersonation | `act_as_tenant` + 审计（multi-tenancy.md） |
 | `/v1/menus` | 服务端动态菜单（当前 mock-nav） |
 | Plan 配额 | seat / rate / storage |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |

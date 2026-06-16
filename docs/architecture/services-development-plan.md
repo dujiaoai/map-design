@@ -413,7 +413,8 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | FND-08e | Admin 成员页配额摘要 | ✅ |
 | FND-08f | 租户 API 速率按 plan 限流 | ✅ |
 | FND-08g | 租户存储用量估算（map_layer） | ✅ |
-| FND-08 | 附件真实计量 / 菜单 RBAC 等 | Later |
+| FND-08h | Admin 工作台菜单配置 | ✅ |
+| FND-08 | 租户菜单覆盖 / 菜单 RBAC / 附件计量 | Later |
 | E-01 | 地图图层 CRUD | ✅ |
 | E-02 | 专题图层目录 UI | ✅ |
 | E-03 | 机库列表 API | ✅ |
@@ -482,7 +483,7 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | RBAC-P2 ✅ | D+ | 租户自定义角色与权限配置 |
 | E-* | Later | projects 等 — **E-01～E-03b ✅** |
 | FND-01～FND-08f | 基础完善 | 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) |
-| FND-08 | Later | 附件真实计量 / 菜单 RBAC 等 |
+| FND-08 | Later | 租户菜单覆盖 / 菜单 RBAC / 附件计量 |
 
 ### 建议默认顺序（仅供参考，非强制）
 

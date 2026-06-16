@@ -4,6 +4,7 @@ import {
   CreditCardIcon,
   KeyRoundIcon,
   LayoutDashboardIcon,
+  LayoutListIcon,
   ScrollTextIcon,
   SettingsIcon,
   ShieldCheckIcon,
@@ -71,6 +72,12 @@ export const adminNavItems: AdminNavItem[] = [
     label: '审计',
     icon: ScrollTextIcon,
     permissions: [...AUDIT_READ_PERMISSIONS],
+  },
+  {
+    to: '/menus',
+    label: '菜单配置',
+    icon: LayoutListIcon,
+    permissions: ['admin:menus:read'],
   },
   {
     to: '/billing',

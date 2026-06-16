@@ -1,6 +1,9 @@
 package com.yunyan.saasapi.application.navigation;
 
 import com.yunyan.saasapi.domain.TenantRepository;
+import com.yunyan.saasapi.domain.WorkspaceMenuRepository;
+import com.yunyan.saasapi.domain.entity.WorkspaceMenuItem;
+import com.yunyan.saasapi.domain.entity.WorkspaceMenuSection;
 import com.yunyan.saasapi.domain.navigation.WorkspaceMenuCatalog;
 import com.yunyan.saasapi.domain.navigation.WorkspaceMenuCatalog.MenuItemDef;
 import com.yunyan.saasapi.domain.navigation.WorkspaceMenuCatalog.SectionDef;
@@ -23,6 +26,7 @@ import org.springframework.util.StringUtils;
 public class WorkspaceMenuService {
 
   private final TenantRepository tenantRepository;
+  private final WorkspaceMenuRepository workspaceMenuRepository;
 
   public MenusResponse getMenusForCurrentTenant(SaasPrincipal principal) {
     requirePrincipal(principal);
@@ -32,6 +36,55 @@ public class WorkspaceMenuService {
     }
     var enabledFeatures = loadEnabledFeatures(tenantId);
 
+    if (workspaceMenuRepository.hasPersistedData()) {
+      return buildFromDatabase(enabledFeatures);
+    }
+    return buildFromCatalog(enabledFeatures);
+  }
+
+  private MenusResponse buildFromDatabase(Set<String> enabledFeatures) {
+    var sections = new ArrayList<MenuSectionDto>();
+    var flatItems = new LinkedHashSet<String>();
+    var items = new ArrayList<MenuItemDto>();
+
+    for (WorkspaceMenuSection section : workspaceMenuRepository.findEnabledSectionsOrdered()) {
+      var visibleItems =
+          workspaceMenuRepository.findEnabledItemsBySection(section.getId()).stream()
+              .filter(item -> isVisible(item.getTenantFeature(), enabledFeatures))
+              .toList();
+      if (visibleItems.isEmpty()) {
+        continue;
+      }
+      var itemDtos = visibleItems.stream().map(this::toDto).toList();
+      sections.add(
+          new MenuSectionDto(
+              section.getId(),
+              section.getLabel(),
+              Boolean.TRUE.equals(section.getCollapsible()),
+              section.getDefaultOpen() == null || section.getDefaultOpen(),
+              section.getStorageKey(),
+              itemDtos));
+      for (MenuItemDto dto : itemDtos) {
+        if (flatItems.add(dto.id())) {
+          items.add(dto);
+        }
+      }
+    }
+
+    for (WorkspaceMenuItem tool : workspaceMenuRepository.findEnabledToolItemsOrdered()) {
+      if (!isVisible(tool.getTenantFeature(), enabledFeatures)) {
+        continue;
+      }
+      var dto = toDto(tool);
+      if (flatItems.add(dto.id())) {
+        items.add(dto);
+      }
+    }
+
+    return new MenusResponse(List.copyOf(sections), List.copyOf(items));
+  }
+
+  private MenusResponse buildFromCatalog(Set<String> enabledFeatures) {
     var sections = new ArrayList<MenuSectionDto>();
     var flatItems = new LinkedHashSet<String>();
     var items = new ArrayList<MenuItemDto>();
@@ -76,10 +129,14 @@ public class WorkspaceMenuService {
   }
 
   private static boolean isVisible(MenuItemDef item, Set<String> enabledFeatures) {
-    if (!StringUtils.hasText(item.tenantFeature())) {
+    return isVisible(item.tenantFeature(), enabledFeatures);
+  }
+
+  private static boolean isVisible(String tenantFeature, Set<String> enabledFeatures) {
+    if (!StringUtils.hasText(tenantFeature)) {
       return true;
     }
-    return enabledFeatures.contains(item.tenantFeature());
+    return enabledFeatures.contains(tenantFeature);
   }
 
   private MenuItemDto toDto(MenuItemDef item) {
@@ -92,6 +149,18 @@ public class WorkspaceMenuService {
         item.moduleId(),
         item.url(),
         item.href());
+  }
+
+  private MenuItemDto toDto(WorkspaceMenuItem item) {
+    return new MenuItemDto(
+        item.getId(),
+        item.getTitle(),
+        item.getKind(),
+        item.getIcon(),
+        item.getToolId(),
+        item.getModuleId(),
+        item.getUrl(),
+        item.getHref());
   }
 
   private static void requirePrincipal(SaasPrincipal principal) {

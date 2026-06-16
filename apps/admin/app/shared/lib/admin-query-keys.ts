@@ -27,4 +27,5 @@ export const adminQueryKeys = {
   auditLogs: (params?: AdminListQuery) => ['admin', 'audit-logs', params ?? {}] as const,
   systemFlags: ['admin', 'system-flags'] as const,
   mfaStatus: ['admin', 'mfa-status'] as const,
+  menus: ['admin', 'menus'] as const,
 }

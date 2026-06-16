@@ -35,8 +35,9 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | P3 | FND-08b | saas-web 侧栏/命令面板消费 /v1/menus | ✅ |
 | P3 | FND-08c | Plan 配额目录与 GET /tenants/{id}/quotas | ✅ |
 | P3 | FND-08d | 成员加入 seat 配额门控 | ✅ |
-| P3 | FND-08e | Admin 成员页配额摘要 | ✅ |
-| Later | FND-08 | API rate / storage 实时 enforcement | 远期 |
+| P3 | FND-08g | 租户存储用量估算 | ✅ |
+| P3 | FND-08h | Admin 工作台菜单配置（平台模板） | ✅ |
+| Later | FND-08 | 租户菜单覆盖 / 菜单 RBAC / 附件计量 | 远期 |
 
 ---
 
@@ -274,12 +275,20 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 ---
 
+## FND-08h · Admin 工作台菜单配置 ✅
+
+**交付（2026-06）**：`workspace_menu_section` / `workspace_menu_item` 表 + Flyway 种子（对齐 `WorkspaceMenuCatalog`）；`GET/PUT /v1/admin/menus`（`admin:menus:read/write`）；Admin `/menus` 页面（段/项显隐、排序、标题）；`GET /v1/menus` 优先读 DB，空表 fallback catalog。
+
+**不含**：租户级菜单覆盖、RBAC 按权限码裁剪、新增非 catalog 菜单项、tool meta API 化。
+
+---
+
 ## FND-08 · 远期（Later）
 
 | 项 | 说明 |
 | --- | --- |
 | 附件存储真实计量 | blob/附件表落地后替换占位算法 |
-| 菜单 RBAC / Admin 配置 | 权限码裁剪、运营可编辑菜单树 |
+| 租户菜单覆盖 / 菜单 RBAC | per-tenant 覆盖 enabled/sort/title；权限码裁剪 |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |
 
 ---

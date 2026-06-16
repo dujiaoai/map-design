@@ -12,10 +12,12 @@ import {
   useAdminTableFilterState,
 } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
+import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
+import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
@@ -28,6 +30,15 @@ import { InviteMemberSheet } from './invite-member-sheet'
 import { TenantQuotaSummary } from './tenant-quota-summary'
 
 type MemberSortKey = 'email' | 'displayName' | 'lastLoginAt' | 'createdAt'
+
+const MEMBER_TABLE_COLUMNS = [
+  { key: 'email', label: '邮箱' },
+  { key: 'displayName', label: '显示名' },
+  { key: 'roles', label: '角色' },
+  { key: 'status', label: '状态' },
+  { key: 'lastLoginAt', label: '最近登录' },
+  { key: 'createdAt', label: '创建时间' },
+] as const
 
 export function MembersAdminPage({
   tenantId,
@@ -47,6 +58,7 @@ export function MembersAdminPage({
 
   const [inviteOpen, setInviteOpen] = useState(false)
   const [editingMember, setEditingMember] = useState<AdminUserSummary | null>(null)
+  const columnPrefs = useAdminTableColumnPrefs('members', [...MEMBER_TABLE_COLUMNS])
 
   const filter = useAdminTableFilterState()
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -101,79 +113,84 @@ export function MembersAdminPage({
   const memberTotal = members.length
 
   const columns = useMemo<TableColumnsType<AdminUserSummary>>(
-    () => [
-      {
-        title: '邮箱',
-        dataIndex: 'email',
-        key: 'email',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'email'),
-      },
-      {
-        title: '显示名',
-        dataIndex: 'displayName',
-        key: 'displayName',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'displayName'),
-      },
-      {
-        title: '角色',
-        key: 'roles',
-        render: (_value: unknown, member: AdminUserSummary) => (
-          <div className="flex flex-wrap gap-1">
-            {member.roles.map((role) => (
-              <Badge key={role} variant="outline" className="font-mono text-[10px]">
-                {role}
-              </Badge>
-            ))}
-          </div>
-        ),
-      },
-      {
-        title: '状态',
-        dataIndex: 'status',
-        key: 'status',
-        render: (status: string) => <AdminStatusBadge status={status} />,
-      },
-      {
-        title: '最近登录',
-        dataIndex: 'lastLoginAt',
-        key: 'lastLoginAt',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'lastLoginAt'),
-        render: (lastLoginAt: number | null) => (
-          <span className="text-muted-foreground">
-            {lastLoginAt ? formatAdminDate(lastLoginAt) : '—'}
-          </span>
-        ),
-      },
-      {
-        title: '创建时间',
-        dataIndex: 'createdAt',
-        key: 'createdAt',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'createdAt'),
-        render: (createdAt: number) => (
-          <span className="text-muted-foreground">{formatAdminDate(createdAt)}</span>
-        ),
-      },
-      ...(canWrite
-        ? [
-            {
-              title: '操作',
-              key: 'actions',
-              align: 'right' as const,
-              render: (_value: unknown, member: AdminUserSummary) => (
-                <Button variant="ghost" size="sm" onClick={() => setEditingMember(member)}>
-                  <PencilIcon className="size-3.5" />
-                  编辑
-                </Button>
-              ),
-            },
-          ]
-        : []),
-    ],
-    [canWrite, sort],
+    () =>
+      [
+        {
+          title: '邮箱',
+          dataIndex: 'email',
+          key: 'email',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'email'),
+        },
+        {
+          title: '显示名',
+          dataIndex: 'displayName',
+          key: 'displayName',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'displayName'),
+        },
+        {
+          title: '角色',
+          key: 'roles',
+          render: (_value: unknown, member: AdminUserSummary) => (
+            <div className="flex flex-wrap gap-1">
+              {member.roles.map((role) => (
+                <Badge key={role} variant="outline" className="font-mono text-[10px]">
+                  {role}
+                </Badge>
+              ))}
+            </div>
+          ),
+        },
+        {
+          title: '状态',
+          dataIndex: 'status',
+          key: 'status',
+          render: (status: string) => <AdminStatusBadge status={status} />,
+        },
+        {
+          title: '最近登录',
+          dataIndex: 'lastLoginAt',
+          key: 'lastLoginAt',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'lastLoginAt'),
+          render: (lastLoginAt: number | null) => (
+            <span className="text-muted-foreground">
+              {lastLoginAt ? formatAdminDate(lastLoginAt) : '—'}
+            </span>
+          ),
+        },
+        {
+          title: '创建时间',
+          dataIndex: 'createdAt',
+          key: 'createdAt',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'createdAt'),
+          render: (createdAt: number) => (
+            <span className="text-muted-foreground">{formatAdminDate(createdAt)}</span>
+          ),
+        },
+        ...(canWrite
+          ? [
+              {
+                title: '操作',
+                key: 'actions',
+                align: 'right' as const,
+                render: (_value: unknown, member: AdminUserSummary) => (
+                  <Button variant="ghost" size="sm" onClick={() => setEditingMember(member)}>
+                    <PencilIcon className="size-3.5" />
+                    编辑
+                  </Button>
+                ),
+              },
+            ]
+          : []),
+      ].filter((column) => {
+        const key = String(column.key)
+        if (key === 'actions') return canWrite
+        return columnPrefs.isColumnVisible(key)
+      }),
+    [canWrite, columnPrefs.isColumnVisible, columnPrefs.visible, sort],
   )
 
   const content = (
@@ -222,6 +239,14 @@ export function MembersAdminPage({
           { value: 'active', label: 'active' },
           { value: 'disabled', label: 'disabled' },
         ]}
+        trailing={
+          <AdminTableColumnPicker
+            columns={[...MEMBER_TABLE_COLUMNS]}
+            visible={columnPrefs.visible}
+            onVisibleChange={columnPrefs.setColumnVisible}
+            onReset={columnPrefs.resetColumns}
+          />
+        }
       />
 
       <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="server" />

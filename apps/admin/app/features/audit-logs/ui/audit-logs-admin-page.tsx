@@ -26,9 +26,11 @@ import { fetchAdminAuditLogs, fetchAdminTenants, type AdminAuditLogEntry } from 
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
+import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
+import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
@@ -41,6 +43,16 @@ const AUDIT_BILLING_SEARCH = 'billing.'
 const AUDIT_MEMBER_SEARCH = 'member.'
 
 type AuditSortKey = 'createdAt' | 'actorEmail' | 'action'
+
+const AUDIT_TABLE_COLUMNS = [
+  { key: 'createdAt', label: '时间' },
+  { key: 'actorEmail', label: '操作人' },
+  { key: 'action', label: '动作' },
+  { key: 'resource', label: '资源' },
+  { key: 'detail', label: '详情' },
+  { key: 'targetTenant', label: '目标租户' },
+  { key: 'crossTenant', label: '跨租户' },
+] as const
 
 const BILLING_PERMISSIONS = [
   'admin:billing:read',
@@ -78,6 +90,7 @@ export function AuditLogsAdminPage() {
   const [toDate, setToDate] = useState('')
   const [detailLog, setDetailLog] = useState<AdminAuditLogEntry | null>(null)
   const [exporting, setExporting] = useState(false)
+  const columnPrefs = useAdminTableColumnPrefs('audit-logs', [...AUDIT_TABLE_COLUMNS])
 
   const fromEpoch = dateInputToFromEpoch(fromDate)
   const toEpoch = dateInputToToEpoch(toDate)
@@ -170,17 +183,18 @@ export function AuditLogsAdminPage() {
   }
 
   const columns = useMemo<TableColumnsType<AdminAuditLogEntry>>(
-    () => [
-      {
-        title: '时间',
-        dataIndex: 'createdAt',
-        key: 'createdAt',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'createdAt'),
-        render: (createdAt: number) => (
-          <span className="text-muted-foreground">{formatAdminDate(createdAt)}</span>
-        ),
-      },
+    () =>
+      [
+        {
+          title: '时间',
+          dataIndex: 'createdAt',
+          key: 'createdAt',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'createdAt'),
+          render: (createdAt: number) => (
+            <span className="text-muted-foreground">{formatAdminDate(createdAt)}</span>
+          ),
+        },
       {
         title: '操作人',
         dataIndex: 'actorEmail',
@@ -292,8 +306,12 @@ export function AuditLogsAdminPage() {
           </Button>
         ),
       },
-    ],
-    [canReadTenants, canReadUsers, sort],
+      ].filter((column) => {
+        const key = String(column.key)
+        if (key === 'actions') return true
+        return columnPrefs.isColumnVisible(key)
+      }),
+    [canReadTenants, canReadUsers, columnPrefs.isColumnVisible, columnPrefs.visible, sort],
   )
 
   return (
@@ -375,6 +393,14 @@ export function AuditLogsAdminPage() {
           search={searchInput}
           onSearchChange={setSearchInput}
           searchPlaceholder="搜索操作人、动作或详情…"
+          trailing={
+            <AdminTableColumnPicker
+              columns={[...AUDIT_TABLE_COLUMNS]}
+              visible={columnPrefs.visible}
+              onVisibleChange={columnPrefs.setColumnVisible}
+              onReset={columnPrefs.resetColumns}
+            />
+          }
         />
         <div className="space-y-1">
           <Label htmlFor="audit-tenant-filter" className="text-xs text-muted-foreground">

@@ -310,6 +310,12 @@ flowchart TD
 
 **不含**：图层 GeoJSON/样式 payload、附件存储、扣费 hold。
 
+#### E-02 · 专题图层目录 UI ✅
+
+**交付（2026-06）**：`LayerCatalogPanel` + `WorkspaceModuleContent`；SaaS 会话下「专题图层」模块消费 `/v1/layers` CRUD；无 API 时仍用 mock 图层树。
+
+**不含**：地图引擎图层同步、树形目录、拖拽排序 UI。
+
 ### Sprint F · 平台计费（F-1～F-6 骨架 + sec 加固已落地 · 2026-06-14）
 
 **PRD：** [billing-credits-prd.md](../product/billing-credits-prd.md)  
@@ -397,6 +403,7 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | FND-08g | 租户存储用量估算（map_layer） | ✅ |
 | FND-08 | 附件真实计量 / 菜单 RBAC 等 | Later |
 | E-01 | 地图图层 CRUD | ✅ |
+| E-02 | 专题图层目录 UI | ✅ |
 | E-* | 机库、专题、projects 等 | Later |
 
 **仍不做（本阶段）**：Sprint E 机库/专题/projects 等业务 API。

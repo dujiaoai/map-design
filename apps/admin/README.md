@@ -116,13 +116,21 @@ pnpm --filter @repo/saas-admin dev
 
 P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）、Later（Playwright、entities 拆分、菜单拖拽、列配置、虚拟滚动、RBAC Transfer、typecheck 修复）与 **P4（邮箱邀请）均已完成**。`pnpm --filter @repo/saas-admin validate` 可通过。
 
-`admin-api.ts` 为纯 re-export barrel；OAuth 绑定类型在 `entities/user`，当前用户 OAuth 在 `entities/account`。
+`admin-api.ts` 为纯 re-export barrel；`admin-list-query` 位于 `shared/lib/`；OAuth 绑定类型在 `entities/user`，当前用户 OAuth 在 `entities/account`。
+
+### 路线图外维护项
+
+| 项 | 说明 | 状态 |
+| --- | --- | --- |
+| **admin-list-query 归位** | 列表查询 builder 从 `shared/api` 迁至 `shared/lib` | ✅ |
+| **成员页 E2E** | mock 成员列表、配额与邀请 Sheet Tab | ✅ |
+| **真实 API 联调 E2E** | 依赖 seed + 运行中 saas-api | 待办 |
 
 ## 验证
 
 ```bash
 pnpm --filter @repo/saas-admin validate
-pnpm --filter @repo/saas-admin test:e2e   # Playwright：登录 mock、路由守卫、概览 mock（需 dev :5181，webServer 超时 180s）
+pnpm --filter @repo/saas-admin test:e2e   # Playwright：登录/概览/成员页 mock（需 dev :5181，webServer 超时 180s）
 cd services/saas-api && mvn test -Dtest=Admin*ControllerTest
 ```
 

@@ -27,6 +27,7 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | P3 | FND-07f | OAuth2/OIDC 骨架（发现 API + flags） | ✅ |
 | P3 | FND-07g | OAuth2/OIDC 授权码登录（Admin） | ✅ |
 | P3 | FND-07h | OAuth2/OIDC 授权码登录（saas-web） | ✅ |
+| P3 | FND-07i | OIDC 本地联调配置与 runbook | ✅ |
 | Later | FND-07 | `/v1/menus`、OAuth 账号绑定、Plan 配额等 | 远期 |
 
 ---
@@ -173,7 +174,15 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 **交付（2026-06）**：复用 Phase 2 API（`client=web`）；登录页 IdP 按钮；`/auth/oidc/callback/:providerId`；OIDC 回调后 MFA step-up（与密码登录一致）。租户 slug 必填（企业 IdP 登录）。
 
-**不含**：显式账号 bind 表、真实 IdP 联调 runbook、个人版（无租户）OIDC。
+**不含**：显式账号 bind 表、个人版（无租户）OIDC（→ FND-07i runbook）。
+
+---
+
+## FND-07i · OIDC 本地联调配置与 runbook ✅
+
+**交付（2026-06）**：`application-oidc.example.yml`；`application-dev.yml` / `application-docker.yml` Keycloak 环境变量占位；`.env.example` / `deploy/.env.docker.example`；[oidc-dev-setup.md](../../runbooks/oidc-dev-setup.md)（Keycloak 快速启动、redirect URI、探活与 E2E）。
+
+**不含**：生产 IdP 运维、显式 OAuth bind 表。
 
 ---
 
@@ -182,7 +191,6 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | 项 | 说明 |
 | --- | --- |
 | OAuth 账号绑定 | 显式 bind 表 vs 仅邮箱映射 |
-| 真实 IdP 联调 | `application-dev.yml` provider 示例与 E2E |
 | `/v1/menus` | 服务端动态菜单（当前 mock-nav） |
 | Plan 配额 | seat / rate / storage |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |

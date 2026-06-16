@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted（Phase 2 Admin + saas-web 授权码 + PKCE 已落地；显式账号绑定与 IdP 联调仍 Later）
+Accepted（Phase 2 全链路 + 本地联调 runbook 已落地；显式账号绑定仍 Later）
 
 ## Context
 
@@ -49,13 +49,13 @@ Phase 1 骨架期 `authorizationCodeFlowAvailable` 恒为 `false`；Phase 2 在 
 | Admin MFA 与 OIDC | ✅ | 平台管理员 OIDC 回调后若已绑 TOTP，仍走 `mfaRequired` step-up |
 | `@repo/auth` + Admin UI | ✅ | `startOidcAuthorize` / `completeOidcLogin`；登录页 IdP 按钮；`/auth/oidc/callback/:providerId` |
 | saas-web UI | ✅ | 同上，`client=web`；登录页 IdP 按钮 + callback；MFA step-up |
+| 本地联调 runbook | ✅ | `application-oidc.example.yml` + [oidc-dev-setup.md](../runbooks/oidc-dev-setup.md) |
 
 ### 5. 仍 Later
 
 | 能力 | 说明 |
 | --- | --- |
 | 账号链接 | 同邮箱自动关联 vs 显式 bind 表 |
-| 真实 IdP 联调 | `application-dev.yml` provider 示例与 E2E |
 
 ### 6. 安全
 
@@ -79,4 +79,5 @@ Phase 1 骨架期 `authorizationCodeFlowAvailable` 恒为 `false`；Phase 2 在 
 
 - [0008-platform-admin-mfa.md](./0008-platform-admin-mfa.md)
 - [auth-rbac.md](../architecture/auth-rbac.md)
-- [platform-foundation-backlog.md](../architecture/supplements/platform-foundation-backlog.md) FND-07f～FND-07h
+- [platform-foundation-backlog.md](../architecture/supplements/platform-foundation-backlog.md) FND-07f～FND-07i
+- [oidc-dev-setup.md](../runbooks/oidc-dev-setup.md)

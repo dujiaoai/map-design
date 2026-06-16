@@ -6,9 +6,8 @@ import { useNavigate } from 'react-router'
 
 import {
   buildNavMapSections,
-  filterNavMainItemsForTenant,
-  mockNavMainItems,
-  mockNavMapSectionDefs,
+  useWorkspaceNavMainItems,
+  useWorkspaceNavSectionDefs,
 } from '~/entities/navigation'
 import {
   createNavSelectHandler,
@@ -26,14 +25,12 @@ export function AppSidebar(props: ComponentProps<typeof UiAppSidebar>) {
   const toggleMapDockModule = useMapWorkspaceStore((state) => state.toggleMapDockModule)
 
   const enabledTenantFeatures = useEnabledTenantFeatures()
-  const tenantNavItems = useMemo(
-    () => filterNavMainItemsForTenant(mockNavMainItems, enabledTenantFeatures),
-    [enabledTenantFeatures],
-  )
+  const tenantNavItems = useWorkspaceNavMainItems()
+  const navSectionDefs = useWorkspaceNavSectionDefs()
 
   const navMapSections = useMemo(
-    () => buildNavMapSections(mockNavMapSectionDefs, activeNavItemIds, enabledTenantFeatures),
-    [activeNavItemIds, enabledTenantFeatures],
+    () => buildNavMapSections(navSectionDefs, activeNavItemIds, enabledTenantFeatures),
+    [activeNavItemIds, enabledTenantFeatures, navSectionDefs],
   )
 
   const handleNavSelect = useMemo(

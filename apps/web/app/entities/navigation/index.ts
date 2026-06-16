@@ -37,6 +37,13 @@ export {
   filterNavMainItemsByTenant,
   filterNavMainItemsForTenant,
 } from './lib/filter-nav-by-tenant'
+export { resolveNavIcon } from './lib/nav-icon-registry'
+export { resolveNavMainItemsFromApi, resolveNavSectionDefsFromApi } from './lib/resolve-api-menus'
+export {
+  useWorkspaceMenusReady,
+  useWorkspaceNavMainItems,
+  useWorkspaceNavSectionDefs,
+} from './model/use-workspace-menus'
 export {
   findNavSubItemByDockModuleId,
   findNavSubItemByModuleId,

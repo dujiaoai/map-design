@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router'
 
-import { filterNavMainItemsForTenant, mockNavMainItems } from '~/entities/navigation'
+import { useWorkspaceNavMainItems } from '~/entities/navigation'
 import { useActiveNavItemIds, useMapWorkspaceStore } from '~/features/map-workspace'
 import { useEnabledTenantFeatures } from '~/features/team-switcher'
 import {
@@ -32,10 +32,7 @@ export function WorkspaceCommandPalette() {
   const closeCommandPalette = useMapWorkspaceStore((state) => state.closeCommandPalette)
   const activeNavItemIds = useActiveNavItemIds()
   const enabledTenantFeatures = useEnabledTenantFeatures()
-  const tenantNavItems = useMemo(
-    () => filterNavMainItemsForTenant(mockNavMainItems, enabledTenantFeatures),
-    [enabledTenantFeatures],
-  )
+  const tenantNavItems = useWorkspaceNavMainItems()
 
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)

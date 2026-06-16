@@ -25,6 +25,7 @@ import { useBillingFilterSeed } from '~/features/billing/lib/billing-filter-seed
 import { formatBillingPrice } from '~/features/billing/lib/billing-format'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
+import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
@@ -33,9 +34,20 @@ import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import { AdminEmptyState, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge, formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
+import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 const PAGE_SIZE = 20
+
+const INVOICE_TABLE_COLUMNS = [
+  { key: 'orderNo', label: '订单号' },
+  { key: 'tenantUser', label: '租户 / 用户' },
+  { key: 'invoiceType', label: '类型 / 抬头' },
+  { key: 'email', label: '邮箱' },
+  { key: 'amount', label: '金额' },
+  { key: 'status', label: '状态' },
+  { key: 'createdAt', label: '申请时间' },
+] as const
 
 function invoiceStatusLabel(status: string) {
   if (status === 'pending') return '待处理'
@@ -73,6 +85,7 @@ export function BillingInvoicesPanel({
   const [filterError, setFilterError] = useState<string | null>(null)
   const [issuingInvoice, setIssuingInvoice] = useState<AdminInvoice | null>(null)
   const [rejectingInvoice, setRejectingInvoice] = useState<AdminInvoice | null>(null)
+  const columnPrefs = useAdminTableColumnPrefs('billing-invoices', [...INVOICE_TABLE_COLUMNS])
 
   const applySeed = useCallback((seed: BillingFilterSeed) => {
     setTenantId(seed.tenantId ?? '')
@@ -223,8 +236,12 @@ export function BillingInvoicesPanel({
           ),
       })
     }
-    return cols
-  }, [canAdjust])
+    return cols.filter((column) => {
+      const key = String(column.key)
+      if (key === 'actions') return canAdjust
+      return columnPrefs.isColumnVisible(key)
+    })
+  }, [canAdjust, columnPrefs.isColumnVisible, columnPrefs.visible])
 
   return (
     <div className="space-y-4">
@@ -274,6 +291,12 @@ export function BillingInvoicesPanel({
           <Button type="button" size="sm" onClick={applyFilters}>
             筛选
           </Button>
+          <AdminTableColumnPicker
+            columns={[...INVOICE_TABLE_COLUMNS]}
+            visible={columnPrefs.visible}
+            onVisibleChange={columnPrefs.setColumnVisible}
+            onReset={columnPrefs.resetColumns}
+          />
         </div>
         {filterError ? (
           <div className="px-4 pb-5 md:px-5">

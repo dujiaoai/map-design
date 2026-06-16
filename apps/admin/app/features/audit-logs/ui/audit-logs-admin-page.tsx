@@ -1,11 +1,17 @@
-import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
+import { Badge, Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import { CreditCardIcon } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 
+import { AUDIT_ACTION_OPTIONS } from '~/features/audit-logs/lib/audit-log-actions'
 import { buildAuditBillingLink } from '~/features/audit-logs/lib/audit-log-billing-nav'
+import {
+  dateInputToFromEpoch,
+  dateInputToToEpoch,
+} from '~/features/audit-logs/lib/audit-log-date-range'
 import { buildAuditUsersLink } from '~/features/audit-logs/lib/audit-log-users-nav'
-import { fetchAdminAuditLogs, type AdminAuditLogEntry } from '~/shared/api/admin-api'
+import { AuditLogDetailSheet } from '~/features/audit-logs/ui/audit-log-detail-sheet'
+import { fetchAdminAuditLogs, fetchAdminTenants, type AdminAuditLogEntry } from '~/shared/api/admin-api'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
@@ -27,28 +33,8 @@ import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
+import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
 import { formatAdminDate } from '~/shared/ui/admin-status-badge'
-
-const AUDIT_ACTION_OPTIONS = [
-  { value: 'all', label: '全部动作' },
-  { value: 'tenant.create', label: '创建租户' },
-  { value: 'tenant.update', label: '更新租户' },
-  { value: 'tenant.features.update', label: '更新租户能力' },
-  { value: 'user.update', label: '更新平台用户' },
-  { value: 'member.invite-link.create', label: '创建邀请链接' },
-  { value: 'member.invite-link.revoke', label: '撤销邀请链接' },
-  { value: 'member.update', label: '更新成员' },
-  { value: 'member.roles.update', label: '更新角色' },
-  { value: 'role.permissions.update', label: '更新角色权限' },
-  { value: 'billing.wallet.adjust', label: '计费调账' },
-  { value: 'billing.package.write', label: 'SKU 变更' },
-  { value: 'billing.recharge.refund', label: '充值退款' },
-  { value: 'billing.coupon.write', label: '优惠券变更' },
-  { value: 'billing.invoice.issue', label: '开具发票' },
-  { value: 'billing.invoice.reject', label: '驳回发票' },
-  { value: 'billing.wire_transfer.approve', label: '对公入账' },
-  { value: 'billing.wire_transfer.reject', label: '驳回对公转账' },
-] as const
 
 const AUDIT_BILLING_SEARCH = 'billing.'
 const AUDIT_MEMBER_SEARCH = 'member.'
@@ -67,23 +53,46 @@ export function AuditLogsAdminPage() {
   const canViewBilling = canAny([...BILLING_PERMISSIONS])
   const canReadUsers = can('admin:users:read')
   const canReadTenants = can('admin:tenants:read')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tenantFilterId = searchParams.get('tenantId') ?? undefined
+
   const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
   const searchInputRef = useRef<HTMLInputElement>(null)
   useAdminListSearchShortcut(searchInputRef)
   const { sort, toggleSort, clearSort } = useAdminTableSort<AuditSortKey>()
   const [actionFilter, setActionFilter] = useState<string>('all')
   const [crossTenantOnly, setCrossTenantOnly] = useState(false)
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
+  const [detailLog, setDetailLog] = useState<AdminAuditLogEntry | null>(null)
+
+  const fromEpoch = dateInputToFromEpoch(fromDate)
+  const toEpoch = dateInputToToEpoch(toDate)
 
   const listQuery = {
     ...queryParams,
     action: actionFilter === 'all' ? undefined : actionFilter,
     crossTenant: crossTenantOnly ? true : undefined,
+    tenantId: tenantFilterId,
+    from: fromEpoch,
+    to: toEpoch,
   }
+
+  const tenantsQuery = useAdminPagedQuery({
+    queryKey: adminQueryKeys.tenantsAll,
+    queryFn: () => fetchAdminTenants(),
+  })
 
   const query = useAdminPagedQuery({
     queryKey: adminQueryKeys.auditLogs(listQuery),
     queryFn: () => fetchAdminAuditLogs(listQuery),
   })
+
+  const tenantLabel = useMemo(() => {
+    if (!tenantFilterId) return '全部租户'
+    const tenant = tenantsQuery.data?.tenants.find((item) => item.id === tenantFilterId)
+    return tenant ? `${tenant.name} (${tenant.slug})` : tenantFilterId
+  }, [tenantFilterId, tenantsQuery.data?.tenants])
 
   const total = query.data?.total ?? query.data?.logs.length ?? 0
   const billingOnlyActive = searchInput.trim() === AUDIT_BILLING_SEARCH
@@ -103,12 +112,20 @@ export function AuditLogsAdminPage() {
     setSearchInput('')
     setActionFilter('all')
     setCrossTenantOnly(false)
+    setFromDate('')
+    setToDate('')
     setPage(1)
     clearSort()
+    setSearchParams({})
   }
 
   const hasAuditFilters =
-    actionFilter !== 'all' || crossTenantOnly || searchInput.trim().length > 0
+    actionFilter !== 'all' ||
+    crossTenantOnly ||
+    searchInput.trim().length > 0 ||
+    Boolean(tenantFilterId) ||
+    fromDate.length > 0 ||
+    toDate.length > 0
 
   const sortedLogs = useMemo(
     () =>
@@ -144,13 +161,50 @@ export function AuditLogsAdminPage() {
         }
       />
 
-      <div className="flex flex-wrap items-center gap-3">
+      {tenantFilterId ? (
+        <AdminTenantContextBanner
+          tenantId={tenantFilterId}
+          tenantLabel={tenantLabel}
+          showUsersLink
+          onClear={() => setSearchParams({})}
+        />
+      ) : null}
+
+      <div className="flex flex-wrap items-end gap-3">
         <AdminTableToolbar
           searchInputRef={searchInputRef}
           search={searchInput}
           onSearchChange={setSearchInput}
           searchPlaceholder="搜索操作人、动作或详情…"
         />
+        <div className="space-y-1">
+          <Label htmlFor="audit-tenant-filter" className="text-xs text-muted-foreground">
+            目标租户
+          </Label>
+          <Select
+            value={tenantFilterId ?? 'all'}
+            onValueChange={(value) => {
+              setPage(1)
+              if (!value || value === 'all') {
+                setSearchParams({})
+                return
+              }
+              setSearchParams({ tenantId: value })
+            }}
+          >
+            <SelectTrigger id="audit-tenant-filter" className="min-w-[200px]">
+              <SelectValue>{tenantLabel}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部租户</SelectItem>
+              {(tenantsQuery.data?.tenants ?? []).map((tenant) => (
+                <SelectItem key={tenant.id} value={tenant.id}>
+                  {tenant.name} ({tenant.slug})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <Select
           value={actionFilter}
           onValueChange={(value) => {
@@ -173,6 +227,36 @@ export function AuditLogsAdminPage() {
             ))}
           </SelectContent>
         </Select>
+        <div className="space-y-1">
+          <Label htmlFor="audit-from-date" className="text-xs text-muted-foreground">
+            起始日期
+          </Label>
+          <Input
+            id="audit-from-date"
+            type="date"
+            value={fromDate}
+            className="w-[160px]"
+            onChange={(event) => {
+              setFromDate(event.target.value)
+              setPage(1)
+            }}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="audit-to-date" className="text-xs text-muted-foreground">
+            结束日期
+          </Label>
+          <Input
+            id="audit-to-date"
+            type="date"
+            value={toDate}
+            className="w-[160px]"
+            onChange={(event) => {
+              setToDate(event.target.value)
+              setPage(1)
+            }}
+          />
+        </div>
         {canViewBilling ? (
           <Button
             type="button"
@@ -208,7 +292,7 @@ export function AuditLogsAdminPage() {
 
       <AdminPanel className="p-0">
         {query.isLoading ? (
-          <AdminTableSkeleton columns={7} showPagination />
+          <AdminTableSkeleton columns={8} showPagination />
         ) : query.isError ? (
           <AdminEmptyState
             message="加载失败，请刷新重试"
@@ -255,6 +339,7 @@ export function AuditLogsAdminPage() {
                   <AdminTableHeaderCell>详情</AdminTableHeaderCell>
                   <AdminTableHeaderCell>目标租户</AdminTableHeaderCell>
                   <AdminTableHeaderCell>跨租户</AdminTableHeaderCell>
+                  <AdminTableHeaderCell className="w-[72px]">操作</AdminTableHeaderCell>
                 </tr>
               </AdminTableHead>
               <AdminTableBody>
@@ -264,6 +349,7 @@ export function AuditLogsAdminPage() {
                     log={log}
                     canReadTenants={canReadTenants}
                     canReadUsers={canReadUsers}
+                    onOpenDetail={() => setDetailLog(log)}
                   />
                 ))}
               </AdminTableBody>
@@ -277,6 +363,16 @@ export function AuditLogsAdminPage() {
           </>
         )}
       </AdminPanel>
+
+      <AuditLogDetailSheet
+        log={detailLog}
+        open={detailLog != null}
+        onOpenChange={(open) => {
+          if (!open) setDetailLog(null)
+        }}
+        canReadTenants={canReadTenants}
+        canReadUsers={canReadUsers}
+      />
     </div>
   )
 }
@@ -285,10 +381,12 @@ function AuditLogRow({
   log,
   canReadTenants,
   canReadUsers,
+  onOpenDetail,
 }: {
   log: AdminAuditLogEntry
   canReadTenants: boolean
   canReadUsers: boolean
+  onOpenDetail: () => void
 }) {
   const billingLink = buildAuditBillingLink(log.action, log.targetTenantId)
   const usersLink = canReadUsers ? buildAuditUsersLink(log.actorEmail, log.targetTenantId) : null
@@ -356,6 +454,11 @@ function AuditLogRow({
         ) : (
           <span className="text-muted-foreground">—</span>
         )}
+      </AdminTableCell>
+      <AdminTableCell>
+        <Button type="button" variant="ghost" size="sm" onClick={onOpenDetail}>
+          详情
+        </Button>
       </AdminTableCell>
     </AdminTableRow>
   )

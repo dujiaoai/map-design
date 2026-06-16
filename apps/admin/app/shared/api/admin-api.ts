@@ -76,6 +76,8 @@ export interface AdminListQuery {
   action?: string
   crossTenant?: boolean
   tenantId?: string
+  from?: number
+  to?: number
 }
 
 export interface AdminTenantListResponse {
@@ -94,6 +96,8 @@ function buildAdminListQuery(params?: AdminListQuery) {
   if (params?.action) search.set('action', params.action)
   if (params?.crossTenant != null) search.set('crossTenant', String(params.crossTenant))
   if (params?.tenantId) search.set('tenantId', params.tenantId)
+  if (params?.from != null) search.set('from', String(params.from))
+  if (params?.to != null) search.set('to', String(params.to))
   const query = search.toString()
   return query ? `?${query}` : ''
 }

@@ -13,7 +13,7 @@ import { formatBillingPrice } from '~/features/billing/lib/billing-format'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
-import { AdminAntTable, adminAntZeroBasedPagination } from '~/shared/ant'
+import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
@@ -274,6 +274,7 @@ export function BillingPackagesPanel({
             )
           ) : (
             <AdminAntTable<AdminPackage>
+              bodyHeight={ADMIN_LIST_TABLE_BODY_HEIGHT}
               rowKey="id"
               columns={columns}
               dataSource={items}

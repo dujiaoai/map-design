@@ -14,11 +14,13 @@ import type { BillingNavigateTarget } from '~/features/billing/lib/billing-admin
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
+import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
-import { AdminAntTable, adminAntZeroBasedPagination } from '~/shared/ant'
+import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 const PAGE_SIZE = 20
@@ -242,6 +244,7 @@ export function BillingWalletsPanel({
           )
         ) : query.data ? (
           <AdminAntTable<WalletRow>
+            bodyHeight={ADMIN_LIST_TABLE_BODY_HEIGHT}
             rowKey="walletId"
             columns={columns}
             dataSource={query.data.items}

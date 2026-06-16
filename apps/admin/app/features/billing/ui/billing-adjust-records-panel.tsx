@@ -14,7 +14,7 @@ import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-quer
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
-import { AdminAntTable, adminAntZeroBasedPagination } from '~/shared/ant'
+import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
@@ -191,6 +191,7 @@ export function BillingAdjustRecordsPanel({
           <AdminEmptyState message="暂无调账记录。" />
         ) : query.data ? (
           <AdminAntTable<AdjustRecordRow>
+            bodyHeight={ADMIN_LIST_TABLE_BODY_HEIGHT}
             rowKey="id"
             columns={columns}
             dataSource={query.data.items}

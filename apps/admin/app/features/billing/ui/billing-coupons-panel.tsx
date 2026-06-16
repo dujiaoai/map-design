@@ -23,7 +23,7 @@ import {
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
-import { AdminAntTable, adminAntZeroBasedPagination } from '~/shared/ant'
+import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge, formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
@@ -382,6 +382,7 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
           </div>
         ) : (
           <AdminAntTable<AdminCoupon>
+            bodyHeight={ADMIN_LIST_TABLE_BODY_HEIGHT}
             rowKey="id"
             columns={columns}
             dataSource={items}

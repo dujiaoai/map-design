@@ -97,15 +97,14 @@ public class AdminBillingWireTransferService {
       throw AuthException.conflict("Wire transfer request status changed concurrently");
     }
 
-    adminAuditLogService.recordBillingAdjust(
+    adminAuditLogService.recordBillingWireTransferApprove(
         actor,
         request.getTenantId(),
         request.getUserId(),
-        wallet.getId(),
+        request.getId(),
+        request.getRequestNo(),
         request.getPoints(),
-        newBalance,
-        "wire_transfer:" + request.getRequestNo(),
-        idempotencyKey);
+        newBalance);
 
     return new ApproveWireTransferResponse(
         request.getRequestNo(),
@@ -130,6 +129,13 @@ public class AdminBillingWireTransferService {
       throw AuthException.conflict("Wire transfer request status changed concurrently");
     }
     var refreshed = wireTransferMapper.findById(existing.getId());
+    adminAuditLogService.recordBillingWireTransferReject(
+        actor,
+        existing.getTenantId(),
+        existing.getUserId(),
+        existing.getId(),
+        existing.getRequestNo(),
+        request.reason().trim());
     return BillingWireTransferService.toDto(refreshed);
   }
 

@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.application.invoice;
 
+import com.yunyan.billingapi.application.admin.AdminAuditLogService;
 import com.yunyan.billingapi.domain.entity.BillingInvoiceRequest;
 import com.yunyan.billingapi.domain.mapper.BillingInvoiceMapper;
 import com.yunyan.billingapi.domain.mapper.BillingRechargeOrderMapper;
@@ -26,11 +27,15 @@ public class BillingInvoiceService {
 
   private final BillingInvoiceMapper invoiceMapper;
   private final BillingRechargeOrderMapper orderMapper;
+  private final AdminAuditLogService adminAuditLogService;
 
   public BillingInvoiceService(
-      BillingInvoiceMapper invoiceMapper, BillingRechargeOrderMapper orderMapper) {
+      BillingInvoiceMapper invoiceMapper,
+      BillingRechargeOrderMapper orderMapper,
+      AdminAuditLogService adminAuditLogService) {
     this.invoiceMapper = invoiceMapper;
     this.orderMapper = orderMapper;
+    this.adminAuditLogService = adminAuditLogService;
   }
 
   @Transactional
@@ -99,13 +104,14 @@ public class BillingInvoiceService {
   public InvoiceRequestDto issue(
       SaasPrincipal principal, UUID invoiceId, AdminIssueInvoiceRequest request) {
     var pdfUrl = resolvePdfUrl(invoiceId, request != null ? request.pdfUrl() : null);
-    return issuePending(invoiceId, pdfUrl);
+    return issuePending(principal, invoiceId, pdfUrl);
   }
 
   @Transactional
   public InvoiceRequestDto reject(
       SaasPrincipal principal, UUID invoiceId, AdminRejectInvoiceRequest request) {
-    return updatePendingStatus(invoiceId, STATUS_REJECTED, request.reason().trim());
+    return updatePendingStatus(
+        principal, invoiceId, STATUS_REJECTED, request.reason().trim());
   }
 
   static String resolvePdfUrl(UUID invoiceId, String requested) {
@@ -128,7 +134,8 @@ public class BillingInvoiceService {
     return new InvoiceListResponse(items, page, limit, total);
   }
 
-  private InvoiceRequestDto issuePending(UUID invoiceId, String pdfUrl) {
+  private InvoiceRequestDto issuePending(
+      SaasPrincipal principal, UUID invoiceId, String pdfUrl) {
     var existing = invoiceMapper.findById(invoiceId);
     if (existing == null) {
       throw AuthException.notFound("Invoice request not found");
@@ -143,10 +150,18 @@ public class BillingInvoiceService {
     }
 
     var refreshed = invoiceMapper.findById(invoiceId);
+    adminAuditLogService.recordBillingInvoiceIssue(
+        principal,
+        refreshed.getTenantId(),
+        refreshed.getUserId(),
+        refreshed.getId(),
+        refreshed.getOrderNo(),
+        pdfUrl);
     return toDto(refreshed);
   }
 
-  private InvoiceRequestDto updatePendingStatus(UUID invoiceId, String status, String adminRemark) {
+  private InvoiceRequestDto updatePendingStatus(
+      SaasPrincipal principal, UUID invoiceId, String status, String adminRemark) {
     var existing = invoiceMapper.findById(invoiceId);
     if (existing == null) {
       throw AuthException.notFound("Invoice request not found");
@@ -162,6 +177,15 @@ public class BillingInvoiceService {
     }
 
     var refreshed = invoiceMapper.findById(invoiceId);
+    if (STATUS_REJECTED.equals(status)) {
+      adminAuditLogService.recordBillingInvoiceReject(
+          principal,
+          refreshed.getTenantId(),
+          refreshed.getUserId(),
+          refreshed.getId(),
+          refreshed.getOrderNo(),
+          adminRemark);
+    }
     return toDto(refreshed);
   }
 

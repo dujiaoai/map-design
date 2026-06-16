@@ -5,6 +5,7 @@ import com.yunyan.billingapi.domain.mapper.BillingCouponMapper;
 import com.yunyan.billingapi.security.AuthException;
 import com.yunyan.billingapi.security.SaasPrincipal;
 import com.yunyan.billingapi.application.coupon.BillingCouponService;
+import com.yunyan.billingapi.application.admin.AdminAuditLogService;
 import com.yunyan.billingapi.web.dto.AdminCouponDto;
 import com.yunyan.billingapi.web.dto.AdminCouponListResponse;
 import com.yunyan.billingapi.web.dto.CreateAdminCouponRequest;
@@ -22,9 +23,12 @@ public class AdminBillingCouponService {
   private static final String DEFAULT_STATUS = "active";
 
   private final BillingCouponMapper couponMapper;
+  private final AdminAuditLogService adminAuditLogService;
 
-  public AdminBillingCouponService(BillingCouponMapper couponMapper) {
+  public AdminBillingCouponService(
+      BillingCouponMapper couponMapper, AdminAuditLogService adminAuditLogService) {
     this.couponMapper = couponMapper;
+    this.adminAuditLogService = adminAuditLogService;
   }
 
   public AdminCouponListResponse listCoupons(String status, String code, int page, int size) {
@@ -71,6 +75,8 @@ public class AdminBillingCouponService {
     coupon.setUpdatedAt(now);
     couponMapper.insert(coupon);
 
+    adminAuditLogService.recordBillingCouponWrite(
+        actor, coupon.getId(), coupon.getCode(), "created kind=" + kind);
     return toDto(coupon);
   }
 
@@ -104,6 +110,11 @@ public class AdminBillingCouponService {
     }
 
     var refreshed = couponMapper.findByCode(normalizedCode);
+    adminAuditLogService.recordBillingCouponWrite(
+        actor,
+        refreshed.getId(),
+        refreshed.getCode(),
+        "updated status=" + refreshed.getStatus());
     return toDto(refreshed);
   }
 

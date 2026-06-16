@@ -80,6 +80,7 @@ pnpm --filter @repo/saas-admin dev
 - **FND-07 代操作**：`admin:impersonate`；租户详情「代操作」Sheet；全局 banner 退出；用户行审计快捷链接
 - **FND-07b MFA 骨架**：系统页展示 MFA 强制开关与当前账号 TOTP 状态
 - **FND-07c MFA TOTP**：系统页绑定/注销 TOTP；登录 MFA 6 位码 step-up
+- **FND-07d 代操作 MFA**：已绑定 TOTP 时代操作 Sheet 须输入 6 位动态码
 
 ## 主流运维控制台 UX 对照
 
@@ -120,4 +121,4 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 
 ## Later（P4 余项）
 
-邮箱邀请、Admin MFA recovery codes / 代操作门控（FND-07 Later）。
+邮箱邀请、Admin MFA recovery codes（FND-07 Later）。

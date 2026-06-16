@@ -132,12 +132,20 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 ---
 
+## FND-07d · 代操作 MFA 门控 ✅
+
+**交付（2026-06）**：已绑定 TOTP 的平台管理员 `POST /v1/admin/impersonation` 须提交 `totpCode`；Admin 代操作 Sheet 展示 6 位动态码输入；`AdminImpersonationControllerTest` 覆盖门控路径。
+
+**不含**：recovery codes、代操作时长上限、saas-web 租户 MFA。
+
+---
+
 ## FND-07 · 远期（Later）
 
 | 项 | 说明 |
 | --- | --- |
 | OAuth2/OIDC | X-01 |
-| Admin MFA 增强 | 代操作 MFA 门控、recovery codes |
+| Admin MFA 增强 | recovery codes |
 | `/v1/menus` | 服务端动态菜单（当前 mock-nav） |
 | Plan 配额 | seat / rate / storage |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |

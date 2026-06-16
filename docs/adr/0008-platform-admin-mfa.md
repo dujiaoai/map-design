@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted（Phase 2 TOTP 注册/登录 step-up 已落地；代操作门控仍 Later）
+Accepted（Phase 2 TOTP 注册/登录 step-up 与代操作门控已落地；recovery codes 仍 Later）
 
 ## Context
 
@@ -37,7 +37,7 @@ Platform Admin 可代操作任意租户（[ADR-0007](./0007-platform-admin-imper
 | POST `/v1/admin/mfa/totp/verify` | 确认 6 位码并完成注册 |
 | DELETE `/v1/admin/mfa/totp` | 注销（须 MFA 或 break-glass） |
 | 登录 step-up | `enforcement-enabled` 且已注册时，`/v1/auth/login` 返回 `mfaRequired` + 短期 challenge token |
-| 代操作门控 | `POST /v1/admin/impersonation` 前校验近期 MFA（与 FND-07a 联动） |
+| 代操作门控 | 已绑定 TOTP 时 `POST /v1/admin/impersonation` 须提交 `totpCode`（FND-07d ✅） |
 
 ### 4. 审计
 

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yunyan.saasapi.application.admin.AuditLogListParams;
 import com.yunyan.saasapi.domain.entity.SysAdminAuditLog;
 import com.yunyan.saasapi.domain.mapper.SysAdminAuditLogMapper;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class AdminAuditLogRepository {
     applyActionFilter(wrapper, params.normalizedAction());
     applyCrossTenantFilter(wrapper, params.normalizedCrossTenant());
     applyTenantFilter(wrapper, params.normalizedTenantId());
+    applyCreatedAtFilter(wrapper, params.normalizedFrom(), params.normalizedTo());
 
     if (params.toListParams().isPaginated()) {
       var page = new Page<SysAdminAuditLog>(
@@ -65,6 +67,18 @@ public class AdminAuditLogRepository {
       return;
     }
     wrapper.eq(SysAdminAuditLog::getTargetTenantId, tenantId);
+  }
+
+  private static void applyCreatedAtFilter(
+      com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysAdminAuditLog> wrapper,
+      Instant from,
+      Instant to) {
+    if (from != null) {
+      wrapper.ge(SysAdminAuditLog::getCreatedAt, from);
+    }
+    if (to != null) {
+      wrapper.le(SysAdminAuditLog::getCreatedAt, to);
+    }
   }
 
   private static void applySearch(

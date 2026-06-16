@@ -35,8 +35,10 @@ public class AdminAuditLogsController {
       @RequestParam(required = false) Integer size,
       @RequestParam(required = false) String action,
       @RequestParam(required = false) Boolean crossTenant,
-      @RequestParam(required = false) UUID tenantId) {
+      @RequestParam(required = false) UUID tenantId,
+      @RequestParam(required = false) Long from,
+      @RequestParam(required = false) Long to) {
     return adminAuditLogService.listLogs(
-        new AuditLogListParams(q, page, size, action, crossTenant, tenantId));
+        new AuditLogListParams(q, page, size, action, crossTenant, tenantId, from, to));
   }
 }

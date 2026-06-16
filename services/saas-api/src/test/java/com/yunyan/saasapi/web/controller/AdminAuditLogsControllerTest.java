@@ -66,6 +66,33 @@ class AdminAuditLogsControllerTest {
             jsonPath("$.logs[?(@.action=='member.invite-link.create')].crossTenant", hasItem(true)));
   }
 
+  @Test
+  void listAuditLogs_filterByTenantId_returnsMatchingLogs() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            post("/v1/admin/tenants/" + OTHER_TENANT_ID + "/invite-links")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("roleCode", "MEMBER"))))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(
+            get("/v1/admin/audit-logs")
+                .header("Authorization", "Bearer " + token)
+                .param("tenantId", OTHER_TENANT_ID.toString()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.logs[*].action", hasItem("member.invite-link.create")))
+        .andExpect(
+            jsonPath(
+                    "$.logs[?(@.targetTenantId=='"
+                        + OTHER_TENANT_ID
+                        + "')].action",
+                    hasItem("member.invite-link.create")));
+  }
+
   private String loginAccessToken(String email) throws Exception {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }

@@ -1,10 +1,18 @@
 package com.yunyan.saasapi.application.admin;
 
+import java.time.Instant;
 import java.util.UUID;
 import org.springframework.util.StringUtils;
 
 public record AuditLogListParams(
-    String q, Integer page, Integer size, String action, Boolean crossTenant, UUID tenantId) {
+    String q,
+    Integer page,
+    Integer size,
+    String action,
+    Boolean crossTenant,
+    UUID tenantId,
+    Long from,
+    Long to) {
 
   public AdminListParams toListParams() {
     return new AdminListParams(q, page, size);
@@ -23,5 +31,19 @@ public record AuditLogListParams(
 
   public UUID normalizedTenantId() {
     return tenantId;
+  }
+
+  public Instant normalizedFrom() {
+    if (from == null || from < 0) {
+      return null;
+    }
+    return Instant.ofEpochMilli(from);
+  }
+
+  public Instant normalizedTo() {
+    if (to == null || to < 0) {
+      return null;
+    }
+    return Instant.ofEpochMilli(to);
   }
 }

@@ -5,6 +5,7 @@ export function loginResponseToSession(response: LoginResponse): Session {
   return {
     user,
     tenant,
+    homeTenant: response.homeTenant ?? undefined,
     expiresAt: Date.now() + response.expiresIn * 1000,
   }
 }

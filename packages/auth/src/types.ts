@@ -32,6 +32,8 @@ export const sessionTenantSchema = z.object({
 export const sessionSchema = z.object({
   user: sessionUserSchema,
   tenant: sessionTenantSchema.nullable(),
+  /** 代操作时的登录主租户 */
+  homeTenant: sessionTenantSchema.nullish(),
   expiresAt: z.number().optional(),
 })
 
@@ -48,6 +50,7 @@ export const loginResponseSchema = z.object({
   refreshToken: z.string(),
   expiresIn: z.number(),
   user: loginUserSchema,
+  homeTenant: sessionTenantSchema.nullish(),
 })
 
 export const authTokensSchema = z.object({

@@ -18,6 +18,16 @@ export {
   type MapLayerSummary,
   type UpdateLayerInput,
 } from './layer-queries'
+export {
+  uavDockDtoSchema,
+  uavDockListResponseSchema,
+  uavDockQueryKeys,
+  uavDockDetailQueryOptions,
+  uavDocksQueryOptions,
+  useUavDockQuery,
+  useUavDocksQuery,
+  type UavDockSummary,
+} from './uav-dock-queries'
 export { sessionQueryKeys, sessionQueryOptions, useSessionQuery } from './session-queries'
 export {
   tenantFeaturesQueryOptions,

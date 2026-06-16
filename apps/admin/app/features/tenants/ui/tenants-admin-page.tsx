@@ -191,7 +191,7 @@ export function TenantsAdminPage() {
         {
           title: '操作',
           key: 'actions',
-          align: 'right',
+          align: 'right' as const,
           render: (_value: unknown, tenant: AdminTenantSummary) => (
             <div className="flex justify-end gap-1">
               <Button

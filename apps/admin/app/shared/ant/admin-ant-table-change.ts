@@ -1,8 +1,8 @@
 import type { TableProps } from 'antd'
 
-export function createAdminAntSortHandler<K extends string>(
+export function createAdminAntSortHandler<T extends object, K extends string>(
   toggleSort: (key: K) => void,
-): NonNullable<TableProps['onChange']> {
+): NonNullable<TableProps<T>['onChange']> {
   return (_pagination, _filters, sorter) => {
     if (Array.isArray(sorter) || !sorter.columnKey) return
     toggleSort(String(sorter.columnKey) as K)

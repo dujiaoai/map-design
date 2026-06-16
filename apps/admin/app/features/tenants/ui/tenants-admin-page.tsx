@@ -1,7 +1,7 @@
 import { Button } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
 import { EyeIcon, CreditCardIcon, PencilIcon, UsersIcon } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
 import { fetchAdminTenants, type AdminTenantSummary } from '~/shared/api/admin-api'
@@ -9,7 +9,7 @@ import { AdminAntTable, adminAntSortOrder, createAdminAntSortHandler } from '~/s
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
-import { sortAdminTableRows, useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
+import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
@@ -40,9 +40,26 @@ export function TenantsAdminPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
+  const { searchInput, setSearchInput, page, setPage, queryParams: baseQueryParams } =
+    useAdminPagedListState()
   useAdminListSearchShortcut(searchInputRef)
   const { sort, toggleSort, clearSort } = useAdminTableSort<TenantSortKey>()
+
+  const handleToggleSort = useCallback(
+    (key: TenantSortKey) => {
+      toggleSort(key)
+      setPage(1)
+    },
+    [toggleSort, setPage],
+  )
+
+  const queryParams = useMemo(
+    () => ({
+      ...baseQueryParams,
+      ...(sort ? { sortBy: sort.key, sortDir: sort.direction } : {}),
+    }),
+    [baseQueryParams, sort],
+  )
 
   const query = useAdminPagedQuery({
     queryKey: adminQueryKeys.tenants(queryParams),
@@ -51,18 +68,13 @@ export function TenantsAdminPage() {
 
   const tenantSearchKeys: (keyof AdminTenantSummary)[] = ['name', 'slug', 'plan']
   const filteredTenants = useMemo(() => {
-    const filtered = filterAdminTableRows(query.data?.tenants, {
+    return filterAdminTableRows(query.data?.tenants, {
       search: '',
       searchKeys: tenantSearchKeys,
       status: statusFilter,
       statusKey: 'status',
     })
-    return sortAdminTableRows(filtered, sort, {
-      name: (tenant) => tenant.name.toLowerCase(),
-      slug: (tenant) => tenant.slug.toLowerCase(),
-      createdAt: (tenant) => tenant.createdAt,
-    })
-  }, [query.data?.tenants, statusFilter, sort])
+  }, [query.data?.tenants, statusFilter])
 
   const total = query.data?.total ?? query.data?.tenants.length ?? 0
 
@@ -206,7 +218,7 @@ export function TenantsAdminPage() {
         ]}
       />
 
-      <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="page" />
+      <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="server" />
 
       <AdminPanel className="p-0">
         {query.isLoading ? (
@@ -233,7 +245,7 @@ export function TenantsAdminPage() {
             rowKey="id"
             columns={columns}
             dataSource={filteredTenants}
-            onChange={createAdminAntSortHandler(toggleSort)}
+            onChange={createAdminAntSortHandler(handleToggleSort)}
             showSorterTooltip={false}
             pagination={{
               current: page,

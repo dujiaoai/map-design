@@ -84,8 +84,8 @@ public class TenantRepository {
   }
 
   public AdminPagedResult<SysTenant> findTenants(AdminListParams params) {
-    var wrapper =
-        Wrappers.<SysTenant>lambdaQuery().orderByAsc(SysTenant::getName).orderByAsc(SysTenant::getId);
+    var wrapper = Wrappers.<SysTenant>lambdaQuery();
+    applyTenantSort(wrapper, params);
     var query = params.normalizedQuery();
     if (StringUtils.hasText(query)) {
       wrapper.and(
@@ -174,5 +174,17 @@ public class TenantRepository {
         Wrappers.<SysTenant>lambdaQuery()
             .in(SysTenant::getId, tenantIds)
             .orderByAsc(SysTenant::getName));
+  }
+
+  private void applyTenantSort(
+      com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysTenant> wrapper,
+      AdminListParams params) {
+    var ascending = !params.sortDescending();
+    switch (params.normalizedTenantSortBy()) {
+      case "slug" -> wrapper.orderBy(true, ascending, SysTenant::getSlug);
+      case "createdAt" -> wrapper.orderBy(true, ascending, SysTenant::getCreatedAt);
+      default -> wrapper.orderBy(true, ascending, SysTenant::getName);
+    }
+    wrapper.orderByAsc(SysTenant::getId);
   }
 }

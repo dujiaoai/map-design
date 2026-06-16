@@ -146,6 +146,8 @@ export interface AdminListQuery {
   page?: number
   size?: number
   status?: 'active' | 'disabled' | 'invited'
+  sortBy?: string
+  sortDir?: 'asc' | 'desc'
   action?: string
   crossTenant?: boolean
   tenantId?: string
@@ -167,6 +169,8 @@ function buildAdminListQuery(params?: AdminListQuery) {
   if (params?.page != null) search.set('page', String(params.page))
   if (params?.size != null) search.set('size', String(params.size))
   if (params?.status) search.set('status', params.status)
+  if (params?.sortBy) search.set('sortBy', params.sortBy)
+  if (params?.sortDir) search.set('sortDir', params.sortDir)
   if (params?.action) search.set('action', params.action)
   if (params?.crossTenant != null) search.set('crossTenant', String(params.crossTenant))
   if (params?.tenantId) search.set('tenantId', params.tenantId)

@@ -114,11 +114,12 @@ export function AdminTableSortHint({
 }: {
   sort: AdminSortState<string> | null
   onClearSort: () => void
-  scope?: 'page' | 'loaded'
+  scope?: 'page' | 'loaded' | 'server'
 }) {
   if (!sort) return null
 
-  const scopeLabel = scope === 'page' ? '当前页' : '已加载'
+  const scopeLabel =
+    scope === 'server' ? '全部分页结果' : scope === 'page' ? '当前页' : '已加载'
 
   return (
     <div className="flex flex-wrap items-center gap-2 px-1 text-xs text-muted-foreground">

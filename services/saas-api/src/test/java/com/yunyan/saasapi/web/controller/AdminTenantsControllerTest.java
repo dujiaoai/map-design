@@ -62,6 +62,20 @@ class AdminTenantsControllerTest {
   }
 
   @Test
+  void listTenants_withSortParams_returnsOk() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants")
+                .param("page", "1")
+                .param("size", "10")
+                .param("sortBy", "slug")
+                .param("sortDir", "desc")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tenants").isArray());
+  }
+
+  @Test
   void createTenant_withPlatformAdmin_returns201() throws Exception {
     var slug = "acme-" + System.currentTimeMillis();
 

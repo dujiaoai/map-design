@@ -2,10 +2,15 @@ package com.yunyan.saasapi.application.admin;
 
 import org.springframework.util.StringUtils;
 
-public record AdminListParams(String q, Integer page, Integer size, String status) {
+public record AdminListParams(
+    String q, Integer page, Integer size, String status, String sortBy, String sortDir) {
 
   public AdminListParams(String q, Integer page, Integer size) {
-    this(q, page, size, null);
+    this(q, page, size, null, null, null);
+  }
+
+  public AdminListParams(String q, Integer page, Integer size, String status) {
+    this(q, page, size, status, null, null);
   }
 
   public static final int DEFAULT_PAGE_SIZE = 20;
@@ -45,5 +50,20 @@ public record AdminListParams(String q, Integer page, Integer size, String statu
       return null;
     }
     return normalized;
+  }
+
+  /** 租户列表允许排序的列；缺省 name 升序 */
+  public String normalizedTenantSortBy() {
+    if (!StringUtils.hasText(sortBy)) {
+      return "name";
+    }
+    return switch (sortBy.trim()) {
+      case "name", "slug", "createdAt" -> sortBy.trim();
+      default -> "name";
+    };
+  }
+
+  public boolean sortDescending() {
+    return StringUtils.hasText(sortDir) && "desc".equalsIgnoreCase(sortDir.trim());
   }
 }

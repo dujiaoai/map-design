@@ -45,12 +45,14 @@ public class AdminTenantsController {
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
   @Operation(
       summary = "列出全部租户",
-      description = "可选 q/page/size 分页搜索；无分页参数时返回全量（向后兼容）")
+      description = "可选 q/page/size/sortBy/sortDir 分页搜索与排序（sortBy: name|slug|createdAt）；无分页参数时返回全量（向后兼容）")
   public AdminTenantListResponse listTenants(
       @RequestParam(required = false) String q,
       @RequestParam(required = false) Integer page,
-      @RequestParam(required = false) Integer size) {
-    return tenantAdminService.listTenants(new AdminListParams(q, page, size));
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) String sortBy,
+      @RequestParam(required = false) String sortDir) {
+    return tenantAdminService.listTenants(new AdminListParams(q, page, size, null, sortBy, sortDir));
   }
 
   @GetMapping("/{tenantId}")

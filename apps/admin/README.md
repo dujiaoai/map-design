@@ -82,6 +82,7 @@ pnpm --filter @repo/saas-admin dev
 - **FND-07c MFA TOTP**：系统页绑定/注销 TOTP；登录 MFA 6 位码 step-up
 - **FND-07d 代操作 MFA**：已绑定 TOTP 时代操作 Sheet 须输入 6 位动态码
 - **FND-07e 恢复码**：绑定/重新生成后一次性展示；登录与注销可消费
+- **FND-07f OIDC 骨架**：系统页/登录页展示 IdP 配置阶段（授权码流程待 Phase 2）
 
 ## 主流运维控制台 UX 对照
 

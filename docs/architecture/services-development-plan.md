@@ -375,7 +375,8 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | FND-07c | Admin MFA TOTP + 登录 step-up | ✅ |
 | FND-07d | 代操作 MFA 门控（已绑定 TOTP 须 totpCode） | ✅ |
 | FND-07e | Admin MFA recovery codes | ✅ |
-| FND-07 | OAuth2/OIDC | Later |
+| FND-07f | OAuth2/OIDC 骨架（发现 API + flags） | ✅ |
+| FND-07 | `/v1/menus`、OAuth OIDC Phase 2 | Later |
 
 **仍不做（本阶段）**：Sprint E 地图/机库/专题业务 API。
 

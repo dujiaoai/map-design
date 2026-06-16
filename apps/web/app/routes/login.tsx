@@ -1,13 +1,16 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
+import { isLoginMfaRequiredError } from '@repo/auth'
 import { Button, cn, Input } from '@repo/ui'
+import { useQuery } from '@tanstack/react-query'
 import { Building2Icon, LockIcon, UserIcon } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
 import { resolvePermissionsForRoles } from '@repo/auth'
 
+import { fetchOidcProviders, startOidcAuthorize } from '~/shared/api/oidc-auth'
 import { auth, SaaSRole } from '~/shared/auth/client'
 import { formatLoginError } from '~/shared/auth/format-login-error'
 import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
@@ -54,6 +57,15 @@ type DevLoginFormValues = z.infer<typeof devLoginFormSchema>
 
 const saasAuthEnabled = isSaasAuthEnabled()
 
+function isValidMfaCode(code: string) {
+  const trimmed = code.trim()
+  if (/^\d{6}$/.test(trimmed)) {
+    return true
+  }
+  const normalized = trimmed.replace(/[\s-]/g, '').toUpperCase()
+  return /^[A-Z2-9]{8}$/.test(normalized)
+}
+
 function resolveUserEmail(username: string): string {
   return username.includes('@') ? username : `${username}@yunyan.local`
 }
@@ -70,21 +82,43 @@ export async function clientLoader() {
 
 function SaasLoginForm() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const [rememberMe, setRememberMe] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [mfaChallenge, setMfaChallenge] = useState<{ token: string; email?: string } | null>(null)
+  const [mfaCode, setMfaCode] = useState('')
+  const [isMfaSubmitting, setIsMfaSubmitting] = useState(false)
+  const [oidcStartingProviderId, setOidcStartingProviderId] = useState<string | null>(null)
   const switchTenantSlug = searchParams.get('tenant')?.trim()
   const switchTenantReason = searchParams.get('reason')
+
+  const oidcQuery = useQuery({
+    queryKey: ['auth', 'oidc', 'providers'],
+    queryFn: fetchOidcProviders,
+    enabled: !mfaChallenge,
+    staleTime: 60_000,
+  })
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<SaasLoginFormValues>({
     resolver: standardSchemaResolver(saasLoginFormSchema),
     defaultValues: { email: '', password: '', tenantId: '' },
   })
+
+  const tenantIdValue = watch('tenantId')
+
+  useEffect(() => {
+    const state = location.state as { mfaChallengeToken?: string; email?: string } | null
+    if (!state?.mfaChallengeToken) return
+    setMfaChallenge({ token: state.mfaChallengeToken, email: state.email })
+    window.history.replaceState({}, document.title)
+  }, [location.state])
 
   useEffect(() => {
     const saved = loadRememberLogin()
@@ -119,8 +153,93 @@ function SaasLoginForm() {
       })
       void navigate('/', { replace: true })
     } catch (error) {
+      if (isLoginMfaRequiredError(error)) {
+        setMfaChallenge({ token: error.challengeToken, email: error.userEmail })
+        setSubmitError(null)
+        return
+      }
       setSubmitError(formatLoginError(error))
     }
+  }
+
+  async function onSubmitMfa(event: React.FormEvent) {
+    event.preventDefault()
+    if (!mfaChallenge || !isValidMfaCode(mfaCode)) return
+
+    setIsMfaSubmitting(true)
+    setSubmitError(null)
+    try {
+      await auth.completeLoginMfa({
+        mfaChallengeToken: mfaChallenge.token,
+        code: mfaCode.trim(),
+      })
+      void navigate('/', { replace: true })
+    } catch (error) {
+      setSubmitError(formatLoginError(error))
+    } finally {
+      setIsMfaSubmitting(false)
+    }
+  }
+
+  async function onStartOidc(providerId: string) {
+    const tenantId = tenantIdValue?.trim()
+    if (!tenantId) {
+      setSubmitError('企业账号登录请先填写租户标识')
+      return
+    }
+    setSubmitError(null)
+    setOidcStartingProviderId(providerId)
+    try {
+      const { authorizationUrl } = await startOidcAuthorize(providerId, tenantId)
+      window.location.assign(authorizationUrl)
+    } catch (error) {
+      setSubmitError(formatLoginError(error))
+      setOidcStartingProviderId(null)
+    }
+  }
+
+  if (mfaChallenge) {
+    return (
+      <form className="login-form-fields" onSubmit={onSubmitMfa}>
+        <p className={authInlineNoticeClassName}>
+          账号 {mfaChallenge.email ?? '已验证'} 已启用二次验证，请输入验证器 6 位码或恢复码。
+        </p>
+        <div className="login-field-group space-y-1.5" style={{ '--field-i': 0 } as CSSProperties}>
+          <label className={authLabelClassName} htmlFor="web-mfa-code">
+            动态验证码 / 恢复码
+          </label>
+          <Input
+            id="web-mfa-code"
+            className={authFieldInputClassName}
+            autoComplete="off"
+            placeholder="000000 或 XXXX-XXXX"
+            value={mfaCode}
+            onChange={(event) => setMfaCode(event.target.value.toUpperCase())}
+          />
+        </div>
+        {submitError ? <p className={authErrorBannerClassName}>{submitError}</p> : null}
+        <div className="login-field-group" style={{ '--field-i': 1 } as CSSProperties}>
+          <Button
+            className="mt-1 h-11 w-full rounded-[10px] text-base font-medium"
+            disabled={isMfaSubmitting || !isValidMfaCode(mfaCode)}
+            type="submit"
+          >
+            {isMfaSubmitting ? '验证中…' : '完成登录'}
+          </Button>
+        </div>
+        <button
+          type="button"
+          className={cn('text-sm', authLinkClassName)}
+          onClick={() => {
+            setMfaChallenge(null)
+            setMfaCode('')
+            setSubmitError(null)
+          }}
+        >
+          返回密码登录
+        </button>
+      </form>
+    )
   }
 
   return (
@@ -214,6 +333,28 @@ function SaasLoginForm() {
           {isSubmitting ? '登录中…' : '登录'}
         </Button>
       </div>
+
+      {oidcQuery.data?.enabled && oidcQuery.data.authorizationCodeFlowAvailable ? (
+        <div className="login-field-group space-y-2" style={{ '--field-i': 5 } as CSSProperties}>
+          <p className={cn('text-center text-xs', authSubtleTextClassName)}>或使用企业账号</p>
+          {oidcQuery.data.providers.map((provider) => (
+            <Button
+              key={provider.id}
+              type="button"
+              variant="outline"
+              className="h-10 w-full rounded-[10px] text-sm"
+              disabled={Boolean(oidcStartingProviderId) || isSubmitting}
+              onClick={() => {
+                void onStartOidc(provider.id)
+              }}
+            >
+              {oidcStartingProviderId === provider.id
+                ? '跳转 IdP…'
+                : `使用 ${provider.displayName} 登录`}
+            </Button>
+          ))}
+        </div>
+      ) : null}
 
       <p className={cn('text-center', authMutedTextClassName)}>
         没有账号？{' '}

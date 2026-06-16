@@ -1,9 +1,11 @@
 package com.yunyan.saasapi.web.controller;
 
+import com.yunyan.saasapi.application.tenant.TenantQuotaService;
 import com.yunyan.saasapi.application.tenant.TenantService;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.tenant.TenantFeaturesResponse;
 import com.yunyan.saasapi.web.dto.tenant.TenantListResponse;
+import com.yunyan.saasapi.web.dto.tenant.TenantQuotasResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TenantsController {
 
   private final TenantService tenantService;
+  private final TenantQuotaService tenantQuotaService;
 
   @GetMapping
   @Operation(
@@ -57,5 +60,24 @@ public class TenantsController {
       @AuthenticationPrincipal SaasPrincipal principal,
       @Parameter(description = "租户 UUID") @PathVariable UUID tenantId) {
     return tenantService.getFeatures(principal, tenantId);
+  }
+
+  @GetMapping("/{tenantId}/quotas")
+  @Operation(
+      summary = "获取租户 Plan 配额与用量",
+      description = "返回 seat / API rate / storage 上限与当前 seat 占用；仅可查询可访问租户。")
+  @ApiResponse(responseCode = "200", description = "配额摘要")
+  @ApiResponse(
+      responseCode = "403",
+      description = "无权访问该租户",
+      content = @Content(mediaType = "application/problem+json"))
+  @ApiResponse(
+      responseCode = "404",
+      description = "租户不存在",
+      content = @Content(mediaType = "application/problem+json"))
+  public TenantQuotasResponse quotas(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @Parameter(description = "租户 UUID") @PathVariable UUID tenantId) {
+    return tenantQuotaService.getQuotas(principal, tenantId);
   }
 }

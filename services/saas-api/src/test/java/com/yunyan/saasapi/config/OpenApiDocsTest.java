@@ -40,6 +40,7 @@ class OpenApiDocsTest {
         .andExpect(content().string(containsString("ChangePasswordRequest")))
         .andExpect(content().string(containsString("/v1/tenants")))
         .andExpect(content().string(containsString("/v1/tenants/{tenantId}/features")))
+        .andExpect(content().string(containsString("/v1/tenants/{tenantId}/quotas")))
         .andExpect(content().string(containsString("/v1/menus")))
         .andExpect(content().string(containsString("bearerAuth")));
   }

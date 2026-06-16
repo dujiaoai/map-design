@@ -19,6 +19,6 @@ export default defineConfig({
     command: 'pnpm run dev',
     url: `${baseURL}/login`,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 180_000,
   },
 })

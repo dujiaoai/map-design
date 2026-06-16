@@ -116,13 +116,13 @@ pnpm --filter @repo/saas-admin dev
 
 P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）与 Later（Playwright、entities 拆分、菜单拖拽、列配置、虚拟滚动、RBAC Transfer、typecheck 修复）**均已完成**。`pnpm --filter @repo/saas-admin validate` 可通过。
 
-后续产品 backlog 见下方「Later（P4 余项）」。技术延续：`entities/` 已拆 tenant / user / audit-log / member / permission / role / invite-link / tenant-role；`admin-api` 余下 ping/stats/system/MFA/OIDC/impersonation 可按需迁移。
+后续产品 backlog 见下方「Later（P4 余项）」。技术延续：`entities/` 已覆盖业务域与 `admin-platform` / `admin-mfa` / `admin-oidc` / `account` / `impersonation`；`admin-api.ts` 现为纯 re-export barrel。
 
 ## 验证
 
 ```bash
 pnpm --filter @repo/saas-admin validate
-pnpm --filter @repo/saas-admin test:e2e   # Playwright 登录页与路由守卫冒烟（需本机可启动 dev :5181）
+pnpm --filter @repo/saas-admin test:e2e   # Playwright：登录页、路由守卫、概览 mock 冒烟（需 dev :5181）
 cd services/saas-api && mvn test -Dtest=Admin*ControllerTest
 ```
 

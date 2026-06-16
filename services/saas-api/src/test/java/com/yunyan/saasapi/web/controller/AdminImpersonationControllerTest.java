@@ -72,13 +72,17 @@ class AdminImpersonationControllerTest {
     var impersonationToken = JsonPath.read(body, "$.accessToken");
 
     mockMvc
+        .perform(get("/v1/users/me").header("Authorization", "Bearer " + token))
+        .andExpect(status().isUnauthorized());
+
+    mockMvc
         .perform(get("/v1/users/me").header("Authorization", "Bearer " + impersonationToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.tenant.id").value(OTHER_TENANT_ID.toString()))
         .andExpect(jsonPath("$.homeTenant.id").exists());
 
     mockMvc
-        .perform(get("/v1/admin/audit-logs").header("Authorization", "Bearer " + token))
+        .perform(get("/v1/admin/audit-logs").header("Authorization", "Bearer " + impersonationToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.logs[*].action", hasItem("impersonation.start")));
   }

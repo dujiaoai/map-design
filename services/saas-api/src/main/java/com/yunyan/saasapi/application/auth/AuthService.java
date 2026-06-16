@@ -296,6 +296,17 @@ public class AuthService {
   }
 
   public LoginResponse issueSessionTokens(AuthenticatedUser user, UUID actAsTenantId) {
+    return issueSessionTokens(user, actAsTenantId, null);
+  }
+
+  public LoginResponse issueSessionTokens(
+      AuthenticatedUser user, UUID actAsTenantId, SaasPrincipal replacePrior) {
+    if (replacePrior != null) {
+      denyAccessToken(replacePrior.accessTokenJti(), replacePrior.accessTokenExpiresAt());
+      refreshTokenStore
+          .findActiveJti(replacePrior.userId())
+          .ifPresent(jti -> refreshTokenStore.revoke(replacePrior.userId(), jti));
+    }
     return buildLoginResponse(user, actAsTenantId);
   }
 

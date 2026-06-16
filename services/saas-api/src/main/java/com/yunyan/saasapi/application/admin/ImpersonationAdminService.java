@@ -49,7 +49,7 @@ public class ImpersonationAdminService {
 
     adminAuditLogService.recordImpersonationAction(
         principal, "impersonation.start", tenantId, reason);
-    return authService.issueSessionTokens(user, tenantId);
+    return authService.issueSessionTokens(user, tenantId, principal);
   }
 
   @Transactional
@@ -70,7 +70,7 @@ public class ImpersonationAdminService {
 
     adminAuditLogService.recordImpersonationAction(
         principal, "impersonation.stop", targetTenantId, null);
-    return authService.issueSessionTokens(user, null);
+    return authService.issueSessionTokens(user, null, principal);
   }
 
   private static void assertCanImpersonate(SaasPrincipal principal) {

@@ -1,5 +1,5 @@
-export type { AdminListQuery } from './admin-list-query'
-export { buildAdminListQuery } from './admin-list-query'
+export type { AdminListQuery } from '~/shared/lib/admin-list-query'
+export { buildAdminListQuery } from '~/shared/lib/admin-list-query'
 export type { AdminAuditLogEntry, AdminAuditLogListResponse } from '~/entities/audit-log'
 export { fetchAdminAuditLogs } from '~/entities/audit-log'
 export type { TenantMemberListResponse, InviteMemberByEmailPayload } from '~/entities/member'

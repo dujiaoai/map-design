@@ -1,4 +1,4 @@
-import { buildAdminListQuery, type AdminListQuery } from '~/shared/api/admin-list-query'
+import { buildAdminListQuery, type AdminListQuery } from '~/shared/lib/admin-list-query'
 import { api } from '~/shared/api/client'
 
 import type { AdminAuditLogListResponse } from './model'

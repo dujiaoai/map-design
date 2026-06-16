@@ -1,4 +1,4 @@
-import type { AdminListQuery } from '~/shared/api/admin-api'
+import type { AdminListQuery } from '~/shared/lib/admin-list-query'
 
 export const adminQueryKeys = {
   stats: ['admin', 'stats'] as const,

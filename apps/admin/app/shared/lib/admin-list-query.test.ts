@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildAdminListQuery } from '~/shared/api/admin-list-query'
+import { buildAdminListQuery } from '~/shared/lib/admin-list-query'
 
 describe('buildAdminListQuery', () => {
   it('includes sort and tenantId params', () => {

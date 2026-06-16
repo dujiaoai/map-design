@@ -125,4 +125,4 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 
 ## Later（P4 余项）
 
-邮箱邀请、saas-web OIDC 登录、OAuth 显式账号绑定。
+邮箱邀请、OAuth 显式账号绑定、真实 IdP 联调 runbook。

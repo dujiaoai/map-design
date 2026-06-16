@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted（Phase 2 Admin 授权码 + PKCE 已落地；saas-web 登录与显式账号绑定仍 Later）
+Accepted（Phase 2 Admin + saas-web 授权码 + PKCE 已落地；显式账号绑定与 IdP 联调仍 Later）
 
 ## Context
 
@@ -28,7 +28,7 @@ SaaS 主路径当前为 Email/Password + JWT（[auth-rbac.md](../architecture/au
 | `saas.auth.oauth2.providers[].client-secret` | — | **仅环境变量/密钥管理**；不得出现在 flags API |
 | `saas.auth.oauth2.providers[].scopes` | `openid,profile,email` | 授权 scope 列表 |
 
-回调 URL：`{web-base-url}/auth/oidc/callback/{providerId}`（saas-web，Later）与 `{admin-base-url}/auth/oidc/callback/{providerId}`（Admin ✅）。
+回调 URL：`{web-base-url}/auth/oidc/callback/{providerId}`（saas-web ✅）与 `{admin-base-url}/auth/oidc/callback/{providerId}`（Admin ✅）。
 
 ### 3. 骨架 API（Phase 1 — 本期）
 
@@ -48,12 +48,12 @@ Phase 1 骨架期 `authorizationCodeFlowAvailable` 恒为 `false`；Phase 2 在 
 | `POST /v1/auth/oidc/{providerId}/callback` | ✅ | code 换 token；OIDC 邮箱映射已有 `sys_user`；签发现有 JWT `LoginResponse` |
 | Admin MFA 与 OIDC | ✅ | 平台管理员 OIDC 回调后若已绑 TOTP，仍走 `mfaRequired` step-up |
 | `@repo/auth` + Admin UI | ✅ | `startOidcAuthorize` / `completeOidcLogin`；登录页 IdP 按钮；`/auth/oidc/callback/:providerId` |
+| saas-web UI | ✅ | 同上，`client=web`；登录页 IdP 按钮 + callback；MFA step-up |
 
 ### 5. 仍 Later
 
 | 能力 | 说明 |
 | --- | --- |
-| saas-web 登录 | 同上 authorize/callback，`client=web` |
 | 账号链接 | 同邮箱自动关联 vs 显式 bind 表 |
 | 真实 IdP 联调 | `application-dev.yml` provider 示例与 E2E |
 
@@ -68,15 +68,15 @@ Phase 1 骨架期 `authorizationCodeFlowAvailable` 恒为 `false`；Phase 2 在 
 ### 正面
 
 - 登录页与 Admin 系统页可展示 IdP 策略阶段；联调契约稳定。
-- Phase 2 Admin 可在 `enabled=true` 且 provider 配齐 secret 后逐 IdP 上线；saas-web 仍待接按钮与 callback 路由。
+- Admin 与 saas-web 可在 `enabled=true` 且 provider 配齐 secret 后逐 IdP 上线。
 
 ### 负面
 
 - Admin 未配置 IdP 或缺 `client-secret` 时 `authorizationCodeFlowAvailable=false`，登录页不展示 IdP 按钮。
-- Phase 2 后续 saas-web、用户 bind 表与真实 IdP E2E 工作量独立估算。
+- Phase 2 后续用户 bind 表与真实 IdP E2E 工作量独立估算。
 
 ## References
 
 - [0008-platform-admin-mfa.md](./0008-platform-admin-mfa.md)
 - [auth-rbac.md](../architecture/auth-rbac.md)
-- [platform-foundation-backlog.md](../architecture/supplements/platform-foundation-backlog.md) FND-07f、FND-07g
+- [platform-foundation-backlog.md](../architecture/supplements/platform-foundation-backlog.md) FND-07f～FND-07h

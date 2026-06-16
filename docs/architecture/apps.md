@@ -19,7 +19,8 @@
 
 | 路由 | 组件 | 说明 |
 | --- | --- | --- |
-| `/login` | `routes/login.tsx` | SaaS `POST /v1/auth/login`（C-06 ✅） |
+| `/login` | `routes/login.tsx` | SaaS `POST /v1/auth/login` + OIDC IdP 按钮（C-06 ✅；FND-07h ✅） |
+| `/auth/oidc/callback/:providerId` | `routes/auth.oidc.callback.$providerId.tsx` | OIDC 授权码回调（FND-07h ✅） |
 | `/register` | `routes/register.tsx` | SaaS 注册（组织/个人/邮箱确认） |
 | `/forgot-password` | `routes/forgot-password.tsx` | 自助密码重置（SaaS） |
 | `/reset-password` | `routes/reset-password.tsx` | 重置密码确认 |

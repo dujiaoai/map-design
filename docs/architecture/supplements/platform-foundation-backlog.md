@@ -26,7 +26,8 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | P3 | FND-07e | Admin MFA recovery codes | ✅ |
 | P3 | FND-07f | OAuth2/OIDC 骨架（发现 API + flags） | ✅ |
 | P3 | FND-07g | OAuth2/OIDC 授权码登录（Admin） | ✅ |
-| Later | FND-07 | `/v1/menus`、saas-web OIDC、Plan 配额等 | 远期 |
+| P3 | FND-07h | OAuth2/OIDC 授权码登录（saas-web） | ✅ |
+| Later | FND-07 | `/v1/menus`、OAuth 账号绑定、Plan 配额等 | 远期 |
 
 ---
 
@@ -164,7 +165,15 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 **交付（2026-06）**：`GET /auth/oidc/{providerId}/authorize`、`POST /auth/oidc/{providerId}/callback`（PKCE S256 + Redis state）；OIDC 邮箱映射已有用户；Admin MFA step-up；`@repo/auth` `startOidcAuthorize` / `completeOidcLogin`；Admin 登录页 IdP 按钮 + `/auth/oidc/callback/:providerId`。ADR [0009](../../adr/0009-oauth2-oidc-login.md) Phase 2 节已更新。
 
-**不含**：saas-web 登录按钮与 callback、显式账号 bind 表、真实 IdP 联调 runbook。
+**不含**：saas-web 登录按钮与 callback、显式账号 bind 表、真实 IdP 联调 runbook（→ FND-07h）。
+
+---
+
+## FND-07h · OAuth2/OIDC 授权码登录（saas-web）✅
+
+**交付（2026-06）**：复用 Phase 2 API（`client=web`）；登录页 IdP 按钮；`/auth/oidc/callback/:providerId`；OIDC 回调后 MFA step-up（与密码登录一致）。租户 slug 必填（企业 IdP 登录）。
+
+**不含**：显式账号 bind 表、真实 IdP 联调 runbook、个人版（无租户）OIDC。
 
 ---
 
@@ -172,8 +181,8 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 | 项 | 说明 |
 | --- | --- |
-| saas-web OIDC | 登录页 IdP 按钮 + callback（复用 Phase 2 API，`client=web`） |
 | OAuth 账号绑定 | 显式 bind 表 vs 仅邮箱映射 |
+| 真实 IdP 联调 | `application-dev.yml` provider 示例与 E2E |
 | `/v1/menus` | 服务端动态菜单（当前 mock-nav） |
 | Plan 配额 | seat / rate / storage |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |

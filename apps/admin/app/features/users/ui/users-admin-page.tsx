@@ -12,6 +12,7 @@ import { AdminAntTable, adminAntSortOrder, createAdminAntSortHandler } from '~/s
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
+import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
@@ -21,12 +22,23 @@ import { AdminTableBulkBar } from '~/shared/ui/admin-table-bulk-bar'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
+import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
 
 import { EditUserSheet } from './edit-user-sheet'
 
 type UserSortKey = 'email' | 'displayName' | 'tenantSlug' | 'lastLoginAt' | 'createdAt'
+
+const USER_TABLE_COLUMNS = [
+  { key: 'email', label: '邮箱' },
+  { key: 'displayName', label: '显示名' },
+  { key: 'tenantSlug', label: '租户' },
+  { key: 'roles', label: '角色' },
+  { key: 'status', label: '状态' },
+  { key: 'lastLoginAt', label: '最近登录' },
+  { key: 'createdAt', label: '创建时间' },
+] as const
 
 export function UsersAdminPage() {
   const { can, canAny } = useAdminPermissions()
@@ -42,6 +54,7 @@ export function UsersAdminPage() {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
   const { confirm, confirmDialog } = useConfirmDialog()
+  const columnPrefs = useAdminTableColumnPrefs('users', [...USER_TABLE_COLUMNS])
 
   const { searchInput, setSearchInput, page, setPage, queryParams: baseQueryParams } =
     useAdminPagedListState(qFromUrl)
@@ -141,109 +154,114 @@ export function UsersAdminPage() {
   }
 
   const columns = useMemo<TableColumnsType<AdminUserSummary>>(
-    () => [
-      {
-        title: '邮箱',
-        dataIndex: 'email',
-        key: 'email',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'email'),
-      },
-      {
-        title: '显示名',
-        dataIndex: 'displayName',
-        key: 'displayName',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'displayName'),
-      },
-      {
-        title: '租户',
-        dataIndex: 'tenantSlug',
-        key: 'tenantSlug',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'tenantSlug'),
-        render: (slug: string) => <span className="font-mono text-xs">{slug}</span>,
-      },
-      {
-        title: '角色',
-        key: 'roles',
-        render: (_value: unknown, user: AdminUserSummary) => (
-          <div className="flex flex-wrap gap-1">
-            {user.roles.map((role) => (
-              <Badge key={role} variant="outline" className="font-mono text-[10px]">
-                {role}
-              </Badge>
-            ))}
-          </div>
-        ),
-      },
-      {
-        title: '状态',
-        dataIndex: 'status',
-        key: 'status',
-        render: (status: string) => <AdminStatusBadge status={status} />,
-      },
-      {
-        title: '最近登录',
-        dataIndex: 'lastLoginAt',
-        key: 'lastLoginAt',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'lastLoginAt'),
-        render: (lastLoginAt: number | null) => (
-          <span className="text-muted-foreground">
-            {lastLoginAt ? formatAdminDate(lastLoginAt) : '—'}
-          </span>
-        ),
-      },
-      {
-        title: '创建时间',
-        dataIndex: 'createdAt',
-        key: 'createdAt',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'createdAt'),
-        render: (createdAt: number) => (
-          <span className="text-muted-foreground">{formatAdminDate(createdAt)}</span>
-        ),
-      },
-      ...(showActions
-        ? [
-            {
-              title: '操作',
-              key: 'actions',
-              align: 'right' as const,
-              render: (_value: unknown, user: AdminUserSummary) => (
-                <div className="flex justify-end gap-1">
-                  {canViewAudit ? (
-                    <Button
-                      nativeButton={false}
-                      variant="ghost"
-                      size="sm"
-                      render={
-                        <Link
-                          to={buildAuditLogsLink({
-                            actorUserId: user.id,
-                            tenantId: tenantFilterId,
-                          })}
-                        />
-                      }
-                    >
-                      <ScrollTextIcon className="size-3.5" />
-                      审计
-                    </Button>
-                  ) : null}
-                  {canWrite ? (
-                    <Button variant="ghost" size="sm" onClick={() => setEditingUser(user)}>
-                      <PencilIcon className="size-3.5" />
-                      编辑
-                    </Button>
-                  ) : null}
-                </div>
-              ),
-            },
-          ]
-        : []),
-    ],
-    [canViewAudit, canWrite, showActions, sort, tenantFilterId],
+    () =>
+      [
+        {
+          title: '邮箱',
+          dataIndex: 'email',
+          key: 'email',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'email'),
+        },
+        {
+          title: '显示名',
+          dataIndex: 'displayName',
+          key: 'displayName',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'displayName'),
+        },
+        {
+          title: '租户',
+          dataIndex: 'tenantSlug',
+          key: 'tenantSlug',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'tenantSlug'),
+          render: (slug: string) => <span className="font-mono text-xs">{slug}</span>,
+        },
+        {
+          title: '角色',
+          key: 'roles',
+          render: (_value: unknown, user: AdminUserSummary) => (
+            <div className="flex flex-wrap gap-1">
+              {user.roles.map((role) => (
+                <Badge key={role} variant="outline" className="font-mono text-[10px]">
+                  {role}
+                </Badge>
+              ))}
+            </div>
+          ),
+        },
+        {
+          title: '状态',
+          dataIndex: 'status',
+          key: 'status',
+          render: (status: string) => <AdminStatusBadge status={status} />,
+        },
+        {
+          title: '最近登录',
+          dataIndex: 'lastLoginAt',
+          key: 'lastLoginAt',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'lastLoginAt'),
+          render: (lastLoginAt: number | null) => (
+            <span className="text-muted-foreground">
+              {lastLoginAt ? formatAdminDate(lastLoginAt) : '—'}
+            </span>
+          ),
+        },
+        {
+          title: '创建时间',
+          dataIndex: 'createdAt',
+          key: 'createdAt',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'createdAt'),
+          render: (createdAt: number) => (
+            <span className="text-muted-foreground">{formatAdminDate(createdAt)}</span>
+          ),
+        },
+        ...(showActions
+          ? [
+              {
+                title: '操作',
+                key: 'actions',
+                align: 'right' as const,
+                render: (_value: unknown, user: AdminUserSummary) => (
+                  <div className="flex justify-end gap-1">
+                    {canViewAudit ? (
+                      <Button
+                        nativeButton={false}
+                        variant="ghost"
+                        size="sm"
+                        render={
+                          <Link
+                            to={buildAuditLogsLink({
+                              actorUserId: user.id,
+                              tenantId: tenantFilterId,
+                            })}
+                          />
+                        }
+                      >
+                        <ScrollTextIcon className="size-3.5" />
+                        审计
+                      </Button>
+                    ) : null}
+                    {canWrite ? (
+                      <Button variant="ghost" size="sm" onClick={() => setEditingUser(user)}>
+                        <PencilIcon className="size-3.5" />
+                        编辑
+                      </Button>
+                    ) : null}
+                  </div>
+                ),
+              },
+            ]
+          : []),
+      ].filter((column) => {
+        const key = String(column.key)
+        if (key === 'actions') return showActions
+        return columnPrefs.isColumnVisible(key)
+      }),
+    [canViewAudit, canWrite, columnPrefs.isColumnVisible, columnPrefs.visible, showActions, sort, tenantFilterId],
   )
 
   return (
@@ -310,6 +328,14 @@ export function UsersAdminPage() {
           { value: 'invited', label: 'invited' },
           { value: 'disabled', label: 'disabled' },
         ]}
+        trailing={
+          <AdminTableColumnPicker
+            columns={[...USER_TABLE_COLUMNS]}
+            visible={columnPrefs.visible}
+            onVisibleChange={columnPrefs.setColumnVisible}
+            onReset={columnPrefs.resetColumns}
+          />
+        }
       />
 
       <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="server" />

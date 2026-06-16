@@ -11,6 +11,7 @@ export function AdminTableToolbar({
   status,
   onStatusChange,
   statusOptions,
+  trailing,
 }: {
   search: string
   onSearchChange: (value: string) => void
@@ -20,6 +21,7 @@ export function AdminTableToolbar({
   status?: string
   onStatusChange?: (value: string) => void
   statusOptions?: { value: string; label: string }[]
+  trailing?: React.ReactNode
 }) {
   const resolvedSearchLabel = searchAriaLabel ?? searchPlaceholder
 
@@ -76,6 +78,7 @@ export function AdminTableToolbar({
           </Select>
         </>
       ) : null}
+      {trailing}
     </div>
   )
 }

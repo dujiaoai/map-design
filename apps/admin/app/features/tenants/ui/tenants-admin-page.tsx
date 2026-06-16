@@ -10,11 +10,13 @@ import { AdminAntTable, adminAntSortOrder, createAdminAntSortHandler } from '~/s
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
+import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import { AdminTableBulkBar } from '~/shared/ui/admin-table-bulk-bar'
+import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
@@ -25,6 +27,14 @@ import { CreateTenantSheet } from './create-tenant-sheet'
 import { EditTenantSheet } from './edit-tenant-sheet'
 
 type TenantSortKey = 'name' | 'slug' | 'createdAt'
+
+const TENANT_TABLE_COLUMNS = [
+  { key: 'name', label: '名称' },
+  { key: 'slug', label: 'Slug' },
+  { key: 'plan', label: '计划' },
+  { key: 'status', label: '状态' },
+  { key: 'createdAt', label: '创建时间' },
+] as const
 
 export function TenantsAdminPage() {
   const { can, canAny } = useAdminPermissions()
@@ -44,6 +54,7 @@ export function TenantsAdminPage() {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
   const { confirm, confirmDialog } = useConfirmDialog()
+  const columnPrefs = useAdminTableColumnPrefs('tenants', [...TENANT_TABLE_COLUMNS])
 
   const { searchInput, setSearchInput, page, setPage, queryParams: baseQueryParams } =
     useAdminPagedListState()
@@ -138,96 +149,101 @@ export function TenantsAdminPage() {
   }
 
   const columns = useMemo<TableColumnsType<AdminTenantSummary>>(
-    () => [
-      {
-        title: '名称',
-        dataIndex: 'name',
-        key: 'name',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'name'),
-      },
-      {
-        title: 'Slug',
-        dataIndex: 'slug',
-        key: 'slug',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'slug'),
-        render: (slug: string) => <span className="font-mono text-xs">{slug}</span>,
-      },
-      {
-        title: '计划',
-        dataIndex: 'plan',
-        key: 'plan',
-        render: (plan: string) => <span className="font-mono text-xs">{plan}</span>,
-      },
-      {
-        title: '状态',
-        dataIndex: 'status',
-        key: 'status',
-        render: (status: string) => <AdminStatusBadge status={status} />,
-      },
-      {
-        title: '创建时间',
-        dataIndex: 'createdAt',
-        key: 'createdAt',
-        sorter: true,
-        sortOrder: adminAntSortOrder(sort, 'createdAt'),
-        render: (createdAt: number) => (
-          <span className="text-muted-foreground">{formatAdminDate(createdAt)}</span>
-        ),
-      },
-      {
-        title: '操作',
-        key: 'actions',
-        align: 'right',
-        render: (_value: unknown, tenant: AdminTenantSummary) => (
-          <div className="flex justify-end gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              nativeButton={false}
-              render={<Link to={`/tenants/${tenant.id}`} />}
-            >
-              <EyeIcon className="size-3.5" />
-              详情
-            </Button>
-            {canReadUsers ? (
+    () =>
+      [
+        {
+          title: '名称',
+          dataIndex: 'name',
+          key: 'name',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'name'),
+        },
+        {
+          title: 'Slug',
+          dataIndex: 'slug',
+          key: 'slug',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'slug'),
+          render: (slug: string) => <span className="font-mono text-xs">{slug}</span>,
+        },
+        {
+          title: '计划',
+          dataIndex: 'plan',
+          key: 'plan',
+          render: (plan: string) => <span className="font-mono text-xs">{plan}</span>,
+        },
+        {
+          title: '状态',
+          dataIndex: 'status',
+          key: 'status',
+          render: (status: string) => <AdminStatusBadge status={status} />,
+        },
+        {
+          title: '创建时间',
+          dataIndex: 'createdAt',
+          key: 'createdAt',
+          sorter: true,
+          sortOrder: adminAntSortOrder(sort, 'createdAt'),
+          render: (createdAt: number) => (
+            <span className="text-muted-foreground">{formatAdminDate(createdAt)}</span>
+          ),
+        },
+        {
+          title: '操作',
+          key: 'actions',
+          align: 'right',
+          render: (_value: unknown, tenant: AdminTenantSummary) => (
+            <div className="flex justify-end gap-1">
               <Button
                 variant="ghost"
                 size="sm"
                 nativeButton={false}
-                render={<Link to={`/users?tenantId=${tenant.id}`} />}
+                render={<Link to={`/tenants/${tenant.id}`} />}
               >
-                <UsersIcon className="size-3.5" />
-                用户
+                <EyeIcon className="size-3.5" />
+                详情
               </Button>
-            ) : null}
-            {canViewBilling ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                nativeButton={false}
-                render={
-                  <Link
-                    to={`/billing?tab=wallets&tenantId=${encodeURIComponent(tenant.id)}`}
-                  />
-                }
-              >
-                <CreditCardIcon className="size-3.5" />
-                计费
-              </Button>
-            ) : null}
-            {canWrite ? (
-              <Button variant="ghost" size="sm" onClick={() => setEditingTenant(tenant)}>
-                <PencilIcon className="size-3.5" />
-                编辑
-              </Button>
-            ) : null}
-          </div>
-        ),
-      },
-    ],
-    [canReadUsers, canViewBilling, canWrite, sort],
+              {canReadUsers ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  nativeButton={false}
+                  render={<Link to={`/users?tenantId=${tenant.id}`} />}
+                >
+                  <UsersIcon className="size-3.5" />
+                  用户
+                </Button>
+              ) : null}
+              {canViewBilling ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  nativeButton={false}
+                  render={
+                    <Link
+                      to={`/billing?tab=wallets&tenantId=${encodeURIComponent(tenant.id)}`}
+                    />
+                  }
+                >
+                  <CreditCardIcon className="size-3.5" />
+                  计费
+                </Button>
+              ) : null}
+              {canWrite ? (
+                <Button variant="ghost" size="sm" onClick={() => setEditingTenant(tenant)}>
+                  <PencilIcon className="size-3.5" />
+                  编辑
+                </Button>
+              ) : null}
+            </div>
+          ),
+        },
+      ].filter((column) => {
+        const key = String(column.key)
+        if (key === 'actions') return true
+        return columnPrefs.isColumnVisible(key)
+      }),
+    [canReadUsers, canViewBilling, canWrite, columnPrefs.isColumnVisible, columnPrefs.visible, sort],
   )
 
   return (
@@ -258,6 +274,14 @@ export function TenantsAdminPage() {
           { value: 'active', label: 'active' },
           { value: 'suspended', label: 'suspended' },
         ]}
+        trailing={
+          <AdminTableColumnPicker
+            columns={[...TENANT_TABLE_COLUMNS]}
+            visible={columnPrefs.visible}
+            onVisibleChange={columnPrefs.setColumnVisible}
+            onReset={columnPrefs.resetColumns}
+          />
+        }
       />
 
       <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="server" />

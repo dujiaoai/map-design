@@ -1,6 +1,9 @@
 import { sessionSchema, type Session } from '@repo/auth'
 
 import { api } from './client'
+import type { UserOauthBindsResponse } from './oauth-binds'
+
+export type { UserOauthBindItem, UserOauthBindsResponse } from './oauth-binds'
 
 export interface AdminPingResponse {
   status: string
@@ -273,6 +276,16 @@ export function patchAdminUser(userId: string, payload: PatchUserPayload) {
 
 export function updateAdminUserRoles(userId: string, roleCodes: string[]) {
   return api.put<AdminUserSummary>(`/admin/users/${userId}/roles`, { roleCodes })
+}
+
+export function fetchAdminUserOauthBinds(userId: string) {
+  return api.get<UserOauthBindsResponse>(`/admin/users/${userId}/oauth-binds`)
+}
+
+export function unbindAdminUserOauthProvider(userId: string, providerId: string) {
+  return api.delete<void>(
+    `/admin/users/${userId}/oauth-binds/${encodeURIComponent(providerId)}`,
+  )
 }
 
 export interface AdminRoleSummary {

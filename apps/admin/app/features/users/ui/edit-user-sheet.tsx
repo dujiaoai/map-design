@@ -31,6 +31,8 @@ import {
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 
+import { UserOauthBindsPanel } from './user-oauth-binds-panel'
+
 const schema = z.object({
   displayName: z.string().min(1, '请输入显示名').max(128),
   status: z.enum(['active', 'disabled']),
@@ -102,7 +104,7 @@ export function EditUserSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md">
+      <SheetContent className="w-full overflow-y-auto sm:max-w-md">
         <SheetHeader>
           <SheetTitle className="admin-display text-lg">编辑用户</SheetTitle>
           <SheetDescription>{user?.email ?? '—'}</SheetDescription>
@@ -149,6 +151,7 @@ export function EditUserSheet({
             </div>
           </div>
           <AdminFormError message={mutation.isError ? formatAdminApiError(mutation.error) : null} />
+          {user ? <UserOauthBindsPanel userId={user.id} enabled={open} /> : null}
           <SheetFooter className="px-0">
             <Button type="submit" disabled={!user || isSubmitting || mutation.isPending}>
               {mutation.isPending ? '保存中…' : '保存更改'}

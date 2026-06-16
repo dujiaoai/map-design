@@ -140,12 +140,19 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 ---
 
+## FND-07e · Admin MFA recovery codes ✅
+
+**交付（2026-06）**：`sys_user_mfa_recovery_code`（V27）；TOTP verify 签发 10 条恢复码；`POST /admin/mfa/recovery-codes/regenerate`；`POST /auth/login/mfa` 与注销 TOTP 可消费恢复码；Admin 系统页展示/重新生成；登录页支持恢复码。
+
+**不含**：代操作时长上限、saas-web 租户 MFA。
+
+---
+
 ## FND-07 · 远期（Later）
 
 | 项 | 说明 |
 | --- | --- |
 | OAuth2/OIDC | X-01 |
-| Admin MFA 增强 | recovery codes |
 | `/v1/menus` | 服务端动态菜单（当前 mock-nav） |
 | Plan 配额 | seat / rate / storage |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |

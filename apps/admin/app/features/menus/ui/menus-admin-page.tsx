@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  GripVerticalIcon,
   LayoutListIcon,
   SaveIcon,
   WrenchIcon,
@@ -68,6 +69,8 @@ export function MenusAdminPage() {
   const [toolItems, setToolItems] = useState<AdminMenuItem[]>([])
   const [selectedSectionId, setSelectedSectionId] = useState<string>('layers')
   const [formError, setFormError] = useState<string | null>(null)
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dropIndex, setDropIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (menusQuery.data) {
@@ -131,6 +134,17 @@ export function MenusAdminPage() {
 
   function moveItem(index: number, direction: -1 | 1) {
     updateItems(moveItemAtIndex(selectedItems, index, index + direction))
+  }
+
+  function handleItemDrop(targetIndex: number) {
+    if (dragIndex == null || dragIndex === targetIndex) {
+      setDragIndex(null)
+      setDropIndex(null)
+      return
+    }
+    updateItems(moveItemAtIndex(selectedItems, dragIndex, targetIndex))
+    setDragIndex(null)
+    setDropIndex(null)
   }
 
   if (menusQuery.isLoading) {
@@ -264,12 +278,37 @@ export function MenusAdminPage() {
                   <th className="px-4 py-3 font-medium">关联 ID</th>
                   <th className="px-4 py-3 font-medium">能力门控</th>
                   <th className="px-4 py-3 font-medium">启用</th>
-                  {canWrite ? <th className="px-4 py-3 font-medium">排序</th> : null}
+                  {canWrite ? (
+                    <>
+                      <th className="w-10 px-2 py-3 font-medium">
+                        <span className="sr-only">拖拽</span>
+                      </th>
+                      <th className="px-4 py-3 font-medium">排序</th>
+                    </>
+                  ) : null}
                 </tr>
               </thead>
               <tbody>
                 {selectedItems.map((item, index) => (
-                  <tr key={item.id} className="border-b border-border/60">
+                  <tr
+                    key={item.id}
+                    className={cn(
+                      'border-b border-border/60',
+                      dragIndex === index && 'opacity-50',
+                      dropIndex === index && dragIndex !== null && 'bg-primary/5',
+                    )}
+                    onDragOver={(event) => {
+                      event.preventDefault()
+                      setDropIndex(index)
+                    }}
+                    onDragLeave={() => {
+                      if (dropIndex === index) setDropIndex(null)
+                    }}
+                    onDrop={(event) => {
+                      event.preventDefault()
+                      handleItemDrop(index)
+                    }}
+                  >
                     <td className="px-4 py-3">
                       <Input
                         value={item.title}
@@ -302,8 +341,24 @@ export function MenusAdminPage() {
                       />
                     </td>
                     {canWrite ? (
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
+                      <>
+                        <td className="px-2 py-3">
+                          <button
+                            type="button"
+                            draggable
+                            aria-label={`拖拽排序：${item.title}`}
+                            className="flex size-8 cursor-grab items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground active:cursor-grabbing"
+                            onDragStart={() => setDragIndex(index)}
+                            onDragEnd={() => {
+                              setDragIndex(null)
+                              setDropIndex(null)
+                            }}
+                          >
+                            <GripVerticalIcon className="size-4" />
+                          </button>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1">
                           <Button
                             type="button"
                             variant="ghost"
@@ -326,6 +381,7 @@ export function MenusAdminPage() {
                           </Button>
                         </div>
                       </td>
+                      </>
                     ) : null}
                   </tr>
                 ))}

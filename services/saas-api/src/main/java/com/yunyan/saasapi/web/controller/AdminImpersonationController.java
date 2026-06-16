@@ -31,7 +31,7 @@ public class AdminImpersonationController {
   @SecurityRequirement(name = "bearerAuth")
   @Operation(
       summary = "开始代操作",
-      description = "签发含 act_as_tenant 的新 token 对；须 PLATFORM_ADMIN 且具备 admin:impersonate。")
+      description = "签发含 act_as_tenant 的新 token 对；须 PLATFORM_ADMIN 且具备 admin:impersonate。已绑定 TOTP 时须提交 totpCode。")
   public LoginResponse start(
       @AuthenticationPrincipal SaasPrincipal principal,
       @Valid @RequestBody StartImpersonationRequest request) {

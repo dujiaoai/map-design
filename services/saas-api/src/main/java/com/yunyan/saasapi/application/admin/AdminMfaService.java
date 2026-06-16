@@ -20,6 +20,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -131,6 +132,19 @@ public class AdminMfaService {
     }
     if (!isEnrolled(principal.userId())) {
       throw AuthException.forbidden("Admin MFA enrollment required");
+    }
+  }
+
+  /** 已绑定 TOTP 的平台管理员代操作前须校验动态码。 */
+  public void requireTotpForImpersonation(UUID userId, String totpCode) {
+    if (!isEnrolled(userId)) {
+      return;
+    }
+    if (!StringUtils.hasText(totpCode) || !totpCode.trim().matches("\\d{6}")) {
+      throw AuthException.badRequest("TOTP code required for impersonation");
+    }
+    if (!verifyEnrolledCode(userId, totpCode.trim())) {
+      throw AuthException.unauthorized("Invalid TOTP code");
     }
   }
 

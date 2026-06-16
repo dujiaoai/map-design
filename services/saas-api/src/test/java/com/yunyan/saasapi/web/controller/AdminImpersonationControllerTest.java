@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import com.yunyan.saasapi.security.mfa.TotpSupport;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,8 @@ class AdminImpersonationControllerTest {
   @Autowired MockMvc mockMvc;
 
   @Autowired ObjectMapper objectMapper;
+
+  @Autowired TotpSupport totpSupport;
 
   @Test
   void startImpersonation_withoutToken_returns401() throws Exception {
@@ -88,6 +91,40 @@ class AdminImpersonationControllerTest {
   }
 
   @Test
+  void startImpersonation_withEnrolledTotp_requiresValidCode() throws Exception {
+    var secret = enrollPlatformAdminTotp();
+    var token = completePlatformAdminLogin(secret);
+
+    mockMvc
+        .perform(
+            post("/v1/admin/impersonation")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "tenantId", OTHER_TENANT_ID.toString(),
+                            "reason", "customer support"))))
+        .andExpect(status().isBadRequest());
+
+    var code = totpSupport.currentCode(secret);
+
+    mockMvc
+        .perform(
+            post("/v1/admin/impersonation")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "tenantId", OTHER_TENANT_ID.toString(),
+                            "reason", "customer support",
+                            "totpCode", code))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.tenant.id").value(OTHER_TENANT_ID.toString()));
+  }
+
+  @Test
   void stopImpersonation_clearsActAsTenant() throws Exception {
     var token = loginAccessToken("platform@test.local");
 
@@ -135,6 +172,28 @@ class AdminImpersonationControllerTest {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }
 
+  private String completePlatformAdminLogin(String totpSecret) throws Exception {
+    var loginBody = loginBody("platform@test.local");
+    if (!Boolean.TRUE.equals(JsonPath.read(loginBody, "$.mfaRequired"))) {
+      return JsonPath.read(loginBody, "$.accessToken");
+    }
+    var challengeToken = (String) JsonPath.read(loginBody, "$.mfaChallengeToken");
+    var code = totpSupport.currentCode(totpSecret);
+    var mfaBody =
+        mockMvc
+            .perform(
+                post("/v1/auth/login/mfa")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            Map.of("mfaChallengeToken", challengeToken, "code", code))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return JsonPath.read(mfaBody, "$.accessToken");
+  }
+
   private String loginBody(String email) throws Exception {
     return mockMvc
         .perform(
@@ -150,5 +209,32 @@ class AdminImpersonationControllerTest {
         .andReturn()
         .getResponse()
         .getContentAsString();
+  }
+
+  private String enrollPlatformAdminTotp() throws Exception {
+    var accessToken = loginAccessToken("platform@test.local");
+
+    var enrollBody =
+        mockMvc
+            .perform(
+                post("/v1/admin/mfa/totp/enroll")
+                    .header("Authorization", "Bearer " + accessToken))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    var secret = (String) JsonPath.read(enrollBody, "$.secret");
+    var code = totpSupport.currentCode(secret);
+
+    mockMvc
+        .perform(
+            post("/v1/admin/mfa/totp/verify")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("code", code))))
+        .andExpect(status().isOk());
+
+    return secret;
   }
 }

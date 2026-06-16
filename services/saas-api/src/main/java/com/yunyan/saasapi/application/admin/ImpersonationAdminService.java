@@ -23,10 +23,12 @@ public class ImpersonationAdminService {
   private final TenantRepository tenantRepository;
   private final AuthService authService;
   private final AdminAuditLogService adminAuditLogService;
+  private final AdminMfaService adminMfaService;
 
   @Transactional
   public LoginResponse start(SaasPrincipal principal, StartImpersonationRequest request) {
     assertCanImpersonate(principal);
+    adminMfaService.requireTotpForImpersonation(principal.userId(), request.totpCode());
     var tenantId = request.tenantId();
     if (tenantId.equals(principal.tenantId())) {
       throw AuthException.badRequest("Cannot impersonate home tenant");

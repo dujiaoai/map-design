@@ -381,6 +381,7 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | FND-07i | OIDC 本地联调配置与 runbook | ✅ |
 | FND-07j | OIDC provider subject 绑定表 | ✅ |
 | FND-07k | OIDC 绑定列表与解绑 UI | ✅ |
+| FND-07l | Admin 用户编辑页代管 IdP 解绑 | ✅ |
 | FND-07 | `/v1/menus` | Later |
 
 **仍不做（本阶段）**：Sprint E 地图/机库/专题业务 API。
@@ -392,7 +393,7 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 - `SysUserRole` 缺 `@TableId` 警告（MyBatis-Plus）
 - MapStruct 已在 POM 声明但未使用
 - 测试环境 H2 与生产 PG 差异 → **FND-02** Testcontainers（`-Pintegration`）
-- OAuth2/OIDC 全链路含绑定表与账号解绑 UI（FND-07f～k）
+- OAuth2/OIDC 全链路含绑定表、账号解绑与 Admin 代理解绑 UI（FND-07f～l）
 
 ---
 
@@ -444,7 +445,7 @@ Sprint C/D、RBAC-P、Sprint F 骨架 + sec 已 ✅。**下一步**（业务 API
 | RBAC-P1 ✅ | D+ | 平台用户角色分配 + 角色权限变更会话吊销 |
 | RBAC-P2 ✅ | D+ | 租户自定义角色与权限配置 |
 | E-* | Later | 地图、机库、专题等业务 API — **未排细项** |
-| FND-01～FND-07k | 基础完善 | 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) |
+| FND-01～FND-07l | 基础完善 | 见 [platform-foundation-backlog.md](./supplements/platform-foundation-backlog.md) |
 | FND-07 | Later | `/v1/menus` |
 
 ### 建议默认顺序（仅供参考，非强制）

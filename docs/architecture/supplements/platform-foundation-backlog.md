@@ -30,6 +30,7 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 | P3 | FND-07i | OIDC 本地联调配置与 runbook | ✅ |
 | P3 | FND-07j | OIDC provider subject 绑定表 | ✅ |
 | P3 | FND-07k | OIDC 绑定列表与解绑 UI | ✅ |
+| P3 | FND-07l | Admin 用户编辑页代管 IdP 解绑 | ✅ |
 | Later | FND-07 | `/v1/menus`、Plan 配额等 | 远期 |
 
 ---
@@ -200,7 +201,13 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 **交付（2026-06）**：`GET/DELETE /v1/users/me/oauth-binds/{providerId}`；saas-web 与 Admin 账号 Drawer `OauthBindsPanel`（列表 + 解除绑定 + Toast）。
 
-**不含**：Admin 用户详情页代管他人解绑。
+**不含**：Admin 用户详情页代管他人解绑（→ FND-07l）。
+
+---
+
+## FND-07l · Admin 用户编辑页代管 IdP 解绑 ✅
+
+**交付（2026-06）**：`GET/DELETE /v1/admin/users/{userId}/oauth-binds/{providerId}`（`admin:users:read/write`）；Admin 用户编辑 Sheet `UserOauthBindsPanel`（列表 + 代理解绑 + 审计 `user.oauth.unbind`）。
 
 ---
 

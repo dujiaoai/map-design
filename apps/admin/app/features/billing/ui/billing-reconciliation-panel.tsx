@@ -1,4 +1,4 @@
-import { Button, Input } from '@repo/ui'
+import { Button } from '@repo/ui'
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangleIcon, CheckCircle2Icon, ScaleIcon } from 'lucide-react'
 import { useId, useState } from 'react'
@@ -12,6 +12,7 @@ import { formatBillingPrice } from '~/features/billing/lib/billing-format'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
+import { AdminAntDate } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminDetailSkeleton } from '~/shared/ui/admin-table-skeleton'
@@ -76,11 +77,11 @@ export function BillingReconciliationPanel() {
         </div>
         <div className="flex flex-wrap items-end gap-3 px-6 py-5">
           <AdminField label="对账日期 (UTC)" htmlFor={dateInputId}>
-            <Input
+            <AdminAntDate
               id={dateInputId}
-              type="date"
               value={dateInput}
-              onChange={(event) => setDateInput(event.target.value)}
+              aria-label="对账日期 UTC"
+              onChange={setDateInput}
             />
           </AdminField>
           <Button type="button" size="sm" onClick={runQuery}>

@@ -1,7 +1,9 @@
-import { Button, Input, cn } from '@repo/ui'
-import { ChevronDownIcon, ChevronRightIcon, SearchIcon } from 'lucide-react'
+import { Button, Input } from '@repo/ui'
+import type { DataNode } from 'antd/es/tree'
+import { SearchIcon } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 
+import { AdminAntTree } from '~/shared/ant'
 import type { AdminPermission } from '~/shared/api/admin-api'
 import {
   buildPermissionActionTree,
@@ -13,57 +15,45 @@ import {
   type PermissionActionTreeNode,
 } from '~/shared/lib/permission-action-tree'
 
-function GroupTreeNodes({
-  nodes,
-  depth,
-  expandedPaths,
-  onTogglePath,
-  renderPermission,
-}: {
-  nodes: PermissionActionTreeNode[]
-  depth: number
-  expandedPaths: Set<string>
-  onTogglePath: (path: string) => void
-  renderPermission: (permission: AdminPermission) => ReactNode
-}) {
-  return (
-    <ul className={cn('space-y-2', depth > 0 && 'ml-4 border-l border-border/50 pl-3')}>
-      {nodes.map((node) => {
-        if (node.kind === 'permission') {
-          return <li key={node.permission.id}>{renderPermission(node.permission)}</li>
-        }
+function toAntTreeData(
+  nodes: PermissionActionTreeNode[],
+  renderPermission: (permission: AdminPermission) => ReactNode,
+): DataNode[] {
+  return nodes.map((node) => {
+    if (node.kind === 'permission') {
+      return {
+        key: `perm:${node.permission.id}`,
+        isLeaf: true,
+        selectable: false,
+        title: renderPermission(node.permission),
+      }
+    }
 
-        const expanded = expandedPaths.has(node.path)
-        const childCodes = collectPermissionCodes(node.children)
-        return (
-          <li key={node.path} className="space-y-2">
-            <button
-              type="button"
-              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted/50"
-              onClick={() => onTogglePath(node.path)}
-            >
-              {expanded ? (
-                <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground" />
-              ) : (
-                <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" />
-              )}
-              <span className="font-mono text-xs">{node.segment}</span>
-              <span className="text-xs text-muted-foreground">{childCodes.length} 项</span>
-            </button>
-            {expanded ? (
-              <GroupTreeNodes
-                nodes={node.children}
-                depth={depth + 1}
-                expandedPaths={expandedPaths}
-                onTogglePath={onTogglePath}
-                renderPermission={renderPermission}
-              />
-            ) : null}
-          </li>
-        )
-      })}
-    </ul>
-  )
+    const childCodes = collectPermissionCodes(node.children)
+    return {
+      key: node.path,
+      title: (
+        <span className="inline-flex items-center gap-2 font-mono text-xs">
+          <span>{node.segment}</span>
+          <span className="font-sans text-muted-foreground">{childCodes.length} 项</span>
+        </span>
+      ),
+      children: toAntTreeData(node.children, renderPermission),
+    }
+  })
+}
+
+function collectGroupPaths(nodes: PermissionActionTreeNode[]): string[] {
+  const paths: string[] = []
+  function walk(items: PermissionActionTreeNode[]) {
+    for (const node of items) {
+      if (node.kind !== 'group') continue
+      paths.push(node.path)
+      walk(node.children)
+    }
+  }
+  walk(nodes)
+  return paths
 }
 
 export function PermissionActionTreeView({
@@ -96,45 +86,24 @@ export function PermissionActionTreeView({
     [filteredPermissions, moduleCode],
   )
   const treeStats = useMemo(() => countPermissionTreeNodes(tree), [tree])
+  const treeData = useMemo(
+    () => toAntTreeData(tree, renderPermission),
+    [renderPermission, tree],
+  )
 
-  const defaultExpandedPaths = useMemo(() => {
-    const paths = new Set<string>()
-    function walk(nodes: PermissionActionTreeNode[]) {
-      for (const node of nodes) {
-        if (node.kind !== 'group') continue
-        paths.add(node.path)
-        walk(node.children)
-      }
-    }
-    walk(tree)
-    return paths
-  }, [tree])
-
-  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(defaultExpandedPaths)
+  const defaultExpandedKeys = useMemo(() => collectGroupPaths(tree), [tree])
+  const [expandedKeys, setExpandedKeys] = useState<string[]>(defaultExpandedKeys)
 
   useEffect(() => {
     if (search.trim()) {
-      setExpandedPaths(defaultExpandedPaths)
+      setExpandedKeys(defaultExpandedKeys)
       return
     }
-    setExpandedPaths((current) => {
-      const next = new Set<string>()
-      for (const path of current) {
-        if (defaultExpandedPaths.has(path)) next.add(path)
-      }
-      if (next.size === 0) return defaultExpandedPaths
-      return next
+    setExpandedKeys((current) => {
+      const next = current.filter((key) => defaultExpandedKeys.includes(key))
+      return next.length > 0 ? next : defaultExpandedKeys
     })
-  }, [defaultExpandedPaths, search])
-
-  function togglePath(path: string) {
-    setExpandedPaths((current) => {
-      const next = new Set(current)
-      if (next.has(path)) next.delete(path)
-      else next.add(path)
-      return next
-    })
-  }
+  }, [defaultExpandedKeys, search])
 
   if (permissions.length === 0) {
     return null
@@ -163,7 +132,7 @@ export function PermissionActionTreeView({
                 size="sm"
                 variant="ghost"
                 className="h-8 px-2 text-xs"
-                onClick={() => setExpandedPaths(defaultExpandedPaths)}
+                onClick={() => setExpandedKeys(defaultExpandedKeys)}
               >
                 全部展开
               </Button>
@@ -172,7 +141,7 @@ export function PermissionActionTreeView({
                 size="sm"
                 variant="ghost"
                 className="h-8 px-2 text-xs"
-                onClick={() => setExpandedPaths(new Set())}
+                onClick={() => setExpandedKeys([])}
               >
                 全部收起
               </Button>
@@ -190,12 +159,11 @@ export function PermissionActionTreeView({
       {filteredPermissions.length === 0 ? (
         <p className="text-sm text-muted-foreground">{emptyMessage}</p>
       ) : useTree && treeStats.groups > 0 ? (
-        <GroupTreeNodes
-          nodes={tree}
-          depth={0}
-          expandedPaths={expandedPaths}
-          onTogglePath={togglePath}
-          renderPermission={renderPermission}
+        <AdminAntTree
+          showLine
+          treeData={treeData}
+          expandedKeys={expandedKeys}
+          onExpand={(keys) => setExpandedKeys(keys as string[])}
         />
       ) : (
         <ul className="space-y-2">

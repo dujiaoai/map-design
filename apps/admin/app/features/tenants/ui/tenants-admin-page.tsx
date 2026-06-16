@@ -1,9 +1,11 @@
 import { Button } from '@repo/ui'
+import type { TableColumnsType } from 'antd'
 import { EyeIcon, CreditCardIcon, PencilIcon, UsersIcon } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
 import { fetchAdminTenants, type AdminTenantSummary } from '~/shared/api/admin-api'
+import { AdminAntTable, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
@@ -11,21 +13,11 @@ import { sortAdminTableRows, useAdminTableSort } from '~/shared/hooks/use-admin-
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
-import {
-  AdminDataTable,
-  AdminTableBody,
-  AdminTableCell,
-  AdminTableHead,
-  AdminTableHeaderCell,
-  AdminTableRow,
-  AdminTableSortHeaderCell,
-  AdminTableSortHint,
-} from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
-import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
+import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
 
 import { CreateTenantSheet } from './create-tenant-sheet'
 import { EditTenantSheet } from './edit-tenant-sheet'
@@ -91,6 +83,99 @@ export function TenantsAdminPage() {
     clearSort()
   }
 
+  const columns = useMemo<TableColumnsType<AdminTenantSummary>>(
+    () => [
+      {
+        title: '名称',
+        dataIndex: 'name',
+        key: 'name',
+        sorter: true,
+        sortOrder: adminAntSortOrder(sort, 'name'),
+      },
+      {
+        title: 'Slug',
+        dataIndex: 'slug',
+        key: 'slug',
+        sorter: true,
+        sortOrder: adminAntSortOrder(sort, 'slug'),
+        render: (slug: string) => <span className="font-mono text-xs">{slug}</span>,
+      },
+      {
+        title: '计划',
+        dataIndex: 'plan',
+        key: 'plan',
+        render: (plan: string) => <span className="font-mono text-xs">{plan}</span>,
+      },
+      {
+        title: '状态',
+        dataIndex: 'status',
+        key: 'status',
+        render: (status: string) => <AdminStatusBadge status={status} />,
+      },
+      {
+        title: '创建时间',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        sorter: true,
+        sortOrder: adminAntSortOrder(sort, 'createdAt'),
+        render: (createdAt: number) => (
+          <span className="text-muted-foreground">{formatAdminDate(createdAt)}</span>
+        ),
+      },
+      {
+        title: '操作',
+        key: 'actions',
+        align: 'right',
+        render: (_value: unknown, tenant: AdminTenantSummary) => (
+          <div className="flex justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              nativeButton={false}
+              render={<Link to={`/tenants/${tenant.id}`} />}
+            >
+              <EyeIcon className="size-3.5" />
+              详情
+            </Button>
+            {canReadUsers ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                nativeButton={false}
+                render={<Link to={`/users?tenantId=${tenant.id}`} />}
+              >
+                <UsersIcon className="size-3.5" />
+                用户
+              </Button>
+            ) : null}
+            {canViewBilling ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                nativeButton={false}
+                render={
+                  <Link
+                    to={`/billing?tab=wallets&tenantId=${encodeURIComponent(tenant.id)}`}
+                  />
+                }
+              >
+                <CreditCardIcon className="size-3.5" />
+                计费
+              </Button>
+            ) : null}
+            {canWrite ? (
+              <Button variant="ghost" size="sm" onClick={() => setEditingTenant(tenant)}>
+                <PencilIcon className="size-3.5" />
+                编辑
+              </Button>
+            ) : null}
+          </div>
+        ),
+      },
+    ],
+    [canReadUsers, canViewBilling, canWrite, sort],
+  )
+
   return (
     <div className="space-y-6 admin-stagger">
       <AdminPageHeader
@@ -144,105 +229,19 @@ export function TenantsAdminPage() {
             }
           />
         ) : (
-          <>
-            <AdminDataTable>
-              <AdminTableHead>
-                <tr>
-                  <AdminTableSortHeaderCell
-                    label="名称"
-                    active={sort?.key === 'name'}
-                    direction={sort?.key === 'name' ? sort.direction : undefined}
-                    onSort={() => toggleSort('name')}
-                  />
-                  <AdminTableSortHeaderCell
-                    label="Slug"
-                    active={sort?.key === 'slug'}
-                    direction={sort?.key === 'slug' ? sort.direction : undefined}
-                    onSort={() => toggleSort('slug')}
-                  />
-                  <AdminTableHeaderCell>计划</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>状态</AdminTableHeaderCell>
-                  <AdminTableSortHeaderCell
-                    label="创建时间"
-                    active={sort?.key === 'createdAt'}
-                    direction={sort?.key === 'createdAt' ? sort.direction : undefined}
-                    onSort={() => toggleSort('createdAt')}
-                  />
-                  <AdminTableHeaderCell className="text-right">操作</AdminTableHeaderCell>
-                </tr>
-              </AdminTableHead>
-              <AdminTableBody>
-                {filteredTenants.map((tenant) => (
-                  <AdminTableRow key={tenant.id}>
-                    <AdminTableCell>{tenant.name}</AdminTableCell>
-                    <AdminTableCell mono>{tenant.slug}</AdminTableCell>
-                    <AdminTableCell mono>{tenant.plan}</AdminTableCell>
-                    <AdminTableCell>
-                      <AdminStatusBadge status={tenant.status} />
-                    </AdminTableCell>
-                    <AdminTableCell className="text-muted-foreground">
-                      {formatAdminDate(tenant.createdAt)}
-                    </AdminTableCell>
-                    <AdminTableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          nativeButton={false}
-                          render={<Link to={`/tenants/${tenant.id}`} />}
-                        >
-                          <EyeIcon className="size-3.5" />
-                          详情
-                        </Button>
-                        {canReadUsers ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            nativeButton={false}
-                            render={<Link to={`/users?tenantId=${tenant.id}`} />}
-                          >
-                            <UsersIcon className="size-3.5" />
-                            用户
-                          </Button>
-                        ) : null}
-                        {canViewBilling ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            nativeButton={false}
-                            render={
-                              <Link
-                                to={`/billing?tab=wallets&tenantId=${encodeURIComponent(tenant.id)}`}
-                              />
-                            }
-                          >
-                            <CreditCardIcon className="size-3.5" />
-                            计费
-                          </Button>
-                        ) : null}
-                        {canWrite ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEditingTenant(tenant)}
-                          >
-                            <PencilIcon className="size-3.5" />
-                            编辑
-                          </Button>
-                        ) : null}
-                      </div>
-                    </AdminTableCell>
-                  </AdminTableRow>
-                ))}
-              </AdminTableBody>
-            </AdminDataTable>
-            <AdminTablePagination
-              page={page}
-              pageSize={queryParams.size}
-              total={total}
-              onPageChange={setPage}
-            />
-          </>
+          <AdminAntTable<AdminTenantSummary>
+            rowKey="id"
+            columns={columns}
+            dataSource={filteredTenants}
+            onChange={createAdminAntSortHandler(toggleSort)}
+            showSorterTooltip={false}
+            pagination={{
+              current: page,
+              pageSize: queryParams.size,
+              total,
+              onChange: setPage,
+            }}
+          />
         )}
       </AdminPanel>
 

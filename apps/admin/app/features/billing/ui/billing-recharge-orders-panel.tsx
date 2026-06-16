@@ -7,8 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/ui'
+import type { TableColumnsType } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import { useCallback, useId, useState } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 
 import {
   adminBillingRechargeOrdersQuery,
@@ -24,20 +25,12 @@ import { BillingRechargeRefundSheet } from '~/features/billing/ui/billing-rechar
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
+import { AdminAntTable, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
-import {
-  AdminDataTable,
-  AdminTableBody,
-  AdminTableCell,
-  AdminTableHead,
-  AdminTableHeaderCell,
-  AdminTableRow,
-} from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge, formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
-import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 
 const PAGE_SIZE = 20
 
@@ -102,6 +95,85 @@ export function BillingRechargeOrdersPanel({
   const hasOrderFilters = Boolean(
     filters.tenantId || filters.userId || filters.status,
   )
+
+  const columns = useMemo<TableColumnsType<AdminRechargeOrder>>(() => {
+    const cols: TableColumnsType<AdminRechargeOrder> = [
+      {
+        title: '订单号',
+        key: 'orderNo',
+        render: (_value, order) => <AdminIdCell value={order.orderNo} label="订单号" />,
+      },
+      {
+        title: '状态',
+        key: 'status',
+        render: (_value, order) => <AdminStatusBadge status={order.status} />,
+      },
+      {
+        title: '租户',
+        key: 'tenantId',
+        render: (_value, order) => <AdminIdCell value={order.tenantId} label="租户 ID" />,
+      },
+      {
+        title: '用户',
+        key: 'userId',
+        render: (_value, order) => <AdminIdCell value={order.userId} label="用户 ID" />,
+      },
+      {
+        title: '积分',
+        key: 'points',
+        render: (_value, order) => order.points.toLocaleString('zh-CN'),
+      },
+      {
+        title: '金额',
+        key: 'price',
+        render: (_value, order) =>
+          order.couponDiscountCents > 0 ? (
+            <div className="space-y-0.5">
+              <p>{formatBillingPrice(order.priceCents, order.currency)}</p>
+              <p className="text-xs text-muted-foreground">
+                原价 {formatBillingPrice(order.listPriceCents, order.currency)}，抵扣{' '}
+                {formatBillingPrice(order.couponDiscountCents, order.currency)}
+              </p>
+              {order.couponCode ? (
+                <p className="font-mono text-xs text-muted-foreground">{order.couponCode}</p>
+              ) : null}
+            </div>
+          ) : (
+            formatBillingPrice(order.priceCents, order.currency)
+          ),
+      },
+      {
+        title: '渠道',
+        dataIndex: 'channel',
+        key: 'channel',
+      },
+      {
+        title: '支付时间',
+        key: 'paidAt',
+        render: (_value, order) => formatAdminIsoDate(order.paidAt),
+      },
+    ]
+    if (canRefund) {
+      cols.push({
+        title: '操作',
+        key: 'actions',
+        render: (_value, order) =>
+          order.status === 'paid' ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setRefundingOrder(order)}
+            >
+              退款
+            </Button>
+          ) : (
+            '—'
+          ),
+      })
+    }
+    return cols
+  }, [canRefund])
 
   return (
     <>
@@ -205,84 +277,12 @@ export function BillingRechargeOrdersPanel({
               <AdminEmptyState message="暂无充值订单。" />
             )
           ) : query.data ? (
-            <>
-              <AdminDataTable>
-                <AdminTableHead>
-                  <AdminTableRow>
-                    <AdminTableHeaderCell>订单号</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>状态</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>租户</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>用户</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>积分</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>金额</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>渠道</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>支付时间</AdminTableHeaderCell>
-                    {canRefund ? <AdminTableHeaderCell>操作</AdminTableHeaderCell> : null}
-                  </AdminTableRow>
-                </AdminTableHead>
-                <AdminTableBody>
-                  {query.data.items.map((order) => (
-                    <AdminTableRow key={order.orderNo}>
-                      <AdminTableCell>
-                        <AdminIdCell value={order.orderNo} label="订单号" />
-                      </AdminTableCell>
-                      <AdminTableCell>
-                        <AdminStatusBadge status={order.status} />
-                      </AdminTableCell>
-                      <AdminTableCell>
-                        <AdminIdCell value={order.tenantId} label="租户 ID" />
-                      </AdminTableCell>
-                      <AdminTableCell>
-                        <AdminIdCell value={order.userId} label="用户 ID" />
-                      </AdminTableCell>
-                      <AdminTableCell>{order.points.toLocaleString('zh-CN')}</AdminTableCell>
-                      <AdminTableCell>
-                        {order.couponDiscountCents > 0 ? (
-                          <div className="space-y-0.5">
-                            <p>{formatBillingPrice(order.priceCents, order.currency)}</p>
-                            <p className="text-xs text-muted-foreground">
-                              原价 {formatBillingPrice(order.listPriceCents, order.currency)}，抵扣{' '}
-                              {formatBillingPrice(order.couponDiscountCents, order.currency)}
-                            </p>
-                            {order.couponCode ? (
-                              <p className="font-mono text-xs text-muted-foreground">
-                                {order.couponCode}
-                              </p>
-                            ) : null}
-                          </div>
-                        ) : (
-                          formatBillingPrice(order.priceCents, order.currency)
-                        )}
-                      </AdminTableCell>
-                      <AdminTableCell>{order.channel}</AdminTableCell>
-                      <AdminTableCell>{formatAdminIsoDate(order.paidAt)}</AdminTableCell>
-                      {canRefund ? (
-                        <AdminTableCell>
-                          {order.status === 'paid' ? (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setRefundingOrder(order)}
-                            >
-                              退款
-                            </Button>
-                          ) : (
-                            '—'
-                          )}
-                        </AdminTableCell>
-                      ) : null}
-                    </AdminTableRow>
-                  ))}
-                </AdminTableBody>
-              </AdminDataTable>
-              <AdminTablePagination
-                page={page + 1}
-                pageSize={PAGE_SIZE}
-                total={query.data.total}
-                onPageChange={(nextPage) => setPage(nextPage - 1)}
-              />
-            </>
+            <AdminAntTable<AdminRechargeOrder>
+              rowKey="orderNo"
+              columns={columns}
+              dataSource={query.data.items}
+              pagination={adminAntZeroBasedPagination(page, PAGE_SIZE, query.data.total, setPage)}
+            />
           ) : null}
         </div>
       </AdminPanel>

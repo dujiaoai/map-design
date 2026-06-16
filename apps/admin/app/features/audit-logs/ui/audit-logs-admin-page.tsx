@@ -1,4 +1,5 @@
 import { Badge, Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
+import type { TableColumnsType } from 'antd'
 import { CreditCardIcon, DownloadIcon } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
@@ -14,6 +15,12 @@ import {
 import { AUDIT_EXPORT_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
 import { buildAuditUsersLink } from '~/features/audit-logs/lib/audit-log-users-nav'
 import { AuditLogDetailSheet } from '~/features/audit-logs/ui/audit-log-detail-sheet'
+import {
+  AdminAntDateRange,
+  AdminAntTable,
+  adminAntSortOrder,
+  createAdminAntSortHandler,
+} from '~/shared/ant'
 import { fetchAdminAuditLogs, fetchAdminTenants, type AdminAuditLogEntry } from '~/shared/api/admin-api'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
@@ -21,19 +28,9 @@ import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search
 import { sortAdminTableRows, useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
-import {
-  AdminDataTable,
-  AdminTableBody,
-  AdminTableCell,
-  AdminTableHead,
-  AdminTableHeaderCell,
-  AdminTableRow,
-  AdminTableSortHeaderCell,
-  AdminTableSortHint,
-} from '~/shared/ui/admin-data-table'
+import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
-import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
@@ -157,6 +154,133 @@ export function AuditLogsAdminPage() {
     }
   }
 
+  const columns = useMemo<TableColumnsType<AdminAuditLogEntry>>(
+    () => [
+      {
+        title: '时间',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        sorter: true,
+        sortOrder: adminAntSortOrder(sort, 'createdAt'),
+        render: (createdAt: number) => (
+          <span className="text-muted-foreground">{formatAdminDate(createdAt)}</span>
+        ),
+      },
+      {
+        title: '操作人',
+        dataIndex: 'actorEmail',
+        key: 'actorEmail',
+        sorter: true,
+        sortOrder: adminAntSortOrder(sort, 'actorEmail'),
+        render: (actorEmail: string, log: AdminAuditLogEntry) => {
+          const usersLink = canReadUsers
+            ? buildAuditUsersLink(log.actorEmail, log.targetTenantId)
+            : null
+          return (
+            <>
+              {actorEmail}
+              {usersLink ? (
+                <Link
+                  to={usersLink}
+                  className="ml-2 text-xs text-primary underline-offset-4 hover:underline"
+                >
+                  查用户
+                </Link>
+              ) : null}
+            </>
+          )
+        },
+      },
+      {
+        title: '动作',
+        dataIndex: 'action',
+        key: 'action',
+        sorter: true,
+        sortOrder: adminAntSortOrder(sort, 'action'),
+        render: (action: string, log: AdminAuditLogEntry) => {
+          const billingLink = buildAuditBillingLink(log.action, log.targetTenantId)
+          return (
+            <>
+              <span className="font-mono text-xs">{action}</span>
+              {billingLink ? (
+                <Link
+                  to={billingLink}
+                  className="ml-2 text-xs text-primary underline-offset-4 hover:underline"
+                >
+                  查看计费
+                </Link>
+              ) : null}
+            </>
+          )
+        },
+      },
+      {
+        title: '资源',
+        key: 'resource',
+        render: (_value: unknown, log: AdminAuditLogEntry) =>
+          log.resourceId ? (
+            <div className="space-y-0.5">
+              <span className="font-mono text-[10px] text-muted-foreground">{log.resourceType}</span>
+              <AdminIdCell value={log.resourceId} label="资源" />
+            </div>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          ),
+      },
+      {
+        title: '详情',
+        dataIndex: 'detail',
+        key: 'detail',
+        ellipsis: true,
+        render: (detail: string | null) => detail ?? '—',
+      },
+      {
+        title: '目标租户',
+        key: 'targetTenant',
+        render: (_value: unknown, log: AdminAuditLogEntry) =>
+          log.targetTenantId ? (
+            <div className="space-y-1">
+              <AdminIdCell value={log.targetTenantId} label="租户" />
+              {canReadTenants ? (
+                <Link
+                  to={`/tenants/${log.targetTenantId}?tab=info`}
+                  className="text-xs text-primary underline-offset-4 hover:underline"
+                >
+                  租户详情
+                </Link>
+              ) : null}
+            </div>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          ),
+      },
+      {
+        title: '跨租户',
+        dataIndex: 'crossTenant',
+        key: 'crossTenant',
+        render: (crossTenant: boolean) =>
+          crossTenant ? (
+            <Badge variant="outline" className="font-mono text-[10px]">
+              cross
+            </Badge>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          ),
+      },
+      {
+        title: '操作',
+        key: 'actions',
+        width: 72,
+        render: (_value: unknown, log: AdminAuditLogEntry) => (
+          <Button type="button" variant="ghost" size="sm" onClick={() => setDetailLog(log)}>
+            详情
+          </Button>
+        ),
+      },
+    ],
+    [canReadTenants, canReadUsers, sort],
+  )
+
   return (
     <div className="space-y-6 admin-stagger">
       <AdminPageHeader
@@ -210,10 +334,10 @@ export function AuditLogsAdminPage() {
 
       {actorFilterId ? (
         <AdminPanel className="flex flex-wrap items-center justify-between gap-3 border-primary/20 bg-primary/5 px-4 py-3 md:px-5">
-          <p className="text-sm">
+          <div className="text-sm">
             <span className="text-muted-foreground">操作人筛选 · </span>
             <AdminIdCell value={actorFilterId} label="用户" />
-          </p>
+          </div>
           <Button
             type="button"
             variant="ghost"
@@ -287,36 +411,17 @@ export function AuditLogsAdminPage() {
             ))}
           </SelectContent>
         </Select>
-        <div className="space-y-1">
-          <Label htmlFor="audit-from-date" className="text-xs text-muted-foreground">
-            起始日期
-          </Label>
-          <Input
-            id="audit-from-date"
-            type="date"
-            value={fromDate}
-            className="w-[160px]"
-            onChange={(event) => {
-              setFromDate(event.target.value)
-              setPage(1)
-            }}
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="audit-to-date" className="text-xs text-muted-foreground">
-            结束日期
-          </Label>
-          <Input
-            id="audit-to-date"
-            type="date"
-            value={toDate}
-            className="w-[160px]"
-            onChange={(event) => {
-              setToDate(event.target.value)
-              setPage(1)
-            }}
-          />
-        </div>
+        <AdminAntDateRange
+          id="audit-date-range"
+          fromDate={fromDate}
+          toDate={toDate}
+          aria-label="审计日志日期范围"
+          onChange={(from, to) => {
+            setFromDate(from)
+            setToDate(to)
+            setPage(1)
+          }}
+        />
         {canViewBilling ? (
           <Button
             type="button"
@@ -373,54 +478,19 @@ export function AuditLogsAdminPage() {
             <AdminEmptyState message="暂无审计记录" />
           )
         ) : (
-          <>
-            <AdminDataTable>
-              <AdminTableHead>
-                <tr>
-                  <AdminTableSortHeaderCell
-                    label="时间"
-                    active={sort?.key === 'createdAt'}
-                    direction={sort?.key === 'createdAt' ? sort.direction : undefined}
-                    onSort={() => toggleSort('createdAt')}
-                  />
-                  <AdminTableSortHeaderCell
-                    label="操作人"
-                    active={sort?.key === 'actorEmail'}
-                    direction={sort?.key === 'actorEmail' ? sort.direction : undefined}
-                    onSort={() => toggleSort('actorEmail')}
-                  />
-                  <AdminTableSortHeaderCell
-                    label="动作"
-                    active={sort?.key === 'action'}
-                    direction={sort?.key === 'action' ? sort.direction : undefined}
-                    onSort={() => toggleSort('action')}
-                  />
-                  <AdminTableHeaderCell>资源</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>详情</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>目标租户</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>跨租户</AdminTableHeaderCell>
-                  <AdminTableHeaderCell className="w-[72px]">操作</AdminTableHeaderCell>
-                </tr>
-              </AdminTableHead>
-              <AdminTableBody>
-                {sortedLogs.map((log) => (
-                  <AuditLogRow
-                    key={log.id}
-                    log={log}
-                    canReadTenants={canReadTenants}
-                    canReadUsers={canReadUsers}
-                    onOpenDetail={() => setDetailLog(log)}
-                  />
-                ))}
-              </AdminTableBody>
-            </AdminDataTable>
-            <AdminTablePagination
-              page={page}
-              pageSize={queryParams.size}
-              total={total}
-              onPageChange={setPage}
-            />
-          </>
+          <AdminAntTable<AdminAuditLogEntry>
+            rowKey="id"
+            columns={columns}
+            dataSource={sortedLogs}
+            onChange={createAdminAntSortHandler(toggleSort)}
+            showSorterTooltip={false}
+            pagination={{
+              current: page,
+              pageSize: queryParams.size,
+              total,
+              onChange: setPage,
+            }}
+          />
         )}
       </AdminPanel>
 
@@ -434,92 +504,5 @@ export function AuditLogsAdminPage() {
         canReadUsers={canReadUsers}
       />
     </div>
-  )
-}
-
-function AuditLogRow({
-  log,
-  canReadTenants,
-  canReadUsers,
-  onOpenDetail,
-}: {
-  log: AdminAuditLogEntry
-  canReadTenants: boolean
-  canReadUsers: boolean
-  onOpenDetail: () => void
-}) {
-  const billingLink = buildAuditBillingLink(log.action, log.targetTenantId)
-  const usersLink = canReadUsers ? buildAuditUsersLink(log.actorEmail, log.targetTenantId) : null
-
-  return (
-    <AdminTableRow>
-      <AdminTableCell className="text-muted-foreground">
-        {formatAdminDate(log.createdAt)}
-      </AdminTableCell>
-      <AdminTableCell>
-        {log.actorEmail}
-        {usersLink ? (
-          <Link
-            to={usersLink}
-            className="ml-2 text-xs text-primary underline-offset-4 hover:underline"
-          >
-            查用户
-          </Link>
-        ) : null}
-      </AdminTableCell>
-      <AdminTableCell>
-        <span className="font-mono text-xs">{log.action}</span>
-        {billingLink ? (
-          <Link
-            to={billingLink}
-            className="ml-2 text-xs text-primary underline-offset-4 hover:underline"
-          >
-            查看计费
-          </Link>
-        ) : null}
-      </AdminTableCell>
-      <AdminTableCell>
-        {log.resourceId ? (
-          <div className="space-y-0.5">
-            <span className="font-mono text-[10px] text-muted-foreground">{log.resourceType}</span>
-            <AdminIdCell value={log.resourceId} label="资源" />
-          </div>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        )}
-      </AdminTableCell>
-      <AdminTableCell className="max-w-md truncate">{log.detail ?? '—'}</AdminTableCell>
-      <AdminTableCell>
-        {log.targetTenantId ? (
-          <div className="space-y-1">
-            <AdminIdCell value={log.targetTenantId} label="租户" />
-            {canReadTenants ? (
-              <Link
-                to={`/tenants/${log.targetTenantId}?tab=info`}
-                className="text-xs text-primary underline-offset-4 hover:underline"
-              >
-                租户详情
-              </Link>
-            ) : null}
-          </div>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        )}
-      </AdminTableCell>
-      <AdminTableCell>
-        {log.crossTenant ? (
-          <Badge variant="outline" className="font-mono text-[10px]">
-            cross
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        )}
-      </AdminTableCell>
-      <AdminTableCell>
-        <Button type="button" variant="ghost" size="sm" onClick={onOpenDetail}>
-          详情
-        </Button>
-      </AdminTableCell>
-    </AdminTableRow>
   )
 }

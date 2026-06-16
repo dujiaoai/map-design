@@ -9,9 +9,10 @@ import {
   toast,
   useConfirmDialog,
 } from '@repo/ui'
+import type { TableColumnsType } from 'antd'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Building2Icon } from 'lucide-react'
-import { useCallback, useId, useState } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 
 import {
   adminBillingWireTransfersQuery,
@@ -28,20 +29,12 @@ import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
+import { AdminAntTable, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
-import {
-  AdminDataTable,
-  AdminTableBody,
-  AdminTableCell,
-  AdminTableHead,
-  AdminTableHeaderCell,
-  AdminTableRow,
-} from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge, formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
-import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 
 const PAGE_SIZE = 20
 
@@ -157,6 +150,106 @@ export function BillingWireTransfersPanel({
     })
   }
 
+  const columns = useMemo<TableColumnsType<AdminWireTransfer>>(() => {
+    const cols: TableColumnsType<AdminWireTransfer> = [
+      {
+        title: '申请单号',
+        dataIndex: 'requestNo',
+        key: 'requestNo',
+        render: (requestNo: string) => <span className="font-mono text-xs">{requestNo}</span>,
+      },
+      {
+        title: '租户 / 用户',
+        key: 'tenantUser',
+        render: (_value, item) => (
+          <div className="space-y-1">
+            <AdminIdCell value={item.tenantId} label="租户" />
+            <AdminIdCell value={item.userId} label="用户" />
+          </div>
+        ),
+      },
+      {
+        title: '企业 / 联系邮箱',
+        key: 'company',
+        render: (_value, item) => (
+          <>
+            <p>{item.companyName}</p>
+            <p className="text-muted-foreground text-xs">{item.contactEmail}</p>
+            {item.bankReference ? (
+              <p className="font-mono text-xs text-muted-foreground">{item.bankReference}</p>
+            ) : null}
+          </>
+        ),
+      },
+      {
+        title: '汇款 / 积分',
+        key: 'amount',
+        render: (_value, item) => (
+          <>
+            <p>{formatBillingPrice(item.amountCents, 'CNY')}</p>
+            <p className="text-xs text-muted-foreground">
+              {item.points.toLocaleString('zh-CN')} 点
+            </p>
+          </>
+        ),
+      },
+      {
+        title: '状态',
+        key: 'status',
+        render: (_value, item) => (
+          <>
+            <AdminStatusBadge
+              status={item.status}
+              label={wireTransferStatusLabel(item.status)}
+            />
+            {item.adminRemark ? (
+              <p className="mt-1 max-w-[180px] truncate text-xs text-muted-foreground">
+                {item.adminRemark}
+              </p>
+            ) : null}
+          </>
+        ),
+      },
+      {
+        title: '申请时间',
+        key: 'createdAt',
+        render: (_value, item) => formatAdminIsoDate(item.createdAt),
+      },
+    ]
+    if (canAdjust) {
+      cols.push({
+        title: '操作',
+        key: 'actions',
+        render: (_value, item) =>
+          item.status === 'pending' ? (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={actingId === item.id}
+                onClick={() => void handleApprove(item)}
+              >
+                审核入账
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={actingId === item.id}
+                onClick={() => setRejectingTransfer(item)}
+              >
+                驳回
+              </Button>
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground">—</span>
+          ),
+      })
+    }
+    return cols
+  }, [actingId, canAdjust])
+
   return (
     <>
       <div className="space-y-4">
@@ -219,7 +312,7 @@ export function BillingWireTransfersPanel({
         ) : null}
       </AdminPanel>
 
-      <AdminPanel>
+      <AdminPanel className="p-0">
         {query.isLoading ? (
           <div className="px-6 py-5">
             <AdminTableSkeleton columns={8} rows={5} />
@@ -237,93 +330,12 @@ export function BillingWireTransfersPanel({
             <AdminEmptyState message="暂无对公转账申请" />
           </div>
         ) : query.data ? (
-          <>
-            <AdminDataTable>
-              <AdminTableHead>
-                <AdminTableRow>
-                  <AdminTableHeaderCell>申请单号</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>租户 / 用户</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>企业 / 联系邮箱</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>汇款 / 积分</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>状态</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>申请时间</AdminTableHeaderCell>
-                  {canAdjust ? <AdminTableHeaderCell>操作</AdminTableHeaderCell> : null}
-                </AdminTableRow>
-              </AdminTableHead>
-              <AdminTableBody>
-                {query.data.items.map((item) => (
-                  <AdminTableRow key={item.id}>
-                    <AdminTableCell className="font-mono text-xs">{item.requestNo}</AdminTableCell>
-                    <AdminTableCell>
-                      <div className="space-y-1">
-                        <AdminIdCell value={item.tenantId} label="租户" />
-                        <AdminIdCell value={item.userId} label="用户" />
-                      </div>
-                    </AdminTableCell>
-                    <AdminTableCell>
-                      <p>{item.companyName}</p>
-                      <p className="text-muted-foreground text-xs">{item.contactEmail}</p>
-                      {item.bankReference ? (
-                        <p className="font-mono text-xs text-muted-foreground">{item.bankReference}</p>
-                      ) : null}
-                    </AdminTableCell>
-                    <AdminTableCell>
-                      <p>{formatBillingPrice(item.amountCents, 'CNY')}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {item.points.toLocaleString('zh-CN')} 点
-                      </p>
-                    </AdminTableCell>
-                    <AdminTableCell>
-                      <AdminStatusBadge
-                        status={item.status}
-                        label={wireTransferStatusLabel(item.status)}
-                      />
-                      {item.adminRemark ? (
-                        <p className="mt-1 max-w-[180px] truncate text-xs text-muted-foreground">
-                          {item.adminRemark}
-                        </p>
-                      ) : null}
-                    </AdminTableCell>
-                    <AdminTableCell>{formatAdminIsoDate(item.createdAt)}</AdminTableCell>
-                    {canAdjust ? (
-                      <AdminTableCell>
-                        {item.status === 'pending' ? (
-                          <div className="flex flex-wrap gap-2">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              disabled={actingId === item.id}
-                              onClick={() => void handleApprove(item)}
-                            >
-                              审核入账
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              disabled={actingId === item.id}
-                              onClick={() => setRejectingTransfer(item)}
-                            >
-                              驳回
-                            </Button>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        )}
-                      </AdminTableCell>
-                    ) : null}
-                  </AdminTableRow>
-                ))}
-              </AdminTableBody>
-            </AdminDataTable>
-            <AdminTablePagination
-              page={page}
-              pageSize={PAGE_SIZE}
-              total={query.data.total}
-              onPageChange={setPage}
-            />
-          </>
+          <AdminAntTable<AdminWireTransfer>
+            rowKey="id"
+            columns={columns}
+            dataSource={query.data.items}
+            pagination={adminAntZeroBasedPagination(page, PAGE_SIZE, query.data.total, setPage)}
+          />
         ) : null}
       </AdminPanel>
 

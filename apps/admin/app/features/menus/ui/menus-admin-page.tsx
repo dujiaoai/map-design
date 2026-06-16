@@ -44,6 +44,7 @@ import {
   type AdminMenuItem,
   type AdminMenuSection,
 } from '../lib/menu-admin-types'
+import { resolveMenuSectionIcon } from '../lib/menu-section-icon'
 
 function resolveResourceId(item: AdminMenuItem): string {
   if (item.toolId) return item.toolId
@@ -187,15 +188,16 @@ export function MenusAdminPage() {
                   type="button"
                   onClick={() => setSelectedSectionId(section.id)}
                   className={cn(
-                    'flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm transition-colors',
+                    'flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors',
                     selectedSectionId === section.id
                       ? 'bg-accent text-foreground'
                       : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
                   )}
                 >
-                  <span>{section.label}</span>
+                  {resolveMenuSectionIcon(section)}
+                  <span className="min-w-0 flex-1 truncate">{section.label}</span>
                   {!section.enabled ? (
-                    <Badge variant="outline" className="text-[10px]">
+                    <Badge variant="outline" className="shrink-0 text-[10px]">
                       已隐藏
                     </Badge>
                   ) : null}

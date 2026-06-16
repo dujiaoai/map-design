@@ -24,6 +24,8 @@
     "@repo/auth": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "^5.62.0",
+    "antd": "^6.4.4",
+    "dayjs": "^1.11.21",
     "isbot": "5.1.36",
     "lucide-react": "0.469.0",
     "react": "19.2.6",

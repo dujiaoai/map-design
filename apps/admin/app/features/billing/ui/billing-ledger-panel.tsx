@@ -1,10 +1,12 @@
 import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
+import type { TableColumnsType } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import { useCallback, useId, useState } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 
 import {
   adminBillingLedgerQuery,
   adminLedgerListSchema,
+  type AdminLedgerList,
 } from '~/features/billing/lib/billing-admin-api'
 import type { BillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
 import { useBillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
@@ -17,22 +19,16 @@ import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-quer
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
+import { AdminAntTable, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
-import {
-  AdminDataTable,
-  AdminTableBody,
-  AdminTableCell,
-  AdminTableHead,
-  AdminTableHeaderCell,
-  AdminTableRow,
-} from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
-import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 
 const PAGE_SIZE = 20
+
+type LedgerRow = AdminLedgerList['items'][number]
 
 export function BillingLedgerPanel({ filterSeed }: { filterSeed?: BillingFilterSeed }) {
   const tenantIdInputId = useId()
@@ -88,6 +84,58 @@ export function BillingLedgerPanel({ filterSeed }: { filterSeed?: BillingFilterS
   })
 
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
+
+  const columns = useMemo<TableColumnsType<LedgerRow>>(
+    () => [
+      {
+        title: '时间',
+        key: 'createdAt',
+        render: (_value, entry) => formatAdminIsoDate(entry.createdAt),
+      },
+      {
+        title: '用户 ID',
+        key: 'userId',
+        render: (_value, entry) => <AdminIdCell value={entry.userId} label="用户 ID" />,
+      },
+      {
+        title: '类型',
+        key: 'entryType',
+        render: (_value, entry) => formatLedgerEntryType(entry.entryType),
+      },
+      {
+        title: '变动',
+        key: 'amount',
+        render: (_value, entry) => (
+          <span
+            className={
+              entry.amount >= 0
+                ? 'font-medium text-primary tabular-nums'
+                : 'font-medium text-destructive tabular-nums'
+            }
+          >
+            {formatLedgerAmount(entry.amount)}
+          </span>
+        ),
+      },
+      {
+        title: '余额',
+        dataIndex: 'balanceAfter',
+        key: 'balanceAfter',
+      },
+      {
+        title: '产品',
+        dataIndex: 'productCode',
+        key: 'productCode',
+      },
+      {
+        title: '备注',
+        key: 'remark',
+        className: 'max-w-[240px] truncate',
+        render: (_value, entry) => <span title={entry.remark}>{entry.remark}</span>,
+      },
+    ],
+    [],
+  )
 
   return (
     <AdminPanel>
@@ -192,54 +240,12 @@ export function BillingLedgerPanel({ filterSeed }: { filterSeed?: BillingFilterS
         ) : query.data && query.data.items.length === 0 ? (
           <AdminEmptyState message="暂无流水记录。" />
         ) : query.data ? (
-          <>
-            <AdminDataTable>
-              <AdminTableHead>
-                <AdminTableRow>
-                  <AdminTableHeaderCell>时间</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>用户 ID</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>类型</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>变动</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>余额</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>产品</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>备注</AdminTableHeaderCell>
-                </AdminTableRow>
-              </AdminTableHead>
-              <AdminTableBody>
-                {query.data.items.map((entry) => (
-                  <AdminTableRow key={entry.id}>
-                    <AdminTableCell>{formatAdminIsoDate(entry.createdAt)}</AdminTableCell>
-                    <AdminTableCell>
-                      <AdminIdCell value={entry.userId} label="用户 ID" />
-                    </AdminTableCell>
-                    <AdminTableCell>{formatLedgerEntryType(entry.entryType)}</AdminTableCell>
-                    <AdminTableCell>
-                      <span
-                        className={
-                          entry.amount >= 0
-                            ? 'font-medium text-primary tabular-nums'
-                            : 'font-medium text-destructive tabular-nums'
-                        }
-                      >
-                        {formatLedgerAmount(entry.amount)}
-                      </span>
-                    </AdminTableCell>
-                    <AdminTableCell>{entry.balanceAfter}</AdminTableCell>
-                    <AdminTableCell>{entry.productCode}</AdminTableCell>
-                    <AdminTableCell className="max-w-[240px] truncate">
-                      <span title={entry.remark}>{entry.remark}</span>
-                    </AdminTableCell>
-                  </AdminTableRow>
-                ))}
-              </AdminTableBody>
-            </AdminDataTable>
-            <AdminTablePagination
-              page={page + 1}
-              pageSize={PAGE_SIZE}
-              total={query.data.total}
-              onPageChange={(nextPage) => setPage(nextPage - 1)}
-            />
-          </>
+          <AdminAntTable<LedgerRow>
+            rowKey="id"
+            columns={columns}
+            dataSource={query.data.items}
+            pagination={adminAntZeroBasedPagination(page, PAGE_SIZE, query.data.total, setPage)}
+          />
         ) : null}
       </div>
     </AdminPanel>

@@ -1,5 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Badge, Button, Input, cn, toast, useConfirmDialog } from '@repo/ui'
+import {
+  Badge,
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  cn,
+  toast,
+  useConfirmDialog,
+} from '@repo/ui'
 import { PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -14,6 +26,7 @@ import {
   type AdminPermission,
   type AdminPermissionModule,
 } from '~/shared/api/admin-api'
+import { AdminAntModal } from '~/shared/ant'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
@@ -44,6 +57,7 @@ export function PermissionsAdminPage() {
   const [formError, setFormError] = useState<string | null>(null)
 
   const [createModuleOpen, setCreateModuleOpen] = useState(false)
+  const [createModuleError, setCreateModuleError] = useState<string | null>(null)
   const [moduleCode, setModuleCode] = useState('')
   const [moduleName, setModuleName] = useState('')
   const [moduleDescription, setModuleDescription] = useState('')
@@ -85,6 +99,24 @@ export function PermissionsAdminPage() {
     await queryClient.invalidateQueries({ queryKey: adminQueryKeys.permissions })
   }
 
+  function closeCreateModuleDialog() {
+    setCreateModuleOpen(false)
+    setCreateModuleError(null)
+    setModuleCode('')
+    setModuleName('')
+    setModuleDescription('')
+    setModuleScope('workspace')
+  }
+
+  function openCreateModuleDialog() {
+    setCreateModuleError(null)
+    setModuleCode('')
+    setModuleName('')
+    setModuleDescription('')
+    setModuleScope('workspace')
+    setCreateModuleOpen(true)
+  }
+
   const createModuleMutation = useMutation({
     mutationFn: () =>
       createAdminPermissionModule({
@@ -96,14 +128,11 @@ export function PermissionsAdminPage() {
     onSuccess: async (created) => {
       await refreshModules()
       setSelectedModule(created)
-      setCreateModuleOpen(false)
-      setModuleCode('')
-      setModuleName('')
-      setModuleDescription('')
+      closeCreateModuleDialog()
       setFormError(null)
       toast.success('模块已创建', { description: '可在下方添加权限项。' })
     },
-    onError: (error) => setFormError(formatAdminApiError(error)),
+    onError: (error) => setCreateModuleError(formatAdminApiError(error)),
   })
 
   const patchModuleMutation = useMutation({
@@ -203,7 +232,7 @@ export function PermissionsAdminPage() {
         description="按模块组织权限码；自定义模块下可增删改权限项，系统内置项受保护。"
         actions={
           canWrite ? (
-            <Button type="button" size="sm" onClick={() => setCreateModuleOpen((open) => !open)}>
+            <Button type="button" size="sm" onClick={openCreateModuleDialog}>
               <PlusIcon className="size-4" />
               新建模块
             </Button>
@@ -211,35 +240,48 @@ export function PermissionsAdminPage() {
         }
       />
 
-      {createModuleOpen && canWrite ? (
-        <AdminPanel className="space-y-4 p-5">
-          <p className="text-sm font-medium">新建权限模块</p>
-          <div className="grid gap-4 md:grid-cols-2">
+      <AdminAntModal
+        title="新建权限模块"
+        open={createModuleOpen && canWrite}
+        onCancel={closeCreateModuleDialog}
+        footer={null}
+        width={560}
+      >
+        <div className="space-y-4 pt-1">
+          <p className="text-sm text-muted-foreground">
+            自定义模块用于扩展 RBAC；系统内置模块不可在此创建。
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
             <AdminField label="模块码">
               <Input
                 value={moduleCode}
                 onChange={(event) => setModuleCode(event.target.value)}
                 placeholder="map_tools"
                 className="font-mono"
+                autoFocus
               />
             </AdminField>
             <AdminField label="显示名">
               <Input value={moduleName} onChange={(event) => setModuleName(event.target.value)} />
             </AdminField>
             <AdminField label="作用域">
-              <select
-                className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm"
+              <Select
                 value={moduleScope}
-                onChange={(event) =>
-                  setModuleScope(event.target.value as AdminPermissionModule['scope'])
-                }
+                onValueChange={(value) => {
+                  if (value) setModuleScope(value as AdminPermissionModule['scope'])
+                }}
               >
-                {SCOPE_OPTIONS.map((scope) => (
-                  <option key={scope} value={scope}>
-                    {PERMISSION_SCOPE_LABELS[scope]} ({scope})
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SCOPE_OPTIONS.map((scope) => (
+                    <SelectItem key={scope} value={scope}>
+                      {PERMISSION_SCOPE_LABELS[scope]} ({scope})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </AdminField>
             <AdminField label="说明">
               <Input
@@ -248,7 +290,11 @@ export function PermissionsAdminPage() {
               />
             </AdminField>
           </div>
-          <div className="flex gap-2">
+          <AdminFormError message={createModuleError} />
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={closeCreateModuleDialog}>
+              取消
+            </Button>
             <Button
               type="button"
               disabled={createModuleMutation.isPending || !moduleCode.trim() || !moduleName.trim()}
@@ -256,12 +302,9 @@ export function PermissionsAdminPage() {
             >
               {createModuleMutation.isPending ? '创建中…' : '创建模块'}
             </Button>
-            <Button type="button" variant="ghost" onClick={() => setCreateModuleOpen(false)}>
-              取消
-            </Button>
           </div>
-        </AdminPanel>
-      ) : null}
+        </div>
+      </AdminAntModal>
 
       <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
         <AdminPanel className="p-2">

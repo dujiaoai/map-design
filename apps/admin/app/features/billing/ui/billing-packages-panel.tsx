@@ -1,6 +1,7 @@
 import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast, useConfirmDialog } from '@repo/ui'
+import type { TableColumnsType } from 'antd'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
   adminBillingPackagesQuery,
@@ -12,19 +13,11 @@ import { formatBillingPrice } from '~/features/billing/lib/billing-format'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
+import { AdminAntTable, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
-import {
-  AdminDataTable,
-  AdminTableBody,
-  AdminTableCell,
-  AdminTableHead,
-  AdminTableHeaderCell,
-  AdminTableRow,
-} from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge } from '~/shared/ui/admin-status-badge'
-import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 const PAGE_SIZE = 20
@@ -103,6 +96,90 @@ export function BillingPackagesPanel({
   }
 
   const hasPackageFilters = statusFilter !== 'all' || appliedCodeSearch.length > 0
+
+  const columns = useMemo<TableColumnsType<AdminPackage>>(() => {
+    const cols: TableColumnsType<AdminPackage> = [
+      {
+        title: '代码',
+        key: 'code',
+        render: (_value, pkg) => <AdminIdCell value={pkg.code} label="SKU 代码" />,
+      },
+      {
+        title: '积分',
+        key: 'points',
+        render: (_value, pkg) => pkg.points.toLocaleString('zh-CN'),
+      },
+      {
+        title: '售价',
+        key: 'price',
+        render: (_value, pkg) => formatBillingPrice(pkg.priceCents, pkg.currency),
+      },
+      {
+        title: '状态',
+        key: 'status',
+        render: (_value, pkg) => <AdminStatusBadge status={pkg.status} />,
+      },
+      {
+        title: '排序',
+        dataIndex: 'sortOrder',
+        key: 'sortOrder',
+      },
+    ]
+    if (canWrite) {
+      cols.push({
+        title: '操作',
+        key: 'actions',
+        render: (_value, pkg) => (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onEditPackage?.(pkg)}
+            >
+              编辑
+            </Button>
+            {pkg.status === 'active' ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={statusMutation.isPending}
+                onClick={async () => {
+                  const confirmed = await confirm({
+                    description: `确定下架 SKU「${pkg.code}」？前台充值页将不再展示该套餐。`,
+                    confirmLabel: '下架',
+                  })
+                  if (!confirmed) return
+                  statusMutation.mutate({ pkg, status: 'inactive' })
+                }}
+              >
+                {pendingCode === pkg.code && statusMutation.isPending ? '下架中…' : '下架'}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={statusMutation.isPending}
+                onClick={async () => {
+                  const confirmed = await confirm({
+                    description: `确定上架 SKU「${pkg.code}」？前台充值页将重新展示该套餐。`,
+                    confirmLabel: '上架',
+                  })
+                  if (!confirmed) return
+                  statusMutation.mutate({ pkg, status: 'active' })
+                }}
+              >
+                {pendingCode === pkg.code && statusMutation.isPending ? '上架中…' : '上架'}
+              </Button>
+            )}
+          </div>
+        ),
+      })
+    }
+    return cols
+  }, [canWrite, confirm, onEditPackage, pendingCode, statusMutation])
 
   return (
     <>
@@ -196,94 +273,12 @@ export function BillingPackagesPanel({
               <AdminEmptyState message="暂无 SKU。" />
             )
           ) : (
-            <>
-              <AdminDataTable>
-                <AdminTableHead>
-                  <AdminTableRow>
-                    <AdminTableHeaderCell>代码</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>积分</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>售价</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>状态</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>排序</AdminTableHeaderCell>
-                    {canWrite ? <AdminTableHeaderCell>操作</AdminTableHeaderCell> : null}
-                  </AdminTableRow>
-                </AdminTableHead>
-                <AdminTableBody>
-                  {items.map((pkg) => (
-                    <AdminTableRow key={pkg.id}>
-                      <AdminTableCell>
-                        <AdminIdCell value={pkg.code} label="SKU 代码" />
-                      </AdminTableCell>
-                      <AdminTableCell>{pkg.points.toLocaleString('zh-CN')}</AdminTableCell>
-                      <AdminTableCell>{formatBillingPrice(pkg.priceCents, pkg.currency)}</AdminTableCell>
-                      <AdminTableCell>
-                        <AdminStatusBadge status={pkg.status} />
-                      </AdminTableCell>
-                      <AdminTableCell>{pkg.sortOrder}</AdminTableCell>
-                      {canWrite ? (
-                        <AdminTableCell>
-                          <div className="flex flex-wrap gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => onEditPackage?.(pkg)}
-                            >
-                              编辑
-                            </Button>
-                            {pkg.status === 'active' ? (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={statusMutation.isPending}
-                                onClick={async () => {
-                                  const confirmed = await confirm({
-                                    description: `确定下架 SKU「${pkg.code}」？前台充值页将不再展示该套餐。`,
-                                    confirmLabel: '下架',
-                                  })
-                                  if (!confirmed) return
-                                  statusMutation.mutate({ pkg, status: 'inactive' })
-                                }}
-                              >
-                                {pendingCode === pkg.code && statusMutation.isPending
-                                  ? '下架中…'
-                                  : '下架'}
-                              </Button>
-                            ) : (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={statusMutation.isPending}
-                                onClick={async () => {
-                                  const confirmed = await confirm({
-                                    description: `确定上架 SKU「${pkg.code}」？前台充值页将重新展示该套餐。`,
-                                    confirmLabel: '上架',
-                                  })
-                                  if (!confirmed) return
-                                  statusMutation.mutate({ pkg, status: 'active' })
-                                }}
-                              >
-                                {pendingCode === pkg.code && statusMutation.isPending
-                                  ? '上架中…'
-                                  : '上架'}
-                              </Button>
-                            )}
-                          </div>
-                        </AdminTableCell>
-                      ) : null}
-                    </AdminTableRow>
-                  ))}
-                </AdminTableBody>
-              </AdminDataTable>
-              <AdminTablePagination
-                page={page + 1}
-                pageSize={PAGE_SIZE}
-                total={total}
-                onPageChange={(next) => setPage(next - 1)}
-              />
-            </>
+            <AdminAntTable<AdminPackage>
+              rowKey="id"
+              columns={columns}
+              dataSource={items}
+              pagination={adminAntZeroBasedPagination(page, PAGE_SIZE, total, setPage)}
+            />
           )}
         </div>
       </AdminPanel>

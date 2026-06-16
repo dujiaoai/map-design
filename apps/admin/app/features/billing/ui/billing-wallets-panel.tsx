@@ -1,10 +1,12 @@
 import { Button, Input, cn } from '@repo/ui'
+import type { TableColumnsType } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import { useCallback, useId, useState } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 
 import {
   adminBillingWalletsQuery,
   adminWalletListSchema,
+  type AdminWalletList,
 } from '~/features/billing/lib/billing-admin-api'
 import type { BillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
 import { useBillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
@@ -13,22 +15,16 @@ import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-quer
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
+import { AdminAntTable, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
-import {
-  AdminDataTable,
-  AdminTableBody,
-  AdminTableCell,
-  AdminTableHead,
-  AdminTableHeaderCell,
-  AdminTableRow,
-} from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
-import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 
 const PAGE_SIZE = 20
 const LOW_BALANCE_THRESHOLD = 100
+
+type WalletRow = AdminWalletList['items'][number]
 
 export function BillingWalletsPanel({
   filterSeed,
@@ -80,6 +76,88 @@ export function BillingWalletsPanel({
   }
 
   const hasWalletFilters = Boolean(filters.tenantId || filters.userId)
+
+  const columns = useMemo<TableColumnsType<WalletRow>>(() => {
+    const cols: TableColumnsType<WalletRow> = [
+      {
+        title: '租户 ID',
+        key: 'tenantId',
+        render: (_value, wallet) => <AdminIdCell value={wallet.tenantId} label="租户 ID" />,
+      },
+      {
+        title: '用户 ID',
+        key: 'userId',
+        render: (_value, wallet) => <AdminIdCell value={wallet.userId} label="用户 ID" />,
+      },
+      {
+        title: '可用积分',
+        key: 'availableBalance',
+        render: (_value, wallet) => {
+          const isLow = wallet.availableBalance < LOW_BALANCE_THRESHOLD
+          return (
+            <span
+              className={cn(
+                'tabular-nums',
+                isLow && 'font-medium text-amber-600 dark:text-amber-400',
+              )}
+            >
+              {wallet.availableBalance}
+              {isLow ? ' · 偏低' : ''}
+            </span>
+          )
+        },
+      },
+      {
+        title: '冻结',
+        dataIndex: 'frozenBalance',
+        key: 'frozenBalance',
+      },
+      {
+        title: '余额',
+        dataIndex: 'balance',
+        key: 'balance',
+      },
+    ]
+    if (onNavigate) {
+      cols.push({
+        title: '操作',
+        key: 'actions',
+        render: (_value, wallet) => (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                onNavigate({
+                  tab: 'ledger',
+                  tenantId: wallet.tenantId,
+                  userId: wallet.userId,
+                })
+              }
+            >
+              积分流水
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                onNavigate({
+                  tab: 'orders',
+                  tenantId: wallet.tenantId,
+                  userId: wallet.userId,
+                })
+              }
+            >
+              充值订单
+            </Button>
+          </div>
+        ),
+      })
+    }
+    return cols
+  }, [onNavigate])
 
   return (
     <AdminPanel>
@@ -163,88 +241,12 @@ export function BillingWalletsPanel({
             <AdminEmptyState message="暂无钱包。" />
           )
         ) : query.data ? (
-          <>
-            <AdminDataTable>
-              <AdminTableHead>
-                <AdminTableRow>
-                  <AdminTableHeaderCell>租户 ID</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>用户 ID</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>可用积分</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>冻结</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>余额</AdminTableHeaderCell>
-                  {onNavigate ? <AdminTableHeaderCell>操作</AdminTableHeaderCell> : null}
-                </AdminTableRow>
-              </AdminTableHead>
-              <AdminTableBody>
-                {query.data.items.map((wallet) => {
-                  const isLow = wallet.availableBalance < LOW_BALANCE_THRESHOLD
-                  return (
-                    <AdminTableRow key={wallet.walletId}>
-                      <AdminTableCell>
-                        <AdminIdCell value={wallet.tenantId} label="租户 ID" />
-                      </AdminTableCell>
-                      <AdminTableCell>
-                        <AdminIdCell value={wallet.userId} label="用户 ID" />
-                      </AdminTableCell>
-                      <AdminTableCell>
-                        <span
-                          className={cn(
-                            'tabular-nums',
-                            isLow && 'font-medium text-amber-600 dark:text-amber-400',
-                          )}
-                        >
-                          {wallet.availableBalance}
-                          {isLow ? ' · 偏低' : ''}
-                        </span>
-                      </AdminTableCell>
-                      <AdminTableCell>{wallet.frozenBalance}</AdminTableCell>
-                      <AdminTableCell>{wallet.balance}</AdminTableCell>
-                      {onNavigate ? (
-                        <AdminTableCell>
-                          <div className="flex flex-wrap gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                onNavigate({
-                                  tab: 'ledger',
-                                  tenantId: wallet.tenantId,
-                                  userId: wallet.userId,
-                                })
-                              }
-                            >
-                              积分流水
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                onNavigate({
-                                  tab: 'orders',
-                                  tenantId: wallet.tenantId,
-                                  userId: wallet.userId,
-                                })
-                              }
-                            >
-                              充值订单
-                            </Button>
-                          </div>
-                        </AdminTableCell>
-                      ) : null}
-                    </AdminTableRow>
-                  )
-                })}
-              </AdminTableBody>
-            </AdminDataTable>
-            <AdminTablePagination
-              page={page + 1}
-              pageSize={PAGE_SIZE}
-              total={query.data.total}
-              onPageChange={(nextPage) => setPage(nextPage - 1)}
-            />
-          </>
+          <AdminAntTable<WalletRow>
+            rowKey="walletId"
+            columns={columns}
+            dataSource={query.data.items}
+            pagination={adminAntZeroBasedPagination(page, PAGE_SIZE, query.data.total, setPage)}
+          />
         ) : null}
       </div>
     </AdminPanel>

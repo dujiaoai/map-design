@@ -9,9 +9,10 @@ import {
   toast,
   useConfirmDialog,
 } from '@repo/ui'
+import type { TableColumnsType } from 'antd'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { TicketIcon } from 'lucide-react'
-import { useId, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 
 import {
   adminBillingCouponsQuery,
@@ -22,18 +23,10 @@ import {
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
+import { AdminAntTable, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
-import {
-  AdminDataTable,
-  AdminTableBody,
-  AdminTableCell,
-  AdminTableHead,
-  AdminTableHeaderCell,
-  AdminTableRow,
-} from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge, formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
-import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 const PAGE_SIZE = 20
@@ -155,6 +148,81 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
   const items = query.data?.items ?? []
   const total = query.data?.total ?? 0
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
+
+  const columns = useMemo<TableColumnsType<AdminCoupon>>(() => {
+    const cols: TableColumnsType<AdminCoupon> = [
+      {
+        title: '兑换码',
+        dataIndex: 'code',
+        key: 'code',
+        render: (code: string) => <span className="font-mono text-xs">{code}</span>,
+      },
+      {
+        title: '类型',
+        key: 'kind',
+        render: (_value, coupon) => (coupon.kind === 'discount' ? '充值抵扣' : '赠送积分'),
+      },
+      {
+        title: '权益',
+        key: 'benefit',
+        render: (_value, coupon) =>
+          coupon.kind === 'discount' && coupon.discountCents
+            ? `减 ¥${(coupon.discountCents / 100).toFixed(2)}`
+            : `${coupon.points.toLocaleString('zh-CN')} 点`,
+      },
+      {
+        title: '已兑换 / 上限',
+        key: 'redemptions',
+        render: (_value, coupon) =>
+          `${coupon.redemptionCount}${
+            coupon.maxTotalRedemptions != null ? ` / ${coupon.maxTotalRedemptions}` : ' / 不限'
+          }`,
+      },
+      {
+        title: '状态',
+        key: 'status',
+        render: (_value, coupon) => (
+          <AdminStatusBadge
+            status={coupon.status}
+            label={coupon.status === 'active' ? '生效中' : '已停用'}
+          />
+        ),
+      },
+      {
+        title: '有效期',
+        key: 'validUntil',
+        className: 'text-muted-foreground text-xs',
+        render: (_value, coupon) =>
+          coupon.validUntil ? formatAdminIsoDate(coupon.validUntil) : '—',
+      },
+    ]
+    if (canWrite) {
+      cols.push({
+        title: '操作',
+        key: 'actions',
+        render: (_value, coupon) => (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={pendingCode === coupon.code}
+            onClick={async () => {
+              const nextStatus = coupon.status === 'active' ? 'inactive' : 'active'
+              const confirmed = await confirm({
+                description: `确认将 ${coupon.code} 设为${nextStatus === 'inactive' ? '停用' : '生效'}？`,
+                confirmLabel: '确认',
+              })
+              if (!confirmed) return
+              void statusMutation.mutateAsync({ coupon, status: nextStatus })
+            }}
+          >
+            {coupon.status === 'active' ? '停用' : '启用'}
+          </Button>
+        ),
+      })
+    }
+    return cols
+  }, [canWrite, confirm, pendingCode, statusMutation])
 
   return (
     <div className="space-y-4">
@@ -295,7 +363,7 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
         </div>
       </AdminPanel>
 
-      <AdminPanel>
+      <AdminPanel className="p-0">
         {query.isLoading ? (
           <div className="px-6 py-5">
             <AdminTableSkeleton columns={6} rows={4} />
@@ -313,79 +381,12 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
             <AdminEmptyState message="暂无优惠券" />
           </div>
         ) : (
-          <>
-            <AdminDataTable>
-            <AdminTableHead>
-              <AdminTableRow>
-                <AdminTableHeaderCell>兑换码</AdminTableHeaderCell>
-                <AdminTableHeaderCell>类型</AdminTableHeaderCell>
-                <AdminTableHeaderCell>权益</AdminTableHeaderCell>
-                <AdminTableHeaderCell>已兑换 / 上限</AdminTableHeaderCell>
-                <AdminTableHeaderCell>状态</AdminTableHeaderCell>
-                <AdminTableHeaderCell>有效期</AdminTableHeaderCell>
-                {canWrite ? <AdminTableHeaderCell>操作</AdminTableHeaderCell> : null}
-              </AdminTableRow>
-            </AdminTableHead>
-            <AdminTableBody>
-              {items.map((coupon) => (
-                <AdminTableRow key={coupon.id}>
-                  <AdminTableCell className="font-mono text-xs">{coupon.code}</AdminTableCell>
-                  <AdminTableCell>
-                    {coupon.kind === 'discount' ? '充值抵扣' : '赠送积分'}
-                  </AdminTableCell>
-                  <AdminTableCell>
-                    {coupon.kind === 'discount' && coupon.discountCents
-                      ? `减 ¥${(coupon.discountCents / 100).toFixed(2)}`
-                      : `${coupon.points.toLocaleString('zh-CN')} 点`}
-                  </AdminTableCell>
-                  <AdminTableCell>
-                    {coupon.redemptionCount}
-                    {coupon.maxTotalRedemptions != null
-                      ? ` / ${coupon.maxTotalRedemptions}`
-                      : ' / 不限'}
-                  </AdminTableCell>
-                  <AdminTableCell>
-                    <AdminStatusBadge
-                      status={coupon.status}
-                      label={coupon.status === 'active' ? '生效中' : '已停用'}
-                    />
-                  </AdminTableCell>
-                  <AdminTableCell className="text-muted-foreground text-xs">
-                    {coupon.validUntil ? formatAdminIsoDate(coupon.validUntil) : '—'}
-                  </AdminTableCell>
-                  {canWrite ? (
-                    <AdminTableCell>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        disabled={pendingCode === coupon.code}
-                        onClick={async () => {
-                          const nextStatus =
-                            coupon.status === 'active' ? 'inactive' : 'active'
-                          const confirmed = await confirm({
-                            description: `确认将 ${coupon.code} 设为${nextStatus === 'inactive' ? '停用' : '生效'}？`,
-                            confirmLabel: '确认',
-                          })
-                          if (!confirmed) return
-                          void statusMutation.mutateAsync({ coupon, status: nextStatus })
-                        }}
-                      >
-                        {coupon.status === 'active' ? '停用' : '启用'}
-                      </Button>
-                    </AdminTableCell>
-                  ) : null}
-                </AdminTableRow>
-              ))}
-            </AdminTableBody>
-            </AdminDataTable>
-            <AdminTablePagination
-              page={page + 1}
-              pageSize={PAGE_SIZE}
-              total={total}
-              onPageChange={(next) => setPage(next - 1)}
-            />
-          </>
+          <AdminAntTable<AdminCoupon>
+            rowKey="id"
+            columns={columns}
+            dataSource={items}
+            pagination={adminAntZeroBasedPagination(page, PAGE_SIZE, total, setPage)}
+          />
         )}
       </AdminPanel>
     </div>

@@ -1,10 +1,12 @@
 import { Button, Input } from '@repo/ui'
+import type { TableColumnsType } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import { useCallback, useId, useState } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 
 import {
   adminBillingUsageQuery,
   adminUsageSummarySchema,
+  type AdminUsageSummary,
 } from '~/features/billing/lib/billing-admin-api'
 import type { BillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
 import { useBillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
@@ -12,21 +14,15 @@ import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-quer
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
+import { AdminAntTable, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
-import {
-  AdminDataTable,
-  AdminTableBody,
-  AdminTableCell,
-  AdminTableHead,
-  AdminTableHeaderCell,
-  AdminTableRow,
-} from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
-import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 const PAGE_SIZE = 20
+
+type UsageRow = AdminUsageSummary['items'][number]
 
 export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSeed }) {
   const tenantIdInputId = useId()
@@ -59,6 +55,32 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
   })
 
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
+
+  const columns = useMemo<TableColumnsType<UsageRow>>(
+    () => [
+      {
+        title: '租户 ID',
+        key: 'tenantId',
+        render: (_value, item) => <AdminIdCell value={item.tenantId} label="租户 ID" />,
+      },
+      {
+        title: '用户 ID',
+        key: 'userId',
+        render: (_value, item) => <AdminIdCell value={item.userId} label="用户 ID" />,
+      },
+      {
+        title: '消耗点数',
+        key: 'totalPoints',
+        render: (_value, item) => item.totalPoints.toLocaleString('zh-CN'),
+      },
+      {
+        title: '事件数',
+        key: 'eventCount',
+        render: (_value, item) => item.eventCount.toLocaleString('zh-CN'),
+      },
+    ],
+    [],
+  )
 
   return (
     <AdminPanel>
@@ -147,38 +169,12 @@ export function BillingUsagePanel({ filterSeed }: { filterSeed?: BillingFilterSe
             {query.data.items.length === 0 ? (
               <AdminEmptyState message="该条件下暂无消费记录。" />
             ) : (
-              <>
-                <AdminDataTable>
-                <AdminTableHead>
-                  <AdminTableRow>
-                    <AdminTableHeaderCell>租户 ID</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>用户 ID</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>消耗点数</AdminTableHeaderCell>
-                    <AdminTableHeaderCell>事件数</AdminTableHeaderCell>
-                  </AdminTableRow>
-                </AdminTableHead>
-                <AdminTableBody>
-                  {query.data.items.map((item) => (
-                    <AdminTableRow key={`${item.tenantId}:${item.userId}`}>
-                      <AdminTableCell>
-                        <AdminIdCell value={item.tenantId} label="租户 ID" />
-                      </AdminTableCell>
-                      <AdminTableCell>
-                        <AdminIdCell value={item.userId} label="用户 ID" />
-                      </AdminTableCell>
-                      <AdminTableCell>{item.totalPoints.toLocaleString('zh-CN')}</AdminTableCell>
-                      <AdminTableCell>{item.eventCount.toLocaleString('zh-CN')}</AdminTableCell>
-                    </AdminTableRow>
-                  ))}
-                </AdminTableBody>
-                </AdminDataTable>
-                <AdminTablePagination
-                  page={page + 1}
-                  pageSize={PAGE_SIZE}
-                  total={query.data.total}
-                  onPageChange={(next) => setPage(next - 1)}
-                />
-              </>
+              <AdminAntTable<UsageRow>
+                rowKey={(item) => `${item.tenantId}:${item.userId}`}
+                columns={columns}
+                dataSource={query.data.items}
+                pagination={adminAntZeroBasedPagination(page, PAGE_SIZE, query.data.total, setPage)}
+              />
             )}
           </div>
         ) : null}

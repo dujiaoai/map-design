@@ -1,10 +1,12 @@
 import { Button, Input } from '@repo/ui'
+import type { TableColumnsType } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import { useCallback, useId, useState } from 'react'
+import { useCallback, useId, useMemo, useState } from 'react'
 
 import {
   adminAdjustRecordListSchema,
   adminBillingAdjustRecordsQuery,
+  type AdminAdjustRecordList,
 } from '~/features/billing/lib/billing-admin-api'
 import type { BillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
 import { useBillingFilterSeed } from '~/features/billing/lib/billing-filter-seed'
@@ -12,22 +14,16 @@ import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-quer
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { validateOptionalUuidFilters } from '~/shared/lib/uuid'
+import { AdminAntTable, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
-import {
-  AdminDataTable,
-  AdminTableBody,
-  AdminTableCell,
-  AdminTableHead,
-  AdminTableHeaderCell,
-  AdminTableRow,
-} from '~/shared/ui/admin-data-table'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
-import { AdminTablePagination } from '~/shared/ui/admin-table-pagination'
 
 const PAGE_SIZE = 20
+
+type AdjustRecordRow = AdminAdjustRecordList['items'][number]
 
 function formatAdjustAmount(amount: number) {
   if (amount > 0) return `+${amount}`
@@ -72,6 +68,52 @@ export function BillingAdjustRecordsPanel({
   })
 
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
+
+  const columns = useMemo<TableColumnsType<AdjustRecordRow>>(
+    () => [
+      {
+        title: '时间',
+        key: 'createdAt',
+        render: (_value, record) => formatAdminIsoDate(record.createdAt),
+      },
+      {
+        title: '租户 ID',
+        key: 'tenantId',
+        render: (_value, record) => <AdminIdCell value={record.tenantId} label="租户 ID" />,
+      },
+      {
+        title: '用户 ID',
+        key: 'userId',
+        render: (_value, record) => <AdminIdCell value={record.userId} label="用户 ID" />,
+      },
+      {
+        title: '变动',
+        key: 'amount',
+        render: (_value, record) => (
+          <span
+            className={
+              record.amount >= 0
+                ? 'font-medium text-primary tabular-nums'
+                : 'font-medium text-destructive tabular-nums'
+            }
+          >
+            {formatAdjustAmount(record.amount)}
+          </span>
+        ),
+      },
+      {
+        title: '余额',
+        dataIndex: 'balanceAfter',
+        key: 'balanceAfter',
+      },
+      {
+        title: '备注',
+        dataIndex: 'remark',
+        key: 'remark',
+      },
+    ],
+    [],
+  )
 
   return (
     <AdminPanel>
@@ -148,52 +190,12 @@ export function BillingAdjustRecordsPanel({
         ) : query.data && query.data.items.length === 0 ? (
           <AdminEmptyState message="暂无调账记录。" />
         ) : query.data ? (
-          <>
-            <AdminDataTable>
-              <AdminTableHead>
-                <AdminTableRow>
-                  <AdminTableHeaderCell>时间</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>租户 ID</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>用户 ID</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>变动</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>余额</AdminTableHeaderCell>
-                  <AdminTableHeaderCell>备注</AdminTableHeaderCell>
-                </AdminTableRow>
-              </AdminTableHead>
-              <AdminTableBody>
-                {query.data.items.map((record) => (
-                  <AdminTableRow key={record.id}>
-                    <AdminTableCell>{formatAdminIsoDate(record.createdAt)}</AdminTableCell>
-                    <AdminTableCell>
-                      <AdminIdCell value={record.tenantId} label="租户 ID" />
-                    </AdminTableCell>
-                    <AdminTableCell>
-                      <AdminIdCell value={record.userId} label="用户 ID" />
-                    </AdminTableCell>
-                    <AdminTableCell>
-                      <span
-                        className={
-                          record.amount >= 0
-                            ? 'font-medium text-primary tabular-nums'
-                            : 'font-medium text-destructive tabular-nums'
-                        }
-                      >
-                        {formatAdjustAmount(record.amount)}
-                      </span>
-                    </AdminTableCell>
-                    <AdminTableCell>{record.balanceAfter}</AdminTableCell>
-                    <AdminTableCell>{record.remark}</AdminTableCell>
-                  </AdminTableRow>
-                ))}
-              </AdminTableBody>
-            </AdminDataTable>
-            <AdminTablePagination
-              page={page + 1}
-              pageSize={PAGE_SIZE}
-              total={query.data.total}
-              onPageChange={(nextPage) => setPage(nextPage - 1)}
-            />
-          </>
+          <AdminAntTable<AdjustRecordRow>
+            rowKey="id"
+            columns={columns}
+            dataSource={query.data.items}
+            pagination={adminAntZeroBasedPagination(page, PAGE_SIZE, query.data.total, setPage)}
+          />
         ) : null}
       </div>
     </AdminPanel>

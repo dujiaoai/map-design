@@ -13,7 +13,7 @@ export function AdminIdCell({
     value.length > 24 ? `${value.slice(0, 8)}…${value.slice(-4)}` : value
 
   return (
-    <div className={cn('flex min-w-0 items-center gap-0.5', className)}>
+    <span className={cn('inline-flex min-w-0 max-w-full items-center gap-0.5', className)}>
       <span className="truncate font-mono text-xs" title={value}>
         {display}
       </span>
@@ -23,6 +23,6 @@ export function AdminIdCell({
         onCopied={() => toast.success(label ? `${label}已复制` : '已复制到剪贴板')}
         onCopyError={() => toast.error('复制失败')}
       />
-    </div>
+    </span>
   )
 }

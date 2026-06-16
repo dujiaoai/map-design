@@ -1,0 +1,68 @@
+.admin-ant-root .admin-ant-table .ant-table {
+  background: transparent;
+  font-size: 0.875rem;
+}
+
+.admin-ant-root .admin-ant-table .ant-table-thead > tr > th {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-ant-root .admin-ant-table .ant-table-thead > tr > th::before {
+  display: none;
+}
+
+.admin-ant-root .admin-ant-table .ant-table-tbody > tr > td {
+  white-space: nowrap;
+}
+
+.admin-ant-root .admin-ant-table .ant-table-tbody > tr > td:first-child,
+.admin-ant-root .admin-ant-table .ant-table-thead > tr > th:first-child {
+  padding-left: 1.25rem;
+}
+
+.admin-ant-root .admin-ant-table .ant-table-tbody > tr > td:last-child,
+.admin-ant-root .admin-ant-table .ant-table-thead > tr > th:last-child {
+  padding-right: 1.25rem;
+}
+
+.admin-ant-root .admin-ant-table .ant-table-pagination {
+  margin: 0 !important;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html:not(.dark) .admin-ant-root .admin-ant-table .ant-table-pagination {
+  border-top-color: #c5d0dc;
+}
+
+.admin-ant-root .admin-ant-modal .ant-modal-content {
+  box-shadow:
+    0 24px 48px rgba(15, 23, 42, 0.12),
+    0 0 0 1px color-mix(in oklab, var(--primary) 8%, transparent);
+}
+
+html:not(.dark) .admin-ant-root .admin-ant-modal .ant-modal-content {
+  box-shadow:
+    0 20px 40px rgba(15, 23, 42, 0.08),
+    0 0 0 1px #c5d0dc;
+}
+
+.admin-ant-root .admin-ant-date-range.ant-picker {
+  min-width: 240px;
+}
+
+.admin-ant-root .admin-ant-date.ant-picker {
+  min-width: 160px;
+}
+
+.admin-ant-root .admin-ant-tree {
+  background: transparent;
+}
+
+.admin-ant-root .admin-ant-tree .ant-tree-node-content-wrapper {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.75rem;
+}

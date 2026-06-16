@@ -1,10 +1,3 @@
-import { sessionSchema, type Session } from '@repo/auth'
-
-import type { AdminUserSummary, PatchUserPayload } from '~/entities/user'
-
-import { api } from './client'
-import { buildAdminListQuery, type AdminListQuery } from './admin-list-query'
-
 export type { AdminListQuery } from './admin-list-query'
 export { buildAdminListQuery } from './admin-list-query'
 export type { AdminAuditLogEntry, AdminAuditLogListResponse } from '~/entities/audit-log'
@@ -97,175 +90,31 @@ export {
   unbindAdminUserOauthProvider,
   updateAdminUserRoles,
 } from '~/entities/user'
-
+export type {
+  AdminPingResponse,
+  AdminStatsResponse,
+  AdminSystemFlagsResponse,
+} from '~/entities/admin-platform'
+export {
+  fetchAdminPing,
+  fetchAdminStats,
+  fetchAdminSystemFlags,
+} from '~/entities/admin-platform'
+export type { AdminMfaStatusResponse, TotpEnrollResponse } from '~/entities/admin-mfa'
+export {
+  disableAdminTotp,
+  enrollAdminTotp,
+  fetchAdminMfaStatus,
+  regenerateAdminRecoveryCodes,
+  verifyAdminTotp,
+} from '~/entities/admin-mfa'
+export type { OidcAuthorizeResponse, OidcProvidersResponse } from '~/entities/admin-oidc'
+export { fetchOidcProviders, startOidcAuthorize } from '~/entities/admin-oidc'
+export type { SessionTenantListResponse, SessionTenantSummary } from '~/entities/account'
+export {
+  fetchSessionTenants,
+  updateAccountPassword,
+  updateAccountProfile,
+} from '~/entities/account'
+export { startImpersonation, stopImpersonation } from '~/entities/impersonation'
 export type { UserOauthBindItem, UserOauthBindsResponse } from './oauth-binds'
-
-export interface AdminPingResponse {
-  status: string
-  authenticated: boolean
-  platformAdmin: boolean
-}
-
-export function fetchAdminPing() {
-  return api.get<AdminPingResponse>('/admin/ping')
-}
-
-export interface AdminStatsResponse {
-  tenantCount: number
-  userCount: number
-  activeTenantCount: number
-}
-
-export function fetchAdminStats() {
-  return api.get<AdminStatsResponse>('/admin/stats')
-}
-
-export interface AdminSystemFlagsResponse {
-  registration: {
-    allowPublicOrgSignup: boolean
-    allowPublicPersonalSignup: boolean
-    registrationTokenTtl: string
-  }
-  auth: {
-    passwordStrengthEnabled: boolean
-  }
-  mail: {
-    enabled: boolean
-    fromAddress: string
-    outboundReady: boolean
-  }
-  rateLimit: {
-    enabled: boolean
-    loginIpMaxAttempts: number
-    loginAccountMaxAttempts: number
-  }
-  tenantRls: {
-    enabled: boolean
-  }
-  billing: {
-    integrationEnabled: boolean
-    baseUrl: string
-    membershipPushEnabled: boolean
-  }
-  mfa: {
-    enforcementEnabled: boolean
-    totpEnrollmentAvailable: boolean
-    enrolledPlatformAdminCount: number
-  }
-  oidc: {
-    enabled: boolean
-    authorizationCodeFlowAvailable: boolean
-    configuredProviderCount: number
-  }
-  runtime: {
-    activeProfiles: string[]
-    jwtPermEpoch: number
-  }
-}
-
-export interface AdminMfaStatusResponse {
-  enforcementEnabled: boolean
-  totpEnrollmentAvailable: boolean
-  enrolled: boolean
-  verifiedAt: number | null
-  recoveryCodesRemaining: number
-  recoveryCodes?: string[] | null
-}
-
-export function fetchAdminMfaStatus() {
-  return api.get<AdminMfaStatusResponse>('/admin/mfa/status')
-}
-
-export interface TotpEnrollResponse {
-  secret: string
-  otpauthUri: string
-  qrCodeDataUrl: string
-}
-
-export function enrollAdminTotp() {
-  return api.post<TotpEnrollResponse>('/admin/mfa/totp/enroll')
-}
-
-export function verifyAdminTotp(code: string) {
-  return api.post<AdminMfaStatusResponse>('/admin/mfa/totp/verify', { code })
-}
-
-export function disableAdminTotp(code: string) {
-  return api.request<AdminMfaStatusResponse>('/admin/mfa/totp', {
-    method: 'DELETE',
-    body: { code },
-  })
-}
-
-export function regenerateAdminRecoveryCodes(code: string) {
-  return api.post<AdminMfaStatusResponse>('/admin/mfa/recovery-codes/regenerate', { code })
-}
-
-export interface OidcProvidersResponse {
-  enabled: boolean
-  authorizationCodeFlowAvailable: boolean
-  providers: Array<{ id: string; displayName: string }>
-}
-
-export interface OidcAuthorizeResponse {
-  authorizationUrl: string
-  state: string
-}
-
-export function fetchOidcProviders() {
-  return api.get<OidcProvidersResponse>('/auth/oidc/providers')
-}
-
-export function startOidcAuthorize(providerId: string, tenantId: string) {
-  const params = new URLSearchParams({ client: 'admin', tenantId: tenantId.trim() })
-  return api.get<OidcAuthorizeResponse>(
-    `/auth/oidc/${encodeURIComponent(providerId)}/authorize?${params.toString()}`,
-  )
-}
-
-export function fetchAdminSystemFlags() {
-  return api.get<AdminSystemFlagsResponse>('/admin/system/flags')
-}
-
-export interface SessionTenantSummary {
-  id: string
-  name: string
-  slug: string
-  plan: string
-  current: boolean
-}
-
-export interface SessionTenantListResponse {
-  items: SessionTenantSummary[]
-}
-
-export function fetchSessionTenants() {
-  return api.get<SessionTenantListResponse>('/tenants')
-}
-
-export async function updateAccountProfile(values: {
-  name: string
-  phone?: string | null
-  avatarUrl?: string | null
-}) {
-  const session = sessionSchema.parse(
-    await api.put<Session>('/users/me', {
-      name: values.name,
-      phone: values.phone ?? null,
-      avatarUrl: values.avatarUrl ?? null,
-    }),
-  )
-  return session
-}
-
-export function updateAccountPassword(oldPassword: string, newPassword: string) {
-  return api.post('/users/me/password', { oldPassword, newPassword })
-}
-
-export function startImpersonation(body: { tenantId: string; reason: string; totpCode?: string }) {
-  return api.post('/admin/impersonation', body)
-}
-
-export function stopImpersonation() {
-  return api.delete('/admin/impersonation')
-}

@@ -51,7 +51,7 @@ public class AdminSystemFlagsService {
             membershipSync.isPushEnabled()),
         new AdminSystemFlagsResponse.MfaFlags(
             saasAppProperties.getAuth().getAdminMfa().isEnforcementEnabled(),
-            false,
+            true,
             adminMfaService.countEnrolledPlatformAdmins()),
         new AdminSystemFlagsResponse.RuntimeFlags(activeProfiles(), jwtProperties.effectivePermEpoch()));
   }

@@ -32,7 +32,7 @@ saas:
     password:
       strength-enabled: false
     admin-mfa:
-      secret-encryption-key: MDEyMzQ1Njc4OUFCREVGMDEyMzQ1Njc4OUFCDEF=
+      secret-encryption-key: MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=
   rate-limit:
     enabled: false
   jwt:

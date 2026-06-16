@@ -51,7 +51,7 @@ saas:
       strength-enabled: ${SAAS_PASSWORD_STRENGTH:false}
     admin-mfa:
       enforcement-enabled: ${SAAS_ADMIN_MFA_ENFORCEMENT:false}
-      secret-encryption-key: ${SAAS_ADMIN_MFA_SECRET_KEY:MDEyMzQ1Njc4OUFCREVGMDEyMzQ1Njc4OUFCDEF=}
+      secret-encryption-key: ${SAAS_ADMIN_MFA_SECRET_KEY:MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDE=}
       totp-issuer: ${SAAS_ADMIN_MFA_TOTP_ISSUER:YunYan Admin}
   invite:
     token-ttl: PT48H

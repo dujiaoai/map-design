@@ -266,11 +266,19 @@ Sprint A～D、RBAC-P、Sprint F 骨架 + sec 已 ✅；以下为收束基础盘
 
 ---
 
+## FND-08g · 租户存储用量估算 ✅
+
+**交付（2026-06）**：`TenantStorageUsageService` 按 `map_layer` 行数 × 64 KiB 汇总 `storage.usedBytes`（配额 API + Admin 成员页摘要）。
+
+**不含**：附件/blob 真实字节、GeoJSON payload 计量、超额门控。
+
+---
+
 ## FND-08 · 远期（Later）
 
 | 项 | 说明 |
 | --- | --- |
-| Storage 用量统计 | 附件/图层存储 Sprint E 汇总 usedBytes |
+| 附件存储真实计量 | blob/附件表落地后替换占位算法 |
 | 菜单 RBAC / Admin 配置 | 权限码裁剪、运营可编辑菜单树 |
 | Marketing 完整站 | 官网除 `/pricing` 外页面 |
 

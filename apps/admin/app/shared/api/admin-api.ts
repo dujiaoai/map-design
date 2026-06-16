@@ -1,7 +1,40 @@
 import { sessionSchema, type Session } from '@repo/auth'
 
+import type { AdminUserSummary, PatchUserPayload } from '~/entities/user'
+
 import { api } from './client'
-import type { UserOauthBindsResponse } from './oauth-binds'
+import { buildAdminListQuery, type AdminListQuery } from './admin-list-query'
+
+export type { AdminListQuery } from './admin-list-query'
+export { buildAdminListQuery } from './admin-list-query'
+export type {
+  AdminTenantFeaturesResponse,
+  AdminTenantListResponse,
+  AdminTenantSummary,
+  CreateTenantPayload,
+  FeatureCatalogEntry,
+  FeatureCatalogResponse,
+  PatchTenantPayload,
+  TenantQuotasResponse,
+} from '~/entities/tenant'
+export {
+  createAdminTenant,
+  fetchAdminTenant,
+  fetchAdminTenants,
+  fetchFeatureCatalog,
+  fetchTenantFeatures,
+  fetchTenantQuotas,
+  patchAdminTenant,
+  updateTenantFeatures,
+} from '~/entities/tenant'
+export type { AdminUserListResponse, AdminUserSummary, PatchUserPayload } from '~/entities/user'
+export {
+  fetchAdminUserOauthBinds,
+  fetchAdminUsers,
+  patchAdminUser,
+  unbindAdminUserOauthProvider,
+  updateAdminUserRoles,
+} from '~/entities/user'
 
 export type { UserOauthBindItem, UserOauthBindsResponse } from './oauth-binds'
 
@@ -130,178 +163,6 @@ export function startOidcAuthorize(providerId: string, tenantId: string) {
 
 export function fetchAdminSystemFlags() {
   return api.get<AdminSystemFlagsResponse>('/admin/system/flags')
-}
-
-export interface AdminTenantSummary {
-  id: string
-  name: string
-  slug: string
-  plan: string
-  status: string
-  createdAt: number
-}
-
-export interface AdminListQuery {
-  q?: string
-  page?: number
-  size?: number
-  status?: 'active' | 'disabled' | 'invited'
-  sortBy?: string
-  sortDir?: 'asc' | 'desc'
-  action?: string
-  crossTenant?: boolean
-  tenantId?: string
-  from?: number
-  to?: number
-  actorUserId?: string
-}
-
-export interface AdminTenantListResponse {
-  tenants: AdminTenantSummary[]
-  total?: number
-  page?: number
-  size?: number
-}
-
-function buildAdminListQuery(params?: AdminListQuery) {
-  const search = new URLSearchParams()
-  if (params?.q) search.set('q', params.q)
-  if (params?.page != null) search.set('page', String(params.page))
-  if (params?.size != null) search.set('size', String(params.size))
-  if (params?.status) search.set('status', params.status)
-  if (params?.sortBy) search.set('sortBy', params.sortBy)
-  if (params?.sortDir) search.set('sortDir', params.sortDir)
-  if (params?.action) search.set('action', params.action)
-  if (params?.crossTenant != null) search.set('crossTenant', String(params.crossTenant))
-  if (params?.tenantId) search.set('tenantId', params.tenantId)
-  if (params?.from != null) search.set('from', String(params.from))
-  if (params?.to != null) search.set('to', String(params.to))
-  if (params?.actorUserId) search.set('actorUserId', params.actorUserId)
-  const query = search.toString()
-  return query ? `?${query}` : ''
-}
-
-export function fetchAdminTenants(params?: AdminListQuery) {
-  return api.get<AdminTenantListResponse>(`/admin/tenants${buildAdminListQuery(params)}`)
-}
-
-export function fetchAdminTenant(tenantId: string) {
-  return api.get<AdminTenantSummary>(`/admin/tenants/${tenantId}`)
-}
-
-export interface CreateTenantPayload {
-  name: string
-  slug: string
-  plan?: string
-}
-
-export function createAdminTenant(payload: CreateTenantPayload) {
-  return api.post<AdminTenantSummary>('/admin/tenants', payload)
-}
-
-export interface PatchTenantPayload {
-  name?: string
-  plan?: string
-  status?: 'active' | 'suspended'
-}
-
-export function patchAdminTenant(tenantId: string, payload: PatchTenantPayload) {
-  return api.patch<AdminTenantSummary>(`/admin/tenants/${tenantId}`, payload)
-}
-
-export interface FeatureCatalogEntry {
-  code: string
-  name: string
-  description: string
-}
-
-export interface FeatureCatalogResponse {
-  features: FeatureCatalogEntry[]
-}
-
-export function fetchFeatureCatalog() {
-  return api.get<FeatureCatalogResponse>('/admin/feature-catalog')
-}
-
-export interface AdminTenantFeaturesResponse {
-  tenantId: string
-  featureCodes: string[]
-}
-
-export function fetchTenantFeatures(tenantId: string) {
-  return api.get<AdminTenantFeaturesResponse>(`/admin/tenants/${tenantId}/features`)
-}
-
-export function updateTenantFeatures(tenantId: string, featureCodes: string[]) {
-  return api.put<AdminTenantFeaturesResponse>(`/admin/tenants/${tenantId}/features`, {
-    featureCodes,
-  })
-}
-
-export interface TenantQuotasResponse {
-  tenantId: string
-  plan: string
-  seats: { limit: number | null; used: number }
-  apiRate: { limitPerMinute: number }
-  storage: { limitBytes: number; usedBytes: number }
-}
-
-export function fetchTenantQuotas(tenantId: string) {
-  return api.get<TenantQuotasResponse>(`/tenants/${tenantId}/quotas`)
-}
-
-export interface AdminUserSummary {
-  id: string
-  email: string
-  displayName: string
-  status: string
-  tenantId: string
-  tenantSlug: string
-  tenantName: string
-  roles: string[]
-  createdAt: number
-  lastLoginAt?: number | null
-}
-
-export interface AdminUserListResponse {
-  users: AdminUserSummary[]
-  total?: number
-  page?: number
-  size?: number
-}
-
-export function fetchAdminUsers(tenantId?: string, params?: AdminListQuery) {
-  const search = new URLSearchParams()
-  if (tenantId) search.set('tenantId', tenantId)
-  if (params?.q) search.set('q', params.q)
-  if (params?.page != null) search.set('page', String(params.page))
-  if (params?.size != null) search.set('size', String(params.size))
-  if (params?.status) search.set('status', params.status)
-  const query = search.toString()
-  return api.get<AdminUserListResponse>(`/admin/users${query ? `?${query}` : ''}`)
-}
-
-export interface PatchUserPayload {
-  displayName?: string
-  status?: 'active' | 'disabled'
-}
-
-export function patchAdminUser(userId: string, payload: PatchUserPayload) {
-  return api.patch<AdminUserSummary>(`/admin/users/${userId}`, payload)
-}
-
-export function updateAdminUserRoles(userId: string, roleCodes: string[]) {
-  return api.put<AdminUserSummary>(`/admin/users/${userId}/roles`, { roleCodes })
-}
-
-export function fetchAdminUserOauthBinds(userId: string) {
-  return api.get<UserOauthBindsResponse>(`/admin/users/${userId}/oauth-binds`)
-}
-
-export function unbindAdminUserOauthProvider(userId: string, providerId: string) {
-  return api.delete<void>(
-    `/admin/users/${userId}/oauth-binds/${encodeURIComponent(providerId)}`,
-  )
 }
 
 export interface AdminRoleSummary {

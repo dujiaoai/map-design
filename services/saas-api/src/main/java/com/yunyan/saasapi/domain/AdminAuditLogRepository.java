@@ -2,6 +2,7 @@ package com.yunyan.saasapi.domain;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yunyan.saasapi.application.admin.AdminListParams;
 import com.yunyan.saasapi.application.admin.AuditLogListParams;
 import com.yunyan.saasapi.domain.entity.SysAdminAuditLog;
 import com.yunyan.saasapi.domain.mapper.SysAdminAuditLogMapper;
@@ -23,8 +24,8 @@ public class AdminAuditLogRepository {
   }
 
   public AdminPagedResult<SysAdminAuditLog> findLogs(AuditLogListParams params) {
-    var wrapper =
-        Wrappers.<SysAdminAuditLog>lambdaQuery().orderByDesc(SysAdminAuditLog::getCreatedAt);
+    var wrapper = Wrappers.<SysAdminAuditLog>lambdaQuery();
+    applyAuditSort(wrapper, params.toListParams());
     applySearch(wrapper, params.toListParams().normalizedQuery());
     applyActionFilter(wrapper, params.normalizedAction());
     applyCrossTenantFilter(wrapper, params.normalizedCrossTenant());
@@ -105,5 +106,17 @@ public class AdminAuditLogRepository {
                 .like(SysAdminAuditLog::getAction, pattern)
                 .or()
                 .like(SysAdminAuditLog::getDetail, pattern));
+  }
+
+  private static void applyAuditSort(
+      com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysAdminAuditLog> wrapper,
+      AdminListParams params) {
+    var ascending = !params.auditSortDescending();
+    switch (params.normalizedAuditSortBy()) {
+      case "actorEmail" -> wrapper.orderBy(true, ascending, SysAdminAuditLog::getActorEmail);
+      case "action" -> wrapper.orderBy(true, ascending, SysAdminAuditLog::getAction);
+      default -> wrapper.orderBy(true, ascending, SysAdminAuditLog::getCreatedAt);
+    }
+    wrapper.orderByDesc(SysAdminAuditLog::getId);
   }
 }

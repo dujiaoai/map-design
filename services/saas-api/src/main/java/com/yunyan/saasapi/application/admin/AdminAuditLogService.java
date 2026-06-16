@@ -49,7 +49,9 @@ public class AdminAuditLogService {
         params.tenantId(),
         params.from(),
         params.to(),
-        params.actorUserId());
+        params.actorUserId(),
+        params.sortBy(),
+        params.sortDir());
   }
 
   @Transactional

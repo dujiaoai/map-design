@@ -13,10 +13,25 @@ public record AuditLogListParams(
     UUID tenantId,
     Long from,
     Long to,
-    UUID actorUserId) {
+    UUID actorUserId,
+    String sortBy,
+    String sortDir) {
+
+  public AuditLogListParams(
+      String q,
+      Integer page,
+      Integer size,
+      String action,
+      Boolean crossTenant,
+      UUID tenantId,
+      Long from,
+      Long to,
+      UUID actorUserId) {
+    this(q, page, size, action, crossTenant, tenantId, from, to, actorUserId, null, null);
+  }
 
   public AdminListParams toListParams() {
-    return new AdminListParams(q, page, size);
+    return new AdminListParams(q, page, size, null, sortBy, sortDir);
   }
 
   public String normalizedAction() {

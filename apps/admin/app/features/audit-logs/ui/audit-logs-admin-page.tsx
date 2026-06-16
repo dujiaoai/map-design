@@ -1,7 +1,7 @@
 import { Badge, Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
 import { CreditCardIcon, DownloadIcon } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
@@ -25,7 +25,7 @@ import { fetchAdminAuditLogs, fetchAdminTenants, type AdminAuditLogEntry } from 
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
-import { sortAdminTableRows, useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
+import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
@@ -58,10 +58,19 @@ export function AuditLogsAdminPage() {
   const tenantFilterId = searchParams.get('tenantId') ?? undefined
   const actorFilterId = searchParams.get('actorUserId') ?? undefined
 
-  const { searchInput, setSearchInput, page, setPage, queryParams } = useAdminPagedListState()
+  const { searchInput, setSearchInput, page, setPage, queryParams: baseQueryParams } =
+    useAdminPagedListState()
   const searchInputRef = useRef<HTMLInputElement>(null)
   useAdminListSearchShortcut(searchInputRef)
   const { sort, toggleSort, clearSort } = useAdminTableSort<AuditSortKey>()
+
+  const handleToggleSort = useCallback(
+    (key: AuditSortKey) => {
+      toggleSort(key)
+      setPage(1)
+    },
+    [toggleSort, setPage],
+  )
   const [actionFilter, setActionFilter] = useState<string>('all')
   const [crossTenantOnly, setCrossTenantOnly] = useState(false)
   const [fromDate, setFromDate] = useState('')
@@ -72,15 +81,28 @@ export function AuditLogsAdminPage() {
   const fromEpoch = dateInputToFromEpoch(fromDate)
   const toEpoch = dateInputToToEpoch(toDate)
 
-  const listQuery = {
-    ...queryParams,
-    action: actionFilter === 'all' ? undefined : actionFilter,
-    crossTenant: crossTenantOnly ? true : undefined,
-    tenantId: tenantFilterId,
-    from: fromEpoch,
-    to: toEpoch,
-    actorUserId: actorFilterId,
-  }
+  const listQuery = useMemo(
+    () => ({
+      ...baseQueryParams,
+      action: actionFilter === 'all' ? undefined : actionFilter,
+      crossTenant: crossTenantOnly ? true : undefined,
+      tenantId: tenantFilterId,
+      from: fromEpoch,
+      to: toEpoch,
+      actorUserId: actorFilterId,
+      ...(sort ? { sortBy: sort.key, sortDir: sort.direction } : {}),
+    }),
+    [
+      baseQueryParams,
+      actionFilter,
+      crossTenantOnly,
+      tenantFilterId,
+      fromEpoch,
+      toEpoch,
+      actorFilterId,
+      sort,
+    ],
+  )
 
   const tenantsQuery = useAdminPagedQuery({
     queryKey: adminQueryKeys.tenantsAll,
@@ -132,15 +154,7 @@ export function AuditLogsAdminPage() {
     fromDate.length > 0 ||
     toDate.length > 0
 
-  const sortedLogs = useMemo(
-    () =>
-      sortAdminTableRows(query.data?.logs ?? [], sort, {
-        createdAt: (log) => log.createdAt,
-        actorEmail: (log) => log.actorEmail.toLowerCase(),
-        action: (log) => log.action.toLowerCase(),
-      }),
-    [query.data?.logs, sort],
-  )
+  const logs = query.data?.logs ?? []
 
   async function handleExportCsv() {
     setExporting(true)
@@ -453,7 +467,7 @@ export function AuditLogsAdminPage() {
         </Button>
       </div>
 
-      <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="page" />
+      <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="server" />
 
       <AdminPanel className="p-0">
         {query.isLoading ? (
@@ -481,12 +495,12 @@ export function AuditLogsAdminPage() {
           <AdminAntTable<AdminAuditLogEntry>
             rowKey="id"
             columns={columns}
-            dataSource={sortedLogs}
-            onChange={createAdminAntSortHandler(toggleSort)}
+            dataSource={logs}
+            onChange={createAdminAntSortHandler(handleToggleSort)}
             showSorterTooltip={false}
             pagination={{
               current: page,
-              pageSize: queryParams.size,
+              pageSize: baseQueryParams.size,
               total,
               onChange: setPage,
             }}

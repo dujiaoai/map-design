@@ -44,10 +44,12 @@ public class AdminAuditLogsController {
       @RequestParam(required = false) UUID tenantId,
       @RequestParam(required = false) Long from,
       @RequestParam(required = false) Long to,
-      @RequestParam(required = false) UUID actorUserId) {
+      @RequestParam(required = false) UUID actorUserId,
+      @RequestParam(required = false) String sortBy,
+      @RequestParam(required = false) String sortDir) {
     return adminAuditLogService.listLogs(
         new AuditLogListParams(
-            q, page, size, action, crossTenant, tenantId, from, to, actorUserId));
+            q, page, size, action, crossTenant, tenantId, from, to, actorUserId, sortBy, sortDir));
   }
 
   @GetMapping(value = "/export", produces = "text/csv")

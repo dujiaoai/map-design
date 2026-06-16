@@ -69,6 +69,20 @@ class AdminAuditLogsControllerTest {
   }
 
   @Test
+  void listAuditLogs_withSortParams_returnsOk() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/audit-logs")
+                .param("page", "1")
+                .param("size", "10")
+                .param("sortBy", "action")
+                .param("sortDir", "asc")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.logs").isArray());
+  }
+
+  @Test
   void crossTenantInviteLinkCreate_writesAuditLogWithCrossTenantFlag() throws Exception {
     var token = loginAccessToken("platform@test.local");
 

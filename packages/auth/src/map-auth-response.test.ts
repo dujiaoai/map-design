@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { authTokensToTokenPair, loginResponseToSession } from './map-auth-response'
+import { authTokensToTokenPair, loginResponseToSession, loginResponseToTokenPair } from './map-auth-response'
 import { SaaSRole } from './types'
 
 describe('map-auth-response', () => {
@@ -51,5 +51,19 @@ describe('map-auth-response', () => {
     expect(tokens.accessToken).toBe('new-access')
     expect(tokens.expiresIn).toBe(900)
     expect(tokens.expiresAt).toBeGreaterThan(Date.now())
+  })
+
+  it('loginResponseToTokenPair rejects missing tokens', () => {
+    expect(() =>
+      loginResponseToTokenPair({
+        expiresIn: 900,
+        user: {
+          id: 'user-1',
+          email: 'admin@test.local',
+          roles: [SaaSRole.TENANT_ADMIN],
+          tenant: { id: 'tenant-1', name: 'Test', slug: 'test' },
+        },
+      }),
+    ).toThrow()
   })
 })

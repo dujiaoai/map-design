@@ -1,4 +1,4 @@
-import type { AuthTokensResponse, LoginResponse, Session, TokenPair } from './types'
+import { authTokensSchema, type AuthTokensResponse, type LoginResponse, type Session, type TokenPair } from './types'
 
 export function loginResponseToSession(response: LoginResponse): Session {
   const { tenant, ...user } = response.user
@@ -17,4 +17,15 @@ export function authTokensToTokenPair(tokens: AuthTokensResponse): TokenPair {
     expiresIn: tokens.expiresIn,
     expiresAt: Date.now() + tokens.expiresIn * 1000,
   }
+}
+
+/** 从完整登录响应提取 TokenPair；缺少 token 时由 schema 校验失败 */
+export function loginResponseToTokenPair(response: LoginResponse): TokenPair {
+  return authTokensToTokenPair(
+    authTokensSchema.parse({
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+      expiresIn: response.expiresIn,
+    }),
+  )
 }

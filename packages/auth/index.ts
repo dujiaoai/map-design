@@ -26,7 +26,7 @@ export {
 export { PermissionCodes, type PermissionCode, ROLE_DEFAULT_PERMISSIONS } from './src/permission-codes'
 export { resolvePermissionsForRoles } from './src/session/resolve-role-permissions'
 export { createTokenStorage, type TokenStorage } from './src/storage/token-storage'
-export { authTokensToTokenPair, loginResponseToSession } from './src/map-auth-response'
+export { authTokensToTokenPair, loginResponseToSession, loginResponseToTokenPair } from './src/map-auth-response'
 export {
   type AuthTokensResponse,
   authTokensSchema,

@@ -1,6 +1,6 @@
 import { LoginMfaRequiredError } from './login-mfa-error'
 import { createAuthApi } from './auth-api'
-import { authTokensToTokenPair, loginResponseToSession } from './map-auth-response'
+import { authTokensToTokenPair, loginResponseToSession, loginResponseToTokenPair } from './map-auth-response'
 import { requireAuthenticated, requireRole } from './session/roles'
 import { requirePermission } from './session/permissions'
 import { createSessionStore } from './session/session-store'
@@ -98,16 +98,8 @@ export function createAuth(options: CreateAuthOptions) {
       if (!response.accessToken || !response.refreshToken) {
         throw new Error('登录响应缺少 token')
       }
-      const session = loginResponseToSession(response as LoginResponse & {
-        accessToken: string
-        refreshToken: string
-        expiresIn: number
-      })
-      persist(session, authTokensToTokenPair(response as LoginResponse & {
-        accessToken: string
-        refreshToken: string
-        expiresIn: number
-      }))
+      const session = loginResponseToSession(response)
+      persist(session, loginResponseToTokenPair(response))
       return session
     },
 
@@ -118,16 +110,8 @@ export function createAuth(options: CreateAuthOptions) {
       if (!response.accessToken || !response.refreshToken) {
         throw new Error('MFA 登录响应缺少 token')
       }
-      const session = loginResponseToSession(response as LoginResponse & {
-        accessToken: string
-        refreshToken: string
-        expiresIn: number
-      })
-      persist(session, authTokensToTokenPair(response as LoginResponse & {
-        accessToken: string
-        refreshToken: string
-        expiresIn: number
-      }))
+      const session = loginResponseToSession(response)
+      persist(session, loginResponseToTokenPair(response))
       return session
     },
 
@@ -141,16 +125,8 @@ export function createAuth(options: CreateAuthOptions) {
       if (!response.accessToken || !response.refreshToken) {
         throw new Error('OIDC 登录响应缺少 token')
       }
-      const session = loginResponseToSession(response as LoginResponse & {
-        accessToken: string
-        refreshToken: string
-        expiresIn: number
-      })
-      persist(session, authTokensToTokenPair(response as LoginResponse & {
-        accessToken: string
-        refreshToken: string
-        expiresIn: number
-      }))
+      const session = loginResponseToSession(response)
+      persist(session, loginResponseToTokenPair(response))
       return session
     },
 
@@ -183,7 +159,7 @@ export function createAuth(options: CreateAuthOptions) {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用注册验证接口')
       const response = loginResponseSchema.parse(await authApi.confirmRegistration(token))
       const session = loginResponseToSession(response)
-      persist(session, authTokensToTokenPair(response))
+      persist(session, loginResponseToTokenPair(response))
       return session
     },
 
@@ -191,7 +167,7 @@ export function createAuth(options: CreateAuthOptions) {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用接受邀请接口')
       const response = loginResponseSchema.parse(await authApi.acceptInvite(body))
       const session = loginResponseToSession(response)
-      persist(session, authTokensToTokenPair(response))
+      persist(session, loginResponseToTokenPair(response))
       return session
     },
 
@@ -209,7 +185,7 @@ export function createAuth(options: CreateAuthOptions) {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法通过邀请链接加入')
       const response = loginResponseSchema.parse(await authApi.joinViaInviteLink(body))
       const session = loginResponseToSession(response)
-      persist(session, authTokensToTokenPair(response))
+      persist(session, loginResponseToTokenPair(response))
       return session
     },
 
@@ -226,7 +202,7 @@ export function createAuth(options: CreateAuthOptions) {
       if (!authApi) throw new Error('未配置 apiBaseUrl，无法调用密码重置接口')
       const response = loginResponseSchema.parse(await authApi.confirmPasswordReset(body))
       const session = loginResponseToSession(response)
-      persist(session, authTokensToTokenPair(response))
+      persist(session, loginResponseToTokenPair(response))
       return session
     },
 

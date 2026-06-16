@@ -1,6 +1,7 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { isLoginMfaRequiredError } from '@repo/auth'
 import { Button, Checkbox, cn, Input } from '@repo/ui'
+import { useQuery } from '@tanstack/react-query'
 import { Building2Icon, UserIcon } from 'lucide-react'
 import { useEffect, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
@@ -8,6 +9,7 @@ import { Link, redirect, useNavigate } from 'react-router'
 import { z } from 'zod'
 
 import { auth } from '~/shared/auth/client'
+import { fetchOidcProviders } from '~/shared/api/admin-api'
 import { getAdminHomePath, hasAdminAccess } from '~/shared/auth/admin-access'
 import {
   clearRememberLogin,
@@ -76,6 +78,13 @@ export default function LoginRoute() {
   const [mfaCode, setMfaCode] = useState('')
   const [isMfaSubmitting, setIsMfaSubmitting] = useState(false)
   const saasEnabled = isSaasAuthEnabled()
+
+  const oidcQuery = useQuery({
+    queryKey: ['auth', 'oidc', 'providers'],
+    queryFn: fetchOidcProviders,
+    enabled: saasEnabled && !mfaChallenge,
+    staleTime: 60_000,
+  })
 
   const {
     register,
@@ -286,6 +295,14 @@ export default function LoginRoute() {
               {isSubmitting ? '登录中…' : '进入控制台'}
             </Button>
           </div>
+          {oidcQuery.data?.enabled ? (
+            <p className="text-center text-xs text-white/45">
+              已配置 {oidcQuery.data.providers.length} 个 OIDC IdP；
+              {oidcQuery.data.authorizationCodeFlowAvailable
+                ? ' 可使用企业账号登录。'
+                : ' 授权码登录即将开放，请暂用邮箱密码。'}
+            </p>
+          ) : null}
             </>
           )}
         </form>

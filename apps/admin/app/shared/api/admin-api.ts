@@ -54,6 +54,11 @@ export interface AdminSystemFlagsResponse {
     totpEnrollmentAvailable: boolean
     enrolledPlatformAdminCount: number
   }
+  oidc: {
+    enabled: boolean
+    authorizationCodeFlowAvailable: boolean
+    configuredProviderCount: number
+  }
   runtime: {
     activeProfiles: string[]
     jwtPermEpoch: number
@@ -96,6 +101,16 @@ export function disableAdminTotp(code: string) {
 
 export function regenerateAdminRecoveryCodes(code: string) {
   return api.post<AdminMfaStatusResponse>('/admin/mfa/recovery-codes/regenerate', { code })
+}
+
+export interface OidcProvidersResponse {
+  enabled: boolean
+  authorizationCodeFlowAvailable: boolean
+  providers: Array<{ id: string; displayName: string }>
+}
+
+export function fetchOidcProviders() {
+  return api.get<OidcProvidersResponse>('/auth/oidc/providers')
 }
 
 export function fetchAdminSystemFlags() {

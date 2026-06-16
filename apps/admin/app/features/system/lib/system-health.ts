@@ -109,6 +109,24 @@ export function buildSystemHealthSignals(
     })
   }
 
+  if (flags.oidc.enabled) {
+    signals.push({
+      id: 'oidc',
+      label: 'OIDC 登录',
+      level: flags.oidc.authorizationCodeFlowAvailable ? 'ok' : 'info',
+      detail: flags.oidc.authorizationCodeFlowAvailable
+        ? `已配置 ${flags.oidc.configuredProviderCount} 个 IdP`
+        : `已配置 ${flags.oidc.configuredProviderCount} 个 IdP · 授权码流程待上线`,
+    })
+  } else {
+    signals.push({
+      id: 'oidc',
+      label: 'OIDC 登录',
+      level: 'off',
+      detail: '未启用（Email/Password + JWT）',
+    })
+  }
+
   return signals
 }
 

@@ -215,6 +215,26 @@ export function SystemAdminPage() {
             value={String(flags.mfa.enrolledPlatformAdminCount)}
             mono
           />
+          <AdminConfigRow
+            label="OIDC 登录"
+            value={<AdminFlagBadge enabled={flags.oidc.enabled} />}
+          />
+          <AdminConfigRow
+            label="OIDC 已配置 IdP"
+            value={String(flags.oidc.configuredProviderCount)}
+            mono
+          />
+          <AdminConfigRow
+            label="OIDC 授权码流程"
+            value={
+              <AdminFlagBadge
+                enabled={flags.oidc.authorizationCodeFlowAvailable}
+                label={
+                  flags.oidc.authorizationCodeFlowAvailable ? '已开放' : '骨架期未开放'
+                }
+              />
+            }
+          />
           {mfaQuery.data ? (
             <AdminConfigRow
               label="当前账号 TOTP"

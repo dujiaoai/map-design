@@ -22,14 +22,25 @@ import {
 } from '~/features/billing/lib/billing-admin-api'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
+import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntZeroBasedPagination } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminStatusBadge, formatAdminIsoDate } from '~/shared/ui/admin-status-badge'
+import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 const PAGE_SIZE = 20
+
+const COUPON_TABLE_COLUMNS = [
+  { key: 'code', label: '兑换码' },
+  { key: 'kind', label: '类型' },
+  { key: 'benefit', label: '权益' },
+  { key: 'redemptions', label: '已兑换 / 上限' },
+  { key: 'status', label: '状态' },
+  { key: 'validUntil', label: '有效期' },
+] as const
 
 const COUPON_KIND_OPTIONS = [
   { value: 'gift', label: '赠送积分' },
@@ -62,6 +73,7 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
   const [createDiscountCents, setCreateDiscountCents] = useState('1000')
   const [createMaxTotal, setCreateMaxTotal] = useState('')
   const [createError, setCreateError] = useState<string | null>(null)
+  const columnPrefs = useAdminTableColumnPrefs('billing-coupons', [...COUPON_TABLE_COLUMNS])
 
   const filters = { status: statusFilter, code: appliedCodeSearch }
 
@@ -221,8 +233,12 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
         ),
       })
     }
-    return cols
-  }, [canWrite, confirm, pendingCode, statusMutation])
+    return cols.filter((column) => {
+      const key = String(column.key)
+      if (key === 'actions') return canWrite
+      return columnPrefs.isColumnVisible(key)
+    })
+  }, [canWrite, columnPrefs.isColumnVisible, columnPrefs.visible, confirm, pendingCode, statusMutation])
 
   return (
     <div className="space-y-4">
@@ -360,6 +376,12 @@ export function BillingCouponsPanel({ canWrite = false }: { canWrite?: boolean }
           >
             查询
           </Button>
+          <AdminTableColumnPicker
+            columns={[...COUPON_TABLE_COLUMNS]}
+            visible={columnPrefs.visible}
+            onVisibleChange={columnPrefs.setColumnVisible}
+            onReset={columnPrefs.resetColumns}
+          />
         </div>
       </AdminPanel>
 

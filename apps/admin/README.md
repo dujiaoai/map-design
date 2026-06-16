@@ -107,7 +107,8 @@ pnpm --filter @repo/saas-admin dev
 | **危险操作** | Confirm / Sheet，非 `prompt` | ✅ 计费驳回 Sheet、`AlertDialog` |
 | **跨页上下文** | 租户/筛选 banner + 清除 | ✅ `AdminTenantContextBanner` 等 |
 | **无障碍** | 搜索 `role=searchbox`、`aria-label` | ✅ 工具栏搜索；排序表头 `aria-sort`；reduced-motion 已处理 |
-| **待增强** | 批量操作、列配置 | 📋 Later |
+| **批量操作** | 多选 + 危险操作确认 | ✅ 租户批量停用、用户批量禁用 |
+| **待增强** | 列配置、虚拟滚动 | 📋 Later |
 
 ## 验证
 

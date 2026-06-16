@@ -1,10 +1,11 @@
-import { Button } from '@repo/ui'
+import { Button, toast, useConfirmDialog } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { EyeIcon, CreditCardIcon, PencilIcon, UsersIcon } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 
-import { fetchAdminTenants, type AdminTenantSummary } from '~/shared/api/admin-api'
+import { fetchAdminTenants, patchAdminTenant, type AdminTenantSummary } from '~/shared/api/admin-api'
 import { AdminAntTable, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
@@ -13,6 +14,7 @@ import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
+import { AdminTableBulkBar } from '~/shared/ui/admin-table-bulk-bar'
 import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
@@ -37,8 +39,11 @@ export function TenantsAdminPage() {
 
   const [createOpen, setCreateOpen] = useState(false)
   const [editingTenant, setEditingTenant] = useState<AdminTenantSummary | null>(null)
+  const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const queryClient = useQueryClient()
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const { searchInput, setSearchInput, page, setPage, queryParams: baseQueryParams } =
     useAdminPagedListState()
@@ -77,6 +82,43 @@ export function TenantsAdminPage() {
   }, [query.data?.tenants, statusFilter])
 
   const total = query.data?.total ?? query.data?.tenants.length ?? 0
+
+  const selectedTenants = useMemo(
+    () => filteredTenants.filter((tenant) => selectedRowKeys.includes(tenant.id)),
+    [filteredTenants, selectedRowKeys],
+  )
+
+  const suspendableSelectedTenants = useMemo(
+    () => selectedTenants.filter((tenant) => tenant.status !== 'suspended'),
+    [selectedTenants],
+  )
+
+  const bulkSuspendMutation = useMutation({
+    mutationFn: async (tenantIds: string[]) => {
+      await Promise.all(
+        tenantIds.map((tenantId) => patchAdminTenant(tenantId, { status: 'suspended' })),
+      )
+    },
+    onSuccess: async (_data, tenantIds) => {
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] })
+      setSelectedRowKeys([])
+      toast.success(`已停用 ${tenantIds.length} 个租户`)
+    },
+    onError: () => {
+      toast.error('批量停用失败，请稍后重试')
+    },
+  })
+
+  async function handleBulkSuspend() {
+    if (suspendableSelectedTenants.length === 0) return
+    const confirmed = await confirm({
+      description: `确定停用已选的 ${suspendableSelectedTenants.length} 个租户？停用后该租户用户无法登录。`,
+      confirmLabel: '批量停用',
+      destructive: true,
+    })
+    if (!confirmed) return
+    bulkSuspendMutation.mutate(suspendableSelectedTenants.map((tenant) => tenant.id))
+  }
 
   const toolbarStatus = useMemo(
     () => ({
@@ -220,6 +262,25 @@ export function TenantsAdminPage() {
 
       <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="server" />
 
+      {canWrite ? (
+        <AdminTableBulkBar
+          selectedCount={selectedRowKeys.length}
+          onClearSelection={() => setSelectedRowKeys([])}
+        >
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            disabled={
+              suspendableSelectedTenants.length === 0 || bulkSuspendMutation.isPending
+            }
+            onClick={() => void handleBulkSuspend()}
+          >
+            {bulkSuspendMutation.isPending ? '处理中…' : '批量停用'}
+          </Button>
+        </AdminTableBulkBar>
+      ) : null}
+
       <AdminPanel className="p-0">
         {query.isLoading ? (
           <AdminTableSkeleton columns={6} showPagination />
@@ -247,6 +308,17 @@ export function TenantsAdminPage() {
             dataSource={filteredTenants}
             onChange={createAdminAntSortHandler(handleToggleSort)}
             showSorterTooltip={false}
+            rowSelection={
+              canWrite
+                ? {
+                    selectedRowKeys,
+                    onChange: (keys) => setSelectedRowKeys(keys.map(String)),
+                    getCheckboxProps: (tenant) => ({
+                      disabled: tenant.status === 'suspended',
+                    }),
+                  }
+                : undefined
+            }
             pagination={{
               current: page,
               pageSize: queryParams.size,
@@ -265,6 +337,8 @@ export function TenantsAdminPage() {
           if (!open) setEditingTenant(null)
         }}
       />
+
+      {confirmDialog}
     </div>
   )
 }

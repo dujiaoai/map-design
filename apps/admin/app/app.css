@@ -9,36 +9,69 @@
   }
 
   /*
-   * Admin 浅色：雾蓝灰分层运维台，避免 #fff 弹层/面板刺眼
-   * 仅作用于 html 无 .dark 时（Admin ThemeToggle）
+   * Admin 浅色 —「晨雾测绘台」
+   * 冷雾画布 + 纸感分层 + 青绿仪器 accent；仅 html 无 .dark 时生效
    */
   html:not(.dark) {
-    --background: #e6ecf2;
-    --foreground: #0f172a;
-    --card: #eef2f6;
-    --card-foreground: #0f172a;
-    --popover: #f3f6f9;
-    --popover-foreground: #0f172a;
-    --primary: #30758c;
-    --primary-foreground: #f8fafc;
-    --secondary: #e2e9f1;
-    --secondary-foreground: #0f172a;
-    --muted: #dfe6ee;
-    --muted-foreground: #64748b;
-    --accent: #e2e9f1;
-    --accent-foreground: #0c1222;
-    --border: #c5d0dc;
-    --input: #c5d0dc;
-    --ring: color-mix(in srgb, #30758c 42%, transparent);
-    --sidebar: #eef2f6;
-    --sidebar-foreground: #0f172a;
-    --sidebar-accent: #e2e9f1;
-    --sidebar-accent-foreground: #0c1222;
-    --sidebar-border: #c5d0dc;
-    --surface-light-canvas: #e6ecf2;
-    --surface-light-panel: #eef2f6;
-    --surface-light-elevated: #f3f6f9;
-    --surface-light-instrument: #e8edf3;
+    --admin-light-canvas: #e2e9ef;
+    --admin-light-surface: #ebf0f5;
+    --admin-light-paper: #f4f8fa;
+    --admin-light-elevated: #ffffff;
+    --admin-light-ink: #091320;
+    --admin-light-ink-muted: #4a5d70;
+    --admin-light-border: #b4c4d2;
+    --admin-light-border-soft: #ccd7e2;
+    --admin-light-teal-wash: #d6ebee;
+    --admin-light-shadow: 0 1px 2px rgba(9, 19, 32, 0.05), 0 10px 28px rgba(42, 109, 127, 0.07);
+
+    --background: var(--admin-light-canvas);
+    --foreground: var(--admin-light-ink);
+    --card: var(--admin-light-paper);
+    --card-foreground: var(--admin-light-ink);
+    --popover: var(--admin-light-elevated);
+    --popover-foreground: var(--admin-light-ink);
+    --primary: #2a6d7f;
+    --primary-foreground: #ffffff;
+    --secondary: var(--admin-light-teal-wash);
+    --secondary-foreground: var(--admin-light-ink);
+    --muted: var(--admin-light-surface);
+    --muted-foreground: var(--admin-light-ink-muted);
+    --accent: var(--admin-light-teal-wash);
+    --accent-foreground: #1a5563;
+    --border: var(--admin-light-border);
+    --input: var(--admin-light-border-soft);
+    --ring: color-mix(in srgb, var(--brand) 48%, transparent);
+    --sidebar: var(--admin-light-paper);
+    --sidebar-foreground: var(--admin-light-ink);
+    --sidebar-accent: var(--admin-light-teal-wash);
+    --sidebar-accent-foreground: #1a5563;
+    --sidebar-border: var(--admin-light-border-soft);
+    --sidebar-primary: var(--brand);
+    --sidebar-primary-foreground: #ffffff;
+    --surface-light-canvas: var(--admin-light-canvas);
+    --surface-light-panel: var(--admin-light-paper);
+    --surface-light-elevated: var(--admin-light-elevated);
+    --surface-light-instrument: var(--admin-light-surface);
+  }
+
+  html:not(.dark) body {
+    background:
+      radial-gradient(
+        ellipse 110% 75% at 0% -18%,
+        color-mix(in oklab, var(--brand) 16%, transparent),
+        transparent 52%
+      ),
+      radial-gradient(
+        ellipse 70% 45% at 100% 0%,
+        color-mix(in oklab, var(--brand-light) 11%, transparent),
+        transparent 48%
+      ),
+      linear-gradient(
+        180deg,
+        var(--admin-light-canvas) 0%,
+        color-mix(in oklab, var(--admin-light-surface) 55%, var(--admin-light-canvas)) 100%
+      );
+    background-attachment: fixed;
   }
 }
 
@@ -60,10 +93,54 @@
 }
 
 html:not(.dark) .admin-shell-grid {
-  opacity: 0.22;
+  opacity: 0.26;
+  background-size: 40px 40px;
   background-image:
-    linear-gradient(to right, color-mix(in oklab, var(--primary) 12%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px);
+    linear-gradient(to right, color-mix(in oklab, var(--brand-deep) 11%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--brand) 7%, transparent) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 92% 68% at 14% 0%, black, transparent 80%);
+}
+
+html:not(.dark) .admin-shell-header {
+  background: color-mix(in srgb, var(--admin-light-paper) 76%, transparent);
+  backdrop-filter: blur(16px) saturate(1.15);
+  border-bottom-color: var(--admin-light-border-soft);
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--brand) 7%, transparent);
+}
+
+html:not(.dark) .admin-panel {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--admin-light-elevated) 88%, var(--admin-light-paper)) 0%,
+    var(--admin-light-paper) 100%
+  );
+  border-color: var(--admin-light-border-soft);
+  box-shadow: var(--admin-light-shadow);
+  backdrop-filter: none;
+}
+
+html:not(.dark) .admin-metric-card {
+  background: linear-gradient(
+    148deg,
+    var(--admin-light-elevated) 0%,
+    color-mix(in srgb, var(--admin-light-paper) 92%, var(--admin-light-surface)) 100%
+  );
+  border-color: var(--admin-light-border-soft);
+  box-shadow:
+    0 1px 2px rgba(9, 19, 32, 0.04),
+    0 8px 22px rgba(42, 109, 127, 0.06);
+  backdrop-filter: none;
+}
+
+html:not(.dark) .admin-metric-card:hover {
+  border-color: color-mix(in oklab, var(--brand) 30%, var(--admin-light-border-soft));
+  box-shadow:
+    0 2px 4px rgba(9, 19, 32, 0.05),
+    0 14px 36px rgba(42, 109, 127, 0.1);
+}
+
+html:not(.dark) .admin-metric-card:hover > div.pointer-events-none {
+  opacity: 0.55;
 }
 
 .admin-data-table th,
@@ -107,6 +184,10 @@ html:not(.dark) .admin-shell-grid {
   scrollbar-color: color-mix(in oklab, var(--primary) 35%, transparent) transparent;
 }
 
+html:not(.dark) .admin-scroll-area {
+  scrollbar-color: color-mix(in oklab, var(--brand-deep) 26%, transparent) transparent;
+}
+
 .admin-scroll-area::-webkit-scrollbar {
   width: 6px;
 }
@@ -120,8 +201,16 @@ html:not(.dark) .admin-shell-grid {
   background: color-mix(in oklab, var(--primary) 35%, transparent);
 }
 
+html:not(.dark) .admin-scroll-area::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--brand-deep) 26%, transparent);
+}
+
 .admin-scroll-area::-webkit-scrollbar-thumb:hover {
   background: color-mix(in oklab, var(--primary) 55%, transparent);
+}
+
+html:not(.dark) .admin-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklab, var(--brand-deep) 42%, transparent);
 }
 
 .admin-shell-header {
@@ -149,6 +238,10 @@ html:not(.dark) .admin-shell-grid {
   height: 2rem;
   line-height: 1;
   font-size: 13px;
+}
+
+html:not(.dark) .admin-shell-header-title {
+  color: color-mix(in oklab, var(--admin-light-ink) 92%, var(--brand-deep));
 }
 
 .admin-shell-header-title.admin-display {
@@ -213,6 +306,13 @@ html:not(.dark) .admin-shell-grid {
     color-mix(in oklab, var(--card) 55%, transparent);
 }
 
+html:not(.dark) .admin-health-strip {
+  background:
+    linear-gradient(135deg, color-mix(in oklab, var(--brand) 9%, transparent) 0%, transparent 44%),
+    linear-gradient(180deg, var(--admin-light-paper), var(--admin-light-surface));
+  border-color: color-mix(in oklab, var(--brand) 20%, var(--admin-light-border-soft));
+}
+
 .admin-health-strip::before {
   content: '';
   position: absolute;
@@ -227,6 +327,15 @@ html:not(.dark) .admin-shell-grid {
   pointer-events: none;
 }
 
+html:not(.dark) .admin-health-strip::before {
+  opacity: 0.35;
+  background-image: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--brand-deep) 8%, transparent) 1px,
+    transparent 1px
+  );
+}
+
 .admin-runbook-row {
   transition:
     background-color 0.2s ease,
@@ -235,6 +344,10 @@ html:not(.dark) .admin-shell-grid {
 
 .admin-runbook-row:hover {
   background: color-mix(in oklab, var(--primary) 6%, transparent);
+}
+
+html:not(.dark) .admin-runbook-row:hover {
+  background: color-mix(in oklab, var(--brand) 7%, var(--admin-light-paper));
 }
 
 .admin-quick-link {
@@ -248,4 +361,9 @@ html:not(.dark) .admin-shell-grid {
   transform: translateY(-1px);
   border-color: color-mix(in oklab, var(--primary) 35%, transparent);
   background: color-mix(in oklab, var(--primary) 8%, transparent);
+}
+
+html:not(.dark) .admin-quick-link:hover {
+  border-color: color-mix(in oklab, var(--brand) 32%, var(--admin-light-border-soft));
+  background: color-mix(in oklab, var(--brand) 9%, var(--admin-light-paper));
 }

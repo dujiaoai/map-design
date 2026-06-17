@@ -35,30 +35,35 @@
 }
 
 html:not(.dark) .admin-ant-root .admin-ant-table .ant-table-pagination {
-  border-top-color: #c5d0dc;
+  border-top-color: var(--admin-light-border-soft, #ccd7e2);
 }
 
 html:not(.dark) .admin-ant-root .admin-ant-table .ant-table-thead > tr > th {
-  background: #e8edf3 !important;
-  color: #475569;
+  background: var(--admin-light-surface, #ebf0f5) !important;
+  color: var(--admin-light-ink-muted, #4a5d70);
+  font-weight: 600;
 }
 
 html:not(.dark) .admin-ant-root .admin-ant-table .ant-table-tbody > tr.ant-table-row:hover > td {
-  background: #e2e9f1 !important;
+  background: color-mix(in oklab, var(--brand) 6%, var(--admin-light-paper, #f4f8fa)) !important;
+}
+
+html:not(.dark) .admin-ant-root .admin-ant-table .ant-table-tbody > tr > td {
+  border-bottom-color: var(--admin-light-border-soft, #ccd7e2);
 }
 
 html:not(.dark) .admin-ant-root .ant-picker-dropdown .ant-picker-panel-container {
-  background: #f3f6f9;
+  background: var(--admin-light-elevated, #ffffff);
   box-shadow:
-    0 12px 32px rgba(15, 23, 42, 0.1),
-    0 0 0 1px #c5d0dc;
+    0 12px 32px rgba(9, 19, 32, 0.08),
+    0 0 0 1px var(--admin-light-border-soft, #ccd7e2);
 }
 
 html:not(.dark) .admin-ant-root .ant-select-dropdown {
-  background: #f3f6f9;
+  background: var(--admin-light-elevated, #ffffff);
   box-shadow:
-    0 12px 32px rgba(15, 23, 42, 0.1),
-    0 0 0 1px #c5d0dc;
+    0 12px 32px rgba(9, 19, 32, 0.08),
+    0 0 0 1px var(--admin-light-border-soft, #ccd7e2);
 }
 
 .admin-ant-root .admin-ant-modal .ant-modal-content {
@@ -69,8 +74,9 @@ html:not(.dark) .admin-ant-root .ant-select-dropdown {
 
 html:not(.dark) .admin-ant-root .admin-ant-modal .ant-modal-content {
   box-shadow:
-    0 20px 40px rgba(15, 23, 42, 0.08),
-    0 0 0 1px #c5d0dc;
+    0 20px 40px rgba(9, 19, 32, 0.08),
+    0 0 0 1px var(--admin-light-border-soft, #ccd7e2),
+    0 10px 28px rgba(42, 109, 127, 0.06);
 }
 
 .admin-ant-root .admin-ant-date-range.ant-picker {

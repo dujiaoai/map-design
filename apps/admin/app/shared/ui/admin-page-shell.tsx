@@ -50,7 +50,7 @@ export function AdminPanel({
   return (
     <section
       className={cn(
-        'overflow-hidden rounded-xl border border-border/70 bg-card/45 shadow-sm backdrop-blur-sm',
+        'admin-panel overflow-hidden rounded-xl border border-border/70 bg-card/45 shadow-sm backdrop-blur-sm',
         className,
       )}
     >

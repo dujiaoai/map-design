@@ -30,7 +30,7 @@ export function AdminMetricCard({
   return (
     <section
       className={cn(
-        'group relative overflow-hidden rounded-xl border p-5 shadow-sm backdrop-blur-sm transition-colors duration-300',
+        'admin-metric-card group relative overflow-hidden rounded-xl border p-5 shadow-sm backdrop-blur-sm transition-colors duration-300',
         emphasis
           ? 'border-amber-500/35 bg-amber-500/8'
           : 'border-border/70 bg-card/60 hover:border-primary/25 hover:bg-card/75',

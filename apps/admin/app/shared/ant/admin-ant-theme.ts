@@ -1,12 +1,15 @@
 import { theme, type ThemeConfig } from 'antd'
 
-/** 浅色：工业运维台 — 雾蓝灰分层，避免 #fff 刺眼 */
+/** 浅色：晨雾测绘台 — 与 app.css admin-light-* token 对齐 */
 export const ADMIN_LIGHT_SURFACES = {
-  canvas: '#e6ecf2',
-  panel: '#eef2f6',
-  elevated: '#f3f6f9',
-  border: '#c5d0dc',
-  muted: '#dfe6ee',
+  canvas: '#e2e9ef',
+  panel: '#f4f8fa',
+  elevated: '#ffffff',
+  surface: '#ebf0f5',
+  border: '#ccd7e2',
+  borderStrong: '#b4c4d2',
+  muted: '#ebf0f5',
+  tealWash: '#d6ebee',
 } as const
 
 /** Admin 深色；token 对齐 packages/ui globals.css .dark */
@@ -54,46 +57,58 @@ export const adminAntDarkTheme: ThemeConfig = {
 export const adminAntLightTheme: ThemeConfig = {
   algorithm: theme.defaultAlgorithm,
   token: {
-    colorPrimary: '#30758c',
-    colorInfo: '#30758c',
+    colorPrimary: '#2a6d7f',
+    colorInfo: '#2a6d7f',
+    colorLink: '#2a6d7f',
     colorBgBase: ADMIN_LIGHT_SURFACES.canvas,
     colorBgContainer: ADMIN_LIGHT_SURFACES.panel,
     colorBgElevated: ADMIN_LIGHT_SURFACES.elevated,
     colorBgLayout: ADMIN_LIGHT_SURFACES.canvas,
-    colorBorder: ADMIN_LIGHT_SURFACES.border,
-    colorBorderSecondary: '#d4dde6',
-    colorText: '#0f172a',
-    colorTextSecondary: '#64748b',
-    colorTextHeading: '#0c1222',
+    colorBorder: ADMIN_LIGHT_SURFACES.borderStrong,
+    colorBorderSecondary: ADMIN_LIGHT_SURFACES.border,
+    colorText: '#091320',
+    colorTextSecondary: '#4a5d70',
+    colorTextHeading: '#091320',
     colorFillAlter: ADMIN_LIGHT_SURFACES.muted,
-    colorFillSecondary: ADMIN_LIGHT_SURFACES.muted,
+    colorFillSecondary: ADMIN_LIGHT_SURFACES.tealWash,
     borderRadius: 10,
     fontFamily: "'Noto Sans SC', system-ui, sans-serif",
     fontSize: 14,
     controlHeight: 36,
+    boxShadow:
+      '0 1px 2px rgba(9, 19, 32, 0.05), 0 10px 28px rgba(42, 109, 127, 0.07)',
+    boxShadowSecondary:
+      '0 1px 2px rgba(9, 19, 32, 0.04), 0 6px 16px rgba(42, 109, 127, 0.06)',
   },
   components: {
     Table: {
-      headerBg: ADMIN_LIGHT_SURFACES.muted,
-      headerColor: '#64748b',
-      rowHoverBg: 'rgba(48, 117, 140, 0.06)',
+      headerBg: ADMIN_LIGHT_SURFACES.surface,
+      headerColor: '#4a5d70',
+      rowHoverBg: 'rgba(42, 109, 127, 0.05)',
       borderColor: ADMIN_LIGHT_SURFACES.border,
       cellPaddingBlock: 12,
       cellPaddingInline: 16,
     },
     DatePicker: {
-      cellHoverBg: 'rgba(70, 174, 184, 0.14)',
-      cellActiveWithRangeBg: 'rgba(70, 174, 184, 0.12)',
+      cellHoverBg: 'rgba(70, 174, 184, 0.12)',
+      cellActiveWithRangeBg: 'rgba(70, 174, 184, 0.1)',
     },
     Tree: {
-      nodeHoverBg: 'rgba(48, 117, 140, 0.06)',
+      nodeHoverBg: 'rgba(42, 109, 127, 0.05)',
       directoryNodeSelectedBg: 'rgba(70, 174, 184, 0.14)',
     },
     Modal: {
       contentBg: ADMIN_LIGHT_SURFACES.elevated,
       headerBg: ADMIN_LIGHT_SURFACES.elevated,
-      titleColor: '#0c1222',
-      footerBg: ADMIN_LIGHT_SURFACES.elevated,
+      titleColor: '#091320',
+      footerBg: ADMIN_LIGHT_SURFACES.panel,
+    },
+    Input: {
+      activeBorderColor: '#2a6d7f',
+      hoverBorderColor: '#b4c4d2',
+    },
+    Select: {
+      optionSelectedBg: ADMIN_LIGHT_SURFACES.tealWash,
     },
   },
 }

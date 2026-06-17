@@ -203,10 +203,31 @@
       0 4px 20px rgba(0, 0, 0, 0.25);
   }
 
-  /* 浅色侧栏 — 主流 flat + 细边框 */
+  /* 浅色侧栏 — 晨雾测绘台：左缘品牌轨 + 纸感底 */
   html:not(.dark) [data-sidebar='sidebar'] {
+    position: relative;
     border-color: var(--sidebar-border);
-    background: var(--sidebar);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--sidebar) 96%, var(--brand) 4%) 0%,
+      var(--sidebar) 100%
+    );
+    box-shadow:
+      inset -1px 0 0 color-mix(in oklab, var(--brand) 6%, transparent),
+      4px 0 24px rgba(9, 19, 32, 0.04);
+  }
+
+  html:not(.dark) [data-sidebar='sidebar']::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--brand-gradient);
+    opacity: 0.9;
+    pointer-events: none;
+    z-index: 1;
   }
 
   html:not(.dark) [data-slot='sidebar-inner'] {
@@ -215,33 +236,40 @@
 
   html:not(.dark) [data-sidebar='menu-button'][data-active='true'],
   html:not(.dark) [data-sidebar='menu-sub-button'][data-active='true'] {
-    border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent);
-    background: color-mix(in srgb, var(--brand) 12%, var(--sidebar));
-    box-shadow: none;
-    color: var(--brand-deep);
-    font-weight: 500;
+    border: 1px solid color-mix(in srgb, var(--brand) 22%, transparent);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--brand) 14%, var(--sidebar)) 0%,
+      color-mix(in srgb, var(--brand) 6%, var(--sidebar)) 100%
+    );
+    box-shadow: inset 3px 0 0 var(--brand);
+    color: #1a5563;
+    font-weight: 600;
   }
 
   html:not(.dark) [data-sidebar='menu-button'][data-active='true'] svg,
   html:not(.dark) [data-sidebar='menu-sub-button'][data-active='true'] svg {
-    color: var(--brand);
+    color: var(--brand-deep);
   }
 
-  /* 浅色浮层 — 标准 dropdown / sheet */
+  /* 浅色浮层 — 纸感 elevation + 青绿描边 */
   html:not(.dark) [data-slot='drawer-content'],
   html:not(.dark) [data-slot='sheet-content'],
   html:not(.dark) [data-slot='dropdown-menu-content'] {
-    border-color: var(--border);
+    border-color: color-mix(in oklab, var(--brand) 12%, var(--border));
     background: var(--popover);
     box-shadow:
-      0 4px 6px -1px rgb(15 23 42 / 0.08),
-      0 10px 15px -3px rgb(15 23 42 / 0.08);
+      0 0 0 1px color-mix(in oklab, var(--brand) 5%, transparent),
+      0 4px 6px -1px rgb(9 19 32 / 0.06),
+      0 16px 32px -4px rgb(42 109 127 / 0.1);
   }
 
   html:not(.dark) [data-slot='card'] {
-    border-color: var(--border);
+    border-color: color-mix(in oklab, var(--brand) 8%, var(--border));
     background: var(--card);
-    box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+    box-shadow:
+      0 1px 2px 0 rgb(9 19 32 / 0.04),
+      0 8px 20px -4px rgb(42 109 127 / 0.06);
   }
 }
 

@@ -3,6 +3,7 @@ import {
   Checkbox,
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -36,7 +37,9 @@ export function AdminTableColumnPicker({
         }
       />
       <DropdownMenuContent align="end" className="w-52">
-        <DropdownMenuLabel>显示列</DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>显示列</DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         {columns.map((column) => (
           <DropdownMenuItem

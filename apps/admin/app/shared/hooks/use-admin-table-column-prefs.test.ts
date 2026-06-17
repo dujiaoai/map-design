@@ -47,4 +47,19 @@ describe('useAdminTableColumnPrefs', () => {
 
     expect(result.current.isColumnVisible('email')).toBe(true)
   })
+
+  it('does not reset when columns array reference changes with same content', () => {
+    const { result, rerender } = renderHook(
+      ({ cols }: { cols: AdminTableColumnDef[] }) => useAdminTableColumnPrefs('users', cols),
+      { initialProps: { cols: COLUMNS } },
+    )
+
+    act(() => {
+      result.current.setColumnVisible('status', true)
+    })
+
+    rerender({ cols: [...COLUMNS] })
+
+    expect(result.current.isColumnVisible('status')).toBe(true)
+  })
 })

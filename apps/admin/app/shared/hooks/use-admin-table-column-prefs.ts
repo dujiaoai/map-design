@@ -32,16 +32,28 @@ function buildDefaultVisibility(columns: AdminTableColumnDef[]) {
   return Object.fromEntries(columns.map((col) => [col.key, col.defaultVisible !== false]))
 }
 
+function buildColumnsSignature(columns: AdminTableColumnDef[]) {
+  return columns
+    .map((col) => `${col.key}:${col.defaultVisible === false ? 0 : 1}:${col.label}`)
+    .join('|')
+}
+
 export function useAdminTableColumnPrefs(tableId: string, columns: AdminTableColumnDef[]) {
-  const defaults = useMemo(() => buildDefaultVisibility(columns), [columns])
+  const columnsSignature = useMemo(() => buildColumnsSignature(columns), [columns])
+
+  const defaults = useMemo(
+    () => buildDefaultVisibility(columns),
+    // columnsSignature 稳定化内联 [...COLUMNS] 导致的引用抖动
+    [columnsSignature],
+  )
 
   const [visible, setVisible] = useState<Record<string, boolean>>(() =>
-    readColumnPrefs(tableId, defaults),
+    readColumnPrefs(tableId, buildDefaultVisibility(columns)),
   )
 
   useEffect(() => {
     setVisible(readColumnPrefs(tableId, defaults))
-  }, [tableId, defaults])
+  }, [tableId, columnsSignature, defaults])
 
   const isColumnVisible = useCallback(
     (key: string) => visible[key] ?? defaults[key] ?? true,

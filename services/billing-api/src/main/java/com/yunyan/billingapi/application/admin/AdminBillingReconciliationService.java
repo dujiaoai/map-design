@@ -1,9 +1,11 @@
 package com.yunyan.billingapi.application.admin;
 
+import com.yunyan.billingapi.application.ops.BillingOpsAlertService;
 import com.yunyan.billingapi.domain.mapper.BillingLedgerMapper;
 import com.yunyan.billingapi.domain.mapper.BillingRechargeOrderMapper;
 import com.yunyan.billingapi.domain.mapper.BillingReconciliationSummary;
 import com.yunyan.billingapi.web.dto.AdminReconciliationDailyResponse;
+import com.yunyan.billingapi.web.dto.AdminReconciliationStatusResponse;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -16,11 +18,26 @@ public class AdminBillingReconciliationService {
 
   private final BillingRechargeOrderMapper orderMapper;
   private final BillingLedgerMapper ledgerMapper;
+  private final BillingOpsAlertService opsAlertService;
 
   public AdminBillingReconciliationService(
-      BillingRechargeOrderMapper orderMapper, BillingLedgerMapper ledgerMapper) {
+      BillingRechargeOrderMapper orderMapper,
+      BillingLedgerMapper ledgerMapper,
+      BillingOpsAlertService opsAlertService) {
     this.orderMapper = orderMapper;
     this.ledgerMapper = ledgerMapper;
+    this.opsAlertService = opsAlertService;
+  }
+
+  public AdminReconciliationStatusResponse getStatus(LocalDate date) {
+    var report = getDailyReport(date);
+    return new AdminReconciliationStatusResponse(
+        report.date(),
+        report.balanced(),
+        report.discrepancies().size(),
+        report.discrepancies(),
+        opsAlertService.countOpenReconciliationAlerts(),
+        opsAlertService.latestReconciliationAlertAt());
   }
 
   public AdminReconciliationDailyResponse getDailyReport(LocalDate date) {

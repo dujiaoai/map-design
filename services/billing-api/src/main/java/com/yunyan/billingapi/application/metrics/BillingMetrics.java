@@ -13,6 +13,7 @@ public class BillingMetrics {
   private final Counter holdCreated;
   private final Counter holdConfirmed;
   private final Counter lowBalance;
+  private final Counter reconciliationUnbalanced;
 
   public BillingMetrics(MeterRegistry meterRegistry) {
     this.rechargeCompleted =
@@ -39,6 +40,10 @@ public class BillingMetrics {
         Counter.builder("billing.wallet.low_balance")
             .description("Wallets whose available balance crossed below the low threshold")
             .register(meterRegistry);
+    this.reconciliationUnbalanced =
+        Counter.builder("billing.reconciliation.unbalanced")
+            .description("Daily reconciliation runs that detected order vs ledger mismatch")
+            .register(meterRegistry);
   }
 
   public void recordRechargeCompleted() {
@@ -63,5 +68,9 @@ public class BillingMetrics {
 
   public void recordLowBalance() {
     lowBalance.increment();
+  }
+
+  public void recordReconciliationUnbalanced() {
+    reconciliationUnbalanced.increment();
   }
 }

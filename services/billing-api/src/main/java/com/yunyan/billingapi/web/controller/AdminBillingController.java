@@ -24,6 +24,7 @@ import com.yunyan.billingapi.web.dto.AdminBillingStatsResponse;
 import com.yunyan.billingapi.web.dto.AdminIssueInvoiceRequest;
 import com.yunyan.billingapi.web.dto.AdminRejectInvoiceRequest;
 import com.yunyan.billingapi.web.dto.AdminReconciliationDailyResponse;
+import com.yunyan.billingapi.web.dto.AdminReconciliationStatusResponse;
 import com.yunyan.billingapi.web.dto.AdminRefundRequest;
 import com.yunyan.billingapi.web.dto.AdminRefundResponse;
 import com.yunyan.billingapi.web.dto.InvoiceListResponse;
@@ -276,6 +277,16 @@ public class AdminBillingController {
           LocalDate date) {
     var reportDate = date != null ? date : LocalDate.now(ZoneOffset.UTC).minusDays(1);
     return adminBillingReconciliationService.getDailyReport(reportDate);
+  }
+
+  @GetMapping("/reconciliation/status")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_READ + "')")
+  @Operation(summary = "对账状态概览：指定 UTC 日报告 + 未关闭运维告警计数")
+  public AdminReconciliationStatusResponse getReconciliationStatus(
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate date) {
+    var reportDate = date != null ? date : LocalDate.now(ZoneOffset.UTC).minusDays(1);
+    return adminBillingReconciliationService.getStatus(reportDate);
   }
 
   @PostMapping("/recharge-orders/{orderNo}/refund")

@@ -19,6 +19,14 @@ public class BillingAppProperties {
   private final MembershipSync membershipSync = new MembershipSync();
   private final Coupon coupon = new Coupon();
   private final WireTransfer wireTransfer = new WireTransfer();
+  private final Reconciliation reconciliation = new Reconciliation();
+
+  @Data
+  public static class Reconciliation {
+    /** Daily UTC cron job that records ops alerts when yesterday's reconciliation is unbalanced. */
+    private boolean alertJobEnabled = true;
+    private String alertCron = "0 0 2 * * *";
+  }
 
   @Data
   public static class WireTransfer {

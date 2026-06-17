@@ -93,6 +93,9 @@ billing:
   low-balance:
     enabled: ${BILLING_LOW_BALANCE_ENABLED:true}
     threshold: ${BILLING_LOW_BALANCE_THRESHOLD:50}
+  reconciliation:
+    alert-job-enabled: ${BILLING_RECONCILIATION_ALERT_JOB_ENABLED:true}
+    alert-cron: ${BILLING_RECONCILIATION_ALERT_CRON:0 0 2 * * *}
   rate-limit:
     enabled: ${BILLING_RATE_LIMIT_ENABLED:true}
     webhook:

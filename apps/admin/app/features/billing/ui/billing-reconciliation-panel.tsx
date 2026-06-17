@@ -1,16 +1,19 @@
 import { Button } from '@repo/ui'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangleIcon, CheckCircle2Icon, ScaleIcon } from 'lucide-react'
 import { useId, useState } from 'react'
 
 import {
   adminBillingReconciliationQuery,
+  adminOpsAlertListSchema,
+  adminOpsAlertResolveSchema,
   adminReconciliationDailySchema,
   defaultReconciliationDateUtc,
 } from '~/features/billing/lib/billing-admin-api'
 import { formatBillingPrice } from '~/features/billing/lib/billing-format'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
 import { billingAdminApi } from '~/shared/api/billing-admin-client'
+import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminAntDate } from '~/shared/ant'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
@@ -35,9 +38,13 @@ function formatDiscrepancy(message: string) {
 
 export function BillingReconciliationPanel() {
   const dateInputId = useId()
+  const { can } = useAdminPermissions()
+  const canAdjust = can('admin:billing:adjust')
+  const queryClient = useQueryClient()
   const [dateInput, setDateInput] = useState(defaultReconciliationDateUtc())
   const [activeDate, setActiveDate] = useState(defaultReconciliationDateUtc())
   const [dateError, setDateError] = useState<string | null>(null)
+  const [resolvingId, setResolvingId] = useState<string | null>(null)
 
   const query = useQuery({
     queryKey: billingAdminQueryKeys.reconciliation(activeDate),
@@ -49,7 +56,38 @@ export function BillingReconciliationPanel() {
       ),
   })
 
+  const openAlertsQuery = useQuery({
+    queryKey: billingAdminQueryKeys.opsAlerts(0),
+    queryFn: async () =>
+      adminOpsAlertListSchema.parse(await billingAdminApi.get('/ops-alerts?page=0&size=20')),
+  })
+
+  const resolveAlert = useMutation({
+    mutationFn: async (alertId: string) =>
+      adminOpsAlertResolveSchema.parse(
+        await billingAdminApi.post(`/ops-alerts/${encodeURIComponent(alertId)}/resolve`),
+      ),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.opsAlerts(0) }),
+        queryClient.invalidateQueries({ queryKey: billingAdminQueryKeys.reconciliationStatus() }),
+      ])
+    },
+  })
+
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
+  const openAlertsError = openAlertsQuery.error
+    ? formatAdminApiError(openAlertsQuery.error)
+    : null
+
+  async function handleResolveAlert(alertId: string) {
+    setResolvingId(alertId)
+    try {
+      await resolveAlert.mutateAsync(alertId)
+    } finally {
+      setResolvingId(null)
+    }
+  }
 
   function runQuery() {
     const trimmed = dateInput.trim()
@@ -94,6 +132,54 @@ export function BillingReconciliationPanel() {
           </div>
         ) : null}
       </AdminPanel>
+
+      {openAlertsQuery.isLoading ? null : openAlertsError ? (
+        <AdminPanel>
+          <div className="px-6 py-4">
+            <AdminEmptyState
+              message={openAlertsError}
+              onRetry={() => void openAlertsQuery.refetch()}
+              isRetrying={openAlertsQuery.isFetching}
+            />
+          </div>
+        </AdminPanel>
+      ) : openAlertsQuery.data && openAlertsQuery.data.total > 0 ? (
+        <AdminPanel>
+          <div className="border-b border-border/60 px-6 py-4">
+            <h3 className="text-sm font-medium">未关闭运维告警</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              由定时对账 Job 写入；处理完差异后可标记为已处理。
+            </p>
+          </div>
+          <ul className="divide-y divide-border/60">
+            {openAlertsQuery.data.items.map((alert) => (
+              <li key={alert.id} className="flex flex-wrap items-start gap-3 px-6 py-4">
+                <AlertTriangleIcon className="mt-0.5 size-4 shrink-0 text-amber-700 dark:text-amber-400" />
+                <div className="min-w-0 flex-1 space-y-1">
+                  <p className="text-sm font-medium">{alert.title}</p>
+                  <p className="text-xs text-muted-foreground">{alert.body}</p>
+                  {alert.createdAt ? (
+                    <p className="text-[11px] text-muted-foreground">
+                      创建于 {new Date(alert.createdAt).toLocaleString('zh-CN')}
+                    </p>
+                  ) : null}
+                </div>
+                {canAdjust ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={resolvingId === alert.id}
+                    onClick={() => void handleResolveAlert(alert.id)}
+                  >
+                    {resolvingId === alert.id ? '处理中…' : '标记已处理'}
+                  </Button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </AdminPanel>
+      ) : null}
 
       {query.isLoading ? (
         <AdminPanel>

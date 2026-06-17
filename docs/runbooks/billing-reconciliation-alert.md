@@ -54,7 +54,7 @@
 1. 在 Admin **日对账** 面板确认差异类型（笔数 vs 积分、充值 vs 退款）
 2. 对照 `billing_recharge_order` 与 `billing_ledger` 同日 `entry_type` 记录
 3. 常见原因：mock-pay/webhook 重复入账、退款未完成流水、手工调账未走订单
-4. 修复数据后次日 Job 应恢复 `balanced=true`；历史 `billing_ops_alert` 需人工标记 resolved（后续可补 Admin 操作）
+4. 修复数据后次日 Job 应恢复 `balanced=true`；可在 Admin **计费 → 日对账** 对未关闭告警点击「标记已处理」
 
 ## 监控
 

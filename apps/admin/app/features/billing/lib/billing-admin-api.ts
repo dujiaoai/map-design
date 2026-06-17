@@ -208,6 +208,33 @@ export const adminReconciliationStatusSchema = z.object({
 
 export type AdminReconciliationStatus = z.infer<typeof adminReconciliationStatusSchema>
 
+export const adminOpsAlertListSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      alertType: z.string(),
+      severity: z.string(),
+      referenceKey: z.string(),
+      title: z.string(),
+      body: z.string(),
+      resolvedAt: z.string().nullable().optional(),
+      createdAt: z.string().nullable().optional(),
+    }),
+  ),
+  page: z.number(),
+  size: z.number(),
+  total: z.number(),
+})
+
+export const adminOpsAlertResolveSchema = z.object({
+  id: z.string(),
+  resolvedAt: z.string(),
+  idempotentReplay: z.boolean(),
+})
+
+export type AdminOpsAlertList = z.infer<typeof adminOpsAlertListSchema>
+export type AdminOpsAlert = AdminOpsAlertList['items'][number]
+
 export const INVOICE_STATUSES = [
   { value: 'all', label: '全部' },
   { value: 'pending', label: '待处理' },

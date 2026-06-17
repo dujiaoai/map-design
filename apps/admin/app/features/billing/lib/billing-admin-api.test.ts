@@ -12,6 +12,8 @@ import {
   adminWireTransferListSchema,
   adminReconciliationDailySchema,
   adminReconciliationStatusSchema,
+  adminOpsAlertListSchema,
+  adminOpsAlertResolveSchema,
   adminWalletListSchema,
   defaultReconciliationDateUtc,
 } from './billing-admin-api'
@@ -165,6 +167,35 @@ describe('admin response schemas', () => {
     })
     expect(parsed.openAlertCount).toBe(1)
     expect(parsed.balanced).toBe(false)
+  })
+
+  it('parses ops alert list payload', () => {
+    const parsed = adminOpsAlertListSchema.parse({
+      items: [
+        {
+          id: 'a1',
+          alertType: 'reconciliation_daily',
+          severity: 'critical',
+          referenceKey: 'reconciliation:2026-06-10',
+          title: '日对账差异：2026-06-10',
+          body: 'UTC 日 2026-06-10 发现 1 项差异',
+          createdAt: '2026-06-11T02:00:00Z',
+        },
+      ],
+      page: 0,
+      size: 20,
+      total: 1,
+    })
+    expect(parsed.total).toBe(1)
+  })
+
+  it('parses ops alert resolve payload', () => {
+    const parsed = adminOpsAlertResolveSchema.parse({
+      id: 'a1',
+      resolvedAt: '2026-06-11T08:00:00Z',
+      idempotentReplay: false,
+    })
+    expect(parsed.idempotentReplay).toBe(false)
   })
 
   it('parses invoice list payload', () => {

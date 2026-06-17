@@ -197,6 +197,17 @@ export const adminReconciliationDailySchema = z.object({
 
 export type AdminReconciliationDaily = z.infer<typeof adminReconciliationDailySchema>
 
+export const adminReconciliationStatusSchema = z.object({
+  checkedDate: z.string(),
+  balanced: z.boolean(),
+  discrepancyCount: z.number(),
+  discrepancies: z.array(z.string()),
+  openAlertCount: z.number(),
+  lastAlertAt: z.string().nullable().optional(),
+})
+
+export type AdminReconciliationStatus = z.infer<typeof adminReconciliationStatusSchema>
+
 export const INVOICE_STATUSES = [
   { value: 'all', label: '全部' },
   { value: 'pending', label: '待处理' },

@@ -1,6 +1,8 @@
 import { Button } from '@repo/ui'
 import { useQuery } from '@tanstack/react-query'
 import {
+  AlertTriangleIcon,
+  CheckCircle2Icon,
   CircleDollarSignIcon,
   CoinsIcon,
   PackageIcon,
@@ -10,7 +12,11 @@ import {
   WalletIcon,
 } from 'lucide-react'
 
-import { adminBillingStatsSchema } from '~/features/billing/lib/billing-admin-api'
+import {
+  adminBillingStatsSchema,
+  adminReconciliationStatusSchema,
+  type AdminReconciliationStatus,
+} from '~/features/billing/lib/billing-admin-api'
 import type { BillingNavigateTarget } from '~/features/billing/lib/billing-admin-nav'
 import { formatBillingPrice } from '~/features/billing/lib/billing-format'
 import { billingAdminQueryKeys } from '~/features/billing/lib/billing-admin-query-keys'
@@ -43,10 +49,44 @@ export function BillingStatsSummary({
       adminBillingStatsSchema.parse(await billingAdminApi.get('/stats')),
   })
 
+  const reconciliationQuery = useQuery({
+    queryKey: billingAdminQueryKeys.reconciliationStatus(),
+    queryFn: async () =>
+      adminReconciliationStatusSchema.parse(
+        await billingAdminApi.get('/reconciliation/status'),
+      ),
+  })
+
   const errorMessage = query.error ? formatAdminApiError(query.error) : null
+  const reconciliationError = reconciliationQuery.error
+    ? formatAdminApiError(reconciliationQuery.error)
+    : null
+
+  const showReconciliationAlert =
+    reconciliationQuery.data &&
+    (!reconciliationQuery.data.balanced || reconciliationQuery.data.openAlertCount > 0)
 
   return (
     <div className="space-y-4">
+      {reconciliationQuery.isLoading ? null : reconciliationError ? (
+        <AdminPanel>
+          <div className="px-6 py-4">
+            <AdminEmptyState
+              message={reconciliationError}
+              onRetry={() => void reconciliationQuery.refetch()}
+              isRetrying={reconciliationQuery.isFetching}
+            />
+          </div>
+        </AdminPanel>
+      ) : showReconciliationAlert && reconciliationQuery.data ? (
+        <ReconciliationAlertBanner
+          status={reconciliationQuery.data}
+          onNavigate={onNavigate}
+        />
+      ) : reconciliationQuery.data?.balanced ? (
+        <ReconciliationOkBanner checkedDate={reconciliationQuery.data.checkedDate} />
+      ) : null}
+
       <AdminPanel>
         <div className="border-b border-border/60 px-6 py-5">
           <h3 className="text-base font-medium">平台汇总</h3>
@@ -135,6 +175,85 @@ export function BillingStatsSummary({
         </AdminPanel>
       ) : null}
     </div>
+  )
+}
+
+function ReconciliationOkBanner({ checkedDate }: { checkedDate: string }) {
+  return (
+    <AdminPanel>
+      <div className="flex flex-wrap items-center gap-3 px-6 py-4">
+        <CheckCircle2Icon className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium">日对账正常</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            UTC {checkedDate} 充值/退款订单与积分流水一致。
+          </p>
+        </div>
+      </div>
+    </AdminPanel>
+  )
+}
+
+function ReconciliationAlertBanner({
+  status,
+  onNavigate,
+}: {
+  status: AdminReconciliationStatus
+  onNavigate?: (target: BillingNavigateTarget) => void
+}) {
+  const alertParts: string[] = []
+  if (!status.balanced) {
+    alertParts.push(`UTC ${status.checkedDate} 发现 ${status.discrepancyCount} 项差异`)
+  }
+  if (status.openAlertCount > 0) {
+    alertParts.push(`${status.openAlertCount} 条未关闭运维告警`)
+  }
+
+  return (
+    <AdminPanel>
+      <div className="flex flex-wrap items-start gap-3 border-b border-amber-500/25 bg-amber-500/8 px-6 py-4">
+        <AlertTriangleIcon className="mt-0.5 size-4 shrink-0 text-amber-700 dark:text-amber-400" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <div>
+            <p className="text-sm font-medium text-amber-950 dark:text-amber-50">
+              计费对账需关注
+            </p>
+            <p className="mt-0.5 text-xs text-amber-900/80 dark:text-amber-100/80">
+              {alertParts.join('；')}
+              {status.lastAlertAt
+                ? `。最近告警：${new Date(status.lastAlertAt).toLocaleString('zh-CN', { timeZone: 'UTC' })} UTC`
+                : null}
+            </p>
+          </div>
+          {!status.balanced && status.discrepancies.length > 0 ? (
+            <ul className="space-y-1 text-xs text-amber-900 dark:text-amber-100">
+              {status.discrepancies.slice(0, 3).map((item) => (
+                <li key={item} className="font-mono opacity-90">
+                  {item}
+                </li>
+              ))}
+              {status.discrepancies.length > 3 ? (
+                <li className="text-muted-foreground">
+                  另有 {status.discrepancies.length - 3} 项…
+                </li>
+              ) : null}
+            </ul>
+          ) : null}
+          {onNavigate ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="border-amber-500/40 bg-background/60"
+              onClick={() => onNavigate({ tab: 'reconciliation' })}
+            >
+              <ScaleIcon className="size-3.5" />
+              查看日对账
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </AdminPanel>
   )
 }
 

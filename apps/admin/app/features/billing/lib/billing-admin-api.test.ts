@@ -11,6 +11,7 @@ import {
   adminCouponListSchema,
   adminWireTransferListSchema,
   adminReconciliationDailySchema,
+  adminReconciliationStatusSchema,
   adminWalletListSchema,
   defaultReconciliationDateUtc,
 } from './billing-admin-api'
@@ -151,6 +152,19 @@ describe('admin response schemas', () => {
       discrepancies: [],
     })
     expect(parsed.balanced).toBe(true)
+  })
+
+  it('parses reconciliation status payload', () => {
+    const parsed = adminReconciliationStatusSchema.parse({
+      checkedDate: '2026-06-14',
+      balanced: false,
+      discrepancyCount: 1,
+      discrepancies: ['paid_order_count_mismatch: orders=1 ledger=0'],
+      openAlertCount: 1,
+      lastAlertAt: '2026-06-15T02:00:00Z',
+    })
+    expect(parsed.openAlertCount).toBe(1)
+    expect(parsed.balanced).toBe(false)
   })
 
   it('parses invoice list payload', () => {

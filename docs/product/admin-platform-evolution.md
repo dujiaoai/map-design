@@ -86,7 +86,7 @@ flowchart TB
 
 | PR | 内容 |
 | --- | --- |
-| 5B-1 | `/system` 展示 saas-api ↔ billing-api 依赖健康（对齐 FND-05） |
+| 5B-1 | `/system` 展示 saas-api ↔ billing-api 依赖健康（对齐 FND-05） | ✅ |
 | 5B-2 | 概览 MetricCard：近 7 日活跃租户 / 新增用户（API + UI） |
 | 5B-3 | 运维 runbook 链接从 `/system` 直达（已有 flags 列表增强） |
 

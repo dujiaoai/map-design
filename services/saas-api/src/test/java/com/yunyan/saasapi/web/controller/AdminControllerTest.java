@@ -119,6 +119,27 @@ class AdminControllerTest {
   }
 
   @Test
+  void systemDependencies_withoutToken_returnsUnauthorized() throws Exception {
+    mockMvc.perform(get("/v1/admin/system/dependencies")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void systemDependencies_withPlatformAdmin_returnsSaasAndBillingNodes() throws Exception {
+    var accessToken = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            get("/v1/admin/system/dependencies").header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.nodes[0].id").value("saas-api"))
+        .andExpect(jsonPath("$.nodes[0].status").value("UP"))
+        .andExpect(jsonPath("$.nodes[1].id").value("billing-api"))
+        .andExpect(jsonPath("$.nodes[1].status").value("DISABLED"))
+        .andExpect(jsonPath("$.edges[0].from").value("saas-api"))
+        .andExpect(jsonPath("$.edges[0].to").value("billing-api"));
+  }
+
+  @Test
   void login_withPlatformAdmin_returnsPlatformPermissions() throws Exception {
     var loginBody = loginBody("platform@test.local");
 

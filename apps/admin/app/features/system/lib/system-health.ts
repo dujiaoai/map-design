@@ -1,4 +1,5 @@
 import type { AdminPingResponse, AdminSystemFlagsResponse } from '~/shared/api/admin-api'
+import type { AdminSystemDependenciesResponse } from '~/entities/admin-platform'
 import type { AdminStatusLevel } from '~/shared/ui/admin-status-pill'
 
 export interface SystemHealthSignal {
@@ -32,12 +33,62 @@ export function buildApiPingSignal(
   }
 }
 
+export function buildBillingHealthSignal(
+  flags: AdminSystemFlagsResponse,
+  billingNode?: AdminSystemDependenciesResponse['nodes'][number],
+): SystemHealthSignal {
+  if (billingNode) {
+    const level: AdminStatusLevel =
+      billingNode.status === 'UP'
+        ? 'ok'
+        : billingNode.status === 'DISABLED'
+          ? 'off'
+          : 'warn'
+    const detail =
+      billingNode.status === 'UP'
+        ? `探活 UP · ${billingNode.url ?? flags.billing.baseUrl}`
+        : billingNode.detail || billingNode.url || billingNode.status
+    return {
+      id: 'billing',
+      label: 'Billing API',
+      level,
+      detail,
+    }
+  }
+
+  if (!flags.billing.integrationEnabled) {
+    return {
+      id: 'billing',
+      label: '计费集成',
+      level: 'warn',
+      detail: 'billing-api 未接入，钱包/充值不可用',
+    }
+  }
+
+  return {
+    id: 'billing',
+    label: '计费集成',
+    level: 'ok',
+    detail: flags.billing.baseUrl,
+  }
+}
+
+export function dependencyStatusLevel(
+  status: AdminSystemDependenciesResponse['nodes'][number]['status'],
+): AdminStatusLevel {
+  if (status === 'UP') return 'ok'
+  if (status === 'DISABLED') return 'off'
+  return 'warn'
+}
+
 export function buildSystemHealthSignals(
   flags: AdminSystemFlagsResponse,
   ping?: AdminPingResponse,
   pingError = false,
+  dependencies?: AdminSystemDependenciesResponse,
 ): SystemHealthSignal[] {
   const signals: SystemHealthSignal[] = [buildApiPingSignal(ping, pingError)]
+  const billingNode = dependencies?.nodes.find((node) => node.id === 'billing-api')
 
   if (flags.mail.enabled) {
     signals.push({
@@ -57,14 +108,7 @@ export function buildSystemHealthSignals(
     })
   }
 
-  signals.push({
-    id: 'billing',
-    label: '计费集成',
-    level: flags.billing.integrationEnabled ? 'ok' : 'warn',
-    detail: flags.billing.integrationEnabled
-      ? flags.billing.baseUrl
-      : 'billing-api 未接入，钱包/充值不可用',
-  })
+  signals.push(buildBillingHealthSignal(flags, billingNode))
 
   signals.push({
     id: 'rls',

@@ -59,6 +59,53 @@ describe('buildSystemHealthSignals', () => {
     expect(signals.find((s) => s.id === 'billing')?.level).toBe('warn')
   })
 
+  it('uses live billing probe when dependencies are provided', () => {
+    const signals = buildSystemHealthSignals(
+      BASE_FLAGS,
+      { status: 'ok', authenticated: true, platformAdmin: true },
+      false,
+      {
+        edges: [{ from: 'saas-api', to: 'billing-api', kind: 'HTTP /actuator/health' }],
+        nodes: [
+          { id: 'saas-api', label: 'SaaS API', status: 'UP', url: null, detail: 'online' },
+          {
+            id: 'billing-api',
+            label: 'Billing API',
+            status: 'UP',
+            url: 'http://localhost:8083',
+            detail: 'probe ok',
+          },
+        ],
+      },
+    )
+    const billing = signals.find((s) => s.id === 'billing')
+    expect(billing?.label).toBe('Billing API')
+    expect(billing?.level).toBe('ok')
+    expect(billing?.detail).toContain('探活 UP')
+  })
+
+  it('marks billing probe as warn when downstream is down', () => {
+    const signals = buildSystemHealthSignals(
+      BASE_FLAGS,
+      { status: 'ok', authenticated: true, platformAdmin: true },
+      false,
+      {
+        edges: [],
+        nodes: [
+          { id: 'saas-api', label: 'SaaS API', status: 'UP', url: null, detail: 'online' },
+          {
+            id: 'billing-api',
+            label: 'Billing API',
+            status: 'DOWN',
+            url: 'http://localhost:8083',
+            detail: 'Connection refused',
+          },
+        ],
+      },
+    )
+    expect(signals.find((s) => s.id === 'billing')?.level).toBe('warn')
+  })
+
   it('summarizes overall health with warnings', () => {
     const signals = buildSystemHealthSignals(
       {

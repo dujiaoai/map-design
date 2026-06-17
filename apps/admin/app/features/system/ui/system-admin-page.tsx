@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import {
+  ArrowRightIcon,
   BookOpenIcon,
   CreditCardIcon,
   KeyRoundIcon,
@@ -12,10 +13,16 @@ import { Link } from 'react-router'
 
 import {
   buildSystemHealthSignals,
+  dependencyStatusLevel,
   summarizeSystemHealth,
 } from '~/features/system/lib/system-health'
 import { AdminMfaEnrollPanel } from '~/features/mfa/ui/admin-mfa-enroll-panel'
-import { fetchAdminPing, fetchAdminMfaStatus, fetchAdminSystemFlags } from '~/shared/api/admin-api'
+import {
+  fetchAdminPing,
+  fetchAdminMfaStatus,
+  fetchAdminSystemDependencies,
+  fetchAdminSystemFlags,
+} from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
 import {
@@ -66,6 +73,11 @@ export function SystemAdminPage() {
     queryFn: fetchAdminPing,
     staleTime: 30_000,
   })
+  const dependenciesQuery = useQuery({
+    queryKey: adminQueryKeys.systemDependencies,
+    queryFn: fetchAdminSystemDependencies,
+    staleTime: 30_000,
+  })
 
   if (query.isLoading) {
     return (
@@ -95,8 +107,9 @@ export function SystemAdminPage() {
             onRetry={() => {
               void query.refetch()
               void pingQuery.refetch()
+              void dependenciesQuery.refetch()
             }}
-            isRetrying={query.isFetching || pingQuery.isFetching}
+            isRetrying={query.isFetching || pingQuery.isFetching || dependenciesQuery.isFetching}
           />
         </AdminPanel>
       </div>
@@ -108,8 +121,11 @@ export function SystemAdminPage() {
     flags,
     pingQuery.data,
     pingQuery.isError,
+    dependenciesQuery.data,
   )
   const healthSummary = summarizeSystemHealth(healthSignals)
+  const dependencyNodes = dependenciesQuery.data?.nodes ?? []
+  const dependencyEdges = dependenciesQuery.data?.edges ?? []
   const profileLabel = flags.runtime.activeProfiles.join(', ') || 'default'
 
   return (
@@ -166,6 +182,55 @@ export function SystemAdminPage() {
           ))}
         </ul>
       </section>
+
+      {dependencyNodes.length > 0 ? (
+        <section className="admin-stagger rounded-xl border border-border/50 bg-card/40 px-4 py-4 md:px-5 md:py-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="admin-display text-xs tracking-[0.2em] text-primary/70 uppercase">
+                Dependencies
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                saas-api 对下游服务的实时探活（FND-05 HealthIndicator）
+              </p>
+            </div>
+            {dependenciesQuery.isFetching ? (
+              <span className="text-xs text-muted-foreground">刷新探活…</span>
+            ) : null}
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            {dependencyNodes.map((node, index) => (
+              <div key={node.id} className="flex items-center gap-3">
+                <div className="rounded-lg border border-border/60 bg-background/40 px-4 py-3 min-w-[10rem]">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium">{node.label}</p>
+                    <AdminStatusPill
+                      level={dependencyStatusLevel(node.status)}
+                      label={node.status}
+                    />
+                  </div>
+                  {node.url ? (
+                    <p className="mt-1 font-mono text-[11px] text-muted-foreground">{node.url}</p>
+                  ) : null}
+                  <p className="mt-1 text-xs text-muted-foreground">{node.detail}</p>
+                </div>
+                {index < dependencyNodes.length - 1 ? (
+                  <ArrowRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                ) : null}
+              </div>
+            ))}
+          </div>
+          {dependencyEdges.length > 0 ? (
+            <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+              {dependencyEdges.map((edge) => (
+                <li key={`${edge.from}-${edge.to}`} className="font-mono">
+                  {edge.from} → {edge.to} · {edge.kind}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
 
       <div className="admin-stagger grid gap-6 lg:grid-cols-2">
         <AdminPanel>

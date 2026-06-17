@@ -1,6 +1,11 @@
 import { api } from '~/shared/api/client'
 
-import type { AdminPingResponse, AdminStatsResponse, AdminSystemFlagsResponse } from './model'
+import type {
+  AdminPingResponse,
+  AdminStatsResponse,
+  AdminSystemDependenciesResponse,
+  AdminSystemFlagsResponse,
+} from './model'
 
 export function fetchAdminPing() {
   return api.get<AdminPingResponse>('/admin/ping')
@@ -12,4 +17,8 @@ export function fetchAdminStats() {
 
 export function fetchAdminSystemFlags() {
   return api.get<AdminSystemFlagsResponse>('/admin/system/flags')
+}
+
+export function fetchAdminSystemDependencies() {
+  return api.get<AdminSystemDependenciesResponse>('/admin/system/dependencies')
 }

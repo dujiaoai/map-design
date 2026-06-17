@@ -52,3 +52,20 @@ export interface AdminSystemFlagsResponse {
     jwtPermEpoch: number
   }
 }
+
+export type AdminDependencyStatus = 'UP' | 'DOWN' | 'DISABLED' | 'UNKNOWN'
+
+export interface AdminSystemDependenciesResponse {
+  edges: Array<{
+    from: string
+    to: string
+    kind: string
+  }>
+  nodes: Array<{
+    id: string
+    label: string
+    status: AdminDependencyStatus
+    url: string | null
+    detail: string
+  }>
+}

@@ -1,12 +1,14 @@
 package com.yunyan.saasapi.web.controller;
 
 import com.yunyan.saasapi.application.admin.AdminStatsService;
+import com.yunyan.saasapi.application.admin.AdminSystemDependenciesService;
 import com.yunyan.saasapi.application.admin.AdminSystemFlagsService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
 import com.yunyan.saasapi.web.dto.admin.FeatureCatalogResponse;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminStatsResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminSystemDependenciesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemFlagsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,6 +30,7 @@ public class AdminController {
 
   private final AdminStatsService adminStatsService;
   private final AdminSystemFlagsService adminSystemFlagsService;
+  private final AdminSystemDependenciesService adminSystemDependenciesService;
   private final TenantFeatureAdminService tenantFeatureAdminService;
 
   @GetMapping("/ping")
@@ -78,5 +81,15 @@ public class AdminController {
       description = "注册开关、邮件、限流、RLS、billing 集成等运行态摘要；不含密钥。")
   public AdminSystemFlagsResponse systemFlags() {
     return adminSystemFlagsService.getFlags();
+  }
+
+  @GetMapping("/system/dependencies")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(
+      summary = "平台依赖健康（只读）",
+      description = "saas-api 对 billing-api 等下游的实时探活摘要；对齐 FND-05 HealthIndicator。")
+  public AdminSystemDependenciesResponse systemDependencies() {
+    return adminSystemDependenciesService.getDependencies();
   }
 }

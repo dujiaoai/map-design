@@ -95,11 +95,13 @@ export {
 export type {
   AdminPingResponse,
   AdminStatsResponse,
+  AdminSystemDependenciesResponse,
   AdminSystemFlagsResponse,
 } from '~/entities/admin-platform'
 export {
   fetchAdminPing,
   fetchAdminStats,
+  fetchAdminSystemDependencies,
   fetchAdminSystemFlags,
 } from '~/entities/admin-platform'
 export type { AdminMfaStatusResponse, TotpEnrollResponse } from '~/entities/admin-mfa'

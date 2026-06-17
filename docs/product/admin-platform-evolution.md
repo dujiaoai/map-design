@@ -80,7 +80,7 @@ flowchart TB
 | 5A-1 | 本文档 + `apps.md` 同步 FND-07 ✅ 状态 | docs | ✅ |
 | 5A-2 | 审计日志 mock E2E（筛选 + 导出按钮） | test | ✅ |
 | 5A-3 | `requireAdminPermissions` 对 `PLATFORM_ADMIN` 与成员页一致兜底 | fix | ✅ |
-| 5A-4 | Admin E2E 纳入 CI（mock project smoke） | chore |
+| 5A-4 | Admin E2E 纳入 CI（mock project smoke） | chore | ✅ |
 
 ### Phase 5B · 平台可观测与运维
 
@@ -131,6 +131,6 @@ flowchart TB
 | 阶段 | 标志 |
 | --- | --- |
 | **基础平台**（当前） | P0–P4 + FND-07/08 核心 ✅ |
-| **Phase 5A** | 演进文档 + 审计 E2E + CI smoke |
+| **Phase 5A** | 演进文档 + 审计 E2E + CI smoke ✅ |
 | **Phase 5B–C** | 租户生命周期可运维、/system 可观测 |
 | **Phase 5D–E** | 企业客户 SSO + 多产品菜单差异化 |

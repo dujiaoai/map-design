@@ -127,12 +127,14 @@ P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）、Later（P
 | **真实 API 联调 E2E** | 依赖 seed + 运行中 saas-api | ✅ `pnpm test:e2e:api` |
 | **计费对账 mock E2E** | 概览警示横幅、日对账 Tab、关闭运维告警 | ✅ `pnpm test:e2e -- billing.spec.ts` |
 | **审计日志 mock E2E** | 列表、日期范围、CSV 导出 | ✅ `pnpm test:e2e -- audit-logs.spec.ts` |
+| **CI mock E2E smoke** | GitHub Actions `admin-e2e.yml`；本地 `pnpm validate:admin-e2e` | ✅ |
 
 ## 验证
 
 ```bash
 pnpm --filter @repo/saas-admin validate
-pnpm --filter @repo/saas-admin test:e2e   # Playwright mock：登录/概览/成员/计费
+pnpm validate:admin-e2e   # 根目录：Playwright mock 全量（与 CI 一致）
+pnpm --filter @repo/saas-admin test:e2e   # 同上
 pnpm --filter @repo/saas-admin test:e2e:api   # 真实 API：需 saas-api :8082 + seed-demo-dev.sql
 pnpm --filter @repo/saas-admin test:e2e:install   # 首次安装 Chromium
 cd services/saas-api && mvn test -Dtest=Admin*ControllerTest

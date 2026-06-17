@@ -23,6 +23,7 @@
     "typecheck": "node scripts/turbo-run.mjs run typecheck",
     "test": "node scripts/turbo-run.mjs run test",
     "validate": "node scripts/turbo-run.mjs run typecheck && node scripts/turbo-run.mjs run test && pnpm check",
+    "validate:admin-e2e": "pnpm --filter @repo/saas-admin test:e2e",
     "smoke:saas-api": "node services/saas-api/scripts/smoke-auth.mjs",
     "smoke:billing-api": "node services/billing-api/scripts/smoke-billing.mjs",
     "sync:billing-membership": "docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.billing-db.yml run --rm billing-db-sync",

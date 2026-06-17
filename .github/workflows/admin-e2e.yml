@@ -1,0 +1,49 @@
+name: Admin E2E (mock)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/admin/**'
+      - 'packages/auth/**'
+      - 'packages/api-client/**'
+      - 'packages/ui/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/admin-e2e.yml'
+  pull_request:
+    paths:
+      - 'apps/admin/**'
+      - 'packages/auth/**'
+      - 'packages/api-client/**'
+      - 'packages/ui/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/admin-e2e.yml'
+
+concurrency:
+  group: admin-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mock-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @repo/saas-admin exec playwright install chromium --with-deps
+
+      - name: Run Admin mock E2E
+        run: pnpm --filter @repo/saas-admin test:e2e

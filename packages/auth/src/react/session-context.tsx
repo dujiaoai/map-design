@@ -12,10 +12,6 @@ export function SessionProvider({
   auth: AuthClient
   children: React.ReactNode
 }) {
-  if (typeof window !== 'undefined') {
-    auth.hydrateSession()
-  }
-
   useEffect(() => {
     auth.hydrateSession()
   }, [auth])

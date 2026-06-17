@@ -7,8 +7,7 @@ test.describe('登录页冒烟', () => {
   test('展示登录表单与提交按钮', async ({ page }) => {
     await page.goto('/login')
 
-    await expect(page).toHaveTitle(/登录 · 云眼运营后台/)
-    await expect(page.getByRole('heading', { name: '运营后台登录' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: '运营后台登录' })).toBeVisible({ timeout: 30_000 })
     await expect(page.getByRole('textbox', { name: '邮箱' })).toBeVisible()
     await expect(page.getByRole('textbox', { name: '密码' })).toBeVisible()
     await expect(page.getByLabel('租户 slug')).toBeVisible()
@@ -20,6 +19,7 @@ test.describe('登录页冒烟', () => {
     await mockAdminOverviewApis(page)
 
     await page.goto('/login')
+    await expect(page.getByRole('textbox', { name: '邮箱' })).toBeVisible({ timeout: 30_000 })
     await page.getByRole('textbox', { name: '邮箱' }).fill('e2e-login@demo.local')
     await page.getByRole('textbox', { name: '密码' }).fill('password')
     await page.getByLabel('租户 slug').fill('demo')

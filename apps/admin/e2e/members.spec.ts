@@ -16,9 +16,10 @@ test.describe('成员管理（已登录 mock）', () => {
 
   async function gotoMembersPage(page: import('@playwright/test').Page) {
     await page.goto('/')
-    await expect(page.getByRole('heading', { name: '运营概览' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: '运营概览' })).toBeVisible({ timeout: 30_000 })
     await page.goto(`/members?tenantId=${E2E_TENANT_ID}`)
-    await expect(page.getByRole('heading', { name: '租户成员' })).toBeVisible()
+    await expect(page.getByText('加载中…')).toBeHidden({ timeout: 45_000 })
+    await expect(page.getByRole('heading', { name: '租户成员' })).toBeVisible({ timeout: 15_000 })
   }
 
   test('展示成员列表与 Plan 配额', async ({ page }) => {

@@ -124,13 +124,14 @@ P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）、Later（P
 | --- | --- | --- |
 | **admin-list-query 归位** | 列表查询 builder 从 `shared/api` 迁至 `shared/lib` | ✅ |
 | **成员页 E2E** | mock 成员列表、配额与邀请 Sheet Tab | ✅ |
-| **真实 API 联调 E2E** | 依赖 seed + 运行中 saas-api | 待办 |
+| **真实 API 联调 E2E** | 依赖 seed + 运行中 saas-api | ✅ `pnpm test:e2e:api` |
 
 ## 验证
 
 ```bash
 pnpm --filter @repo/saas-admin validate
-pnpm --filter @repo/saas-admin test:e2e   # Playwright：登录/概览/成员页 mock（需 dev :5181 或 webServer 自动启动）
+pnpm --filter @repo/saas-admin test:e2e   # Playwright mock：登录/概览/成员页
+pnpm --filter @repo/saas-admin test:e2e:api   # 真实 API：需 saas-api :8082 + seed-demo-dev.sql
 pnpm --filter @repo/saas-admin test:e2e:install   # 首次安装 Chromium
 cd services/saas-api && mvn test -Dtest=Admin*ControllerTest
 ```

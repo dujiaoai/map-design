@@ -10,13 +10,20 @@ const uiDir = path.resolve(__dirname, '../../packages/ui')
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, monorepoRoot, '')
+  const viteEnv = {
+    VITE_API_URL: env.VITE_API_URL ?? '/v1',
+    VITE_SAAS_API_HOST: env.VITE_SAAS_API_HOST ?? 'http://localhost:8082',
+    VITE_BILLING_API_HOST: env.VITE_BILLING_API_HOST ?? 'http://localhost:8083',
+    ...Object.fromEntries(Object.entries(env).filter(([key]) => key.startsWith('VITE_'))),
+  }
 
   return {
     plugins: [tailwindcss(), reactRouter()],
     define: Object.fromEntries(
-      Object.entries(env)
-        .filter(([key]) => key.startsWith('VITE_'))
-        .map(([key, value]) => [`import.meta.env.${key}`, JSON.stringify(value)]),
+      Object.entries(viteEnv).map(([key, value]) => [
+        `import.meta.env.${key}`,
+        JSON.stringify(value),
+      ]),
     ),
     resolve: {
       tsconfigPaths: true,

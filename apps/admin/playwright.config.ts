@@ -17,11 +17,28 @@ export default defineConfig({
     baseURL,
     trace: 'on-first-retry',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'mock',
+      testIgnore: /real-api\.spec\.ts$/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'real-api',
+      testMatch: /real-api\.spec\.ts$/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
   webServer: {
     command: 'pnpm run dev',
     url: `${baseURL}/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    env: {
+      ...process.env,
+      VITE_API_URL: process.env.VITE_API_URL ?? '/v1',
+      VITE_SAAS_API_HOST: process.env.VITE_SAAS_API_HOST ?? 'http://localhost:8082',
+      VITE_BILLING_API_HOST: process.env.VITE_BILLING_API_HOST ?? 'http://localhost:8083',
+    },
   },
 })

@@ -50,7 +50,8 @@ export function MembersAdminPage({
   embedded?: boolean
 }) {
   const { can, session } = useAdminPermissions()
-  const canWrite = can('admin:members:write') || can('admin:tenants:write')
+  const canWrite =
+    isPlatformAdmin(session) || can('admin:members:write') || can('admin:tenants:write')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const showTenantClear =

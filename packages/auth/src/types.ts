@@ -51,8 +51,8 @@ export const loginResponseSchema = z.object({
   expiresIn: z.number().default(0),
   user: loginUserSchema,
   homeTenant: sessionTenantSchema.nullish(),
-  mfaRequired: z.boolean().optional(),
-  mfaChallengeToken: z.string().optional(),
+  mfaRequired: z.boolean().nullish(),
+  mfaChallengeToken: z.string().nullish(),
 })
 
 export const authTokensSchema = z.object({

@@ -16,4 +16,14 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
   @Select(
       "SELECT * FROM sys_user WHERE email = #{email} AND status = 'active' ORDER BY tenant_id")
   List<SysUser> selectActiveByEmailAcrossTenants(@Param("email") String email);
+
+  @InterceptorIgnore(tenantLine = "true")
+  @Select("SELECT COUNT(*) FROM sys_user WHERE created_at >= #{since}")
+  long countUsersCreatedSince(@Param("since") java.time.Instant since);
+
+  /** 近 N 日至少一名成员登录过的租户数（distinct tenant_id）。 */
+  @InterceptorIgnore(tenantLine = "true")
+  @Select(
+      "SELECT COUNT(DISTINCT tenant_id) FROM sys_user WHERE last_login_at IS NOT NULL AND last_login_at >= #{since}")
+  long countDistinctTenantsWithLoginSince(@Param("since") java.time.Instant since);
 }

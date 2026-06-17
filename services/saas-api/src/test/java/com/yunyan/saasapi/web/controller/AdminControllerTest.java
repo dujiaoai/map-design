@@ -88,7 +88,9 @@ class AdminControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.tenantCount").isNumber())
         .andExpect(jsonPath("$.userCount").isNumber())
-        .andExpect(jsonPath("$.activeTenantCount").isNumber());
+        .andExpect(jsonPath("$.activeTenantCount").isNumber())
+        .andExpect(jsonPath("$.activeTenantsLast7Days").isNumber())
+        .andExpect(jsonPath("$.newUsersLast7Days").isNumber());
   }
 
   @Test

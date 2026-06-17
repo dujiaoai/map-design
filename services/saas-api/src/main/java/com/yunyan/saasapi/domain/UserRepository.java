@@ -42,6 +42,14 @@ public class UserRepository {
     return TenantRlsBypass.call(() -> sysUserMapper.selectCount(null));
   }
 
+  public long countUsersCreatedSince(Instant since) {
+    return TenantRlsBypass.call(() -> sysUserMapper.countUsersCreatedSince(since));
+  }
+
+  public long countTenantsWithLoginSince(Instant since) {
+    return TenantRlsBypass.call(() -> sysUserMapper.countDistinctTenantsWithLoginSince(since));
+  }
+
   /** active + invited 成员计入席位占用 */
   public long countSeatUsage(UUID tenantId) {
     return TenantRlsBypass.call(

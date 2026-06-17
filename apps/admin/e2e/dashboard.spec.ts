@@ -23,5 +23,7 @@ test.describe('运营概览（已登录 mock）', () => {
     await expect(page.locator('section').filter({ hasText: '租户总数' })).toContainText('3')
     await expect(page.locator('section').filter({ hasText: '用户总数' })).toContainText('12')
     await expect(page.locator('section').filter({ hasText: '活跃租户' })).toContainText('2')
+    await expect(page.locator('section').filter({ hasText: '近 7 日活跃租户' })).toContainText('2')
+    await expect(page.locator('section').filter({ hasText: '近 7 日新增用户' })).toContainText('4')
   })
 })

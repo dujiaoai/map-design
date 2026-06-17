@@ -8,6 +8,8 @@ export interface AdminStatsResponse {
   tenantCount: number
   userCount: number
   activeTenantCount: number
+  activeTenantsLast7Days: number
+  newUsersLast7Days: number
 }
 
 export interface AdminSystemFlagsResponse {

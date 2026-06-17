@@ -55,6 +55,8 @@ export async function mockAdminOverviewApis(page: Page) {
         tenantCount: 3,
         userCount: 12,
         activeTenantCount: 2,
+        activeTenantsLast7Days: 2,
+        newUsersLast7Days: 4,
       }),
     })
   })

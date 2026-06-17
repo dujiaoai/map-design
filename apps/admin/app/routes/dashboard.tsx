@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@repo/auth'
 import { Badge, Button, toast } from '@repo/ui'
-import { ActivityIcon, Building2Icon, RefreshCwIcon, ShieldCheckIcon, UsersIcon } from 'lucide-react'
+import { ActivityIcon, Building2Icon, RefreshCwIcon, ShieldCheckIcon, TrendingUpIcon, UserPlusIcon, UsersIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link, redirect } from 'react-router'
 
@@ -139,6 +139,29 @@ export default function DashboardRoute() {
           onRetry={() => void statsQuery.refetch()}
           isRetrying={statsQuery.isFetching}
           hint="status = active"
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <AdminMetricCard
+          icon={TrendingUpIcon}
+          label="近 7 日活跃租户"
+          value={statsQuery.data?.activeTenantsLast7Days ?? 0}
+          loading={statsQuery.isLoading}
+          error={statsQuery.isError}
+          onRetry={() => void statsQuery.refetch()}
+          isRetrying={statsQuery.isFetching}
+          hint="至少一名成员登录"
+        />
+        <AdminMetricCard
+          icon={UserPlusIcon}
+          label="近 7 日新增用户"
+          value={statsQuery.data?.newUsersLast7Days ?? 0}
+          loading={statsQuery.isLoading}
+          error={statsQuery.isError}
+          onRetry={() => void statsQuery.refetch()}
+          isRetrying={statsQuery.isFetching}
+          hint="created_at 窗口"
         />
       </div>
 

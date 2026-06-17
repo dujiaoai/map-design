@@ -29,7 +29,7 @@ describe('requireAdminPermissions', () => {
       user: {
         id: '1',
         email: 'a@t.local',
-        roles: [SaaSRole.PLATFORM_ADMIN],
+        roles: [SaaSRole.MEMBER],
         permissions: ['admin:tenants:read'],
       },
       tenant: { id: 't', name: 'Demo', slug: 'demo' },
@@ -37,6 +37,20 @@ describe('requireAdminPermissions', () => {
 
     expect(() => requireAdminPermissions(['admin:tenants:read'])).not.toThrow()
     expect(auth.hydrateSession).toHaveBeenCalled()
+  })
+
+  it('passes for platform admin without explicit permission codes', () => {
+    vi.mocked(auth.getSession).mockReturnValue({
+      user: {
+        id: '1',
+        email: 'a@t.local',
+        roles: [SaaSRole.PLATFORM_ADMIN],
+        permissions: [],
+      },
+      tenant: { id: 't', name: 'Demo', slug: 'demo' },
+    })
+
+    expect(() => requireAdminPermissions(['admin:billing:read'])).not.toThrow()
   })
 
   it('redirects to 403 when permission is missing', () => {

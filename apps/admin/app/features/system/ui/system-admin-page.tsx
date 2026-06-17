@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import {
   ArrowRightIcon,
-  BookOpenIcon,
   CreditCardIcon,
   KeyRoundIcon,
   MailIcon,
@@ -17,6 +16,7 @@ import {
   summarizeSystemHealth,
 } from '~/features/system/lib/system-health'
 import { AdminMfaEnrollPanel } from '~/features/mfa/ui/admin-mfa-enroll-panel'
+import { AdminRunbookLinksPanel } from '~/features/system/ui/admin-runbook-links-panel'
 import {
   fetchAdminPing,
   fetchAdminMfaStatus,
@@ -34,29 +34,6 @@ import {
 } from '~/shared/ui/admin-page-shell'
 import { AdminFlagBadge, AdminStatusPill } from '~/shared/ui/admin-status-pill'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
-
-const RUNBOOK_LINKS = [
-  {
-    label: '本地开发（saas-api）',
-    path: 'docs/runbooks/local-dev.md',
-    hint: '启动顺序、端口与 seed',
-  },
-  {
-    label: 'Auth 冒烟',
-    path: 'docs/runbooks/saas-api-auth-smoke.md',
-    hint: '登录 / 刷新 / RBAC',
-  },
-  {
-    label: 'Billing 冒烟',
-    path: 'docs/runbooks/billing-api-smoke.md',
-    hint: '钱包、充值、调账',
-  },
-  {
-    label: '租户 RLS 说明',
-    path: 'docs/architecture/supplements/tenant-rls-b05.md',
-    hint: 'PostgreSQL 行级隔离',
-  },
-] as const
 
 export function SystemAdminPage() {
   const query = useQuery({
@@ -420,22 +397,7 @@ export function SystemAdminPage() {
         </AdminPanel>
       </div>
 
-      <AdminPanel className="admin-stagger">
-        <AdminPanelHeader
-          icon={BookOpenIcon}
-          title="Runbook 索引"
-          description="仓库内运维文档路径（只读引用，不含密钥）"
-        />
-        <ul className="divide-y divide-border/50">
-          {RUNBOOK_LINKS.map((item) => (
-            <li key={item.path} className="admin-runbook-row px-4 py-3.5 md:px-5">
-              <p className="text-sm font-medium">{item.label}</p>
-              <p className="mt-0.5 font-mono text-xs text-primary/80">{item.path}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{item.hint}</p>
-            </li>
-          ))}
-        </ul>
-      </AdminPanel>
+      <AdminRunbookLinksPanel />
     </div>
   )
 }

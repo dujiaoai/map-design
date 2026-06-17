@@ -88,7 +88,7 @@ flowchart TB
 | --- | --- |
 | 5B-1 | `/system` 展示 saas-api ↔ billing-api 依赖健康（对齐 FND-05） | ✅ |
 | 5B-2 | 概览 MetricCard：近 7 日活跃租户 / 新增用户（API + UI） | ✅ |
-| 5B-3 | 运维 runbook 链接从 `/system` 直达（已有 flags 列表增强） |
+| 5B-3 | 运维 runbook 链接从 `/system` 直达（已有 flags 列表增强） | ✅ |
 
 ### Phase 5C · 租户生命周期
 
@@ -132,5 +132,6 @@ flowchart TB
 | --- | --- |
 | **基础平台**（当前） | P0–P4 + FND-07/08 核心 ✅ |
 | **Phase 5A** | 演进文档 + 审计 E2E + CI smoke ✅ |
-| **Phase 5B–C** | 租户生命周期可运维、/system 可观测 |
+| **Phase 5B** | /system 可观测 + runbook 直达 ✅ |
+| **Phase 5C** | 租户生命周期可运维 |
 | **Phase 5D–E** | 企业客户 SSO + 多产品菜单差异化 |

@@ -91,6 +91,14 @@ export async function mockMembersPageApis(page: Page) {
     })
   })
 
+  await page.route(`**/tenants/${E2E_TENANT_ID}/quotas**`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(E2E_QUOTAS),
+    })
+  })
+
   await page.route(`**/admin/tenants/${E2E_TENANT_ID}/quotas**`, async (route) => {
     await route.fulfill({
       status: 200,

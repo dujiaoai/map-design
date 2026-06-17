@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const port = 5181
-const baseURL = `http://127.0.0.1:${port}`
+/** Windows 上 dev 常只监听 [::1]；用 localhost 避免 webServer 探活失败 */
+const baseURL = `http://localhost:${port}`
 
 export default defineConfig({
   testDir: './e2e',

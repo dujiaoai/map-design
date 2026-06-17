@@ -130,7 +130,8 @@ P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）、Later（P
 
 ```bash
 pnpm --filter @repo/saas-admin validate
-pnpm --filter @repo/saas-admin test:e2e   # Playwright：登录/概览/成员页 mock（需 dev :5181，webServer 超时 180s）
+pnpm --filter @repo/saas-admin test:e2e   # Playwright：登录/概览/成员页 mock（需 dev :5181 或 webServer 自动启动）
+pnpm --filter @repo/saas-admin test:e2e:install   # 首次安装 Chromium
 cd services/saas-api && mvn test -Dtest=Admin*ControllerTest
 ```
 

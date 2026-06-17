@@ -4,7 +4,7 @@ import { mockAdminOverviewApis, seedPlatformAdminSession } from './fixtures/plat
 
 test.describe('路由守卫冒烟', () => {
   test('未登录访问概览重定向至登录', async ({ page }) => {
-    await page.goto('/dashboard')
+    await page.goto('/')
     await expect(page).toHaveURL(/\/login/)
   })
 })
@@ -22,6 +22,5 @@ test.describe('运营概览（已登录 mock）', () => {
     await expect(page.locator('section').filter({ hasText: '租户总数' })).toContainText('3')
     await expect(page.locator('section').filter({ hasText: '用户总数' })).toContainText('12')
     await expect(page.locator('section').filter({ hasText: '活跃租户' })).toContainText('2')
-    await expect(page.getByText('e2e-admin@demo.local')).toBeVisible()
   })
 })

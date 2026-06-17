@@ -26,6 +26,16 @@ public class BillingAppProperties {
     /** Daily UTC cron job that records ops alerts when yesterday's reconciliation is unbalanced. */
     private boolean alertJobEnabled = true;
     private String alertCron = "0 0 2 * * *";
+    private final Notify notify = new Notify();
+
+    @Data
+    public static class Notify {
+      /** POST outbound webhook when a new unbalanced reconciliation alert is recorded. */
+      private boolean enabled = false;
+      private String webhookUrl = "";
+      /** feishu — Lark/Feishu bot; generic — JSON event payload */
+      private String provider = "feishu";
+    }
   }
 
   @Data

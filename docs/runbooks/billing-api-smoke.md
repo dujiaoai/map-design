@@ -107,4 +107,5 @@ curl -s http://localhost:8083/v1/billing/wallet \
 - [billing-service.md](../architecture/billing-service.md)
 - [billing-credits-prd.md](../product/billing-credits-prd.md)
 - [billing-live-payment-sop.md](./billing-live-payment-sop.md)
+- [billing-reconciliation-alert.md](./billing-reconciliation-alert.md)
 - [saas-api-auth-smoke.md](./saas-api-auth-smoke.md)

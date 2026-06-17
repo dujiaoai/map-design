@@ -21,16 +21,19 @@ public class ReconciliationDailyAlertJob {
   private final BillingOpsAlertService opsAlertService;
   private final BillingMetrics billingMetrics;
   private final BillingAppProperties billingAppProperties;
+  private final ReconciliationAlertNotifier reconciliationAlertNotifier;
 
   public ReconciliationDailyAlertJob(
       AdminBillingReconciliationService reconciliationService,
       BillingOpsAlertService opsAlertService,
       BillingMetrics billingMetrics,
-      BillingAppProperties billingAppProperties) {
+      BillingAppProperties billingAppProperties,
+      ReconciliationAlertNotifier reconciliationAlertNotifier) {
     this.reconciliationService = reconciliationService;
     this.opsAlertService = opsAlertService;
     this.billingMetrics = billingMetrics;
     this.billingAppProperties = billingAppProperties;
+    this.reconciliationAlertNotifier = reconciliationAlertNotifier;
   }
 
   @Scheduled(cron = "${billing.reconciliation.alert-cron:0 0 2 * * *}")
@@ -51,6 +54,7 @@ public class ReconciliationDailyAlertJob {
     var created = opsAlertService.recordReconciliationUnbalanced(yesterday, report);
     if (created) {
       billingMetrics.recordReconciliationUnbalanced();
+      reconciliationAlertNotifier.notifyUnbalancedIfConfigured(yesterday, report);
       log.warn(
           "Billing reconciliation unbalanced for {} ({} discrepancies)",
           yesterday,

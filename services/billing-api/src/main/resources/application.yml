@@ -96,6 +96,10 @@ billing:
   reconciliation:
     alert-job-enabled: ${BILLING_RECONCILIATION_ALERT_JOB_ENABLED:true}
     alert-cron: ${BILLING_RECONCILIATION_ALERT_CRON:0 0 2 * * *}
+    notify:
+      enabled: ${BILLING_RECONCILIATION_NOTIFY_ENABLED:false}
+      webhook-url: ${BILLING_RECONCILIATION_NOTIFY_WEBHOOK_URL:}
+      provider: ${BILLING_RECONCILIATION_NOTIFY_PROVIDER:feishu}
   rate-limit:
     enabled: ${BILLING_RATE_LIMIT_ENABLED:true}
     webhook:

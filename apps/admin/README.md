@@ -150,3 +150,15 @@ node .cursor/skills/docker-deploy/scripts/deploy.mjs smoke
 ## Later（P4 余项）
 
 ~~邮箱邀请。~~ ✅ 成员页「邀请成员」Sheet：邮箱邀请 Tab + 编辑 invited 成员/用户重发邮件；API `POST .../members/invite`。
+
+## Phase 5 · 多 SaaS 基础平台演进
+
+P0–P4 与路线图外 E2E 已交付。下一阶段按 [docs/product/admin-platform-evolution.md](../../docs/product/admin-platform-evolution.md) 推进：
+
+| 阶段 | 主题 | 代表 PR |
+| --- | --- | --- |
+| **5A** | 文档与质量 | 演进文档、审计 E2E、PLATFORM_ADMIN 权限兜底、CI smoke |
+| **5B** | 可观测运维 | `/system` 依赖健康、概览活跃指标 |
+| **5C** | 租户生命周期 | 试用/到期、停用 session 撤销 |
+| **5D** | 企业 SSO 与合规 | 租户级 IdP、审计 Webhook |
+| **5E** | 多产品扩展 | 菜单租户覆盖、菜单 RBAC（FND-08 Later） |

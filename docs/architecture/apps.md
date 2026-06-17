@@ -103,7 +103,7 @@ pnpm --filter @repo/saas-web dev
 
 **UI 组件**：Shell 与基础表单用 `@repo/ui`；Table/Tree/DatePicker/短 Modal 局部用 `antd`（`app/shared/ant/*` 封装）。表单载体 Sheet vs Modal 见 [frontend.md](./frontend.md) Admin 例外节。
 
-### 规划（P4 · 进行中 / Later）
+### 规划（P4 · 已完成）
 
 | 状态 | 项 |
 | --- | --- |
@@ -111,7 +111,11 @@ pnpm --filter @repo/saas-web dev
 | ✅ | `/audit-logs` 列表 + `sys_admin_audit_log` + 成员写操作落库 |
 | ✅ | `/billing` 计费运营 Tab（对接 billing-api `/v1/admin/billing`） |
 | ✅ | `/system` 平台配置只读页（`GET /v1/admin/system/flags`） |
-| Later | impersonation、Admin MFA（FND-07） |
+| ✅ | impersonation、Admin MFA（FND-07a～07e） |
+| ✅ | OIDC 登录与 IdP 绑定（FND-07f～07l） |
+| ✅ | 工作台菜单平台模板（FND-08h） |
+
+**Phase 5 演进**（租户生命周期、企业 SSO、菜单租户覆盖等）见 [admin-platform-evolution.md](../../product/admin-platform-evolution.md)。
 
 开发：
 

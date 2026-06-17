@@ -1,0 +1,141 @@
+import type { Page } from '@playwright/test'
+
+import { E2E_PLATFORM_ADMIN_SESSION } from './platform-admin-session'
+
+/** 审计页 E2E：读 + 导出 */
+export const E2E_AUDIT_SESSION = {
+  ...E2E_PLATFORM_ADMIN_SESSION,
+  user: {
+    ...E2E_PLATFORM_ADMIN_SESSION.user,
+    permissions: [
+      'admin:tenants:read',
+      'admin:users:read',
+      'admin:audit:read',
+      'admin:audit:export',
+    ],
+  },
+}
+
+const E2E_AUDIT_LOGS = {
+  logs: [
+    {
+      id: 'e2e-audit-1',
+      actorUserId: 'e2e-actor-1',
+      actorEmail: 'admin@demo.local',
+      action: 'tenant.update',
+      resourceType: 'tenant',
+      resourceId: 'e2e-tenant-demo',
+      targetTenantId: 'e2e-tenant-demo',
+      crossTenant: false,
+      detail: '{"name":"Demo Tenant"}',
+      createdAt: 1_700_000_000_000,
+    },
+    {
+      id: 'e2e-audit-2',
+      actorUserId: 'e2e-actor-1',
+      actorEmail: 'admin@demo.local',
+      action: 'billing.adjust',
+      resourceType: 'billing_wallet',
+      resourceId: 'wallet-1',
+      targetTenantId: 'e2e-tenant-demo',
+      crossTenant: true,
+      detail: 'manual adjust +100',
+      createdAt: 1_700_000_100_000,
+    },
+  ],
+  total: 2,
+  page: 1,
+  size: 20,
+}
+
+const E2E_TENANTS = {
+  tenants: [
+    {
+      id: 'e2e-tenant-demo',
+      name: 'Demo Tenant',
+      slug: 'demo',
+      plan: 'pro',
+      status: 'active',
+      createdAt: 1_700_000_000_000,
+    },
+  ],
+  total: 1,
+  page: 1,
+  size: 20,
+}
+
+export async function seedAuditSession(page: Page) {
+  await page.addInitScript(
+    ({ prefix, session, accessToken, refreshToken }) => {
+      localStorage.setItem(`${prefix}:access-token`, accessToken)
+      localStorage.setItem(`${prefix}:refresh-token`, refreshToken)
+      localStorage.setItem(`${prefix}:session`, JSON.stringify(session))
+    },
+    {
+      prefix: 'saas-admin',
+      session: E2E_AUDIT_SESSION,
+      accessToken: 'e2e-audit-access-token',
+      refreshToken: 'e2e-audit-refresh-token',
+    },
+  )
+}
+
+export async function mockAuditPageApis(page: Page) {
+  await page.route('**/auth/refresh', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue()
+      return
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        accessToken: 'e2e-audit-access-token',
+        refreshToken: 'e2e-audit-refresh-token',
+        expiresIn: 3600,
+      }),
+    })
+  })
+
+  await page.route(/\/v1\/admin\/audit-logs/, async (route) => {
+    const method = route.request().method()
+    const url = route.request().url()
+
+    if (method === 'GET' && url.includes('/export')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/csv',
+        body: 'id,action,actorEmail\ne2e-audit-1,tenant.update,admin@demo.local\n',
+      })
+      return
+    }
+
+    if (method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(E2E_AUDIT_LOGS),
+      })
+      return
+    }
+
+    await route.continue()
+  })
+
+  await page.route(/\/v1\/admin\/tenants(\?|$)/, async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.continue()
+      return
+    }
+    const path = new URL(route.request().url()).pathname
+    if (path !== '/v1/admin/tenants') {
+      await route.continue()
+      return
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(E2E_TENANTS),
+    })
+  })
+}

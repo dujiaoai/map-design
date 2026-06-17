@@ -126,6 +126,7 @@ P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）、Later（P
 | **成员页 E2E** | mock 成员列表、配额与邀请 Sheet Tab | ✅ |
 | **真实 API 联调 E2E** | 依赖 seed + 运行中 saas-api | ✅ `pnpm test:e2e:api` |
 | **计费对账 mock E2E** | 概览警示横幅、日对账 Tab、关闭运维告警 | ✅ `pnpm test:e2e -- billing.spec.ts` |
+| **审计日志 mock E2E** | 列表、日期范围、CSV 导出 | ✅ `pnpm test:e2e -- audit-logs.spec.ts` |
 
 ## 验证
 

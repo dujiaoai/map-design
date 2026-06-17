@@ -77,8 +77,8 @@ flowchart TB
 
 | PR | 内容 | 类型 |
 | --- | --- | --- |
-| 5A-1 | 本文档 + `apps.md` 同步 FND-07 ✅ 状态 | docs |
-| 5A-2 | 审计日志 mock E2E（筛选 + 导出按钮） | test |
+| 5A-1 | 本文档 + `apps.md` 同步 FND-07 ✅ 状态 | docs | ✅ |
+| 5A-2 | 审计日志 mock E2E（筛选 + 导出按钮） | test | ✅ |
 | 5A-3 | `requireAdminPermissions` 对 `PLATFORM_ADMIN` 与成员页一致兜底 | fix |
 | 5A-4 | Admin E2E 纳入 CI（mock project smoke） | chore |
 

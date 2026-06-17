@@ -6,6 +6,7 @@ import com.yunyan.billingapi.application.admin.AdminBillingLedgerService;
 import com.yunyan.billingapi.application.admin.AdminBillingWireTransferService;
 import com.yunyan.billingapi.application.admin.AdminBillingPackageService;
 import com.yunyan.billingapi.application.admin.AdminBillingRechargeOrderService;
+import com.yunyan.billingapi.application.admin.AdminBillingOpsAlertService;
 import com.yunyan.billingapi.application.admin.AdminBillingReconciliationService;
 import com.yunyan.billingapi.application.admin.AdminBillingRefundService;
 import com.yunyan.billingapi.application.admin.AdminBillingStatsService;
@@ -23,6 +24,8 @@ import com.yunyan.billingapi.web.dto.AdminAdjustResponse;
 import com.yunyan.billingapi.web.dto.AdminBillingStatsResponse;
 import com.yunyan.billingapi.web.dto.AdminIssueInvoiceRequest;
 import com.yunyan.billingapi.web.dto.AdminRejectInvoiceRequest;
+import com.yunyan.billingapi.web.dto.AdminOpsAlertListResponse;
+import com.yunyan.billingapi.web.dto.AdminOpsAlertResolveResponse;
 import com.yunyan.billingapi.web.dto.AdminReconciliationDailyResponse;
 import com.yunyan.billingapi.web.dto.AdminReconciliationStatusResponse;
 import com.yunyan.billingapi.web.dto.AdminRefundRequest;
@@ -79,6 +82,7 @@ public class AdminBillingController {
   private final AdminBillingUsageService adminBillingUsageService;
   private final AdminBillingRefundService adminBillingRefundService;
   private final AdminBillingReconciliationService adminBillingReconciliationService;
+  private final AdminBillingOpsAlertService adminBillingOpsAlertService;
   private final BillingInvoiceService billingInvoiceService;
   private final AdminBillingWireTransferService adminBillingWireTransferService;
   private final BillingWireTransferService billingWireTransferService;
@@ -95,6 +99,7 @@ public class AdminBillingController {
       AdminBillingUsageService adminBillingUsageService,
       AdminBillingRefundService adminBillingRefundService,
       AdminBillingReconciliationService adminBillingReconciliationService,
+      AdminBillingOpsAlertService adminBillingOpsAlertService,
       BillingInvoiceService billingInvoiceService,
       AdminBillingWireTransferService adminBillingWireTransferService,
       BillingWireTransferService billingWireTransferService,
@@ -109,6 +114,7 @@ public class AdminBillingController {
     this.adminBillingUsageService = adminBillingUsageService;
     this.adminBillingRefundService = adminBillingRefundService;
     this.adminBillingReconciliationService = adminBillingReconciliationService;
+    this.adminBillingOpsAlertService = adminBillingOpsAlertService;
     this.billingInvoiceService = billingInvoiceService;
     this.adminBillingWireTransferService = adminBillingWireTransferService;
     this.billingWireTransferService = billingWireTransferService;
@@ -287,6 +293,24 @@ public class AdminBillingController {
           LocalDate date) {
     var reportDate = date != null ? date : LocalDate.now(ZoneOffset.UTC).minusDays(1);
     return adminBillingReconciliationService.getStatus(reportDate);
+  }
+
+  @GetMapping("/ops-alerts")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_READ + "')")
+  @Operation(summary = "平台运维告警列表（默认未关闭的对账告警）")
+  public AdminOpsAlertListResponse listOpsAlerts(
+      @RequestParam(required = false) String alertType,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    return adminBillingOpsAlertService.listOpenAlerts(alertType, page, size);
+  }
+
+  @PostMapping("/ops-alerts/{alertId}/resolve")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_BILLING_ADJUST + "')")
+  @Operation(summary = "标记运维告警为已处理")
+  public AdminOpsAlertResolveResponse resolveOpsAlert(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID alertId) {
+    return adminBillingOpsAlertService.resolveAlert(principal, alertId);
   }
 
   @PostMapping("/recharge-orders/{orderNo}/refund")

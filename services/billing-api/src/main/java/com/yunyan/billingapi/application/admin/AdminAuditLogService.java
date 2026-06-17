@@ -1,5 +1,6 @@
 package com.yunyan.billingapi.application.admin;
 
+import com.yunyan.billingapi.domain.entity.BillingOpsAlert;
 import com.yunyan.billingapi.domain.entity.SysAdminAuditLog;
 import com.yunyan.billingapi.domain.mapper.SysAdminAuditLogMapper;
 import com.yunyan.billingapi.security.SaasPrincipal;
@@ -20,12 +21,14 @@ public class AdminAuditLogService {
   public static final String ACTION_BILLING_INVOICE_REJECT = "billing.invoice.reject";
   public static final String ACTION_BILLING_WIRE_TRANSFER_APPROVE = "billing.wire_transfer.approve";
   public static final String ACTION_BILLING_WIRE_TRANSFER_REJECT = "billing.wire_transfer.reject";
+  public static final String ACTION_BILLING_OPS_ALERT_RESOLVE = "billing.ops_alert.resolve";
   private static final String RESOURCE_TYPE_BILLING_WALLET = "billing_wallet";
   private static final String RESOURCE_TYPE_BILLING_PACKAGE = "billing_package";
   private static final String RESOURCE_TYPE_BILLING_ORDER = "billing_recharge_order";
   private static final String RESOURCE_TYPE_BILLING_COUPON = "billing_coupon";
   private static final String RESOURCE_TYPE_BILLING_INVOICE = "billing_invoice";
   private static final String RESOURCE_TYPE_BILLING_WIRE_TRANSFER = "billing_wire_transfer";
+  private static final String RESOURCE_TYPE_BILLING_OPS_ALERT = "billing_ops_alert";
   private static final String PLATFORM_ADMIN = "PLATFORM_ADMIN";
   private static final int DETAIL_MAX = 512;
 
@@ -277,12 +280,44 @@ public class AdminAuditLogService {
     auditLogMapper.insert(log);
   }
 
+  public void recordBillingOpsAlertResolve(SaasPrincipal actor, BillingOpsAlert alert) {
+    if (actor == null || alert == null) {
+      return;
+    }
+
+    var log = new SysAdminAuditLog();
+    log.setId(UUID.randomUUID());
+    log.setActorUserId(actor.userId());
+    log.setActorEmail(actor.getUsername());
+    log.setActorTenantId(actor.tenantId());
+    log.setAction(ACTION_BILLING_OPS_ALERT_RESOLVE);
+    log.setResourceType(RESOURCE_TYPE_BILLING_OPS_ALERT);
+    log.setResourceId(alert.getId().toString());
+    log.setTargetTenantId(null);
+    log.setCrossTenant(rolesContainPlatformAdmin(actor));
+    log.setDetail(
+        truncateDetail(
+            "alertType="
+                + alert.getAlertType()
+                + " referenceKey="
+                + alert.getReferenceKey()
+                + " title="
+                + alert.getTitle()));
+    log.setCreatedAt(Instant.now());
+    auditLogMapper.insert(log);
+  }
+
   private static boolean isCrossTenant(SaasPrincipal actor, UUID targetTenantId) {
     var roles = actor.roleCodes() != null ? actor.roleCodes() : List.<String>of();
     if (!roles.contains(PLATFORM_ADMIN)) {
       return false;
     }
     return targetTenantId != null && !targetTenantId.equals(actor.tenantId());
+  }
+
+  private static boolean rolesContainPlatformAdmin(SaasPrincipal actor) {
+    var roles = actor.roleCodes() != null ? actor.roleCodes() : List.<String>of();
+    return roles.contains(PLATFORM_ADMIN);
   }
 
   private static String truncateDetail(String detail) {

@@ -32,6 +32,7 @@ import { TenantSamlConfigForm } from '~/features/tenants/ui/tenant-saml-config-f
 import { TenantSamlIdpRegistrationsPanel } from '~/features/tenants/ui/tenant-saml-idp-registrations-panel'
 import { TenantScimStatusCard } from '~/features/tenants/ui/tenant-scim-status-card'
 import { TenantScimSchemaExtensionPanel } from '~/features/tenants/ui/tenant-scim-schema-extension-panel'
+import { TenantScimGroupMappingRulesPanel } from '~/features/tenants/ui/tenant-scim-group-mapping-rules-panel'
 import { Button, toast } from '@repo/ui'
 
 function formatBytes(bytes: number): string {
@@ -202,6 +203,8 @@ export function TenantCompliancePanel({ tenantId, tenantSlug }: { tenantId: stri
       )}
 
       <TenantScimSchemaExtensionPanel tenantId={tenantId} />
+
+      <TenantScimGroupMappingRulesPanel tenantId={tenantId} />
 
       <AdminPanel>
         <AdminPanelHeader

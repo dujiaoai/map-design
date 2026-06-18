@@ -16,6 +16,7 @@ class AdminUsageTrendsServiceTest {
 
   @Mock private UserRepository userRepository;
   @Mock private AdminAuditLogRepository adminAuditLogRepository;
+  @Mock private com.yunyan.saasapi.infrastructure.billing.AdminBillingUsageClient adminBillingUsageClient;
 
   @InjectMocks private AdminUsageTrendsService service;
 
@@ -27,6 +28,8 @@ class AdminUsageTrendsServiceTest {
         .thenReturn(2L);
     when(userRepository.countActiveTenantsBetween(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
         .thenReturn(3L);
+    when(adminBillingUsageClient.countConfirmedEvents(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any()))
+        .thenReturn(4L);
 
     var response = service.getTrends();
 
@@ -34,5 +37,6 @@ class AdminUsageTrendsServiceTest {
     assertThat(response.days().getFirst().newUsers()).isEqualTo(1L);
     assertThat(response.days().getFirst().auditEvents()).isEqualTo(2L);
     assertThat(response.days().getFirst().activeTenants()).isEqualTo(3L);
+    assertThat(response.days().getFirst().billingApiCallsPerDay()).isEqualTo(4L);
   }
 }

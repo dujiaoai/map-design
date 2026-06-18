@@ -32,10 +32,14 @@ public class LocalObjectStorageClient implements ObjectStorageClient {
   }
 
   private Path resolvePath(String objectKey) {
-    var base = Path.of(saasAppProperties.getObjectStorage().getLocalPath()).toAbsolutePath().normalize();
-    var bucket = saasAppProperties.getObjectStorage().getBucket();
+    var storage = saasAppProperties.getObjectStorage();
+    var base = Path.of(storage.getLocalPath()).toAbsolutePath().normalize();
+    var bucket = storage.getBucket();
     var key = objectKey.startsWith("/") ? objectKey.substring(1) : objectKey;
-    return base.resolve(bucket).resolve(key);
+    if (key.startsWith(bucket + "/")) {
+      key = key.substring(bucket.length() + 1);
+    }
+    return base.resolve(bucket).resolve(key).normalize();
   }
 
   private String resolvePublicUrl(String objectKey) {

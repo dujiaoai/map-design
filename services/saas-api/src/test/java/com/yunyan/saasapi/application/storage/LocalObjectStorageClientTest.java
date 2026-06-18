@@ -17,10 +17,10 @@ class LocalObjectStorageClientTest {
     properties.getObjectStorage().setBucket("tenant-exports");
     var client = new LocalObjectStorageClient(properties);
 
-    var url = client.upload("tenant-exports/demo/export.zip", new byte[] {9, 8, 7}, "application/zip");
+    var url = client.upload("demo/export.zip", new byte[] {9, 8, 7}, "application/zip");
 
     assertThat(url).startsWith("file://");
-    assertThat(client.exists("tenant-exports/demo/export.zip")).isTrue();
+    assertThat(client.exists("demo/export.zip")).isTrue();
     assertThat(Files.exists(tempDir.resolve("tenant-exports").resolve("demo").resolve("export.zip"))).isTrue();
   }
 }

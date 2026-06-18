@@ -49,13 +49,7 @@ public class TenantDataExportCompleteJob {
     try {
       var manifest = exportCollector.collect(request.getTenantId(), request);
       var zipBytes = exportZipBuilder.buildZip(manifest);
-      var objectKey =
-          saasAppProperties.getObjectStorage().getBucket()
-              + "/"
-              + request.getTenantId()
-              + "/"
-              + request.getId()
-              + ".zip";
+      var objectKey = request.getTenantId() + "/" + request.getId() + ".zip";
       var artifactUrl = objectStorageClient.upload(objectKey, zipBytes, "application/zip");
       request.setStatus(STATUS_COMPLETED);
       request.setArtifactObjectKey(objectKey);

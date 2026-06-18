@@ -1,6 +1,7 @@
 package com.yunyan.saasapi.web.controller;
 
 import com.yunyan.saasapi.application.admin.AdminAuditLogService;
+import com.yunyan.saasapi.application.admin.AdminAuditWebhookSelfHealStatusService;
 import com.yunyan.saasapi.application.admin.AdminAuditWebhookTargetService;
 import com.yunyan.saasapi.application.admin.AdminAuditWebhookDeadLetterService;
 import com.yunyan.saasapi.application.admin.AdminAuditWebhookService;
@@ -14,6 +15,7 @@ import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookTargetDto;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookTargetListResponse;
 import com.yunyan.saasapi.web.dto.admin.CreateAuditWebhookTargetRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchAuditWebhookTargetRequest;
+import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookSelfHealStatusResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookSlaResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookDeadLetterListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookDeadLetterReplayResponse;
@@ -50,6 +52,7 @@ public class AdminAuditLogsController {
   private final AdminAuditWebhookSlaService adminAuditWebhookSlaService;
   private final AdminAuditWebhookDeadLetterService adminAuditWebhookDeadLetterService;
   private final AdminAuditWebhookTargetService adminAuditWebhookTargetService;
+  private final AdminAuditWebhookSelfHealStatusService selfHealStatusService;
 
   @GetMapping
   @PreAuthorize(PermissionCodes.ADMIN_AUDIT_READ_AUTHORITIES)
@@ -105,6 +108,13 @@ public class AdminAuditLogsController {
   @Operation(summary = "审计 Webhook 投递 SLA", description = "Phase 12-3：近 7 日成功率/延迟/死信")
   public AdminAuditWebhookSlaResponse webhookSla() {
     return adminAuditWebhookSlaService.getSlaSummary();
+  }
+
+  @GetMapping("/webhook-sla/self-heal-status")
+  @PreAuthorize(PermissionCodes.ADMIN_AUDIT_READ_AUTHORITIES)
+  @Operation(summary = "Webhook SLA 自愈状态", description = "Phase 15-3：降级目标与自愈候选")
+  public AdminAuditWebhookSelfHealStatusResponse webhookSelfHealStatus() {
+    return selfHealStatusService.getStatus();
   }
 
   @GetMapping("/webhook-config")

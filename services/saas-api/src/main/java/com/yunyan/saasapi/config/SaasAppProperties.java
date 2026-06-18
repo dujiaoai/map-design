@@ -134,6 +134,8 @@ public class SaasAppProperties {
     private String webhookUrl = "";
     /** jsonl | ndjson */
     private String webhookFormat = "jsonl";
+    /** 每批最大事件数 */
+    private int webhookBatchSize = 50;
     /** 审计日志保留天数；0 表示未配置策略 */
     private int retentionDays = 365;
   }

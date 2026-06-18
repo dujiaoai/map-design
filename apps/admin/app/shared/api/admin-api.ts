@@ -81,6 +81,8 @@ export type {
   TenantDataExportArtifact,
   TenantMenuDiffResponse,
   PutTenantMenuOverridePayload,
+  PostTenantMenuOverrideBatchPayload,
+  TenantOidcMetadataImportResponse,
 } from '~/entities/tenant'
 export {
   createAdminTenant,
@@ -94,10 +96,12 @@ export {
   fetchTenantMenuDiff,
   fetchTenantMenuOverrides,
   fetchTenantOidcConfig,
+  importTenantOidcMetadata,
   fetchTenantQuotas,
   fetchTenantStorageEstimate,
   patchAdminTenant,
   patchTenantOidcConfig,
+  postTenantMenuOverridesBatch,
   putTenantMenuOverride,
   deleteTenantMenuOverride,
   updateTenantFeatures,

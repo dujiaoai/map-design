@@ -16,6 +16,7 @@ public class SaasAppProperties {
   private final Registration registration = new Registration();
   private final RateLimit rateLimit = new RateLimit();
   private final Audit audit = new Audit();
+  private final ObjectStorage objectStorage = new ObjectStorage();
 
   @Data
   public static class Mail {

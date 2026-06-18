@@ -9,7 +9,7 @@ import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.TenantSamlConfigRepository;
 import com.yunyan.saasapi.domain.TenantSamlDisconnectDrillLogRepository;
 import com.yunyan.saasapi.domain.TenantSamlIdpFederationRepository;
-import com.yunyan.saasapi.domain.entity.Tenant;
+import com.yunyan.saasapi.domain.entity.SysTenant;
 import com.yunyan.saasapi.domain.entity.TenantSamlConfig;
 import java.time.Instant;
 import java.util.List;
@@ -34,7 +34,7 @@ class TenantSamlIdpHealthServiceTest {
   @Test
   void assess_marksPrimaryHealthyWhenSsoReachableAndMetadataFresh() {
     var tenantId = UUID.randomUUID();
-    when(tenantRepository.findById(tenantId)).thenReturn(Optional.of(new Tenant()));
+    when(tenantRepository.findById(tenantId)).thenReturn(Optional.of(new SysTenant()));
     var config = new TenantSamlConfig();
     config.setTenantId(tenantId);
     config.setEnabled(true);

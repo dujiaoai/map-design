@@ -124,6 +124,11 @@ pnpm --filter @repo/saas-web dev
 | Webhook SLA 自愈（Phase 15） | 智能重试退避；`GET .../webhook-sla/self-heal-status`；`audit_webhook_sla_snapshot` |
 | FinOps 成本归因（Phase 15） | `GET /v1/admin/stats/finops`；Dashboard FinOps 面板 |
 | 对象存储 RPO（Phase 15） | `GET /v1/admin/system/object-storage-rpo`；active-active 双写；见 [ADR-0017](../adr/0017-object-storage-active-active-rpo.md) |
+| SAML 断连演练（Phase 16） | `tenant_saml_disconnect_drill_log`；`GET .../saml-idp-health`；`POST .../saml-disconnect-drill` |
+| SCIM 变更预览（Phase 16） | `scim_outbound_change`；`GET .../scim-change-preview` |
+| Webhook 合规归档（Phase 16） | `audit_webhook_archive`；target `region` 列；`GET .../webhook-archive-summary` |
+| FinOps 预算（Phase 16） | `GET /v1/admin/stats/finops/budget-status`；超预算 API 节流骨架 |
+| 对象存储一致性（Phase 16） | `object_storage_consistency_check_log`；见 [ADR-0018](../adr/0018-object-storage-cross-region-consistency.md) |
 | 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
 
 列表页 loading 使用 Skeleton；Vitest + MockMvc 覆盖 P0～P3 核心路径。

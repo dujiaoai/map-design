@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.application.tenant;
 
+import com.yunyan.saasapi.application.admin.AdminUsageBudgetAlertService;
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.tenant.PlanQuotaCatalog;

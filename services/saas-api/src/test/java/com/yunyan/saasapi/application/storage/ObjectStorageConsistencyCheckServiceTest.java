@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.ObjectStorageConsistencyCheckLogRepository;
 import com.yunyan.saasapi.security.SaasPrincipal;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +29,8 @@ class ObjectStorageConsistencyCheckServiceTest {
     storage.setReplicationTargetBucket("replica-bucket");
     when(saasAppProperties.getObjectStorage()).thenReturn(storage);
     var principal =
-        new SaasPrincipal(UUID.randomUUID(), "admin@test.local", null, Set.of(), Set.of());
+        new SaasPrincipal(
+            UUID.randomUUID(), UUID.randomUUID(), null, "admin@test.local", List.of(), List.of(), null, null);
 
     var response = service.runCheck(principal);
 

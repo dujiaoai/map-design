@@ -8,6 +8,7 @@ import com.yunyan.saasapi.application.admin.TenantMenuOverrideAdminService;
 import com.yunyan.saasapi.application.admin.TenantOidcMetadataImportService;
 import com.yunyan.saasapi.application.admin.TenantOidcAdminService;
 import com.yunyan.saasapi.application.admin.TenantSamlAdminService;
+import com.yunyan.saasapi.application.admin.TenantSamlIdpFederationAdminService;
 import com.yunyan.saasapi.application.admin.TenantSamlDisconnectDrillService;
 import com.yunyan.saasapi.application.admin.TenantSamlIdpHealthService;
 import com.yunyan.saasapi.application.admin.TenantSamlIdpRegistrationService;

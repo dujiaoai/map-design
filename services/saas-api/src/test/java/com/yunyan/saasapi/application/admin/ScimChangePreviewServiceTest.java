@@ -7,7 +7,7 @@ import com.yunyan.saasapi.domain.ScimOutboundChangeRepository;
 import com.yunyan.saasapi.domain.ScimSyncEventRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.entity.ScimSyncEvent;
-import com.yunyan.saasapi.domain.entity.Tenant;
+import com.yunyan.saasapi.domain.entity.SysTenant;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +30,7 @@ class ScimChangePreviewServiceTest {
   @Test
   void preview_mergesInboundAndOutbound() {
     var tenantId = UUID.randomUUID();
-    when(tenantRepository.findById(tenantId)).thenReturn(Optional.of(new Tenant()));
+    when(tenantRepository.findById(tenantId)).thenReturn(Optional.of(new SysTenant()));
     var event = new ScimSyncEvent();
     event.setTenantId(tenantId);
     event.setEventType("user.updated");

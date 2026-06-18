@@ -137,6 +137,8 @@ public class SaasAppProperties {
     private String webhookFormat = "jsonl";
     /** 每批最大事件数 */
     private int webhookBatchSize = 50;
+    /** HMAC-SHA256 签名密钥；空表示不签名 */
+    private String webhookSigningSecret = "";
     /** 审计日志保留天数；0 表示未配置策略 */
     private int retentionDays = 365;
   }
@@ -148,5 +150,10 @@ public class SaasAppProperties {
     private String localPath = "./data/exports";
     private String bucket = "tenant-exports";
     private String publicBaseUrl = "";
+    /** S3/MinIO endpoint，如 https://minio.example:9000 */
+    private String endpoint = "";
+    private String accessKey = "";
+    private String secretKey = "";
+    private String region = "us-east-1";
   }
 }

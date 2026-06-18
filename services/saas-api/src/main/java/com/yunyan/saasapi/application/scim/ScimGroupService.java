@@ -34,6 +34,7 @@ public class ScimGroupService {
   private final ScimSyncCursorRepository syncCursorRepository;
   private final RoleRepository roleRepository;
   private final ScimGroupMappingEngine mappingEngine;
+  private final ScimSyncEventPublisher syncEventPublisher;
 
   public ScimListResponse listGroups(UUID tenantId) {
     ensureTenant(tenantId);
@@ -75,6 +76,7 @@ public class ScimGroupService {
     groupRepository.insert(group);
     replaceMembers(tenantId, group.getId(), request.members());
     touchSyncCursor(tenantId);
+    syncEventPublisher.publishGroupChange(tenantId, externalId, group.getDisplayName());
     return toResource(group);
   }
 

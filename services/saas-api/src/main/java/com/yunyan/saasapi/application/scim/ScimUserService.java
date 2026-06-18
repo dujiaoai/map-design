@@ -37,6 +37,7 @@ public class ScimUserService {
   private final ScimUserExternalIdRepository externalIdRepository;
   private final PasswordEncoder passwordEncoder;
   private final UserSessionRevoker userSessionRevoker;
+  private final ScimSyncEventPublisher syncEventPublisher;
 
   public ScimListResponse listUsers(UUID tenantId, String filter) {
     ensureTenant(tenantId);
@@ -96,6 +97,7 @@ public class ScimUserService {
     mapping.setActive(!STATUS_DISABLED.equals(user.getStatus()));
     mapping.setCreatedAt(Instant.now());
     externalIdRepository.insert(mapping);
+    syncEventPublisher.publishUserChange(tenantId, externalId, email);
     return toResource(mapping, user);
   }
 

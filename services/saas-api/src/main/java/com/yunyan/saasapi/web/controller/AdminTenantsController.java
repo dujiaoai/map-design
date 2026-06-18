@@ -14,6 +14,7 @@ import com.yunyan.saasapi.application.admin.TenantSamlMetadataImportService;
 import com.yunyan.saasapi.application.admin.TenantSamlSpCertificateService;
 import com.yunyan.saasapi.application.scim.ScimSchemaExtensionAdminService;
 import com.yunyan.saasapi.application.scim.ScimGroupMappingRuleService;
+import com.yunyan.saasapi.application.admin.ScimSyncEventAdminService;
 import com.yunyan.saasapi.application.admin.ScimProvisioningAdminService;
 import com.yunyan.saasapi.application.admin.TenantStorageEstimateAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
@@ -31,7 +32,7 @@ import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlIdpRegistrationListRespon
 import com.yunyan.saasapi.web.dto.admin.AdminScimGroupMappingRuleListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminScimSchemaExtensionResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlConfigDto;
-import com.yunyan.saasapi.web.dto.admin.AdminTenantScimProvisioningDto;
+import com.yunyan.saasapi.web.dto.admin.ScimSyncEventSummaryResponse;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportArtifactResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantStorageEstimateDto;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantSamlIdpFederationRequest;
@@ -89,6 +90,7 @@ public class AdminTenantsController {
   private final ScimProvisioningAdminService scimProvisioningAdminService;
   private final ScimSchemaExtensionAdminService scimSchemaExtensionAdminService;
   private final ScimGroupMappingRuleService scimGroupMappingRuleService;
+  private final ScimSyncEventAdminService scimSyncEventAdminService;
   private final TenantStorageEstimateAdminService tenantStorageEstimateAdminService;
   private final TenantMenuOverrideAdminService tenantMenuOverrideAdminService;
 
@@ -211,6 +213,13 @@ public class AdminTenantsController {
   public AdminGenerateScimTokenResponse generateScimToken(
       @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
     return scimProvisioningAdminService.generateToken(principal, tenantId);
+  }
+
+  @GetMapping("/{tenantId}/scim-sync-events/summary")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "SCIM 同步事件摘要", description = "Phase 15-2 pending 冲突计数")
+  public ScimSyncEventSummaryResponse getScimSyncEventSummary(@PathVariable UUID tenantId) {
+    return scimSyncEventAdminService.summary(tenantId);
   }
 
   @GetMapping("/{tenantId}/scim-schema-extension")

@@ -1,6 +1,9 @@
 package com.yunyan.saasapi.application.admin;
 
 import com.yunyan.saasapi.config.SaasAppProperties;
+import com.yunyan.saasapi.domain.AdminAuditLogRepository;
+import com.yunyan.saasapi.domain.AdminAuditWebhookCursorRepository;
+import com.yunyan.saasapi.domain.AdminAuditWebhookDeadLetterRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +19,10 @@ public class AuditLogWebhookDeliveryJob {
 
   private final SaasAppProperties saasAppProperties;
   private final AuditWebhookHttpClient auditWebhookHttpClient;
+  private final AdminAuditLogRepository adminAuditLogRepository;
+  private final AdminAuditWebhookCursorRepository cursorRepository;
+  private final AdminAuditWebhookDeadLetterRepository deadLetterRepository;
+  private final AuditWebhookPayloadBuilder payloadBuilder;
 
   @Scheduled(
       fixedDelayString = "${saas.audit.webhook-delivery-ms:300000}",
@@ -25,13 +32,27 @@ public class AuditLogWebhookDeliveryJob {
     if (!audit.isWebhookEnabled() || !StringUtils.hasText(audit.getWebhookUrl())) {
       return;
     }
-    var payload =
-        "{\"type\":\"audit.batch.skeleton\",\"format\":\""
-            + audit.getWebhookFormat()
-            + "\",\"events\":[]}";
-    var ok = auditWebhookHttpClient.postJson(audit.getWebhookUrl(), payload);
-    if (ok) {
-      log.debug("Audit webhook heartbeat delivered to {}", audit.getWebhookUrl());
+    var cursor = cursorRepository.findDefault().orElse(null);
+    var lastDeliveredId = cursor == null ? null : cursor.getLastDeliveredId();
+    var batchSize = Math.max(1, audit.getWebhookBatchSize());
+    var batch = adminAuditLogRepository.findUndeliveredAfter(lastDeliveredId, batchSize);
+    if (batch.isEmpty()) {
+      return;
     }
+    var payload = payloadBuilder.buildBatchPayload(audit.getWebhookFormat(), batch);
+    var ok = auditWebhookHttpClient.postJson(audit.getWebhookUrl(), payload);
+    if (!ok) {
+      for (var entry : batch) {
+        deadLetterRepository.insert(
+            entry.getId(),
+            payloadBuilder.buildSingleEventPayload(entry),
+            "HTTP delivery failed");
+      }
+      log.warn("Audit webhook batch delivery failed, {} event(s) moved to dead letter", batch.size());
+      return;
+    }
+    var last = batch.get(batch.size() - 1);
+    cursorRepository.upsert(last.getId(), last.getCreatedAt());
+    log.debug("Audit webhook delivered {} event(s) to {}", batch.size(), audit.getWebhookUrl());
   }
 }

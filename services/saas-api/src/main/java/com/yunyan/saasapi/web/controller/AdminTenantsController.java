@@ -12,6 +12,7 @@ import com.yunyan.saasapi.application.admin.TenantSamlIdpRegistrationService;
 import com.yunyan.saasapi.application.admin.TenantSamlMetadataImportService;
 import com.yunyan.saasapi.application.admin.TenantSamlSpCertificateService;
 import com.yunyan.saasapi.application.scim.ScimSchemaExtensionAdminService;
+import com.yunyan.saasapi.application.scim.ScimGroupMappingRuleService;
 import com.yunyan.saasapi.application.admin.ScimProvisioningAdminService;
 import com.yunyan.saasapi.application.admin.TenantStorageEstimateAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
@@ -26,6 +27,7 @@ import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantOidcConfigDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlIdpApproveResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlIdpRegistrationListResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminScimGroupMappingRuleListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminScimSchemaExtensionResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlConfigDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantScimProvisioningDto;
@@ -82,6 +84,7 @@ public class AdminTenantsController {
   private final TenantSamlIdpRegistrationService tenantSamlIdpRegistrationService;
   private final ScimProvisioningAdminService scimProvisioningAdminService;
   private final ScimSchemaExtensionAdminService scimSchemaExtensionAdminService;
+  private final ScimGroupMappingRuleService scimGroupMappingRuleService;
   private final TenantStorageEstimateAdminService tenantStorageEstimateAdminService;
   private final TenantMenuOverrideAdminService tenantMenuOverrideAdminService;
 
@@ -211,6 +214,13 @@ public class AdminTenantsController {
   @Operation(summary = "SCIM schema extension 摘要", description = "Phase 13-2 只读自定义属性")
   public AdminScimSchemaExtensionResponse getScimSchemaExtension(@PathVariable UUID tenantId) {
     return scimSchemaExtensionAdminService.getSummary(tenantId);
+  }
+
+  @GetMapping("/{tenantId}/scim-group-mapping-rules")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "SCIM Group 映射规则", description = "Phase 14-2 只读列表")
+  public AdminScimGroupMappingRuleListResponse getScimGroupMappingRules(@PathVariable UUID tenantId) {
+    return scimGroupMappingRuleService.listRules(tenantId);
   }
 
   @PatchMapping("/{tenantId}/oidc-config")

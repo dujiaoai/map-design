@@ -28,6 +28,7 @@ import type {
   TenantSamlSpCertificateRotateResponse,
   AdminTenantSamlIdpRegistrationListResponse,
   AdminTenantSamlIdpApproveResponse,
+  AdminScimGroupMappingRuleListResponse,
   TenantQuotasResponse,
 } from './model'
 
@@ -177,4 +178,10 @@ export function fetchTenantDataExportArtifact(tenantId: string, requestId: strin
 
 export function fetchTenantMenuDiff(tenantId: string) {
   return api.get<TenantMenuDiffResponse>(`/admin/tenants/${tenantId}/menu-overrides/diff`)
+}
+
+export function fetchTenantScimGroupMappingRules(tenantId: string) {
+  return api.get<AdminScimGroupMappingRuleListResponse>(
+    `/admin/tenants/${tenantId}/scim-group-mapping-rules`,
+  )
 }

@@ -17,7 +17,7 @@ export function TenantMenuDiffPanel({ tenantId }: { tenantId: string }) {
       <AdminPanelHeader
         icon={LayoutListIcon}
         title="菜单 diff"
-        description="平台模板 vs 租户覆盖（Phase 7-4）"
+        description="平台模板 vs 租户覆盖（含 sortOrder）"
       />
       {query.isLoading ? (
         <AdminTableSkeleton rows={2} columns={1} />
@@ -38,6 +38,8 @@ export function TenantMenuDiffPanel({ tenantId }: { tenantId: string }) {
                 <th className="py-2 pr-3 font-medium">项 ID</th>
                 <th className="py-2 pr-3 font-medium">模板</th>
                 <th className="py-2 pr-3 font-medium">覆盖</th>
+                <th className="py-2 pr-3 font-medium">模板 sort</th>
+                <th className="py-2 pr-3 font-medium">覆盖 sort</th>
               </tr>
             </thead>
             <tbody>
@@ -58,6 +60,8 @@ export function TenantMenuDiffPanel({ tenantId }: { tenantId: string }) {
                       </span>
                     ) : null}
                   </td>
+                  <td className="py-2 pr-3 text-muted-foreground">{row.templateSortOrder ?? '—'}</td>
+                  <td className="py-2 pr-3 text-muted-foreground">{row.overrideSortOrder ?? '—'}</td>
                 </tr>
               ))}
             </tbody>

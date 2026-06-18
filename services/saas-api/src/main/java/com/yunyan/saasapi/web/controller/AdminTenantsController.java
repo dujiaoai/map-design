@@ -25,6 +25,7 @@ import com.yunyan.saasapi.web.dto.admin.TenantDataExportArtifactResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantStorageEstimateDto;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantOidcConfigRequest;
+import com.yunyan.saasapi.web.dto.admin.PatchTenantSamlConfigRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantRequest;
 import com.yunyan.saasapi.web.dto.admin.PostTenantMenuOverrideBatchRequest;
 import com.yunyan.saasapi.web.dto.admin.PutTenantMenuOverrideRequest;
@@ -161,9 +162,19 @@ public class AdminTenantsController {
 
   @GetMapping("/{tenantId}/saml-config")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
-  @Operation(summary = "获取租户 SAML 配置摘要（只读）", description = "Phase 10-2 调研骨架；未实现完整 SP 流")
+  @Operation(summary = "获取租户 SAML 配置", description = "Phase 11-1 SP 授权流")
   public AdminTenantSamlConfigDto getSamlConfig(@PathVariable UUID tenantId) {
     return tenantSamlAdminService.getConfig(tenantId);
+  }
+
+  @PatchMapping("/{tenantId}/saml-config")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "更新租户 SAML 配置", description = "Admin 写入 IdP/SP 字段与启用开关")
+  public AdminTenantSamlConfigDto patchSamlConfig(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @Valid @RequestBody PatchTenantSamlConfigRequest request) {
+    return tenantSamlAdminService.patchConfig(principal, tenantId, request);
   }
 
   @GetMapping("/{tenantId}/scim-provisioning")

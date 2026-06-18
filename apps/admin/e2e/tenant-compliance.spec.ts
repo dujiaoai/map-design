@@ -16,6 +16,8 @@ test.describe('租户合规 Tab（已登录 mock）', () => {
     await expect(page.getByRole('tab', { name: '合规' })).toBeVisible({ timeout: 15_000 })
     await expect(page.getByText('GDPR 数据导出')).toBeVisible()
     await expect(page.getByText('租户 OIDC / SSO')).toBeVisible()
+    await expect(page.getByText('租户 SAML / SSO')).toBeVisible()
+    await expect(page.getByText('SCIM Directory Sync')).toBeVisible()
     await expect(page.getByText('存储用量估算')).toBeVisible()
     await expect(page.getByText('菜单覆盖')).toBeVisible()
     await expect(page.getByText('全部继承平台模板')).toBeVisible()

@@ -198,6 +198,36 @@ export async function mockTenantsPageApis(page: Page) {
     })
   })
 
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/saml-config/, async (route) => {
+    const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        tenantId,
+        enabled: false,
+        entityId: null,
+        ssoUrl: null,
+        certificateConfigured: false,
+        configured: false,
+      }),
+    })
+  })
+
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/scim-provisioning/, async (route) => {
+    const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        tenantId,
+        enabled: false,
+        tokenConfigured: false,
+        usersEndpointUrl: 'http://localhost:5175/scim/v2/Users',
+      }),
+    })
+  })
+
   await page.route(/\/v1\/admin\/tenants\/[^/]+\/storage-estimate/, async (route) => {
     const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
     await route.fulfill({

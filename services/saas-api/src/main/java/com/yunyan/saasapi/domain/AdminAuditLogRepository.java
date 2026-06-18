@@ -23,6 +23,18 @@ public class AdminAuditLogRepository {
     sysAdminAuditLogMapper.insert(log);
   }
 
+  public List<SysAdminAuditLog> findUndeliveredAfter(UUID lastDeliveredId, int limit) {
+    var wrapper = Wrappers.<SysAdminAuditLog>lambdaQuery();
+    if (lastDeliveredId != null) {
+      wrapper.gt(SysAdminAuditLog::getId, lastDeliveredId);
+    }
+    wrapper.orderByAsc(SysAdminAuditLog::getCreatedAt).orderByAsc(SysAdminAuditLog::getId);
+    if (limit > 0) {
+      wrapper.last("LIMIT " + limit);
+    }
+    return sysAdminAuditLogMapper.selectList(wrapper);
+  }
+
   public AdminPagedResult<SysAdminAuditLog> findLogs(AuditLogListParams params) {
     var wrapper = Wrappers.<SysAdminAuditLog>lambdaQuery();
     applyAuditSort(wrapper, params.toListParams());

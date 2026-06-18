@@ -74,6 +74,15 @@ public class WorkspaceMenuService {
     return item.getTitle();
   }
 
+  static int effectiveSortOrder(
+      WorkspaceMenuItem item, Map<String, WorkspaceMenuTenantOverride> overrides) {
+    var override = overrides.get(item.getId());
+    if (override != null && override.getSortOrder() != null) {
+      return override.getSortOrder();
+    }
+    return item.getSortOrder() == null ? 0 : item.getSortOrder();
+  }
+
   private MenusResponse buildFromDatabase(
       Set<String> enabledFeatures,
       Set<String> userPermissions,
@@ -88,6 +97,7 @@ public class WorkspaceMenuService {
               .filter(item -> isEffectiveEnabled(item, overrides))
               .filter(item -> isVisible(item.getTenantFeature(), enabledFeatures))
               .filter(item -> hasPermission(item.getPermissionCode(), userPermissions))
+              .sorted(Comparator.comparingInt(item -> effectiveSortOrder(item, overrides)))
               .toList();
       if (visibleItems.isEmpty()) {
         continue;
@@ -108,7 +118,10 @@ public class WorkspaceMenuService {
       }
     }
 
-    for (WorkspaceMenuItem tool : workspaceMenuRepository.findEnabledToolItemsOrdered()) {
+    for (WorkspaceMenuItem tool :
+        workspaceMenuRepository.findEnabledToolItemsOrdered().stream()
+            .sorted(Comparator.comparingInt(item -> effectiveSortOrder(item, overrides)))
+            .toList()) {
       if (!isEffectiveEnabled(tool, overrides)) {
         continue;
       }

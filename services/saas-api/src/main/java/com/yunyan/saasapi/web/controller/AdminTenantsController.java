@@ -14,6 +14,7 @@ import com.yunyan.saasapi.web.dto.admin.AdminTenantListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantOidcConfigDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantStorageEstimateDto;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
+import com.yunyan.saasapi.web.dto.admin.PatchTenantOidcConfigRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantRequest;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestDto;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestListResponse;
@@ -130,6 +131,16 @@ public class AdminTenantsController {
   @Operation(summary = "获取租户 OIDC 配置（只读）", description = "Phase 5D-1 骨架；未配置时返回 enabled=false")
   public AdminTenantOidcConfigDto getOidcConfig(@PathVariable UUID tenantId) {
     return tenantOidcAdminService.getConfig(tenantId);
+  }
+
+  @PatchMapping("/{tenantId}/oidc-config")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "更新租户 OIDC 配置（骨架）", description = "不含 client_secret；后续对接 saas-web 登录入口")
+  public AdminTenantOidcConfigDto patchOidcConfig(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @Valid @RequestBody PatchTenantOidcConfigRequest request) {
+    return tenantOidcAdminService.patchConfig(principal, tenantId, request);
   }
 
   @GetMapping("/{tenantId}/storage-estimate")

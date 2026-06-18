@@ -16,4 +16,12 @@ public class TenantOidcConfigRepository {
   public Optional<TenantOidcConfig> findByTenantId(UUID tenantId) {
     return Optional.ofNullable(mapper.selectById(tenantId));
   }
+
+  public void insert(TenantOidcConfig config) {
+    mapper.insert(config);
+  }
+
+  public void update(TenantOidcConfig config) {
+    mapper.updateById(config);
+  }
 }

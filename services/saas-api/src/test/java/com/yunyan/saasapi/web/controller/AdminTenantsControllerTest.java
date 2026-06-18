@@ -281,6 +281,28 @@ class AdminTenantsControllerTest {
         .andExpect(jsonPath("$.source").value("skeleton"));
   }
 
+  @Test
+  void oidcConfig_patchUpsertsConfig() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            patch("/v1/admin/tenants/" + TEST_TENANT_ID + "/oidc-config")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "enabled", true,
+                            "displayName", "Corp SSO",
+                            "issuerUri", "https://idp.example.com",
+                            "clientId", "admin-portal"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.enabled").value(true))
+        .andExpect(jsonPath("$.configured").value(true))
+        .andExpect(jsonPath("$.displayName").value("Corp SSO"));
+  }
+
   private String loginAccessToken(String email) throws Exception {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }

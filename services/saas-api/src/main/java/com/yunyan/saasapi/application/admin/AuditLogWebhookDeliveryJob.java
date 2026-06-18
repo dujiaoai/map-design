@@ -26,6 +26,7 @@ public class AuditLogWebhookDeliveryJob {
   private final AuditWebhookHmacSigner hmacSigner;
   private final AuditWebhookAlertService alertService;
   private final AuditWebhookDeliveryMetricRecorder deliveryMetricRecorder;
+  private final AuditWebhookMultiTargetDeliveryJob multiTargetDeliveryJob;
 
   @Scheduled(
       fixedDelayString = "${saas.audit.webhook-delivery-ms:300000}",
@@ -62,6 +63,7 @@ public class AuditLogWebhookDeliveryJob {
     var last = batch.get(batch.size() - 1);
     cursorRepository.upsert(last.getId(), last.getCreatedAt());
     deliveryMetricRecorder.recordSuccess(latencyMs);
+    multiTargetDeliveryJob.fanOutToAdditionalTargets(payload);
     log.debug("Audit webhook delivered {} event(s) to {}", batch.size(), audit.getWebhookUrl());
   }
 }

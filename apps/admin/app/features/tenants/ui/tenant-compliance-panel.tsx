@@ -30,6 +30,7 @@ import { formatAdminDate } from '~/shared/ui/admin-status-badge'
 import { TenantOidcConfigForm } from '~/features/tenants/ui/tenant-oidc-config-form'
 import { TenantSamlConfigForm } from '~/features/tenants/ui/tenant-saml-config-form'
 import { TenantSamlIdpFederationPanel } from '~/features/tenants/ui/tenant-saml-idp-federation-panel'
+import { TenantSamlIdpHealthPanel } from '~/features/tenants/ui/tenant-saml-idp-health-panel'
 import { TenantSamlIdpRegistrationsPanel } from '~/features/tenants/ui/tenant-saml-idp-registrations-panel'
 import { TenantScimStatusCard } from '~/features/tenants/ui/tenant-scim-status-card'
 import { TenantScimSchemaExtensionPanel } from '~/features/tenants/ui/tenant-scim-schema-extension-panel'
@@ -191,6 +192,8 @@ export function TenantCompliancePanel({ tenantId, tenantSlug }: { tenantId: stri
       <TenantSamlIdpRegistrationsPanel tenantId={tenantId} />
 
       <TenantSamlIdpFederationPanel tenantId={tenantId} />
+
+      <TenantSamlIdpHealthPanel tenantId={tenantId} />
 
       {scimQuery.isLoading ? (
         <AdminTableSkeleton rows={2} columns={1} />

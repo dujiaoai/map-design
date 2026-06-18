@@ -138,4 +138,17 @@ export async function mockAuditPageApis(page: Page) {
       body: JSON.stringify(E2E_TENANTS),
     })
   })
+
+  await page.route(/\/v1\/admin\/audit-logs\/webhook-config/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        enabled: false,
+        configured: false,
+        format: 'jsonl',
+        deliveryMode: 'csv_only',
+      }),
+    })
+  })
 }

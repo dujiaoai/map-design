@@ -220,6 +220,7 @@ public class WorkspaceMenuAdminService {
         item.getUrl(),
         item.getHref(),
         item.getTenantFeature(),
+        item.getPermissionCode(),
         item.getSortOrder() == null ? 0 : item.getSortOrder(),
         item.getEnabled() == null || item.getEnabled());
   }

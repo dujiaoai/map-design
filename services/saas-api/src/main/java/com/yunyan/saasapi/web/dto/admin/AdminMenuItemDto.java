@@ -14,5 +14,6 @@ public record AdminMenuItemDto(
     @Schema(description = "kind=route") String url,
     @Schema(description = "kind=external") String href,
     @Schema(description = "租户能力门控码（只读）") String tenantFeature,
+    @Schema(description = "RBAC permission 门控码（只读）") String permissionCode,
     @Schema(description = "排序") int sortOrder,
     @Schema(description = "是否启用") boolean enabled) {}

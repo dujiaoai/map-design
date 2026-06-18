@@ -11,6 +11,7 @@ import type {
   FeatureCatalogResponse,
   PatchTenantOidcConfigPayload,
   PatchTenantPayload,
+  PostTenantMenuOverrideBatchPayload,
   TenantDataExportRequest,
   TenantDataExportRequestListResponse,
   TenantDataExportArtifact,
@@ -18,6 +19,7 @@ import type {
   PutTenantMenuOverridePayload,
   TenantMenuOverride,
   TenantMenuOverrideListResponse,
+  TenantOidcMetadataImportResponse,
   TenantQuotasResponse,
 } from './model'
 
@@ -76,6 +78,13 @@ export function patchTenantOidcConfig(tenantId: string, payload: PatchTenantOidc
   return api.patch<AdminTenantOidcConfig>(`/admin/tenants/${tenantId}/oidc-config`, payload)
 }
 
+export function importTenantOidcMetadata(tenantId: string) {
+  return api.post<TenantOidcMetadataImportResponse>(
+    `/admin/tenants/${tenantId}/oidc-config/import-metadata`,
+    {},
+  )
+}
+
 export function fetchTenantStorageEstimate(tenantId: string) {
   return api.get<AdminTenantStorageEstimate>(`/admin/tenants/${tenantId}/storage-estimate`)
 }
@@ -86,6 +95,16 @@ export function fetchTenantMenuOverrides(tenantId: string) {
 
 export function putTenantMenuOverride(tenantId: string, payload: PutTenantMenuOverridePayload) {
   return api.put<TenantMenuOverride>(`/admin/tenants/${tenantId}/menu-overrides`, payload)
+}
+
+export function postTenantMenuOverridesBatch(
+  tenantId: string,
+  payload: PostTenantMenuOverrideBatchPayload,
+) {
+  return api.post<TenantMenuOverrideListResponse>(
+    `/admin/tenants/${tenantId}/menu-overrides/batch`,
+    payload,
+  )
 }
 
 export function deleteTenantMenuOverride(tenantId: string, itemId: string) {

@@ -130,10 +130,19 @@ flowchart TB
 
 | PR | 内容 |
 | --- | --- |
-| 7-1 | saas-web 租户 OIDC 登录入口 |
-| 7-2 | 审计 Webhook HTTP 实推送 + 死信重试 |
-| 7-3 | GDPR 导出 artifact 对象存储与 Admin 下载 |
-| 7-4 | 菜单覆盖与平台模板 side-by-side diff |
+| 7-1 | saas-web 租户 OIDC 登录入口 | ✅ 探测 API + 登录按钮 |
+| 7-2 | 审计 Webhook HTTP 实推送 + 死信重试 | 🟡 HTTP 心跳推送 ✅ |
+| 7-3 | GDPR 导出 artifact 对象存储与 Admin 下载 | 🟡 artifact API + 下载链接 ✅ |
+| 7-4 | 菜单覆盖与平台模板 side-by-side diff | ✅ |
+
+### Phase 8 · 运行时深化（Later）
+
+| PR | 内容 |
+| --- | --- |
+| 8-1 | 租户 SSO 完整 OAuth 授权流 |
+| 8-2 | 审计 Webhook 批量事件推送 + 死信表 |
+| 8-3 | GDPR artifact 对象存储（S3/MinIO） |
+| 8-4 | 菜单运行时 sortOrder 覆盖 |
 
 ---
 
@@ -158,4 +167,5 @@ flowchart TB
 | **Phase 5D** | 合规骨架（GDPR 导出 + 审计 Webhook 摘要）✅ |
 | **Phase 5E** | 多产品菜单/存储 Admin UI 摘要 + migration 骨架 ✅ |
 | **Phase 6** | OIDC 表单、菜单覆盖 CRUD、permission 门控、Job 骨架 ✅ |
-| **Phase 7** | saas-web SSO 登录、SIEM 实推送、GDPR 下载 |
+| **Phase 7** | saas-web SSO 入口、Webhook HTTP、GDPR artifact、菜单 diff ✅ |
+| **Phase 8** | 租户 SSO 完整流、SIEM 批量、对象存储 artifact |

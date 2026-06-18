@@ -1,14 +1,15 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@repo/auth'
 import { Badge, Button, toast } from '@repo/ui'
-import { ActivityIcon, Building2Icon, DownloadIcon, RefreshCwIcon, ShieldCheckIcon, TrendingUpIcon, UserPlusIcon, UsersIcon, PauseCircleIcon, TimerIcon } from 'lucide-react'
+import { ActivityIcon, Building2Icon, DownloadIcon, LineChartIcon, RefreshCwIcon, ShieldCheckIcon, TrendingUpIcon, UserPlusIcon, UsersIcon, PauseCircleIcon, TimerIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link, redirect } from 'react-router'
 
 import { downloadAdminUsageTrendsCsv } from '~/features/dashboard/lib/usage-trends-export'
 
 import { AdminQuickNav } from '~/widgets/admin-overview/ui/admin-quick-nav'
-import { fetchAdminPing, fetchAdminStats, fetchAdminUsageTrends } from '~/shared/api/admin-api'
+import { fetchAdminPing, fetchAdminStats, fetchAdminUsageForecast, fetchAdminUsageTrends } from '~/shared/api/admin-api'
+import { AdminUsageForecastPanel } from '~/features/dashboard/ui/admin-usage-forecast-panel'
 import { auth } from '~/shared/auth/client'
 import { canAccessAdminOverview } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
@@ -54,6 +55,10 @@ export default function DashboardRoute() {
     queryKey: adminQueryKeys.usageTrends,
     queryFn: fetchAdminUsageTrends,
   })
+  const usageForecastQuery = useQuery({
+    queryKey: adminQueryKeys.usageForecast,
+    queryFn: fetchAdminUsageForecast,
+  })
   const pingQuery = useQuery({
     queryKey: adminQueryKeys.ping,
     queryFn: fetchAdminPing,
@@ -67,6 +72,7 @@ export default function DashboardRoute() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: adminQueryKeys.stats }),
         queryClient.invalidateQueries({ queryKey: adminQueryKeys.usageTrends }),
+        queryClient.invalidateQueries({ queryKey: adminQueryKeys.usageForecast }),
         queryClient.invalidateQueries({ queryKey: adminQueryKeys.ping }),
       ])
       toast.success('概览数据已刷新')
@@ -209,6 +215,20 @@ export default function DashboardRoute() {
         ) : (
           <AdminUsageTrendChart days={usageTrendsQuery.data?.days ?? []} />
         )}
+      </AdminPanel>
+
+      <AdminPanel>
+        <AdminPanelHeader icon={LineChartIcon} title="用量预测与容量建议" />
+        {usageForecastQuery.isLoading ? (
+          <p className="px-4 py-4 text-sm text-muted-foreground md:px-5">加载中…</p>
+        ) : usageForecastQuery.isError ? (
+          <p className="px-4 py-4 text-sm text-destructive md:px-5">无法加载用量预测</p>
+        ) : usageForecastQuery.data ? (
+          <AdminUsageForecastPanel
+            forecast={usageForecastQuery.data.forecast}
+            recommendations={usageForecastQuery.data.recommendations}
+          />
+        ) : null}
       </AdminPanel>
 
       <div className="grid gap-4 sm:grid-cols-3">

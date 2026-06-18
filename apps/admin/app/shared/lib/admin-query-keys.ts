@@ -15,6 +15,7 @@ export const adminQueryKeys = {
     ['admin', 'tenants', tenantId, 'storage-estimate'] as const,
   tenantMenuOverrides: (tenantId: string) =>
     ['admin', 'tenants', tenantId, 'menu-overrides'] as const,
+  tenantMenuDiff: (tenantId: string) => ['admin', 'tenants', tenantId, 'menu-diff'] as const,
   users: (tenantId?: string, params?: AdminListQuery) =>
     ['admin', 'users', tenantId ?? 'all', params ?? {}] as const,
   sessionTenants: ['admin', 'session-tenants'] as const,

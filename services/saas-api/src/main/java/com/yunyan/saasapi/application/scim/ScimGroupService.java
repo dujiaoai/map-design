@@ -33,6 +33,7 @@ public class ScimGroupService {
   private final ScimUserExternalIdRepository externalIdRepository;
   private final ScimSyncCursorRepository syncCursorRepository;
   private final RoleRepository roleRepository;
+  private final ScimGroupMappingEngine mappingEngine;
 
   public ScimListResponse listGroups(UUID tenantId) {
     ensureTenant(tenantId);
@@ -68,6 +69,7 @@ public class ScimGroupService {
     group.setTenantId(tenantId);
     group.setExternalId(externalId);
     group.setDisplayName(request.displayName().trim());
+    mappingEngine.resolveRoleCode(tenantId, group).ifPresent(group::setRoleCode);
     group.setCreatedAt(Instant.now());
     group.setUpdatedAt(Instant.now());
     groupRepository.insert(group);
@@ -87,6 +89,7 @@ public class ScimGroupService {
     if (StringUtils.hasText(request.displayName())) {
       group.setDisplayName(request.displayName().trim());
     }
+    mappingEngine.resolveRoleCode(tenantId, group).ifPresent(group::setRoleCode);
     if (StringUtils.hasText(request.roleCode())) {
       var roleCode = request.roleCode().trim();
       roleRepository

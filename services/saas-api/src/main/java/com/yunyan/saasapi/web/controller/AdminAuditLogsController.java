@@ -1,12 +1,15 @@
 package com.yunyan.saasapi.web.controller;
 
 import com.yunyan.saasapi.application.admin.AdminAuditLogService;
+import com.yunyan.saasapi.application.admin.AdminAuditWebhookDeadLetterService;
 import com.yunyan.saasapi.application.admin.AdminAuditWebhookService;
 import com.yunyan.saasapi.application.admin.AuditLogListParams;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditLogListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookConfigResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookDeadLetterListResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookDeadLetterReplayResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +21,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +38,7 @@ public class AdminAuditLogsController {
 
   private final AdminAuditLogService adminAuditLogService;
   private final AdminAuditWebhookService adminAuditWebhookService;
+  private final AdminAuditWebhookDeadLetterService adminAuditWebhookDeadLetterService;
 
   @GetMapping
   @PreAuthorize(PermissionCodes.ADMIN_AUDIT_READ_AUTHORITIES)
@@ -89,5 +96,29 @@ public class AdminAuditLogsController {
       description = "不含 webhook URL 明文；用于 Admin 合规集成状态展示。")
   public AdminAuditWebhookConfigResponse webhookConfig() {
     return adminAuditWebhookService.getConfig();
+  }
+
+  @GetMapping("/webhook-dead-letters")
+  @PreAuthorize(PermissionCodes.ADMIN_AUDIT_READ_AUTHORITIES)
+  @Operation(summary = "审计 Webhook 死信列表", description = "Phase 10-1：分页列出 delivery 失败的事件")
+  public AdminAuditWebhookDeadLetterListResponse listWebhookDeadLetters(
+      @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size) {
+    return adminAuditWebhookDeadLetterService.list(page, size);
+  }
+
+  @PostMapping("/webhook-dead-letters/{id}/replay")
+  @PreAuthorize(PermissionCodes.ADMIN_AUDIT_EXPORT_AUTHORITIES)
+  @Operation(summary = "重放 Webhook 死信", description = "POST payload 至配置的 webhook URL；成功则删除死信")
+  public AdminAuditWebhookDeadLetterReplayResponse replayWebhookDeadLetter(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID id) {
+    return adminAuditWebhookDeadLetterService.replay(principal, id);
+  }
+
+  @DeleteMapping("/webhook-dead-letters/{id}")
+  @PreAuthorize(PermissionCodes.ADMIN_AUDIT_EXPORT_AUTHORITIES)
+  @Operation(summary = "删除 Webhook 死信", description = "丢弃无法投递的事件副本")
+  public void deleteWebhookDeadLetter(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID id) {
+    adminAuditWebhookDeadLetterService.delete(principal, id);
   }
 }

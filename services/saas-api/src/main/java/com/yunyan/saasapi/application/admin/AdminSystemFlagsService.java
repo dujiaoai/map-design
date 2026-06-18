@@ -24,6 +24,7 @@ public class AdminSystemFlagsService {
   private final Environment environment;
   private final AdminMfaService adminMfaService;
   private final OidcAuthService oidcAuthService;
+  private final AdminAuditWebhookService adminAuditWebhookService;
 
   public AdminSystemFlagsResponse getFlags() {
     var mail = saasAppProperties.getMail();
@@ -59,7 +60,17 @@ public class AdminSystemFlagsService {
             oidcAuthService.isEnabled(),
             oidcAuthService.isAuthorizationCodeFlowAvailable(),
             oidcAuthService.countConfiguredProviders()),
+        auditFlags(),
         new AdminSystemFlagsResponse.RuntimeFlags(activeProfiles(), jwtProperties.effectivePermEpoch()));
+  }
+
+  private AdminSystemFlagsResponse.AuditFlags auditFlags() {
+    var webhook = adminAuditWebhookService.getConfig();
+    return new AdminSystemFlagsResponse.AuditFlags(
+        webhook.enabled(),
+        webhook.configured(),
+        webhook.format(),
+        webhook.deliveryMode());
   }
 
   private List<String> activeProfiles() {

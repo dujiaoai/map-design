@@ -11,6 +11,7 @@ public record AdminSystemFlagsResponse(
     BillingFlags billing,
     MfaFlags mfa,
     OidcFlags oidc,
+    AuditFlags audit,
     RuntimeFlags runtime) {
 
   public record RegistrationFlags(
@@ -39,6 +40,12 @@ public record AdminSystemFlagsResponse(
       boolean enabled,
       boolean authorizationCodeFlowAvailable,
       int configuredProviderCount) {}
+
+  public record AuditFlags(
+      boolean webhookEnabled,
+      boolean webhookConfigured,
+      String webhookFormat,
+      String deliveryMode) {}
 
   public record RuntimeFlags(List<String> activeProfiles, int jwtPermEpoch) {}
 }

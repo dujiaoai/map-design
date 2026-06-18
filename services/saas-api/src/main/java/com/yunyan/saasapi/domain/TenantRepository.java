@@ -180,6 +180,23 @@ public class TenantRepository {
             .le(SysTenant::getTrialEndsAt, now));
   }
 
+  public List<UUID> findTrialExpiredActiveTenantIds(Instant now) {
+    return sysTenantMapper
+        .selectList(
+            Wrappers.<SysTenant>lambdaQuery()
+                .and(
+                    w ->
+                        w.isNull(SysTenant::getStatus)
+                            .or()
+                            .ne(SysTenant::getStatus, "suspended"))
+                .isNotNull(SysTenant::getTrialEndsAt)
+                .le(SysTenant::getTrialEndsAt, now)
+                .select(SysTenant::getId))
+        .stream()
+        .map(SysTenant::getId)
+        .toList();
+  }
+
   public List<SysTenant> findByIds(List<UUID> tenantIds) {
     if (tenantIds.isEmpty()) {
       return List.of();

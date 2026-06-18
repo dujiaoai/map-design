@@ -115,6 +115,8 @@ saas:
       - http://localhost:5175
       - http://localhost:5181
       - http://localhost:5182
+  tenant:
+    trial-expired-suspend-ms: ${SAAS_TRIAL_EXPIRED_SUSPEND_MS:3600000}
 
 springdoc:
   api-docs:

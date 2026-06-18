@@ -37,7 +37,9 @@ public class TenantOidcAdminService {
     if (request.enabled() == null
         && !StringUtils.hasText(request.displayName())
         && !StringUtils.hasText(request.issuerUri())
-        && !StringUtils.hasText(request.clientId())) {
+        && !StringUtils.hasText(request.clientId())
+        && !StringUtils.hasText(request.clientSecret())
+        && !StringUtils.hasText(request.scopes())) {
       throw AuthException.badRequest("At least one OIDC field is required");
     }
     var config =
@@ -63,6 +65,12 @@ public class TenantOidcAdminService {
     if (StringUtils.hasText(request.clientId())) {
       config.setClientId(request.clientId().trim());
     }
+    if (StringUtils.hasText(request.clientSecret())) {
+      config.setClientSecret(request.clientSecret().trim());
+    }
+    if (StringUtils.hasText(request.scopes())) {
+      config.setScopes(request.scopes().trim());
+    }
     config.setUpdatedAt(Instant.now());
     if (oidcConfigRepository.findByTenantId(tenantId).isEmpty()) {
       oidcConfigRepository.insert(config);
@@ -80,17 +88,21 @@ public class TenantOidcAdminService {
 
   static AdminTenantOidcConfigDto toDto(TenantOidcConfig config) {
     var configured =
-        StringUtils.hasText(config.getIssuerUri()) && StringUtils.hasText(config.getClientId());
+        StringUtils.hasText(config.getIssuerUri())
+            && StringUtils.hasText(config.getClientId())
+            && StringUtils.hasText(config.getClientSecret());
     return new AdminTenantOidcConfigDto(
         config.getTenantId().toString(),
         Boolean.TRUE.equals(config.getEnabled()),
         config.getDisplayName(),
         config.getIssuerUri(),
         config.getClientId(),
-        configured);
+        configured,
+        StringUtils.hasText(config.getClientSecret()),
+        config.getScopes());
   }
 
   static AdminTenantOidcConfigDto emptyDto(UUID tenantId) {
-    return new AdminTenantOidcConfigDto(tenantId.toString(), false, null, null, null, false);
+    return new AdminTenantOidcConfigDto(tenantId.toString(), false, null, null, null, false, false, null);
   }
 }

@@ -2,6 +2,7 @@ package com.yunyan.saasapi.application.admin;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -9,6 +10,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -39,6 +41,18 @@ class AuditWebhookHttpClientTest {
         .andRespond(withSuccess());
 
     assertTrue(client.postJson("https://siem.example/hook", "{\"events\":[]}"));
+  }
+
+  @Test
+  void postJson_withSignature_setsWebhookSignatureHeader() {
+    server
+        .expect(requestTo("https://siem.example/hook"))
+        .andExpect(method(HttpMethod.POST))
+        .andExpect(header(HttpHeaders.CONTENT_TYPE, "application/json"))
+        .andExpect(header("X-Webhook-Signature", "sha256=deadbeef"))
+        .andRespond(withSuccess());
+
+    assertTrue(client.postJson("https://siem.example/hook", "{\"events\":[]}", "deadbeef"));
   }
 
   @Test

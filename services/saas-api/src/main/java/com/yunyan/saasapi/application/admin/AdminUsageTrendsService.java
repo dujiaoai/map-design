@@ -2,6 +2,7 @@ package com.yunyan.saasapi.application.admin;
 
 import com.yunyan.saasapi.domain.AdminAuditLogRepository;
 import com.yunyan.saasapi.domain.UserRepository;
+import com.yunyan.saasapi.infrastructure.billing.AdminBillingReconcileClient;
 import com.yunyan.saasapi.infrastructure.billing.AdminBillingUsageClient;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageDayBucket;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageTrendsResponse;
@@ -22,6 +23,7 @@ public class AdminUsageTrendsService {
   private final UserRepository userRepository;
   private final AdminAuditLogRepository adminAuditLogRepository;
   private final AdminBillingUsageClient adminBillingUsageClient;
+  private final AdminBillingReconcileClient adminBillingReconcileClient;
 
   public AdminUsageTrendsResponse getTrends() {
     var today = LocalDate.now(ZoneOffset.UTC);
@@ -36,8 +38,13 @@ public class AdminUsageTrendsService {
               userRepository.countUsersCreatedBetween(from, to),
               adminAuditLogRepository.countCreatedBetween(from, to),
               userRepository.countActiveTenantsBetween(from, to),
-              adminBillingUsageClient.countConfirmedEvents(from, to)));
+              adminBillingUsageClient.countConfirmedEvents(from, to),
+              adminBillingReconcileClient.countReconcileDiffs(from, to)));
     }
     return new AdminUsageTrendsResponse(days);
+  }
+
+  public byte[] exportCsv() {
+    return AdminUsageTrendsCsvExporter.toCsvBytes(getTrends().days());
   }
 }

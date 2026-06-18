@@ -5,4 +5,5 @@ import java.util.List;
 
 public record ScimBulkRequest(
     @JsonProperty("schemas") List<String> schemas,
+    @JsonProperty("filter") String filter,
     @JsonProperty("Operations") List<ScimBulkOperation> operations) {}

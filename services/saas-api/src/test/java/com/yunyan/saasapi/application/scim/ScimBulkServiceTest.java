@@ -15,7 +15,12 @@ import org.junit.jupiter.api.Test;
 class ScimBulkServiceTest {
 
   private final ScimBulkService service =
-      new ScimBulkService(mock(ScimUserService.class), mock(ScimGroupService.class), new ObjectMapper());
+      new ScimBulkService(
+          mock(ScimUserService.class),
+          mock(ScimGroupService.class),
+          new ObjectMapper(),
+          new ScimBulkIncrementalFilter(),
+          new ScimBulkIdempotencyCache());
 
   @Test
   void processBulk_exceedsMaxOperations_throws() {
@@ -23,7 +28,7 @@ class ScimBulkServiceTest {
         IntStream.range(0, 21)
             .mapToObj(i -> new ScimBulkOperation("POST", "/Users", "b" + i, null))
             .toList();
-    assertThatThrownBy(() -> service.processBulk(UUID.randomUUID(), new ScimBulkRequest(List.of(), ops)))
+    assertThatThrownBy(() -> service.processBulk(UUID.randomUUID(), new ScimBulkRequest(List.of(), null, ops)))
         .isInstanceOf(AuthException.class);
   }
 }

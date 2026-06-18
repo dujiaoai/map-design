@@ -8,9 +8,11 @@ import com.yunyan.saasapi.web.dto.scim.ScimBulkRequest;
 import com.yunyan.saasapi.web.dto.scim.ScimBulkResponse;
 import com.yunyan.saasapi.web.dto.scim.ScimCreateGroupRequest;
 import com.yunyan.saasapi.web.dto.scim.ScimCreateUserRequest;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -21,9 +23,25 @@ public class ScimBulkService {
 
   public static final int MAX_OPERATIONS = 20;
 
+  private static final Pattern LAST_MODIFIED_FILTER =
+      Pattern.compile("meta\\.lastModified\\s+gt\\s+\"([^\"]+)\"", Pattern.CASE_INSENSITIVE);
+
   private final ScimUserService scimUserService;
   private final ScimGroupService scimGroupService;
   private final ObjectMapper objectMapper;
+  private final ScimBulkIncrementalFilter incrementalFilter;
+  private final ScimBulkIdempotencyCache idempotencyCache;
+
+  public static Instant parseLastModifiedFilter(String filter) {
+    if (!StringUtils.hasText(filter)) {
+      return null;
+    }
+    var matcher = LAST_MODIFIED_FILTER.matcher(filter.trim());
+    if (!matcher.find()) {
+      return null;
+    }
+    return Instant.parse(matcher.group(1));
+  }
 
   public ScimBulkResponse processBulk(UUID tenantId, ScimBulkRequest request) {
     if (request.operations() == null || request.operations().isEmpty()) {
@@ -32,9 +50,30 @@ public class ScimBulkService {
     if (request.operations().size() > MAX_OPERATIONS) {
       throw AuthException.badRequest("Bulk batch exceeds max " + MAX_OPERATIONS);
     }
+    var modifiedSince = parseLastModifiedFilter(request.filter());
     List<ScimBulkOperationResult> results = new ArrayList<>(request.operations().size());
     for (var op : request.operations()) {
-      results.add(processOperation(tenantId, op));
+      if (StringUtils.hasText(op.bulkId())) {
+        var cached = idempotencyCache.get(tenantId, op.bulkId());
+        if (cached != null) {
+          results.add(cached);
+          continue;
+        }
+      }
+      if (op.data() != null && !incrementalFilter.accept(op.data(), modifiedSince)) {
+        var skipped =
+            new ScimBulkOperationResult(op.method(), op.bulkId(), "204", null, null);
+        if (StringUtils.hasText(op.bulkId())) {
+          idempotencyCache.put(tenantId, op.bulkId(), skipped);
+        }
+        results.add(skipped);
+        continue;
+      }
+      var result = processOperation(tenantId, op);
+      if (StringUtils.hasText(op.bulkId())) {
+        idempotencyCache.put(tenantId, op.bulkId(), result);
+      }
+      results.add(result);
     }
     return new ScimBulkResponse(
         List.of("urn:ietf:params:scim:api:messages:2.0:BulkResponse"), results);

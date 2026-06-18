@@ -5,8 +5,11 @@ import com.yunyan.saasapi.application.admin.AdminSystemDependenciesService;
 import com.yunyan.saasapi.application.admin.AdminSystemFlagsService;
 import com.yunyan.saasapi.application.admin.AdminObjectStoragePolicyService;
 import com.yunyan.saasapi.application.admin.AdminUsageAnomalyService;
+import com.yunyan.saasapi.application.admin.AdminUsageCapacityRecommendationService;
+import com.yunyan.saasapi.application.admin.AdminUsageForecastService;
 import com.yunyan.saasapi.application.admin.AdminUsageTrendsService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
+import com.yunyan.saasapi.application.storage.ObjectStorageDrDrillService;
 import com.yunyan.saasapi.web.dto.admin.FeatureCatalogResponse;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
@@ -15,7 +18,9 @@ import com.yunyan.saasapi.web.dto.admin.AdminSystemDependenciesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemFlagsResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminObjectStoragePolicyResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageAnomaliesResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminUsageForecastBundleResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageTrendsResponse;
+import com.yunyan.saasapi.web.dto.admin.ObjectStorageDrDrillResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,7 +47,10 @@ public class AdminController {
   private final AdminStatsService adminStatsService;
   private final AdminUsageTrendsService adminUsageTrendsService;
   private final AdminUsageAnomalyService adminUsageAnomalyService;
+  private final AdminUsageForecastService adminUsageForecastService;
+  private final AdminUsageCapacityRecommendationService adminUsageCapacityRecommendationService;
   private final AdminObjectStoragePolicyService adminObjectStoragePolicyService;
+  private final ObjectStorageDrDrillService objectStorageDrDrillService;
   private final AdminSystemFlagsService adminSystemFlagsService;
   private final AdminSystemDependenciesService adminSystemDependenciesService;
   private final TenantFeatureAdminService tenantFeatureAdminService;
@@ -94,6 +103,15 @@ public class AdminController {
     return adminUsageAnomalyService.detectAnomalies();
   }
 
+  @GetMapping("/stats/usage-forecast")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(summary = "用量预测与容量建议", description = "Phase 14-4：7 日线性外推 + 容量规划建议")
+  public AdminUsageForecastBundleResponse usageForecast() {
+    return new AdminUsageForecastBundleResponse(
+        adminUsageForecastService.forecast(), adminUsageCapacityRecommendationService.recommend());
+  }
+
   @GetMapping("/stats/usage-trends/export")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
   @SecurityRequirement(name = "bearerAuth")
@@ -113,6 +131,15 @@ public class AdminController {
   @Operation(summary = "对象存储策略摘要", description = "Phase 12-5：跨区复制与合规保留")
   public AdminObjectStoragePolicyResponse objectStoragePolicy() {
     return adminObjectStoragePolicyService.getPolicySummary();
+  }
+
+  @PostMapping("/system/object-storage-dr-drill")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(summary = "对象存储 DR 演练", description = "Phase 14-5：上传样本对象并验证可读")
+  public ObjectStorageDrDrillResponse objectStorageDrDrill(
+      @AuthenticationPrincipal SaasPrincipal principal) {
+    return objectStorageDrDrillService.executeDrill(principal);
   }
 
   @GetMapping("/feature-catalog")

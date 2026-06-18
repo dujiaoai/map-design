@@ -16,6 +16,7 @@ import com.yunyan.saasapi.application.admin.TenantSamlSpCertificateService;
 import com.yunyan.saasapi.application.scim.ScimSchemaExtensionAdminService;
 import com.yunyan.saasapi.application.scim.ScimGroupMappingRuleService;
 import com.yunyan.saasapi.application.admin.ScimSyncEventAdminService;
+import com.yunyan.saasapi.application.admin.ScimChangePreviewService;
 import com.yunyan.saasapi.application.admin.ScimProvisioningAdminService;
 import com.yunyan.saasapi.application.admin.TenantStorageEstimateAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
@@ -33,6 +34,7 @@ import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlIdpRegistrationListRespon
 import com.yunyan.saasapi.web.dto.admin.AdminScimGroupMappingRuleListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminScimSchemaExtensionResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlConfigDto;
+import com.yunyan.saasapi.web.dto.admin.ScimChangePreviewResponse;
 import com.yunyan.saasapi.web.dto.admin.ScimSyncEventSummaryResponse;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportArtifactResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantStorageEstimateDto;
@@ -99,6 +101,7 @@ public class AdminTenantsController {
   private final ScimSchemaExtensionAdminService scimSchemaExtensionAdminService;
   private final ScimGroupMappingRuleService scimGroupMappingRuleService;
   private final ScimSyncEventAdminService scimSyncEventAdminService;
+  private final ScimChangePreviewService scimChangePreviewService;
   private final TenantStorageEstimateAdminService tenantStorageEstimateAdminService;
   private final TenantMenuOverrideAdminService tenantMenuOverrideAdminService;
 
@@ -228,6 +231,13 @@ public class AdminTenantsController {
   @Operation(summary = "SCIM 同步事件摘要", description = "Phase 15-2 pending 冲突计数")
   public ScimSyncEventSummaryResponse getScimSyncEventSummary(@PathVariable UUID tenantId) {
     return scimSyncEventAdminService.summary(tenantId);
+  }
+
+  @GetMapping("/{tenantId}/scim-change-preview")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "SCIM 变更预览", description = "Phase 16-2：合并入站事件与出站队列 diff")
+  public ScimChangePreviewResponse getScimChangePreview(@PathVariable UUID tenantId) {
+    return scimChangePreviewService.preview(tenantId);
   }
 
   @GetMapping("/{tenantId}/scim-schema-extension")

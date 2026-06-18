@@ -104,6 +104,11 @@ pnpm --filter @repo/saas-web dev
 | SAML SP（Phase 11） | `GET/POST /v1/auth/tenant-sso/saml/{slug}/authorize|acs`；Admin `PATCH .../saml-config` |
 | SCIM CRUD（Phase 11） | `GET/POST/PATCH/DELETE /scim/v2/Users`；Admin `POST .../scim-provisioning/generate-token` |
 | Usage 趋势（Phase 11） | `GET /v1/admin/stats/usage-trends`（含 `billingApiCallsPerDay`） |
+| SAML metadata（Phase 12） | Admin `POST .../saml-config/import-metadata`；`POST .../saml-config/rotate-sp-certificate` |
+| SCIM Groups（Phase 12） | `GET/POST/PATCH/DELETE /scim/v2/Groups`；Users `?filter=meta.lastModified gt "..."` |
+| Webhook SLA（Phase 12） | `GET /v1/admin/audit-logs/webhook-sla` |
+| Usage 导出（Phase 12） | `GET /v1/admin/stats/usage-trends/export`（含 `billingReconcileDiffsPerDay`） |
+| 对象存储策略（Phase 12） | `GET /v1/admin/system/object-storage-policy` |
 | 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
 
 列表页 loading 使用 Skeleton；Vitest + MockMvc 覆盖 P0～P3 核心路径。

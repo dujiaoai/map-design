@@ -39,7 +39,8 @@ public class TenantSamlAdminService {
         && !StringUtils.hasText(request.ssoUrl())
         && !StringUtils.hasText(request.acsUrl())
         && !StringUtils.hasText(request.spEntityId())
-        && !StringUtils.hasText(request.certificatePem())) {
+        && !StringUtils.hasText(request.certificatePem())
+        && !StringUtils.hasText(request.metadataUrl())) {
       throw AuthException.badRequest("At least one SAML field is required");
     }
     var config =
@@ -71,6 +72,10 @@ public class TenantSamlAdminService {
     if (StringUtils.hasText(request.certificatePem())) {
       config.setCertificatePem(request.certificatePem().trim());
     }
+    if (StringUtils.hasText(request.metadataUrl())) {
+      config.setMetadataUrl(request.metadataUrl().trim());
+    }
+    config.setUpdatedAt(Instant.now());
     if (samlConfigRepository.findByTenantId(tenantId).isEmpty()) {
       samlConfigRepository.insert(config);
     } else {
@@ -92,10 +97,15 @@ public class TenantSamlAdminService {
         config.getAcsUrl(),
         config.getSpEntityId(),
         StringUtils.hasText(config.getCertificatePem()),
+        config.getMetadataUrl(),
+        StringUtils.hasText(config.getSpCertificatePem()),
+        config.getSpCertificateExpiresAt() == null
+            ? null
+            : config.getSpCertificateExpiresAt().toEpochMilli(),
         configured);
   }
 
   static AdminTenantSamlConfigDto emptyDto(UUID tenantId) {
-    return new AdminTenantSamlConfigDto(tenantId.toString(), false, null, null, null, null, false, false);
+    return new AdminTenantSamlConfigDto(tenantId.toString(), false, null, null, null, null, false, null, false, null, false);
   }
 }

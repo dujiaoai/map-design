@@ -35,14 +35,15 @@ public class WorkspaceMenuService {
       throw AuthException.badRequest("Tenant context is required");
     }
     var enabledFeatures = loadEnabledFeatures(tenantId);
+    var userPermissions = new LinkedHashSet<>(principal.permissionCodes());
 
     if (workspaceMenuRepository.hasPersistedData()) {
-      return buildFromDatabase(enabledFeatures);
+      return buildFromDatabase(enabledFeatures, userPermissions);
     }
-    return buildFromCatalog(enabledFeatures);
+    return buildFromCatalog(enabledFeatures, userPermissions);
   }
 
-  private MenusResponse buildFromDatabase(Set<String> enabledFeatures) {
+  private MenusResponse buildFromDatabase(Set<String> enabledFeatures, Set<String> userPermissions) {
     var sections = new ArrayList<MenuSectionDto>();
     var flatItems = new LinkedHashSet<String>();
     var items = new ArrayList<MenuItemDto>();
@@ -51,6 +52,7 @@ public class WorkspaceMenuService {
       var visibleItems =
           workspaceMenuRepository.findEnabledItemsBySection(section.getId()).stream()
               .filter(item -> isVisible(item.getTenantFeature(), enabledFeatures))
+              .filter(item -> hasPermission(item.getPermissionCode(), userPermissions))
               .toList();
       if (visibleItems.isEmpty()) {
         continue;
@@ -75,6 +77,9 @@ public class WorkspaceMenuService {
       if (!isVisible(tool.getTenantFeature(), enabledFeatures)) {
         continue;
       }
+      if (!hasPermission(tool.getPermissionCode(), userPermissions)) {
+        continue;
+      }
       var dto = toDto(tool);
       if (flatItems.add(dto.id())) {
         items.add(dto);
@@ -84,14 +89,17 @@ public class WorkspaceMenuService {
     return new MenusResponse(List.copyOf(sections), List.copyOf(items));
   }
 
-  private MenusResponse buildFromCatalog(Set<String> enabledFeatures) {
+  private MenusResponse buildFromCatalog(Set<String> enabledFeatures, Set<String> userPermissions) {
     var sections = new ArrayList<MenuSectionDto>();
     var flatItems = new LinkedHashSet<String>();
     var items = new ArrayList<MenuItemDto>();
 
     for (SectionDef section : WorkspaceMenuCatalog.SIDEBAR_SECTIONS) {
       var visibleItems =
-          section.items().stream().filter(item -> isVisible(item, enabledFeatures)).toList();
+          section.items().stream()
+              .filter(item -> isVisible(item, enabledFeatures))
+              .filter(item -> hasPermission(null, userPermissions))
+              .toList();
       if (visibleItems.isEmpty()) {
         continue;
       }
@@ -113,6 +121,9 @@ public class WorkspaceMenuService {
 
     for (MenuItemDef tool : WorkspaceMenuCatalog.TOOL_ITEMS) {
       if (!isVisible(tool, enabledFeatures)) {
+        continue;
+      }
+      if (!hasPermission(null, userPermissions)) {
         continue;
       }
       var dto = toDto(tool);
@@ -139,6 +150,13 @@ public class WorkspaceMenuService {
     return enabledFeatures.contains(tenantFeature);
   }
 
+  static boolean hasPermission(String permissionCode, Set<String> userPermissions) {
+    if (!StringUtils.hasText(permissionCode)) {
+      return true;
+    }
+    return userPermissions.contains(permissionCode);
+  }
+
   private MenuItemDto toDto(MenuItemDef item) {
     return new MenuItemDto(
         item.id(),
@@ -148,7 +166,8 @@ public class WorkspaceMenuService {
         item.toolId(),
         item.moduleId(),
         item.url(),
-        item.href());
+        item.href(),
+        null);
   }
 
   private MenuItemDto toDto(WorkspaceMenuItem item) {
@@ -160,7 +179,8 @@ public class WorkspaceMenuService {
         item.getToolId(),
         item.getModuleId(),
         item.getUrl(),
-        item.getHref());
+        item.getHref(),
+        item.getPermissionCode());
   }
 
   private static void requirePrincipal(SaasPrincipal principal) {

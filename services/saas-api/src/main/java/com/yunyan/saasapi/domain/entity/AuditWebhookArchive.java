@@ -1,0 +1,20 @@
+package com.yunyan.saasapi.domain.entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import java.time.Instant;
+import java.util.UUID;
+import lombok.Data;
+
+@Data
+@TableName("audit_webhook_archive")
+public class AuditWebhookArchive {
+
+  @TableId(type = IdType.INPUT)
+  private UUID id;
+
+  private String payload;
+  private String region;
+  private Instant archivedAt;
+}

@@ -3,6 +3,7 @@ package com.yunyan.saasapi.application.admin;
 import com.yunyan.saasapi.application.email.EmailTokenHasher;
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.ScimProvisioningTokenRepository;
+import com.yunyan.saasapi.domain.ScimSyncCursorRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.entity.ScimProvisioningToken;
 import com.yunyan.saasapi.security.AuthException;
@@ -22,6 +23,7 @@ public class ScimProvisioningAdminService {
 
   private final TenantRepository tenantRepository;
   private final ScimProvisioningTokenRepository tokenRepository;
+  private final ScimSyncCursorRepository syncCursorRepository;
   private final SaasAppProperties saasAppProperties;
   private final EmailTokenHasher emailTokenHasher;
   private final AdminAuditLogService adminAuditLogService;
@@ -58,10 +60,16 @@ public class ScimProvisioningAdminService {
     if (base.endsWith("/")) {
       base = base.substring(0, base.length() - 1);
     }
+    var lastSyncAt =
+        syncCursorRepository
+            .findByTenantId(tenantId)
+            .map(cursor -> cursor.getLastSyncAt().toEpochMilli())
+            .orElse(null);
     return new AdminTenantScimProvisioningDto(
         tenantId.toString(),
         Boolean.TRUE.equals(enabled),
         tokenConfigured,
-        base + "/scim/v2/Users");
+        base + "/scim/v2/Users",
+        lastSyncAt);
   }
 }

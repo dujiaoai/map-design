@@ -130,7 +130,9 @@ P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）、Later（P
 | **计费对账 mock E2E** | 概览警示横幅、日对账 Tab、关闭运维告警 | ✅ `pnpm test:e2e -- billing.spec.ts` |
 | **审计日志 mock E2E** | 列表、日期范围、CSV 导出 | ✅ `pnpm test:e2e -- audit-logs.spec.ts` |
 | **租户生命周期 mock E2E** | 生命周期列、筛选、概览 MetricCard | ✅ `pnpm test:e2e -- tenants.spec.ts` |
-| **租户合规 Tab mock E2E** | GDPR/OIDC/存储/菜单覆盖/diff 面板 | ✅ `pnpm test:e2e -- tenant-compliance.spec.ts` |
+| **租户合规 Tab mock E2E** | GDPR/OIDC/SAML/SCIM/存储/菜单覆盖/diff 面板 | ✅ `pnpm test:e2e -- tenant-compliance.spec.ts` |
+| **审计死信 mock E2E** | 死信列表、重放按钮 | ✅ `pnpm test:e2e -- audit-logs.spec.ts` |
+| **概览用量趋势 mock E2E** | 近 7 日用量趋势面板 | ✅ `pnpm test:e2e -- dashboard.spec.ts` |
 | **/system mock E2E** | 审计保留天数、Webhook 摘要 | ✅ `pnpm test:e2e -- system.spec.ts` |
 | **CI mock E2E smoke** | GitHub Actions `admin-e2e.yml`；本地 `pnpm validate:admin-e2e` | ✅ |
 
@@ -172,3 +174,5 @@ P0–P4 与路线图外 E2E 已交付。下一阶段按 [docs/product/admin-plat
 | **5E** | 多产品扩展 | 菜单租户覆盖、菜单 RBAC（FND-08 Later） |
 
 **Phase 9（生产化）** ✅：租户 OIDC metadata 导入与回调 URL、审计 Webhook HMAC 签名、GDPR artifact S3 适配器、菜单覆盖 JSON 批量导入。详见 [admin-platform-evolution.md](../../docs/product/admin-platform-evolution.md)。
+
+**Phase 10（可观测与规模化）** ✅：审计 Webhook 死信 Admin 重放 UI、租户 SAML 调研骨架、真实 S3 SDK 上传、Admin Usage 近 7 日趋势、SCIM Directory Sync PoC。

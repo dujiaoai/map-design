@@ -71,7 +71,7 @@ pnpm --filter @repo/saas-web dev
 | 路由 | 说明 |
 | --- | --- |
 | `/login` | SaaS 登录（记住凭据供 TeamSwitcher 切租户） |
-| `/` | 运营概览（`GET /v1/admin/stats` + `GET /v1/admin/ping`） |
+| `/` | 运营概览（`GET /v1/admin/stats` + `GET /v1/admin/stats/usage-trends` + `GET /v1/admin/ping`） |
 | `/tenants` | 租户列表、创建、编辑；服务端 `q` / `page` / `size` |
 | `/tenants/:tenantId` | 租户详情（`?tab=` 信息 / 成员 / 自定义角色 / 能力；快捷跳转用户与计费） |
 | `/users` | 跨租户用户列表、邀请、编辑；可按 `?tenantId=` 筛选 |
@@ -91,15 +91,16 @@ pnpm --filter @repo/saas-web dev
 
 | 能力 | 端点 |
 | --- | --- |
-| 平台统计 | `GET /v1/admin/stats` |
+| 平台统计 | `GET /v1/admin/stats`；`GET /v1/admin/stats/usage-trends`（近 7 日用量桶） |
 | 租户 CRUD + 分页 | `GET/POST/PATCH /v1/admin/tenants`；`GET /v1/admin/tenants/{id}` |
 | 租户生命周期 | `trialEndsAt` / onboarding 阶段；试用到期停用 Job |
-| 租户合规骨架 | `GET/POST .../data-export-requests`；`GET .../oidc-config`；`PATCH .../oidc-config`；`POST .../oidc-config/import-metadata`；`GET .../storage-estimate`；`GET/PUT/DELETE .../menu-overrides`；`POST .../menu-overrides/batch`；`GET .../menu-overrides/diff`；`GET .../data-export-requests/{id}/artifact` |
+| 租户合规骨架 | `GET/POST .../data-export-requests`；`GET .../oidc-config`；`PATCH .../oidc-config`；`POST .../oidc-config/import-metadata`；`GET .../saml-config`；`GET .../scim-provisioning`；`GET .../storage-estimate`；`GET/PUT/DELETE .../menu-overrides`；`POST .../menu-overrides/batch`；`GET .../menu-overrides/diff`；`GET .../data-export-requests/{id}/artifact` |
 | 租户 SSO | `GET /v1/auth/tenants/{slug}/sso`；`GET .../sso/authorize`；`POST .../sso/callback`（公开，saas-web） |
 | 租户能力 | `GET /v1/admin/feature-catalog`；`GET/PUT /v1/admin/tenants/{id}/features` |
 | 用户 CRUD + 分页 | `GET/PATCH /v1/admin/users`（成员邀请见 invite-links） |
 | 成员与角色 | `GET/PATCH /v1/admin/tenants/{id}/members`；`PUT .../roles`；邀请见 invite-links |
-| 审计日志 | `GET /v1/admin/audit-logs`、`GET /v1/admin/audit-logs/export`；`GET .../webhook-config`（含 `signatureEnabled`）；Webhook 投递 `X-Webhook-Signature: sha256=…`；`admin:audit:read` / `admin:audit:export` |
+| 审计日志 | `GET /v1/admin/audit-logs`、`GET /v1/admin/audit-logs/export`；`GET .../webhook-config`（含 `signatureEnabled`）；`GET .../webhook-dead-letters`；`POST .../webhook-dead-letters/{id}/replay`；`DELETE .../webhook-dead-letters/{id}`；Webhook 投递 `X-Webhook-Signature: sha256=…`；`admin:audit:read` / `admin:audit:export` |
+| SCIM PoC | `GET /scim/v2/Users`（Bearer provisioning token） |
 | 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
 
 列表页 loading 使用 Skeleton；Vitest + MockMvc 覆盖 P0～P3 核心路径。

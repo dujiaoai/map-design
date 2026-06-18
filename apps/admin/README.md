@@ -184,3 +184,5 @@ P0–P4 与路线图外 E2E 已交付。下一阶段按 [docs/product/admin-plat
 **Phase 13（智能运维）** ✅：SAML SP metadata 对外暴露与 IdP 自助注册、SCIM Bulk + schema extension、审计 Webhook 多目标路由、Usage 异常检测与自动告警、对象存储 SSE/KMS 集成。
 
 **Phase 14（自治运维）** ✅：SAML IdP metadata 自动同步与证书到期徽章、SCIM 增量 Bulk + Group 映射规则只读面板、Webhook 目标健康探活与自动降级、Dashboard 用量预测与容量建议、对象存储 WORM + DR 演练（ADR-0016）。
+
+**Phase 15（自治运维深化）** ✅：SAML 多 IdP 联邦与 SP 证书自动轮换、SCIM 事件驱动同步与冲突徽章、Webhook 智能重试与 SLA 自愈、FinOps 成本归因面板、对象存储 active-active 与 RPO 监控（ADR-0017）。

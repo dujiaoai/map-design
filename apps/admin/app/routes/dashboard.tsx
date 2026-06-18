@@ -1,9 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@repo/auth'
 import { Badge, Button, toast } from '@repo/ui'
-import { ActivityIcon, Building2Icon, RefreshCwIcon, ShieldCheckIcon, TrendingUpIcon, UserPlusIcon, UsersIcon, PauseCircleIcon, TimerIcon } from 'lucide-react'
+import { ActivityIcon, Building2Icon, DownloadIcon, RefreshCwIcon, ShieldCheckIcon, TrendingUpIcon, UserPlusIcon, UsersIcon, PauseCircleIcon, TimerIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link, redirect } from 'react-router'
+
+import { downloadAdminUsageTrendsCsv } from '~/features/dashboard/lib/usage-trends-export'
 
 import { AdminQuickNav } from '~/widgets/admin-overview/ui/admin-quick-nav'
 import { fetchAdminPing, fetchAdminStats, fetchAdminUsageTrends } from '~/shared/api/admin-api'
@@ -41,6 +43,7 @@ export default function DashboardRoute() {
   const { can } = useAdminPermissions()
   const queryClient = useQueryClient()
   const [refreshing, setRefreshing] = useState(false)
+  const [exportingTrends, setExportingTrends] = useState(false)
 
   const statsQuery = useQuery({
     queryKey: adminQueryKeys.stats,
@@ -172,7 +175,31 @@ export default function DashboardRoute() {
       </div>
 
       <AdminPanel>
-        <AdminPanelHeader icon={TrendingUpIcon} title="近 7 日用量趋势" />
+        <AdminPanelHeader
+          actions={
+            <Button
+              disabled={exportingTrends}
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                setExportingTrends(true)
+                try {
+                  await downloadAdminUsageTrendsCsv()
+                  toast.success('用量趋势 CSV 已下载')
+                } catch {
+                  toast.error('导出失败')
+                } finally {
+                  setExportingTrends(false)
+                }
+              }}
+            >
+              <DownloadIcon className="mr-2 size-4" />
+              导出 CSV
+            </Button>
+          }
+          icon={TrendingUpIcon}
+          title="近 7 日用量趋势"
+        />
         {usageTrendsQuery.isLoading ? (
           <p className="px-4 py-4 text-sm text-muted-foreground md:px-5">加载中…</p>
         ) : usageTrendsQuery.isError ? (

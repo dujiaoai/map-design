@@ -10,4 +10,7 @@ public record AdminAuditWebhookConfigResponse(
     @Schema(description = "待投递事件估算（游标之后）") long pendingEstimate,
     @Schema(description = "死信表记录数") long deadLetterCount,
     @Schema(description = "上次成功投递时间 epoch millis，可空") Long lastDeliveredAt,
-    @Schema(description = "是否配置 HMAC 签名") boolean signatureEnabled) {}
+    @Schema(description = "是否配置 HMAC 签名") boolean signatureEnabled,
+    @Schema(description = "死信自动重试最大次数") int deadLetterMaxAttempts,
+    @Schema(description = "死信重试基础间隔毫秒") long deadLetterRetryIntervalMs,
+    @Schema(description = "是否配置告警 Webhook") boolean alertWebhookConfigured) {}

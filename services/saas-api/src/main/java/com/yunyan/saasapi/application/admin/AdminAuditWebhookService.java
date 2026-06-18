@@ -37,6 +37,9 @@ public class AdminAuditWebhookService {
         pendingEstimate,
         deadLetterRepository.countAll(),
         lastDeliveredAt,
-        StringUtils.hasText(audit.getWebhookSigningSecret()));
+        StringUtils.hasText(audit.getWebhookSigningSecret()),
+        audit.getDeadLetterMaxAttempts(),
+        audit.getDeadLetterRetryIntervalMs(),
+        StringUtils.hasText(audit.getAlertWebhookUrl()));
   }
 }

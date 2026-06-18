@@ -11,6 +11,7 @@ export const menuItemSchema = z.object({
   moduleId: z.string().nullable().optional(),
   url: z.string().nullable().optional(),
   href: z.string().nullable().optional(),
+  permissionCode: z.string().nullable().optional(),
 })
 
 export const menuSectionSchema = z.object({

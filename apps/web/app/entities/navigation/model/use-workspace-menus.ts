@@ -3,8 +3,13 @@ import { useMemo } from 'react'
 import { useEnabledTenantFeatures } from '~/features/team-switcher'
 import { useWorkspaceMenusQuery } from '~/shared/queries/menu-queries'
 import { usesSaasSessionBootstrap } from '~/shared/session/fetch-saas-session'
+import { useSessionAccess } from '~/shared/session/use-session-access'
 
 import { filterNavMainItemsForTenant } from '../lib/filter-nav-by-tenant'
+import {
+  filterMenuItemsByPermission,
+  filterMenuSectionsByPermission,
+} from '../lib/filter-nav-by-permission'
 import { resolveNavMainItemsFromApi, resolveNavSectionDefsFromApi } from '../lib/resolve-api-menus'
 import {
   mockNavMainItems,

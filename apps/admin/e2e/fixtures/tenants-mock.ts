@@ -214,6 +214,19 @@ export async function mockTenantsPageApis(page: Page) {
     })
   })
 
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/scim-provisioning\/generate-token/, async (route) => {
+    const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        tenantId,
+        token: 'mock-scim-token-once',
+        usersEndpointUrl: 'http://localhost:5175/scim/v2/Users',
+      }),
+    })
+  })
+
   await page.route(/\/v1\/admin\/tenants\/[^/]+\/scim-provisioning/, async (route) => {
     const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
     await route.fulfill({

@@ -122,9 +122,11 @@ export interface TenantMenuDiffEntry {
   itemId: string
   templateTitle: string
   templateEnabled: boolean
+  templateSortOrder: number | null
   hasOverride: boolean
   overrideEnabled: boolean | null
   overrideTitle: string | null
+  overrideSortOrder: number | null
 }
 
 export interface TenantMenuDiffResponse {

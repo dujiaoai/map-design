@@ -114,6 +114,7 @@ export interface TenantMenuOverrideListResponse {
 export interface TenantDataExportArtifact {
   requestId: string
   artifactUrl: string | null
+  artifactObjectKey: string | null
   downloadable: boolean
 }
 

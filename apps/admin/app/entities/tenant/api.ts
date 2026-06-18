@@ -5,6 +5,8 @@ import type {
   AdminTenantFeaturesResponse,
   AdminTenantListResponse,
   AdminTenantOidcConfig,
+  AdminTenantSamlConfig,
+  AdminTenantScimProvisioning,
   AdminTenantStorageEstimate,
   AdminTenantSummary,
   CreateTenantPayload,
@@ -72,6 +74,14 @@ export function createTenantDataExportRequest(tenantId: string) {
 
 export function fetchTenantOidcConfig(tenantId: string) {
   return api.get<AdminTenantOidcConfig>(`/admin/tenants/${tenantId}/oidc-config`)
+}
+
+export function fetchTenantSamlConfig(tenantId: string) {
+  return api.get<AdminTenantSamlConfig>(`/admin/tenants/${tenantId}/saml-config`)
+}
+
+export function fetchTenantScimProvisioning(tenantId: string) {
+  return api.get<AdminTenantScimProvisioning>(`/admin/tenants/${tenantId}/scim-provisioning`)
 }
 
 export function patchTenantOidcConfig(tenantId: string, payload: PatchTenantOidcConfigPayload) {

@@ -84,6 +84,22 @@ export interface AdminTenantOidcConfig {
   metadataImportedAt: number | null
 }
 
+export interface AdminTenantSamlConfig {
+  tenantId: string
+  enabled: boolean
+  entityId: string | null
+  ssoUrl: string | null
+  certificateConfigured: boolean
+  configured: boolean
+}
+
+export interface AdminTenantScimProvisioning {
+  tenantId: string
+  enabled: boolean
+  tokenConfigured: boolean
+  usersEndpointUrl: string
+}
+
 export interface TenantOidcMetadataImportResponse {
   tenantId: string
   issuer: string

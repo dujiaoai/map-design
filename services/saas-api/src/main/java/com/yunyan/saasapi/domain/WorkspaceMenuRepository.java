@@ -67,4 +67,8 @@ public class WorkspaceMenuRepository {
   public void updateItem(WorkspaceMenuItem item) {
     itemMapper.updateById(item);
   }
+
+  public boolean itemExists(String itemId) {
+    return itemMapper.selectById(itemId) != null;
+  }
 }

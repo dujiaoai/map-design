@@ -8,4 +8,5 @@ public record PatchTenantSamlConfigRequest(
     @Schema(description = "IdP SSO URL") String ssoUrl,
     @Schema(description = "SP ACS URL") String acsUrl,
     @Schema(description = "SP Entity ID") String spEntityId,
-    @Schema(description = "IdP X.509 证书 PEM") String certificatePem) {}
+    @Schema(description = "IdP X.509 证书 PEM") String certificatePem,
+    @Schema(description = "IdP metadata XML URL") String metadataUrl) {}

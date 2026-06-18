@@ -10,4 +10,7 @@ public record AdminTenantSamlConfigDto(
     @Schema(description = "SP ACS URL") String acsUrl,
     @Schema(description = "SP Entity ID") String spEntityId,
     @Schema(description = "是否已配置 IdP 证书") boolean certificateConfigured,
+    @Schema(description = "IdP metadata URL") String metadataUrl,
+    @Schema(description = "是否已配置 SP 签名证书") boolean spCertificateConfigured,
+    @Schema(description = "SP 证书到期 epoch millis") Long spCertificateExpiresAt,
     @Schema(description = "是否已填写 IdP entity_id + sso_url") boolean configured) {}

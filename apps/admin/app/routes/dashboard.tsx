@@ -14,6 +14,7 @@ import { canAccessAdminOverview } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { AdminUsageTrendChart } from '~/features/dashboard/ui/admin-usage-trend-chart'
+import { AdminUsageAnomalyBanner } from '~/features/dashboard/ui/admin-usage-anomaly-banner'
 import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
 import {
   AdminConfigRow,
@@ -76,6 +77,7 @@ export default function DashboardRoute() {
 
   return (
     <div className="admin-stagger space-y-8">
+      <AdminUsageAnomalyBanner />
       <AdminPageHeader
         eyebrow="Overview"
         title="运营概览"

@@ -148,6 +148,7 @@ export async function mockAuditPageApis(page: Page) {
         configured: false,
         format: 'jsonl',
         deliveryMode: 'csv_only',
+        signatureEnabled: false,
       }),
     })
   })

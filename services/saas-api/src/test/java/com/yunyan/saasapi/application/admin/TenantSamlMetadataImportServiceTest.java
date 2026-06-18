@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.yunyan.saasapi.application.auth.saml.SamlIdpMetadataClient;
-import com.yunyan.saasapi.application.auth.saml.SamlIdpMetadataClient.SamlIdpMetadataDocument;
+import com.yunyan.saasapi.application.auth.saml.SamlIdpMetadataDocument;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.TenantSamlConfigRepository;
 import com.yunyan.saasapi.domain.entity.SysTenant;
@@ -42,7 +42,7 @@ class TenantSamlMetadataImportServiceTest {
     when(tenantRepository.findById(TENANT_ID)).thenReturn(Optional.of(new SysTenant()));
     when(samlConfigRepository.findByTenantId(TENANT_ID)).thenReturn(Optional.of(config));
     when(metadataClient.fetchAndParse(config.getMetadataUrl()))
-        .thenReturn(new SamlIdpMetadataDocument("idp-entity", "https://idp.example/sso", "pem"));
+        .thenReturn(new SamlIdpMetadataDocument("idp-entity", "https://idp.example/sso", "pem", null));
 
     var response = service.importMetadata(principal(), TENANT_ID);
 

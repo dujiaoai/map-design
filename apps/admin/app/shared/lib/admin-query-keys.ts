@@ -46,6 +46,9 @@ export const adminQueryKeys = {
   auditWebhookTargets: ['admin', 'audit-webhook-targets'] as const,
   usageTrends: ['admin', 'usage-trends'] as const,
   usageAnomalies: ['admin', 'usage-anomalies'] as const,
+  usageForecast: ['admin', 'usage-forecast'] as const,
+  tenantScimGroupMappingRules: (tenantId: string) =>
+    ['admin', 'tenants', tenantId, 'scim-group-mapping-rules'] as const,
   tenantScimSchemaExtension: (tenantId: string) =>
     ['admin', 'tenants', tenantId, 'scim-schema-extension'] as const,
   systemFlags: ['admin', 'system-flags'] as const,

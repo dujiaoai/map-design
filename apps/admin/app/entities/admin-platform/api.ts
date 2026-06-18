@@ -7,6 +7,7 @@ import type {
   AdminSystemDependenciesResponse,
   AdminSystemFlagsResponse,
   AdminUsageAnomaliesResponse,
+  AdminUsageForecastBundleResponse,
   AdminUsageTrendsResponse,
 } from './model'
 
@@ -24,6 +25,10 @@ export function fetchAdminUsageTrends() {
 
 export function fetchAdminUsageAnomalies() {
   return api.get<AdminUsageAnomaliesResponse>('/admin/stats/usage-anomalies')
+}
+
+export function fetchAdminUsageForecast() {
+  return api.get<AdminUsageForecastBundleResponse>('/admin/stats/usage-forecast')
 }
 
 export function fetchAuditWebhookTargets() {

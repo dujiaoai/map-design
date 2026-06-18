@@ -115,6 +115,7 @@ export {
   fetchTenantOidcConfig,
   fetchTenantSamlConfig,
   fetchTenantScimProvisioning,
+  fetchTenantScimGroupMappingRules,
   generateTenantScimToken,
   importTenantOidcMetadata,
   importTenantSamlMetadata,
@@ -143,11 +144,13 @@ export type {
   AdminSystemDependenciesResponse,
   AdminSystemFlagsResponse,
   AdminUsageDayBucket,
+  AdminUsageForecastBundleResponse,
   AdminUsageTrendsResponse,
 } from '~/entities/admin-platform'
 export {
   fetchAdminPing,
   fetchAdminStats,
+  fetchAdminUsageForecast,
   fetchAdminUsageTrends,
   fetchAdminSystemDependencies,
   fetchAdminSystemFlags,

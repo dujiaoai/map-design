@@ -140,4 +140,13 @@ public class SaasAppProperties {
     /** 审计日志保留天数；0 表示未配置策略 */
     private int retentionDays = 365;
   }
+
+  @Data
+  public static class ObjectStorage {
+    /** local | s3-compatible（Phase 8 默认 local 目录） */
+    private String provider = "local";
+    private String localPath = "./data/exports";
+    private String bucket = "tenant-exports";
+    private String publicBaseUrl = "";
+  }
 }

@@ -1,6 +1,5 @@
 package com.yunyan.saasapi.web.dto.admin;
 
-public record AdminUsageAnomalyDto(
-    String metric, double currentValue, double sevenDayAverage, double ratio, String day) {}
+import java.util.List;
 
-public record AdminUsageAnomaliesResponse(java.util.List<AdminUsageAnomalyDto> anomalies) {}
+public record AdminUsageAnomaliesResponse(List<AdminUsageAnomalyDto> anomalies) {}

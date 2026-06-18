@@ -229,7 +229,7 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
         </TabsContent>
 
         <TabsContent value="compliance" className="mt-4">
-          <TenantCompliancePanel tenantId={tenantId} />
+          <TenantCompliancePanel tenantId={tenantId} tenantSlug={tenant.slug} />
         </TabsContent>
       </Tabs>
 

@@ -1,4 +1,5 @@
-import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
+import { env } from '~/shared/config/env'
+import { resolveSaasApiBaseUrl } from '~/shared/config/saas-api-base-url'
 import { Button, Checkbox, Input, Label, Textarea, toast } from '@repo/ui'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { DownloadIcon, RefreshCwIcon } from 'lucide-react'
@@ -33,10 +34,12 @@ type FormValues = z.infer<typeof schema>
 
 export function TenantSamlConfigForm({
   tenantId,
+  tenantSlug,
   config,
   readOnly,
 }: {
   tenantId: string
+  tenantSlug: string
   config: AdminTenantSamlConfig
   readOnly: boolean
 }) {
@@ -117,13 +120,26 @@ export function TenantSamlConfigForm({
     onError: (error) => toast.error(formatAdminApiError(error)),
   })
 
+  const spMetadataUrl = `${resolveSaasApiBaseUrl(env.VITE_API_URL)}/auth/tenant-sso/saml/${tenantSlug}/metadata`
+
   return (
     <AdminPanel>
       <AdminPanelHeader
         icon={ShieldIcon}
         title="租户 SAML / SSO"
-        description="SAML 2.0 SP 连接（Phase 12-1 metadata 导入与 SP 证书轮换）"
+        description="SAML 2.0 SP 连接（Phase 13-1 SP metadata 对外暴露）"
       />
+      <div className="px-4 pb-2">
+        <a
+          className="inline-flex items-center text-sm text-primary hover:underline"
+          href={spMetadataUrl}
+          rel="noreferrer"
+          target="_blank"
+        >
+          <DownloadIcon className="mr-2 size-4" />
+          下载 SP Metadata XML
+        </a>
+      </div>
       <form
         className="space-y-4"
         onSubmit={handleSubmit((values) => mutation.mutate(values))}

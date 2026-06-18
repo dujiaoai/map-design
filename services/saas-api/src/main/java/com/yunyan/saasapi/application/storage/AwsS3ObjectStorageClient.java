@@ -17,6 +17,7 @@ import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
 import software.amazon.awssdk.services.s3.model.CompletedPart;
 import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
+import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 
@@ -25,6 +26,7 @@ import software.amazon.awssdk.services.s3.model.UploadPartRequest;
 public class AwsS3ObjectStorageClient implements ObjectStorageClient {
 
   private final SaasAppProperties saasAppProperties;
+  private final ObjectStorageLifecycleService lifecycleService;
   private volatile S3Client s3Client;
 
   @Override
@@ -41,6 +43,8 @@ public class AwsS3ObjectStorageClient implements ObjectStorageClient {
                 .contentType(contentType)
                 .build(),
             RequestBody.fromBytes(content));
+    replicateIfConfigured(objectKey);
+    lifecycleService.recordRetentionPolicy(objectKey);
     return resolvePublicUrl(objectKey);
   }
 
@@ -93,10 +97,27 @@ public class AwsS3ObjectStorageClient implements ObjectStorageClient {
                   .uploadId(uploadId)
                   .multipartUpload(CompletedMultipartUpload.builder().parts(parts).build())
                   .build());
+      replicateIfConfigured(objectKey);
+      lifecycleService.recordRetentionPolicy(objectKey);
       return resolvePublicUrl(objectKey);
     } catch (java.io.IOException ex) {
       throw new IllegalStateException("Multipart upload failed: " + objectKey, ex);
     }
+  }
+
+  private void replicateIfConfigured(String objectKey) {
+    var storage = saasAppProperties.getObjectStorage();
+    if (!StringUtils.hasText(storage.getReplicationTargetBucket())) {
+      return;
+    }
+    client()
+        .copyObject(
+            CopyObjectRequest.builder()
+                .sourceBucket(storage.getBucket())
+                .sourceKey(objectKey)
+                .destinationBucket(storage.getReplicationTargetBucket())
+                .destinationKey(objectKey)
+                .build());
   }
 
   private String resolvePublicUrl(String objectKey) {

@@ -3,6 +3,7 @@ package com.yunyan.saasapi.application.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -17,7 +18,6 @@ import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.SamlAcsRequest;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,15 +38,11 @@ class TenantSamlAuthServiceTest {
 
   @InjectMocks TenantSamlAuthService service;
 
-  @BeforeEach
-  void setUp() {
+  @Test
+  void beginAuth_buildsRedirectUrl() {
     var app = new SaasAppProperties.App();
     app.setWebBaseUrl("http://localhost:5175");
     when(saasAppProperties.getApp()).thenReturn(app);
-  }
-
-  @Test
-  void beginAuth_buildsRedirectUrl() {
     stubTenantAndConfig();
     when(authnRequestBuilder.buildRedirectUrl(anyString(), anyString(), anyString(), anyString()))
         .thenReturn("https://idp.example/sso?SAMLRequest=abc");
@@ -60,10 +56,10 @@ class TenantSamlAuthServiceTest {
   @Test
   void completeAcs_logsInViaAuthService() {
     stubTenantAndConfig();
-    when(assertionValidator.validate(anyString(), anyString()))
+    when(assertionValidator.validate(eq("base64-response"), isNull()))
         .thenReturn(new SamlAssertionValidator.ParsedAssertion("user@test.local"));
     when(authService.loginAfterOidc(anyString(), anyString(), anyString(), eq("test")))
-        .thenReturn(new LoginResponse("access", "refresh", null, null, false, null));
+        .thenReturn(new LoginResponse("access", "refresh", 900L, null, null, false, null));
 
     var result =
         service.completeAcs("test", new SamlAcsRequest("base64-response", "relay"));

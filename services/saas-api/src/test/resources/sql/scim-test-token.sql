@@ -1,6 +1,7 @@
 -- SCIM PoC test token for tenant OTHER (99999999-9999-9999-9999-999999999901).
 -- Raw token: scim-test-token
 -- Hash uses test-invite-pepper from application-test.yml
+DELETE FROM scim_provisioning_token WHERE tenant_id = '99999999-9999-9999-9999-999999999901';
 INSERT INTO scim_provisioning_token (tenant_id, token_hash, enabled, created_at)
 VALUES (
     '99999999-9999-9999-9999-999999999901',

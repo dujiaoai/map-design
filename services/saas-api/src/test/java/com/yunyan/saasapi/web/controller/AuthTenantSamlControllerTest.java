@@ -13,7 +13,7 @@ import com.yunyan.saasapi.application.auth.TenantSamlAuthService;
 import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.OidcAuthorizeResponse;
 import com.yunyan.saasapi.web.dto.auth.SamlAcsRequest;
-import com.yunyan.saasapi.web.error.GlobalExceptionHandler;
+import com.yunyan.saasapi.web.advice.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +56,7 @@ class AuthTenantSamlControllerTest {
   @Test
   void acs_returnsLoginResponse() throws Exception {
     when(tenantSamlAuthService.completeAcs(eq("test"), any(SamlAcsRequest.class)))
-        .thenReturn(new LoginResponse("access", "refresh", null, null, false, null));
+        .thenReturn(new LoginResponse("access", "refresh", 900L, null, null, false, null));
 
     mockMvc
         .perform(

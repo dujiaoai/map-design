@@ -101,6 +101,9 @@ pnpm --filter @repo/saas-web dev
 | 成员与角色 | `GET/PATCH /v1/admin/tenants/{id}/members`；`PUT .../roles`；邀请见 invite-links |
 | 审计日志 | `GET /v1/admin/audit-logs`、`GET /v1/admin/audit-logs/export`；`GET .../webhook-config`（含 `signatureEnabled`）；`GET .../webhook-dead-letters`；`POST .../webhook-dead-letters/{id}/replay`；`DELETE .../webhook-dead-letters/{id}`；Webhook 投递 `X-Webhook-Signature: sha256=…`；`admin:audit:read` / `admin:audit:export` |
 | SCIM PoC | `GET /scim/v2/Users`（Bearer provisioning token） |
+| SAML SP（Phase 11） | `GET/POST /v1/auth/tenant-sso/saml/{slug}/authorize|acs`；Admin `PATCH .../saml-config` |
+| SCIM CRUD（Phase 11） | `GET/POST/PATCH/DELETE /scim/v2/Users`；Admin `POST .../scim-provisioning/generate-token` |
+| Usage 趋势（Phase 11） | `GET /v1/admin/stats/usage-trends`（含 `billingApiCallsPerDay`） |
 | 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
 
 列表页 loading 使用 Skeleton；Vitest + MockMvc 覆盖 P0～P3 核心路径。

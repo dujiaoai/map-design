@@ -28,7 +28,7 @@ class InternalBillingUsageControllerTest {
             get("/internal/v1/billing/usage/event-count")
                 .param("from", from.toString())
                 .param("to", to.toString())
-                .header("X-Billing-Internal-Token", "dev-billing-internal-token-change-me")
+                .header("X-Billing-Internal-Token", "test-billing-internal-token")
                 .header("X-Billing-Caller-Service", "saas-api"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.eventCount").isNumber());

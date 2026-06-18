@@ -95,6 +95,9 @@ export interface AdminTenantSamlConfig {
   metadataUrl: string | null
   spCertificateConfigured: boolean
   spCertificateExpiresAt: number | null
+  idpCertExpiresAt: number | null
+  metadataSyncEnabled: boolean
+  lastMetadataSyncAt: number | null
   configured: boolean
 }
 
@@ -106,6 +109,7 @@ export interface PatchTenantSamlConfigPayload {
   spEntityId?: string
   certificatePem?: string
   metadataUrl?: string
+  metadataSyncEnabled?: boolean
 }
 
 export interface TenantSamlMetadataImportResponse {
@@ -119,6 +123,20 @@ export interface TenantSamlMetadataImportResponse {
 export interface TenantSamlSpCertificateRotateResponse {
   tenantId: string
   spCertificateExpiresAt: number
+}
+
+export interface AdminScimGroupMappingRule {
+  id: string
+  externalGroupPattern: string
+  tenantRoleId: string
+  roleName: string
+  priority: number
+  createdAt: number
+}
+
+export interface AdminScimGroupMappingRuleListResponse {
+  tenantId: string
+  rules: AdminScimGroupMappingRule[]
 }
 
 export interface AdminTenantSamlIdpRegistration {

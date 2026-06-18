@@ -1,5 +1,6 @@
 import { env } from '~/shared/config/env'
 import { resolveSaasApiBaseUrl } from '~/shared/config/saas-api-base-url'
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { Button, Checkbox, Input, Label, Textarea, toast } from '@repo/ui'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { DownloadIcon, RefreshCwIcon } from 'lucide-react'
@@ -17,11 +18,19 @@ import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
-import { formatAdminDate } from '~/shared/ui/admin-status-badge'
+import { AdminStatusPill, formatAdminDate } from '~/shared/ui/admin-status-badge'
 import { ShieldIcon } from 'lucide-react'
+
+function certExpiryHint(expiresAt: number | null | undefined): { label: string; warn: boolean } {
+  if (!expiresAt) return { label: '未配置', warn: false }
+  const days = (expiresAt - Date.now()) / 86_400_000
+  const label = formatAdminDate(expiresAt)
+  return { label, warn: days <= 30 }
+}
 
 const schema = z.object({
   enabled: z.boolean(),
+  metadataSyncEnabled: z.boolean(),
   entityId: z.string().max(512),
   ssoUrl: z.string().max(1024),
   acsUrl: z.string().max(1024),
@@ -55,6 +64,7 @@ export function TenantSamlConfigForm({
     resolver: standardSchemaResolver(schema),
     defaultValues: {
       enabled: false,
+      metadataSyncEnabled: false,
       entityId: '',
       ssoUrl: '',
       acsUrl: '',
@@ -65,10 +75,14 @@ export function TenantSamlConfigForm({
   })
 
   const enabled = watch('enabled')
+  const metadataSyncEnabled = watch('metadataSyncEnabled')
+  const idpCert = certExpiryHint(config.idpCertExpiresAt)
+  const spCert = certExpiryHint(config.spCertificateExpiresAt)
 
   useEffect(() => {
     reset({
       enabled: config.enabled,
+      metadataSyncEnabled: config.metadataSyncEnabled ?? false,
       entityId: config.entityId ?? '',
       ssoUrl: config.ssoUrl ?? '',
       acsUrl: config.acsUrl ?? '',
@@ -80,7 +94,10 @@ export function TenantSamlConfigForm({
 
   const mutation = useMutation({
     mutationFn: (values: FormValues) => {
-      const payload: Parameters<typeof patchTenantSamlConfig>[1] = { enabled: values.enabled }
+      const payload: Parameters<typeof patchTenantSamlConfig>[1] = {
+        enabled: values.enabled,
+        metadataSyncEnabled: values.metadataSyncEnabled,
+      }
       const entityId = values.entityId.trim()
       const ssoUrl = values.ssoUrl.trim()
       const acsUrl = values.acsUrl.trim()
@@ -152,6 +169,32 @@ export function TenantSamlConfigForm({
             onCheckedChange={(checked) => setValue('enabled', checked === true, { shouldDirty: true })}
           />
           <Label htmlFor="saml-enabled">启用 SAML SSO</Label>
+        </div>
+        <div className="flex flex-wrap gap-2 px-1">
+          <AdminStatusPill
+            level={idpCert.warn ? 'warn' : config.certificateConfigured ? 'ok' : 'off'}
+            label={`IdP 证书 ${idpCert.label}`}
+          />
+          <AdminStatusPill
+            level={spCert.warn ? 'warn' : config.spCertificateConfigured ? 'ok' : 'off'}
+            label={`SP 证书 ${spCert.label}`}
+          />
+        </div>
+        {config.lastMetadataSyncAt ? (
+          <p className="text-xs text-muted-foreground">
+            上次 metadata 同步：{formatAdminDate(config.lastMetadataSyncAt)}
+          </p>
+        ) : null}
+        <div className="flex items-center gap-2">
+          <Checkbox
+            checked={metadataSyncEnabled}
+            disabled={readOnly}
+            id="saml-metadata-sync"
+            onCheckedChange={(checked) =>
+              setValue('metadataSyncEnabled', checked === true, { shouldDirty: true })
+            }
+          />
+          <Label htmlFor="saml-metadata-sync">启用 IdP metadata 自动同步</Label>
         </div>
         <AdminField error={errors.metadataUrl?.message} label="IdP Metadata URL">
           <Input disabled={readOnly} placeholder="https://idp.example/metadata.xml" {...register('metadataUrl')} />

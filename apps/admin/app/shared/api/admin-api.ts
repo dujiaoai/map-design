@@ -1,7 +1,20 @@
 export type { AdminListQuery } from '~/shared/lib/admin-list-query'
 export { buildAdminListQuery } from '~/shared/lib/admin-list-query'
-export type { AdminAuditLogEntry, AdminAuditLogListResponse, AdminAuditWebhookConfig } from '~/entities/audit-log'
-export { fetchAdminAuditLogs, fetchAdminAuditWebhookConfig } from '~/entities/audit-log'
+export type {
+  AdminAuditLogEntry,
+  AdminAuditLogListResponse,
+  AdminAuditWebhookConfig,
+  AdminAuditWebhookDeadLetter,
+  AdminAuditWebhookDeadLetterListResponse,
+  AdminAuditWebhookDeadLetterReplayResponse,
+} from '~/entities/audit-log'
+export {
+  deleteAdminAuditWebhookDeadLetter,
+  fetchAdminAuditLogs,
+  fetchAdminAuditWebhookConfig,
+  fetchAdminAuditWebhookDeadLetters,
+  replayAdminAuditWebhookDeadLetter,
+} from '~/entities/audit-log'
 export type { TenantMemberListResponse, InviteMemberByEmailPayload } from '~/entities/member'
 export {
   fetchTenantMembers,
@@ -76,6 +89,8 @@ export type {
   TenantDataExportRequest,
   TenantDataExportRequestListResponse,
   AdminTenantOidcConfig,
+  AdminTenantSamlConfig,
+  AdminTenantScimProvisioning,
   PatchTenantOidcConfigPayload,
   AdminTenantStorageEstimate,
   TenantDataExportArtifact,
@@ -96,6 +111,8 @@ export {
   fetchTenantMenuDiff,
   fetchTenantMenuOverrides,
   fetchTenantOidcConfig,
+  fetchTenantSamlConfig,
+  fetchTenantScimProvisioning,
   importTenantOidcMetadata,
   fetchTenantQuotas,
   fetchTenantStorageEstimate,
@@ -119,10 +136,13 @@ export type {
   AdminStatsResponse,
   AdminSystemDependenciesResponse,
   AdminSystemFlagsResponse,
+  AdminUsageDayBucket,
+  AdminUsageTrendsResponse,
 } from '~/entities/admin-platform'
 export {
   fetchAdminPing,
   fetchAdminStats,
+  fetchAdminUsageTrends,
   fetchAdminSystemDependencies,
   fetchAdminSystemFlags,
 } from '~/entities/admin-platform'

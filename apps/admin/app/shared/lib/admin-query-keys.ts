@@ -11,6 +11,9 @@ export const adminQueryKeys = {
   tenantQuotas: (tenantId: string) => ['admin', 'tenants', tenantId, 'quotas'] as const,
   tenantDataExports: (tenantId: string) => ['admin', 'tenants', tenantId, 'data-exports'] as const,
   tenantOidcConfig: (tenantId: string) => ['admin', 'tenants', tenantId, 'oidc-config'] as const,
+  tenantSamlConfig: (tenantId: string) => ['admin', 'tenants', tenantId, 'saml-config'] as const,
+  tenantScimProvisioning: (tenantId: string) =>
+    ['admin', 'tenants', tenantId, 'scim-provisioning'] as const,
   tenantStorageEstimate: (tenantId: string) =>
     ['admin', 'tenants', tenantId, 'storage-estimate'] as const,
   tenantMenuOverrides: (tenantId: string) =>
@@ -35,6 +38,9 @@ export const adminQueryKeys = {
   inviteLinks: (tenantId: string) => ['admin', 'invite-links', tenantId] as const,
   auditLogs: (params?: AdminListQuery) => ['admin', 'audit-logs', params ?? {}] as const,
   auditWebhookConfig: ['admin', 'audit-webhook-config'] as const,
+  auditWebhookDeadLetters: (params?: AdminListQuery) =>
+    ['admin', 'audit-webhook-dead-letters', params ?? {}] as const,
+  usageTrends: ['admin', 'usage-trends'] as const,
   systemFlags: ['admin', 'system-flags'] as const,
   systemDependencies: ['admin', 'system-dependencies'] as const,
   mfaStatus: ['admin', 'mfa-status'] as const,

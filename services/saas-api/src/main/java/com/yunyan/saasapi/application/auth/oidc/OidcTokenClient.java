@@ -19,14 +19,30 @@ public class OidcTokenClient {
       String redirectUri,
       String code,
       String codeVerifier) {
+    return exchangeAuthorizationCode(
+        provider.getClientId(),
+        provider.getClientSecret(),
+        discovery,
+        redirectUri,
+        code,
+        codeVerifier);
+  }
+
+  public OidcTokenResponse exchangeAuthorizationCode(
+      String clientId,
+      String clientSecret,
+      OidcDiscoveryDocument discovery,
+      String redirectUri,
+      String code,
+      String codeVerifier) {
     var form = new LinkedMultiValueMap<String, String>();
     form.add("grant_type", "authorization_code");
     form.add("code", code);
     form.add("redirect_uri", redirectUri);
-    form.add("client_id", provider.getClientId());
+    form.add("client_id", clientId);
     form.add("code_verifier", codeVerifier);
-    if (provider.getClientSecret() != null && !provider.getClientSecret().isBlank()) {
-      form.add("client_secret", provider.getClientSecret());
+    if (clientSecret != null && !clientSecret.isBlank()) {
+      form.add("client_secret", clientSecret);
     }
 
     var body =

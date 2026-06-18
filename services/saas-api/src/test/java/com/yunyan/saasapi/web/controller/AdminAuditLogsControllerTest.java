@@ -181,6 +181,28 @@ class AdminAuditLogsControllerTest {
         .andExpect(jsonPath("$.deliveryMode").value("csv_only"));
   }
 
+  @Test
+  void listWebhookDeadLetters_withPlatformAdmin_returnsOk() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/audit-logs/webhook-dead-letters")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items").isArray());
+  }
+
+  @Test
+  void replayWebhookDeadLetter_missingId_returns404() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+    var missingId = UUID.randomUUID();
+
+    mockMvc
+        .perform(
+            post("/v1/admin/audit-logs/webhook-dead-letters/" + missingId + "/replay")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isNotFound());
+  }
+
   private String loginAccessToken(String email) throws Exception {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }

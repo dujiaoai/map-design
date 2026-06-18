@@ -36,3 +36,9 @@ saas:
     replication-target-bucket: ${SAAS_OBJECT_STORAGE_REPLICATION_BUCKET:}
     replication-region: ${SAAS_OBJECT_STORAGE_REPLICATION_REGION:}
     compliance-retain-days: ${SAAS_OBJECT_STORAGE_COMPLIANCE_RETAIN_DAYS:0}
+    # Phase 13-5：SSE/KMS（生产按需配置）
+    server-side-encryption: ${SAAS_OBJECT_STORAGE_SSE:}
+    kms-key-id: ${SAAS_OBJECT_STORAGE_KMS_KEY_ID:}
+  audit:
+    alert-webhook-url: ${SAAS_AUDIT_ALERT_WEBHOOK_URL:}
+    usage-alert-ms: ${SAAS_AUDIT_USAGE_ALERT_MS:3600000}

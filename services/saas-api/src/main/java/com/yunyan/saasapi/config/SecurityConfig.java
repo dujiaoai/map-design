@@ -3,6 +3,7 @@ package com.yunyan.saasapi.config;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.BillingInternalAuthFilter;
 import com.yunyan.saasapi.security.JwtAuthFilter;
+import com.yunyan.saasapi.security.ScimBearerTokenAuthFilter;
 import com.yunyan.saasapi.security.TenantApiRateLimitFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,7 @@ public class SecurityConfig {
   SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       JwtAuthFilter jwtAuthFilter,
+      ScimBearerTokenAuthFilter scimBearerTokenAuthFilter,
       TenantApiRateLimitFilter tenantApiRateLimitFilter,
       BillingInternalAuthFilter billingInternalAuthFilter,
       CorsConfigurationSource corsConfigurationSource)
@@ -46,6 +48,7 @@ public class SecurityConfig {
             .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
             .requestMatchers(HttpMethod.GET, "/v1/ping").permitAll()
             .requestMatchers("/internal/**").permitAll()
+            .requestMatchers("/scim/v2/**").permitAll()
             .requestMatchers(HttpMethod.GET, "/v1/auth/invite-links/preview", "/v1/auth/oidc/providers", "/v1/auth/oidc/*/authorize", "/v1/auth/tenants/*/sso", "/v1/auth/tenants/*/sso/authorize").permitAll()
             .requestMatchers(HttpMethod.POST, "/v1/auth/oidc/*/callback", "/v1/auth/tenants/*/sso/callback").permitAll()
             .requestMatchers(HttpMethod.POST, "/v1/auth/login", "/v1/auth/login/mfa", "/v1/auth/register", "/v1/auth/register-org", "/v1/auth/register-personal", "/v1/auth/register/confirm", "/v1/auth/register/resend", "/v1/auth/refresh", "/v1/auth/accept-invite", "/v1/auth/join-via-invite-link", "/v1/auth/password-reset/request", "/v1/auth/password-reset/confirm")
@@ -61,6 +64,7 @@ public class SecurityConfig {
         .formLogin(form -> form.disable())
         .addFilterBefore(billingInternalAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(scimBearerTokenAuthFilter, JwtAuthFilter.class)
         .addFilterAfter(tenantApiRateLimitFilter, JwtAuthFilter.class)
         .build();
   }

@@ -1,6 +1,7 @@
 package com.yunyan.saasapi.web.controller;
 
 import com.yunyan.saasapi.application.admin.AdminAuditLogService;
+import com.yunyan.saasapi.application.admin.AdminAuditWebhookArchiveSummaryService;
 import com.yunyan.saasapi.application.admin.AdminAuditWebhookSelfHealStatusService;
 import com.yunyan.saasapi.application.admin.AdminAuditWebhookTargetService;
 import com.yunyan.saasapi.application.admin.AdminAuditWebhookDeadLetterService;
@@ -15,6 +16,7 @@ import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookTargetDto;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookTargetListResponse;
 import com.yunyan.saasapi.web.dto.admin.CreateAuditWebhookTargetRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchAuditWebhookTargetRequest;
+import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookArchiveSummaryResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookSelfHealStatusResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookSlaResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookDeadLetterListResponse;
@@ -53,6 +55,7 @@ public class AdminAuditLogsController {
   private final AdminAuditWebhookDeadLetterService adminAuditWebhookDeadLetterService;
   private final AdminAuditWebhookTargetService adminAuditWebhookTargetService;
   private final AdminAuditWebhookSelfHealStatusService selfHealStatusService;
+  private final AdminAuditWebhookArchiveSummaryService archiveSummaryService;
 
   @GetMapping
   @PreAuthorize(PermissionCodes.ADMIN_AUDIT_READ_AUTHORITIES)
@@ -115,6 +118,13 @@ public class AdminAuditLogsController {
   @Operation(summary = "Webhook SLA 自愈状态", description = "Phase 15-3：降级目标与自愈候选")
   public AdminAuditWebhookSelfHealStatusResponse webhookSelfHealStatus() {
     return selfHealStatusService.getStatus();
+  }
+
+  @GetMapping("/webhook-archive-summary")
+  @PreAuthorize(PermissionCodes.ADMIN_AUDIT_READ_AUTHORITIES)
+  @Operation(summary = "Webhook 合规归档摘要", description = "Phase 16-3：按区域统计归档批次数")
+  public AdminAuditWebhookArchiveSummaryResponse webhookArchiveSummary() {
+    return archiveSummaryService.getSummary();
   }
 
   @GetMapping("/webhook-config")

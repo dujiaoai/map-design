@@ -1,4 +1,4 @@
-import { Button, toast, useConfirmDialog } from '@repo/ui'
+import { Button, toast, useConfirmDialog, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { EyeIcon, CreditCardIcon, PencilIcon, UsersIcon } from 'lucide-react'
@@ -15,6 +15,8 @@ import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import {
   formatTenantTrialEndsAt,
+  resolveOnboardingPhase,
+  TENANT_ONBOARDING_LABELS,
   tenantTrialLabel,
 } from '~/features/tenants/lib/tenant-lifecycle'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
@@ -38,6 +40,7 @@ const TENANT_TABLE_COLUMNS = [
   { key: 'slug', label: 'Slug' },
   { key: 'plan', label: '计划' },
   { key: 'trialEndsAt', label: '试用截止' },
+  { key: 'onboardingPhase', label: '生命周期' },
   { key: 'status', label: '状态' },
   { key: 'createdAt', label: '创建时间' },
 ] as const
@@ -57,6 +60,7 @@ export function TenantsAdminPage() {
   const [editingTenant, setEditingTenant] = useState<AdminTenantSummary | null>(null)
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
+  const [onboardingFilter, setOnboardingFilter] = useState('all')
   const searchInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
   const { confirm, confirmDialog } = useConfirmDialog()
@@ -90,13 +94,15 @@ export function TenantsAdminPage() {
 
   const tenantSearchKeys: (keyof AdminTenantSummary)[] = ['name', 'slug', 'plan']
   const filteredTenants = useMemo(() => {
-    return filterAdminTableRows(query.data?.tenants, {
+    const rows = filterAdminTableRows(query.data?.tenants, {
       search: '',
       searchKeys: tenantSearchKeys,
       status: statusFilter,
       statusKey: 'status',
     })
-  }, [query.data?.tenants, statusFilter])
+    if (onboardingFilter === 'all') return rows
+    return rows.filter((tenant) => resolveOnboardingPhase(tenant) === onboardingFilter)
+  }, [query.data?.tenants, statusFilter, onboardingFilter])
 
   const total = query.data?.total ?? query.data?.tenants.length ?? 0
 
@@ -150,6 +156,7 @@ export function TenantsAdminPage() {
   function clearTenantFilters() {
     setSearchInput('')
     setStatusFilter('all')
+    setOnboardingFilter('all')
     setPage(1)
     clearSort()
   }
@@ -199,6 +206,25 @@ export function TenantsAdminPage() {
           render: (trialEndsAt: number | null | undefined) => (
             <span className="text-muted-foreground">{formatTenantTrialEndsAt(trialEndsAt)}</span>
           ),
+        },
+        {
+          title: '生命周期',
+          key: 'onboardingPhase',
+          render: (_value: unknown, tenant: AdminTenantSummary) => {
+            const phase = resolveOnboardingPhase(tenant)
+            return (
+              <AdminStatusPill
+                level={
+                  phase === 'suspended' || phase === 'trial_expired'
+                    ? 'warn'
+                    : phase === 'trial'
+                      ? 'info'
+                      : 'ok'
+                }
+                label={TENANT_ONBOARDING_LABELS[phase]}
+              />
+            )
+          },
         },
         {
           title: '状态',
@@ -303,12 +329,26 @@ export function TenantsAdminPage() {
           { value: 'suspended', label: 'suspended' },
         ]}
         trailing={
-          <AdminTableColumnPicker
+          <>
+            <Select value={onboardingFilter} onValueChange={setOnboardingFilter}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="生命周期" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部生命周期</SelectItem>
+                <SelectItem value="active">正式</SelectItem>
+                <SelectItem value="trial">试用中</SelectItem>
+                <SelectItem value="trial_expired">试用到期</SelectItem>
+                <SelectItem value="suspended">已停用</SelectItem>
+              </SelectContent>
+            </Select>
+            <AdminTableColumnPicker
             columns={[...TENANT_TABLE_COLUMNS]}
             visible={columnPrefs.visible}
             onVisibleChange={columnPrefs.setColumnVisible}
             onReset={columnPrefs.resetColumns}
           />
+          </>
         }
       />
 

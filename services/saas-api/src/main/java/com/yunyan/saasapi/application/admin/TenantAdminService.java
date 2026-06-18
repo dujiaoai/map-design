@@ -171,6 +171,7 @@ public class TenantAdminService {
         tenant.getPlan(),
         status,
         tenant.getTrialEndsAt() == null ? null : tenant.getTrialEndsAt().toEpochMilli(),
+        TenantOnboardingPhase.resolve(tenant),
         createdAt);
   }
 }

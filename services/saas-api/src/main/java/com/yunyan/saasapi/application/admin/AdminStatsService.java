@@ -19,11 +19,15 @@ public class AdminStatsService {
 
   public AdminStatsResponse getStats() {
     var since = Instant.now().minus(RECENT_ACTIVITY_DAYS, ChronoUnit.DAYS);
+    var now = Instant.now();
     return new AdminStatsResponse(
         tenantRepository.countTenants(),
         userRepository.countUsers(),
         tenantRepository.countActiveTenants(),
         userRepository.countTenantsWithLoginSince(since),
-        userRepository.countUsersCreatedSince(since));
+        userRepository.countUsersCreatedSince(since),
+        tenantRepository.countSuspendedTenants(),
+        tenantRepository.countTrialActiveTenants(now),
+        tenantRepository.countTrialExpiredTenants(now));
   }
 }

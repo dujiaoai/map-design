@@ -1,3 +1,5 @@
+export type TenantOnboardingPhase = 'active' | 'trial' | 'trial_expired' | 'suspended'
+
 export interface AdminTenantSummary {
   id: string
   name: string
@@ -5,6 +7,7 @@ export interface AdminTenantSummary {
   plan: string
   status: string
   trialEndsAt?: number | null
+  onboardingPhase?: TenantOnboardingPhase
   createdAt: number
 }
 

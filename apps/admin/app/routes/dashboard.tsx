@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@repo/auth'
 import { Badge, Button, toast } from '@repo/ui'
-import { ActivityIcon, Building2Icon, RefreshCwIcon, ShieldCheckIcon, TrendingUpIcon, UserPlusIcon, UsersIcon } from 'lucide-react'
+import { ActivityIcon, Building2Icon, RefreshCwIcon, ShieldCheckIcon, TrendingUpIcon, UserPlusIcon, UsersIcon, PauseCircleIcon, TimerIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link, redirect } from 'react-router'
 
@@ -162,6 +162,37 @@ export default function DashboardRoute() {
           onRetry={() => void statsQuery.refetch()}
           isRetrying={statsQuery.isFetching}
           hint="created_at 窗口"
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <AdminMetricCard
+          icon={PauseCircleIcon}
+          label="已停用租户"
+          value={statsQuery.data?.suspendedTenantCount ?? 0}
+          loading={statsQuery.isLoading}
+          error={statsQuery.isError}
+          onRetry={() => void statsQuery.refetch()}
+          isRetrying={statsQuery.isFetching}
+        />
+        <AdminMetricCard
+          icon={TimerIcon}
+          label="试用中"
+          value={statsQuery.data?.trialActiveTenantCount ?? 0}
+          loading={statsQuery.isLoading}
+          error={statsQuery.isError}
+          onRetry={() => void statsQuery.refetch()}
+          isRetrying={statsQuery.isFetching}
+        />
+        <AdminMetricCard
+          icon={Building2Icon}
+          label="试用已到期"
+          value={statsQuery.data?.trialExpiredTenantCount ?? 0}
+          loading={statsQuery.isLoading}
+          error={statsQuery.isError}
+          onRetry={() => void statsQuery.refetch()}
+          isRetrying={statsQuery.isFetching}
+          hint="未停用但 trialEndsAt 已过"
         />
       </div>
 

@@ -96,7 +96,7 @@ flowchart TB
 | --- | --- |
 | 5C-1 | 租户 `plan` / `trialEndsAt` 字段 + Admin 展示与编辑 | ✅ |
 | 5C-2 | 停用租户自动化（成员 session 撤销 Job） | ✅ |
-| 5C-3 | 租户 onboarding 状态（pending / active / suspended）看板 |
+| 5C-3 | 租户 onboarding 状态（pending / active / suspended）看板 | ✅ |
 
 ### Phase 5D · 企业 SSO 与合规
 
@@ -133,5 +133,5 @@ flowchart TB
 | **基础平台**（当前） | P0–P4 + FND-07/08 核心 ✅ |
 | **Phase 5A** | 演进文档 + 审计 E2E + CI smoke ✅ |
 | **Phase 5B** | /system 可观测 + runbook 直达 ✅ |
-| **Phase 5C** | 租户生命周期可运维 |
+| **Phase 5C** | 租户生命周期可运维 ✅ |
 | **Phase 5D–E** | 企业客户 SSO + 多产品菜单差异化 |

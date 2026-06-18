@@ -10,4 +10,6 @@ public record AdminTenantDto(
     @Schema(description = "订阅计划", example = "free") String plan,
     @Schema(description = "状态", allowableValues = {"active", "suspended"}) String status,
     @Schema(description = "试用结束时间，毫秒 epoch；null 表示未设置") Long trialEndsAt,
+    @Schema(description = "生命周期阶段", allowableValues = {"active", "trial", "trial_expired", "suspended"})
+        String onboardingPhase,
     @Schema(description = "创建时间，毫秒 epoch") long createdAt) {}

@@ -12,6 +12,7 @@ import com.yunyan.saasapi.domain.mapper.SysTenantFeatureMapper;
 import com.yunyan.saasapi.domain.mapper.SysTenantMapper;
 import com.yunyan.saasapi.domain.mapper.SysUserMapper;
 import com.yunyan.saasapi.security.TenantRlsBypass;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -148,6 +149,35 @@ public class TenantRepository {
         .stream()
         .map(SysTenant::getId)
         .toList();
+  }
+
+  public long countSuspendedTenants() {
+    return sysTenantMapper.selectCount(
+        Wrappers.<SysTenant>lambdaQuery().eq(SysTenant::getStatus, "suspended"));
+  }
+
+  public long countTrialActiveTenants(Instant now) {
+    return sysTenantMapper.selectCount(
+        Wrappers.<SysTenant>lambdaQuery()
+            .and(
+                w ->
+                    w.isNull(SysTenant::getStatus)
+                        .or()
+                        .ne(SysTenant::getStatus, "suspended"))
+            .isNotNull(SysTenant::getTrialEndsAt)
+            .gt(SysTenant::getTrialEndsAt, now));
+  }
+
+  public long countTrialExpiredTenants(Instant now) {
+    return sysTenantMapper.selectCount(
+        Wrappers.<SysTenant>lambdaQuery()
+            .and(
+                w ->
+                    w.isNull(SysTenant::getStatus)
+                        .or()
+                        .ne(SysTenant::getStatus, "suspended"))
+            .isNotNull(SysTenant::getTrialEndsAt)
+            .le(SysTenant::getTrialEndsAt, now));
   }
 
   public List<SysTenant> findByIds(List<UUID> tenantIds) {

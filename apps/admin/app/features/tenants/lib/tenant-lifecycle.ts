@@ -1,6 +1,29 @@
 import { formatAdminDate } from '~/shared/ui/admin-status-badge'
 
+import type { AdminTenantSummary } from '~/entities/tenant'
+
 export type TenantTrialPhase = 'none' | 'active' | 'expired'
+
+export type TenantOnboardingPhase = 'active' | 'trial' | 'trial_expired' | 'suspended'
+
+export const TENANT_ONBOARDING_LABELS: Record<TenantOnboardingPhase, string> = {
+  active: '正式',
+  trial: '试用中',
+  trial_expired: '试用到期',
+  suspended: '已停用',
+}
+
+export function resolveOnboardingPhase(
+  tenant: Pick<AdminTenantSummary, 'status' | 'trialEndsAt' | 'onboardingPhase'>,
+  nowMs = Date.now(),
+): TenantOnboardingPhase {
+  if (tenant.onboardingPhase) return tenant.onboardingPhase
+  if (tenant.status === 'suspended') return 'suspended'
+  if (tenant.trialEndsAt != null) {
+    return nowMs > tenant.trialEndsAt ? 'trial_expired' : 'trial'
+  }
+  return 'active'
+}
 
 export function resolveTenantTrialPhase(
   trialEndsAt: number | null | undefined,

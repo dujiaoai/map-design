@@ -10,6 +10,9 @@ export interface AdminStatsResponse {
   activeTenantCount: number
   activeTenantsLast7Days: number
   newUsersLast7Days: number
+  suspendedTenantCount: number
+  trialActiveTenantCount: number
+  trialExpiredTenantCount: number
 }
 
 export interface AdminSystemFlagsResponse {

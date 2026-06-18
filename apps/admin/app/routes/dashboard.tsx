@@ -11,6 +11,7 @@ import { AdminQuickNav } from '~/widgets/admin-overview/ui/admin-quick-nav'
 import { fetchAdminPing, fetchAdminStats, fetchAdminFinOps, fetchAdminUsageForecast, fetchAdminUsageTrends } from '~/shared/api/admin-api'
 import { AdminUsageForecastPanel } from '~/features/dashboard/ui/admin-usage-forecast-panel'
 import { AdminFinOpsPanel } from '~/features/dashboard/ui/admin-finops-panel'
+import { AdminFinOpsBudgetBanner } from '~/features/dashboard/ui/admin-finops-budget-banner'
 import { auth } from '~/shared/auth/client'
 import { canAccessAdminOverview } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
@@ -89,6 +90,7 @@ export default function DashboardRoute() {
   return (
     <div className="admin-stagger space-y-8">
       <AdminUsageAnomalyBanner />
+      <AdminFinOpsBudgetBanner />
       <AdminPageHeader
         eyebrow="Overview"
         title="运营概览"

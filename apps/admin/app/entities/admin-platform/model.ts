@@ -80,6 +80,15 @@ export interface AdminFinOpsCostAttribution {
   topConsumers: AdminFinOpsTenantConsumer[]
 }
 
+export interface AdminFinOpsBudgetStatus {
+  monthlyBudgetUsd: number
+  estimatedMonthlyCostUsd: number
+  utilizationPercent: number
+  alert: boolean
+  overBudget: boolean
+  throttleActive: boolean
+}
+
 export interface AdminAuditWebhookSelfHealStatus {
   degradedTargetCount: number
   eligibleForSelfHealCount: number

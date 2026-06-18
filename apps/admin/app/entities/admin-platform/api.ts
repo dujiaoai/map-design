@@ -9,6 +9,7 @@ import type {
   AdminUsageAnomaliesResponse,
   AdminUsageForecastBundleResponse,
   AdminFinOpsCostAttribution,
+  AdminFinOpsBudgetStatus,
   AdminAuditWebhookSelfHealStatus,
   AdminUsageTrendsResponse,
 } from './model'
@@ -35,6 +36,10 @@ export function fetchAdminUsageForecast() {
 
 export function fetchAdminFinOps() {
   return api.get<AdminFinOpsCostAttribution>('/admin/stats/finops')
+}
+
+export function fetchAdminFinOpsBudgetStatus() {
+  return api.get<AdminFinOpsBudgetStatus>('/admin/stats/finops/budget-status')
 }
 
 export function fetchAdminAuditWebhookSelfHealStatus() {

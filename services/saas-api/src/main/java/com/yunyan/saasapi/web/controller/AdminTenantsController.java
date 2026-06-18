@@ -8,6 +8,8 @@ import com.yunyan.saasapi.application.admin.TenantMenuOverrideAdminService;
 import com.yunyan.saasapi.application.admin.TenantOidcMetadataImportService;
 import com.yunyan.saasapi.application.admin.TenantOidcAdminService;
 import com.yunyan.saasapi.application.admin.TenantSamlAdminService;
+import com.yunyan.saasapi.application.admin.TenantSamlMetadataImportService;
+import com.yunyan.saasapi.application.admin.TenantSamlSpCertificateService;
 import com.yunyan.saasapi.application.admin.ScimProvisioningAdminService;
 import com.yunyan.saasapi.application.admin.TenantStorageEstimateAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
@@ -33,6 +35,8 @@ import com.yunyan.saasapi.web.dto.admin.PutTenantMenuOverrideRequest;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestDto;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestListResponse;
 import com.yunyan.saasapi.web.dto.admin.TenantOidcMetadataImportResponse;
+import com.yunyan.saasapi.web.dto.admin.TenantSamlMetadataImportResponse;
+import com.yunyan.saasapi.web.dto.admin.TenantSamlSpCertificateRotateResponse;
 import com.yunyan.saasapi.web.dto.admin.UpdateTenantFeaturesRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -68,6 +72,8 @@ public class AdminTenantsController {
   private final TenantOidcAdminService tenantOidcAdminService;
   private final TenantOidcMetadataImportService tenantOidcMetadataImportService;
   private final TenantSamlAdminService tenantSamlAdminService;
+  private final TenantSamlMetadataImportService tenantSamlMetadataImportService;
+  private final TenantSamlSpCertificateService tenantSamlSpCertificateService;
   private final ScimProvisioningAdminService scimProvisioningAdminService;
   private final TenantStorageEstimateAdminService tenantStorageEstimateAdminService;
   private final TenantMenuOverrideAdminService tenantMenuOverrideAdminService;
@@ -209,6 +215,22 @@ public class AdminTenantsController {
   public TenantOidcMetadataImportResponse importOidcMetadata(
       @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
     return tenantOidcMetadataImportService.importMetadata(principal, tenantId);
+  }
+
+  @PostMapping("/{tenantId}/saml-config/import-metadata")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "导入 IdP SAML metadata", description = "Phase 12-1：从 metadata_url 拉取并解析 entityId/ssoUrl/证书")
+  public TenantSamlMetadataImportResponse importSamlMetadata(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
+    return tenantSamlMetadataImportService.importMetadata(principal, tenantId);
+  }
+
+  @PostMapping("/{tenantId}/saml-config/rotate-sp-certificate")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "轮换 SP 签名证书", description = "Phase 12-1：生成自签 SP 证书用于 AuthnRequest 签名")
+  public TenantSamlSpCertificateRotateResponse rotateSamlSpCertificate(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
+    return tenantSamlSpCertificateService.rotateCertificate(principal, tenantId);
   }
 
   @GetMapping("/{tenantId}/storage-estimate")

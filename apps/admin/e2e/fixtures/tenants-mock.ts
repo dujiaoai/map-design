@@ -349,6 +349,33 @@ export async function mockTenantsPageApis(page: Page) {
     })
   })
 
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/scim-change-preview/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        inboundPendingCount: 1,
+        outboundPendingCount: 2,
+        items: [
+          {
+            direction: 'inbound',
+            type: 'user.updated',
+            externalId: 'ext-in',
+            statusOrOperation: 'pending',
+            createdAtMs: Date.now(),
+          },
+          {
+            direction: 'outbound',
+            type: 'User',
+            externalId: 'ext-out',
+            statusOrOperation: 'update',
+            createdAtMs: Date.now(),
+          },
+        ],
+      }),
+    })
+  })
+
   await page.route(/\/v1\/admin\/tenants\/[^/]+\/storage-estimate/, async (route) => {
     const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
     await route.fulfill({

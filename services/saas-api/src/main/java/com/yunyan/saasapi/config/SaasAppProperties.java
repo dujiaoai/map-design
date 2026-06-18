@@ -155,5 +155,7 @@ public class SaasAppProperties {
     private String accessKey = "";
     private String secretKey = "";
     private String region = "us-east-1";
+    /** 为 true 且 provider=s3-compatible 时使用 AWS SDK PutObject（Phase 10-3） */
+    private boolean useRealS3 = false;
   }
 }

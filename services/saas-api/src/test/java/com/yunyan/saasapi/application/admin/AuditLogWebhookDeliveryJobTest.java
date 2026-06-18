@@ -32,6 +32,8 @@ class AuditLogWebhookDeliveryJobTest {
   @Mock private AdminAuditWebhookCursorRepository cursorRepository;
   @Mock private AdminAuditWebhookDeadLetterRepository deadLetterRepository;
   @Mock private AuditWebhookPayloadBuilder payloadBuilder;
+  @Mock private AuditWebhookHmacSigner hmacSigner;
+  @Mock private AuditWebhookAlertService alertService;
 
   @InjectMocks private AuditLogWebhookDeliveryJob job;
 
@@ -55,7 +57,7 @@ class AuditLogWebhookDeliveryJobTest {
 
     job.deliverPendingAuditEvents();
 
-    verify(auditWebhookHttpClient, never()).postJson(anyString(), anyString());
+    verify(auditWebhookHttpClient, never()).postJson(anyString(), anyString(), anyString());
   }
 
   @Test
@@ -66,12 +68,15 @@ class AuditLogWebhookDeliveryJobTest {
     when(cursorRepository.findDefault()).thenReturn(Optional.empty());
     when(adminAuditLogRepository.findUndeliveredAfter(null, 50)).thenReturn(List.of(log));
     when(payloadBuilder.buildBatchPayload("jsonl", List.of(log))).thenReturn("{\"events\":[]}");
-    when(auditWebhookHttpClient.postJson(audit.getWebhookUrl(), "{\"events\":[]}")).thenReturn(true);
+    when(hmacSigner.sign(audit.getWebhookSigningSecret(), "{\"events\":[]}")).thenReturn("abc123");
+    when(auditWebhookHttpClient.postJson(audit.getWebhookUrl(), "{\"events\":[]}", "abc123"))
+        .thenReturn(true);
 
     job.deliverPendingAuditEvents();
 
     verify(cursorRepository).upsert(log.getId(), log.getCreatedAt());
     verify(deadLetterRepository, never()).insert(any(), anyString(), anyString());
+    verify(alertService, never()).notifyIfDeadLettersAccumulated(anyInt());
   }
 
   @Test
@@ -82,12 +87,15 @@ class AuditLogWebhookDeliveryJobTest {
     when(cursorRepository.findDefault()).thenReturn(Optional.empty());
     when(adminAuditLogRepository.findUndeliveredAfter(null, 50)).thenReturn(List.of(log));
     when(payloadBuilder.buildBatchPayload("jsonl", List.of(log))).thenReturn("{\"events\":[]}");
+    when(hmacSigner.sign(audit.getWebhookSigningSecret(), "{\"events\":[]}")).thenReturn("abc123");
+    when(auditWebhookHttpClient.postJson(audit.getWebhookUrl(), "{\"events\":[]}", "abc123"))
+        .thenReturn(false);
     when(payloadBuilder.buildSingleEventPayload(log)).thenReturn("{\"id\":\"x\"}\n");
-    when(auditWebhookHttpClient.postJson(audit.getWebhookUrl(), "{\"events\":[]}")).thenReturn(false);
 
     job.deliverPendingAuditEvents();
 
     verify(deadLetterRepository).insert(eq(log.getId()), eq("{\"id\":\"x\"}\n"), eq("HTTP delivery failed"));
+    verify(alertService).notifyIfDeadLettersAccumulated(1);
     verify(cursorRepository, never()).upsert(any(), any());
   }
 
@@ -97,6 +105,7 @@ class AuditLogWebhookDeliveryJobTest {
     audit.setWebhookUrl("https://siem.example/hook");
     audit.setWebhookFormat("jsonl");
     audit.setWebhookBatchSize(50);
+    audit.setWebhookSigningSecret("signing-secret");
     return audit;
   }
 

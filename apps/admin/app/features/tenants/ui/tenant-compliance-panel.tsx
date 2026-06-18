@@ -29,7 +29,9 @@ import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { formatAdminDate } from '~/shared/ui/admin-status-badge'
 import { TenantOidcConfigForm } from '~/features/tenants/ui/tenant-oidc-config-form'
 import { TenantSamlConfigForm } from '~/features/tenants/ui/tenant-saml-config-form'
+import { TenantSamlIdpRegistrationsPanel } from '~/features/tenants/ui/tenant-saml-idp-registrations-panel'
 import { TenantScimStatusCard } from '~/features/tenants/ui/tenant-scim-status-card'
+import { TenantScimSchemaExtensionPanel } from '~/features/tenants/ui/tenant-scim-schema-extension-panel'
 import { Button, toast } from '@repo/ui'
 
 function formatBytes(bytes: number): string {
@@ -40,7 +42,7 @@ function formatBytes(bytes: number): string {
   return `${value.toFixed(value >= 10 || index === 0 ? 0 : 1)} ${units[index]}`
 }
 
-export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
+export function TenantCompliancePanel({ tenantId, tenantSlug }: { tenantId: string; tenantSlug: string }) {
   const { can } = useAdminPermissions()
   const canWrite = can('admin:tenants:write')
   const queryClient = useQueryClient()
@@ -176,8 +178,15 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
           isRetrying={samlQuery.isFetching}
         />
       ) : (
-        <TenantSamlConfigForm config={samlQuery.data} readOnly={!canWrite} tenantId={tenantId} />
+        <TenantSamlConfigForm
+          config={samlQuery.data}
+          readOnly={!canWrite}
+          tenantId={tenantId}
+          tenantSlug={tenantSlug}
+        />
       )}
+
+      <TenantSamlIdpRegistrationsPanel tenantId={tenantId} />
 
       {scimQuery.isLoading ? (
         <AdminTableSkeleton rows={2} columns={1} />
@@ -191,6 +200,8 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
       ) : (
         <TenantScimStatusCard readOnly={!canWrite} status={scimQuery.data} tenantId={tenantId} />
       )}
+
+      <TenantScimSchemaExtensionPanel tenantId={tenantId} />
 
       <AdminPanel>
         <AdminPanelHeader

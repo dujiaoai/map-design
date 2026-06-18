@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import type { AdminTenantOidcConfig } from '~/entities/tenant/model'
-import { patchTenantOidcConfig } from '~/shared/api/admin-api'
+import { importTenantOidcMetadata, patchTenantOidcConfig } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
@@ -90,6 +90,20 @@ export function TenantOidcConfigForm({
     },
   })
 
+  const importMetadataMutation = useMutation({
+    mutationFn: () => importTenantOidcMetadata(tenantId),
+    onSuccess: async (result) => {
+      toast.success('IdP metadata 已导入')
+      await queryClient.invalidateQueries({ queryKey: adminQueryKeys.tenantOidcConfig(tenantId) })
+      if (result.authorizationEndpoint) {
+        setValue('issuerUri', result.issuer, { shouldDirty: true })
+      }
+    },
+    onError: (error) => {
+      toast.error(formatAdminApiError(error, '导入 metadata 失败'))
+    },
+  })
+
   function onSubmit(values: FormValues) {
     if (values.enabled && (!values.issuerUri.trim() || !values.clientId.trim())) {
       toast.error('启用 SSO 时须填写 Issuer URI 与 Client ID')
@@ -158,11 +172,38 @@ export function TenantOidcConfigForm({
           aria-label="OIDC Scopes"
         />
       </AdminField>
+      {config.expectedCallbackUrl ? (
+        <AdminField label="期望回调 URL（须在 IdP 注册）">
+          <Input
+            readOnly
+            value={config.expectedCallbackUrl}
+            className="font-mono text-xs"
+            aria-label="期望回调 URL"
+          />
+        </AdminField>
+      ) : null}
+      {config.metadataImported ? (
+        <p className="text-xs text-muted-foreground">
+          已导入 IdP metadata
+          {config.metadataImportedAt ? ` · ${new Date(config.metadataImportedAt).toLocaleString()}` : ''}
+        </p>
+      ) : null}
       <AdminFormError message={mutation.isError ? formatAdminApiError(mutation.error) : null} />
       {!readOnly ? (
-        <Button type="submit" size="sm" disabled={isSubmitting || !isDirty}>
-          保存 OIDC 配置
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="submit" size="sm" disabled={isSubmitting || !isDirty}>
+            保存 OIDC 配置
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={importMetadataMutation.isPending || !config.issuerUri}
+            onClick={() => importMetadataMutation.mutate()}
+          >
+            导入 IdP metadata
+          </Button>
+        </div>
       ) : null}
     </form>
   )

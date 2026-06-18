@@ -24,4 +24,12 @@ public class ScimProvisioningTokenRepository {
                 .eq(ScimProvisioningToken::getTokenHash, tokenHash)
                 .eq(ScimProvisioningToken::getEnabled, true)));
   }
+
+  public void upsert(ScimProvisioningToken token) {
+    if (mapper.selectById(token.getTenantId()) == null) {
+      mapper.insert(token);
+    } else {
+      mapper.updateById(token);
+    }
+  }
 }

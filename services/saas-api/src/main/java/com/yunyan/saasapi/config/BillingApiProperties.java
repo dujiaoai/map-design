@@ -19,6 +19,14 @@ public class BillingApiProperties {
 
   private final MembershipSync membershipSync = new MembershipSync();
 
+  private final Usage usage = new Usage();
+
+  @Data
+  public static class Usage {
+    /** Fetch billing-api event counts for admin usage trends. */
+    private boolean enabled = false;
+  }
+
   @Data
   public static class MembershipSync {
     /** Best-effort push to billing-api after outbox enqueue (pull remains fallback). */

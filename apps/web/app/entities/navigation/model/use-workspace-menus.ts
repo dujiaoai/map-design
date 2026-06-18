@@ -21,27 +21,31 @@ import type { NavMainItem, NavMapSectionDef } from '../model/types'
 export function useWorkspaceNavMainItems(): NavMainItem[] {
   const saasBootstrap = usesSaasSessionBootstrap()
   const enabledTenantFeatures = useEnabledTenantFeatures()
+  const { permissions } = useSessionAccess()
   const menusQuery = useWorkspaceMenusQuery(saasBootstrap)
 
   return useMemo(() => {
     if (menusQuery.data?.items) {
-      return resolveNavMainItemsFromApi(menusQuery.data.items)
+      const items = filterMenuItemsByPermission(menusQuery.data.items, permissions)
+      return resolveNavMainItemsFromApi(items)
     }
     return filterNavMainItemsForTenant(mockNavMainItems, enabledTenantFeatures)
-  }, [menusQuery.data?.items, enabledTenantFeatures, saasBootstrap])
+  }, [menusQuery.data?.items, enabledTenantFeatures, permissions, saasBootstrap])
 }
 
 export function useWorkspaceNavSectionDefs(): NavMapSectionDef[] {
   const saasBootstrap = usesSaasSessionBootstrap()
   const enabledTenantFeatures = useEnabledTenantFeatures()
+  const { permissions } = useSessionAccess()
   const menusQuery = useWorkspaceMenusQuery(saasBootstrap)
 
   return useMemo(() => {
     if (menusQuery.data?.sections) {
-      return resolveNavSectionDefsFromApi(menusQuery.data.sections)
+      const sections = filterMenuSectionsByPermission(menusQuery.data.sections, permissions)
+      return resolveNavSectionDefsFromApi(sections)
     }
     return mockNavMapSectionDefs
-  }, [menusQuery.data?.sections, saasBootstrap])
+  }, [menusQuery.data?.sections, permissions, saasBootstrap])
 }
 
 export function useWorkspaceMenusReady(): boolean {

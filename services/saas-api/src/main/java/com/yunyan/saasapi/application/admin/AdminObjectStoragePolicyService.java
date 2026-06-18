@@ -3,6 +3,7 @@ package com.yunyan.saasapi.application.admin;
 import com.yunyan.saasapi.application.storage.ObjectStorageEncryptionService;
 import com.yunyan.saasapi.application.storage.ObjectStorageWormService;
 import com.yunyan.saasapi.config.SaasAppProperties;
+import com.yunyan.saasapi.domain.ObjectStorageConsistencyCheckLogRepository;
 import com.yunyan.saasapi.domain.ObjectStorageDrDrillLogRepository;
 import com.yunyan.saasapi.domain.ObjectStorageLifecycleAuditRepository;
 import com.yunyan.saasapi.web.dto.admin.AdminObjectStoragePolicyResponse;
@@ -20,6 +21,7 @@ public class AdminObjectStoragePolicyService {
   private final ObjectStorageEncryptionService encryptionService;
   private final ObjectStorageWormService wormService;
   private final ObjectStorageDrDrillLogRepository drillLogRepository;
+  private final ObjectStorageConsistencyCheckLogRepository consistencyCheckLogRepository;
 
   public AdminObjectStoragePolicyResponse getPolicySummary() {
     var storage = saasAppProperties.getObjectStorage();
@@ -32,6 +34,8 @@ public class AdminObjectStoragePolicyService {
         lifecycleAuditRepository.countAll(),
         encryptionService.isEncryptionConfigured(),
         wormService.isWormConfigured(),
-        drillLogRepository.findLatestExecutedAt().map(Instant::toEpochMilli).orElse(null));
+        drillLogRepository.findLatestExecutedAt().map(Instant::toEpochMilli).orElse(null),
+        consistencyCheckLogRepository.countAll(),
+        consistencyCheckLogRepository.countMismatched());
   }
 }

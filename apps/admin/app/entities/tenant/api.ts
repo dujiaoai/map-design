@@ -34,6 +34,7 @@ import type {
   TenantSamlIdpHealthResponse,
   TenantSamlDisconnectDrillResult,
   ScimSyncEventSummary,
+  ScimChangePreview,
   TenantQuotasResponse,
 } from './model'
 
@@ -223,4 +224,8 @@ export function runTenantSamlDisconnectDrill(tenantId: string, idpEntityId?: str
     `/admin/tenants/${tenantId}/saml-disconnect-drill`,
     idpEntityId ? { idpEntityId } : {},
   )
+}
+
+export function fetchTenantScimChangePreview(tenantId: string) {
+  return api.get<ScimChangePreview>(`/admin/tenants/${tenantId}/scim-change-preview`)
 }

@@ -205,6 +205,20 @@ export interface ScimSyncEventSummary {
   conflictStrategy: string
 }
 
+export interface ScimChangePreviewItem {
+  direction: string
+  type: string
+  externalId: string
+  statusOrOperation: string
+  createdAtMs: number
+}
+
+export interface ScimChangePreview {
+  inboundPendingCount: number
+  outboundPendingCount: number
+  items: ScimChangePreviewItem[]
+}
+
 export interface AdminTenantScimProvisioning {
   tenantId: string
   enabled: boolean

@@ -20,6 +20,8 @@ export const adminQueryKeys = {
     ['admin', 'tenants', tenantId, 'saml-idp-health'] as const,
   tenantScimSyncEvents: (tenantId: string) =>
     ['admin', 'tenants', tenantId, 'scim-sync-events'] as const,
+  tenantScimChangePreview: (tenantId: string) =>
+    ['admin', 'tenants', tenantId, 'scim-change-preview'] as const,
   tenantStorageEstimate: (tenantId: string) =>
     ['admin', 'tenants', tenantId, 'storage-estimate'] as const,
   tenantMenuOverrides: (tenantId: string) =>

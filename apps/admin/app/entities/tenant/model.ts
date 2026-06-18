@@ -4,6 +4,7 @@ export interface AdminTenantSummary {
   slug: string
   plan: string
   status: string
+  trialEndsAt?: number | null
   createdAt: number
 }
 
@@ -18,12 +19,15 @@ export interface CreateTenantPayload {
   name: string
   slug: string
   plan?: string
+  trialEndsAt?: number
 }
 
 export interface PatchTenantPayload {
   name?: string
   plan?: string
   status?: 'active' | 'suspended'
+  trialEndsAt?: number
+  clearTrialEndsAt?: boolean
 }
 
 export interface FeatureCatalogEntry {

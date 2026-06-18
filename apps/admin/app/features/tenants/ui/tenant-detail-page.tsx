@@ -21,6 +21,10 @@ import { StartImpersonationSheet } from '~/features/impersonation/ui/start-imper
 import { MembersAdminPage } from '~/features/members/ui/members-admin-page'
 import { TenantCustomRolesPanel } from '~/features/roles/ui/tenant-custom-roles-panel'
 import { resolveTenantDetailTab } from '~/features/tenants/lib/tenant-detail-nav'
+import {
+  formatTenantTrialEndsAt,
+  tenantTrialLabel,
+} from '~/features/tenants/lib/tenant-lifecycle'
 import { fetchAdminTenant, type AdminTenantSummary } from '~/shared/api/admin-api'
 import { canAccessAdminMembers, isPlatformAdmin } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
@@ -34,6 +38,7 @@ import {
 } from '~/shared/ui/admin-page-shell'
 import { AdminDetailSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
+import { AdminStatusPill } from '~/shared/ui/admin-status-pill'
 
 import { EditTenantSheet } from './edit-tenant-sheet'
 import { TenantFeaturesPanel } from './tenant-features-panel'
@@ -140,6 +145,16 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
             <span className="font-mono text-xs">{tenant.slug}</span>
             <span className="text-muted-foreground">·</span>
             <span>{tenant.plan}</span>
+            {(() => {
+              const label = tenantTrialLabel(tenant.trialEndsAt)
+              if (!label) return null
+              return (
+                <AdminStatusPill
+                  level={label === '试用已到期' ? 'warn' : 'info'}
+                  label={label}
+                />
+              )
+            })()}
             <AdminStatusBadge status={tenant.status} />
           </span>
         }
@@ -252,6 +267,10 @@ function TenantInfoPanel({
       />
       <AdminConfigRow label="Slug" value={tenant.slug} mono />
       <AdminConfigRow label="计划" value={tenant.plan} mono />
+      <AdminConfigRow
+        label="试用截止"
+        value={formatTenantTrialEndsAt(tenant.trialEndsAt)}
+      />
       <AdminConfigRow label="状态" value={<AdminStatusBadge status={tenant.status} />} />
       <AdminConfigRow
         label="创建时间"

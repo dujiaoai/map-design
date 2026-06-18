@@ -214,6 +214,30 @@ class AdminTenantsControllerTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  void patchTenant_setsAndClearsTrialEndsAt() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+    var trialEndsAt = System.currentTimeMillis() + 86_400_000L;
+
+    mockMvc
+        .perform(
+            patch("/v1/admin/tenants/" + TEST_TENANT_ID)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("trialEndsAt", trialEndsAt))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.trialEndsAt").value(trialEndsAt));
+
+    mockMvc
+        .perform(
+            patch("/v1/admin/tenants/" + TEST_TENANT_ID)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("clearTrialEndsAt", true))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.trialEndsAt").doesNotExist());
+  }
+
   private String loginAccessToken(String email) throws Exception {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }

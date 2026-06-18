@@ -56,6 +56,9 @@ public class TenantAdminService {
     tenant.setSlug(slug);
     tenant.setPlan(resolvePlan(request.plan()));
     tenant.setStatus(STATUS_ACTIVE);
+    if (request.trialEndsAt() != null) {
+      tenant.setTrialEndsAt(Instant.ofEpochMilli(request.trialEndsAt()));
+    }
     tenant.setCreatedAt(Instant.now());
     tenantRepository.insert(tenant);
     adminAuditLogService.recordTenantAction(
@@ -70,7 +73,8 @@ public class TenantAdminService {
   public AdminTenantDto patchTenant(
       SaasPrincipal principal, UUID tenantId, PatchTenantRequest request) {
     if (!hasPatchFields(request)) {
-      throw AuthException.badRequest("At least one of name, plan, or status is required");
+      throw AuthException.badRequest(
+          "At least one of name, plan, status, trialEndsAt, or clearTrialEndsAt is required");
     }
 
     var tenant =
@@ -87,6 +91,11 @@ public class TenantAdminService {
     if (StringUtils.hasText(request.status())) {
       tenant.setStatus(request.status().trim());
     }
+    if (Boolean.TRUE.equals(request.clearTrialEndsAt())) {
+      tenant.setTrialEndsAt(null);
+    } else if (request.trialEndsAt() != null) {
+      tenant.setTrialEndsAt(Instant.ofEpochMilli(request.trialEndsAt()));
+    }
 
     tenantRepository.update(tenant);
     var changes = new StringBuilder();
@@ -102,6 +111,11 @@ public class TenantAdminService {
       changes.append("status=");
       changes.append(tenant.getStatus());
     }
+    if (Boolean.TRUE.equals(request.clearTrialEndsAt())) {
+      changes.append("trialEndsAt=cleared ");
+    } else if (request.trialEndsAt() != null) {
+      changes.append("trialEndsAt=set ");
+    }
     adminAuditLogService.recordTenantAction(
         principal,
         "tenant.update",
@@ -113,7 +127,9 @@ public class TenantAdminService {
   private static boolean hasPatchFields(PatchTenantRequest request) {
     return StringUtils.hasText(request.name())
         || StringUtils.hasText(request.plan())
-        || StringUtils.hasText(request.status());
+        || StringUtils.hasText(request.status())
+        || request.trialEndsAt() != null
+        || Boolean.TRUE.equals(request.clearTrialEndsAt());
   }
 
   private static String normalizeSlug(String slug) {
@@ -136,6 +152,7 @@ public class TenantAdminService {
         tenant.getSlug(),
         tenant.getPlan(),
         status,
+        tenant.getTrialEndsAt() == null ? null : tenant.getTrialEndsAt().toEpochMilli(),
         createdAt);
   }
 }

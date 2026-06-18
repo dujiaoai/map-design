@@ -94,7 +94,7 @@ flowchart TB
 
 | PR | 内容 |
 | --- | --- |
-| 5C-1 | 租户 `plan` / `trialEndsAt` 字段 + Admin 展示与编辑 |
+| 5C-1 | 租户 `plan` / `trialEndsAt` 字段 + Admin 展示与编辑 | ✅ |
 | 5C-2 | 停用租户自动化（成员 session 撤销 Job） |
 | 5C-3 | 租户 onboarding 状态（pending / active / suspended）看板 |
 

@@ -164,6 +164,6 @@ P0–P4 与路线图外 E2E 已交付。下一阶段按 [docs/product/admin-plat
 | --- | --- | --- |
 | **5A** | 文档与质量 | 演进文档、审计 E2E、PLATFORM_ADMIN 权限兜底、CI smoke |
 | **5B** | 可观测运维 | `/system` 依赖健康 ✅、概览 7 日指标 ✅、Runbook 直达 ✅ |
-| **5C** | 租户生命周期 | 试用/到期、停用 session 撤销 |
+| **5C** | 租户生命周期 | plan/trialEndsAt ✅、停用 session 撤销、onboarding 看板 |
 | **5D** | 企业 SSO 与合规 | 租户级 IdP、审计 Webhook |
 | **5E** | 多产品扩展 | 菜单租户覆盖、菜单 RBAC（FND-08 Later） |

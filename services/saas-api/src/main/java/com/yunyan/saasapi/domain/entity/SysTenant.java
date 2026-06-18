@@ -21,5 +21,7 @@ public class SysTenant {
   private String status;
   /** organization | personal */
   private String tenantKind;
+  /** 试用结束时间；null 表示未设置试用截止 */
+  private Instant trialEndsAt;
   private Instant createdAt;
 }

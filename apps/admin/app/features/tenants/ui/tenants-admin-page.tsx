@@ -13,6 +13,10 @@ import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
+import {
+  formatTenantTrialEndsAt,
+  tenantTrialLabel,
+} from '~/features/tenants/lib/tenant-lifecycle'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import { AdminTableBulkBar } from '~/shared/ui/admin-table-bulk-bar'
@@ -21,6 +25,7 @@ import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
+import { AdminStatusPill } from '~/shared/ui/admin-status-pill'
 import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
 
 import { CreateTenantSheet } from './create-tenant-sheet'
@@ -32,6 +37,7 @@ const TENANT_TABLE_COLUMNS = [
   { key: 'name', label: '名称' },
   { key: 'slug', label: 'Slug' },
   { key: 'plan', label: '计划' },
+  { key: 'trialEndsAt', label: '试用截止' },
   { key: 'status', label: '状态' },
   { key: 'createdAt', label: '创建时间' },
 ] as const
@@ -170,7 +176,29 @@ export function TenantsAdminPage() {
           title: '计划',
           dataIndex: 'plan',
           key: 'plan',
-          render: (plan: string) => <span className="font-mono text-xs">{plan}</span>,
+          render: (plan: string, tenant: AdminTenantSummary) => (
+            <span className="inline-flex flex-wrap items-center gap-1.5 font-mono text-xs">
+              {plan}
+              {(() => {
+                const label = tenantTrialLabel(tenant.trialEndsAt)
+                if (!label) return null
+                return (
+                  <AdminStatusPill
+                    level={label === '试用已到期' ? 'warn' : 'info'}
+                    label={label}
+                  />
+                )
+              })()}
+            </span>
+          ),
+        },
+        {
+          title: '试用截止',
+          dataIndex: 'trialEndsAt',
+          key: 'trialEndsAt',
+          render: (trialEndsAt: number | null | undefined) => (
+            <span className="text-muted-foreground">{formatTenantTrialEndsAt(trialEndsAt)}</span>
+          ),
         },
         {
           title: '状态',

@@ -1,7 +1,9 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import {
   Button,
+  Checkbox,
   Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
@@ -20,15 +22,24 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import {
+  tenantTrialLabel,
+  trialDateToEpochMs,
+  trialEpochMsToDate,
+} from '~/features/tenants/lib/tenant-lifecycle'
 import { type AdminTenantSummary, patchAdminTenant } from '~/shared/api/admin-api'
+import { AdminAntDate } from '~/shared/ant'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
+import { AdminStatusPill } from '~/shared/ui/admin-status-pill'
 
 const schema = z.object({
   name: z.string().min(1, '请输入名称').max(128),
   plan: z.string().min(1, '请输入计划').max(32),
   status: z.enum(['active', 'suspended']),
+  trialEndsAtDate: z.string(),
+  clearTrialEndsAt: z.boolean(),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -52,9 +63,18 @@ export function EditTenantSheet({
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: standardSchemaResolver(schema),
+    defaultValues: {
+      trialEndsAtDate: '',
+      clearTrialEndsAt: false,
+    },
   })
 
   const status = watch('status')
+  const trialEndsAtDate = watch('trialEndsAtDate')
+  const clearTrialEndsAt = watch('clearTrialEndsAt')
+  const trialLabel = tenantTrialLabel(
+    clearTrialEndsAt ? null : trialDateToEpochMs(trialEndsAtDate) ?? tenant?.trialEndsAt,
+  )
 
   useEffect(() => {
     if (!tenant) return
@@ -62,16 +82,26 @@ export function EditTenantSheet({
       name: tenant.name,
       plan: tenant.plan,
       status: tenant.status === 'suspended' ? 'suspended' : 'active',
+      trialEndsAtDate: trialEpochMsToDate(tenant.trialEndsAt),
+      clearTrialEndsAt: false,
     })
   }, [tenant, reset])
 
   const mutation = useMutation({
-    mutationFn: (values: FormValues) =>
-      patchAdminTenant(tenant!.id, {
+    mutationFn: (values: FormValues) => {
+      const payload: Parameters<typeof patchAdminTenant>[1] = {
         name: values.name.trim(),
         plan: values.plan.trim(),
         status: values.status,
-      }),
+      }
+      if (values.clearTrialEndsAt) {
+        payload.clearTrialEndsAt = true
+      } else if (values.trialEndsAtDate.trim()) {
+        const trialEndsAt = trialDateToEpochMs(values.trialEndsAtDate.trim())
+        if (trialEndsAt != null) payload.trialEndsAt = trialEndsAt
+      }
+      return patchAdminTenant(tenant!.id, payload)
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] })
       if (tenant) {
@@ -100,7 +130,41 @@ export function EditTenantSheet({
             <Input id="edit-tenant-name" {...register('name')} />
           </AdminField>
           <AdminField label="计划" htmlFor="edit-tenant-plan" error={errors.plan?.message}>
-            <Input id="edit-tenant-plan" {...register('plan')} />
+            <Input id="edit-tenant-plan" {...register('plan')} placeholder="free / pro / enterprise" />
+          </AdminField>
+          <AdminField label="试用结束">
+            <div className="space-y-2">
+              <AdminAntDate
+                id="edit-tenant-trial-ends"
+                value={clearTrialEndsAt ? '' : trialEndsAtDate}
+                onChange={(value) => {
+                  setValue('trialEndsAtDate', value, { shouldDirty: true })
+                  if (value) setValue('clearTrialEndsAt', false, { shouldDirty: true })
+                }}
+                placeholder="未设置试用截止"
+                aria-label="试用结束日期"
+              />
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="edit-tenant-clear-trial"
+                  checked={clearTrialEndsAt}
+                  onCheckedChange={(checked) => {
+                    const next = checked === true
+                    setValue('clearTrialEndsAt', next, { shouldDirty: true })
+                    if (next) setValue('trialEndsAtDate', '', { shouldDirty: true })
+                  }}
+                />
+                <Label htmlFor="edit-tenant-clear-trial" className="text-sm font-normal">
+                  清除试用截止
+                </Label>
+              </div>
+              {trialLabel ? (
+                <AdminStatusPill
+                  level={trialLabel === '试用已到期' ? 'warn' : 'info'}
+                  label={trialLabel}
+                />
+              ) : null}
+            </div>
           </AdminField>
           <AdminField label="状态">
             <Select

@@ -36,7 +36,9 @@ public class TenantSsoAuthService {
       return disabledResponse(slug);
     }
     var configured =
-        StringUtils.hasText(config.getIssuerUri()) && StringUtils.hasText(config.getClientId());
+        StringUtils.hasText(config.getIssuerUri())
+            && StringUtils.hasText(config.getClientId())
+            && StringUtils.hasText(config.getClientSecret());
     var displayName =
         StringUtils.hasText(config.getDisplayName()) ? config.getDisplayName().trim() : "企业 SSO";
     return new TenantSsoPublicResponse(slug, true, displayName, configured);

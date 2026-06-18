@@ -19,6 +19,8 @@ public class TenantDataExportRequest {
   private String status;
   private UUID requestedByUserId;
   private String artifactUrl;
+  private String artifactObjectKey;
+  private String errorMessage;
   private Instant createdAt;
   private Instant completedAt;
 }

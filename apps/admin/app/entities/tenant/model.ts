@@ -179,6 +179,26 @@ export interface CreateTenantSamlIdpFederationPayload {
   enabled?: boolean
 }
 
+export interface TenantSamlIdpHealthItem {
+  idpEntityId: string
+  ssoUrl: string
+  ssoReachable: boolean
+  metadataFresh: boolean
+  healthy: boolean
+  source: string
+}
+
+export interface TenantSamlIdpHealthResponse {
+  items: TenantSamlIdpHealthItem[]
+}
+
+export interface TenantSamlDisconnectDrillResult {
+  drillLogId: string
+  idpEntityId: string
+  result: string
+  latencyMs: number
+}
+
 export interface ScimSyncEventSummary {
   pendingCount: number
   tenantPendingCount: number

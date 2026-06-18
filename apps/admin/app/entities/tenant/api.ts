@@ -31,6 +31,8 @@ import type {
   AdminScimGroupMappingRuleListResponse,
   TenantSamlIdpFederationListResponse,
   CreateTenantSamlIdpFederationPayload,
+  TenantSamlIdpHealthResponse,
+  TenantSamlDisconnectDrillResult,
   ScimSyncEventSummary,
   TenantQuotasResponse,
 } from './model'
@@ -209,5 +211,16 @@ export function addTenantSamlIdpFederation(
 export function removeTenantSamlIdpFederation(tenantId: string, federationId: string) {
   return api.delete<void>(
     `/admin/tenants/${tenantId}/saml-idp-federation/${encodeURIComponent(federationId)}`,
+  )
+}
+
+export function fetchTenantSamlIdpHealth(tenantId: string) {
+  return api.get<TenantSamlIdpHealthResponse>(`/admin/tenants/${tenantId}/saml-idp-health`)
+}
+
+export function runTenantSamlDisconnectDrill(tenantId: string, idpEntityId?: string) {
+  return api.post<TenantSamlDisconnectDrillResult>(
+    `/admin/tenants/${tenantId}/saml-disconnect-drill`,
+    idpEntityId ? { idpEntityId } : {},
   )
 }

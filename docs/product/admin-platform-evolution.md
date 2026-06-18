@@ -157,11 +157,21 @@ flowchart TB
 
 | PR | 内容 |
 | --- | --- |
-| 10-1 | 审计 Webhook 死信 Admin 重放 UI |
-| 10-2 | 租户 SSO SAML 连接（调研） |
-| 10-3 | 对象存储真实 S3 SDK 上传（替换 local 委托） |
-| 10-4 | Admin Usage 大盘（活跃租户 / API 调用趋势） |
-| 10-5 | SCIM Directory Sync PoC |
+| 10-1 | 审计 Webhook 死信 Admin 重放 UI | ✅ |
+| 10-2 | 租户 SSO SAML 连接（调研） | ✅ |
+| 10-3 | 对象存储真实 S3 SDK 上传（替换 local 委托） | ✅ |
+| 10-4 | Admin Usage 大盘（活跃租户 / API 调用趋势） | ✅ |
+| 10-5 | SCIM Directory Sync PoC | ✅ |
+
+### Phase 11 · 企业集成深化（Next）
+
+| PR | 内容 |
+| --- | --- |
+| 11-1 | 租户 SAML SP 完整授权流（ACS + Assertion 验证） |
+| 11-2 | SCIM Users CRUD + deprovision 联动成员状态 |
+| 11-3 | 审计 Webhook 死信自动重试策略与告警路由 |
+| 11-4 | Usage 大盘图表化 + billing API 调用量聚合 |
+| 11-5 | 对象存储 multipart 上传与生命周期策略 |
 
 ---
 
@@ -189,3 +199,4 @@ flowchart TB
 | **Phase 7** | saas-web SSO 入口、Webhook HTTP、GDPR artifact、菜单 diff ✅ |
 | **Phase 8** | 租户 SSO 完整流、SIEM 批量、对象存储 artifact、sortOrder 运行时 ✅ |
 | **Phase 9** | SSO metadata 导入、Webhook HMAC、S3 适配器、菜单批量覆盖 ✅ |
+| **Phase 10** | 死信重放 UI、SAML 调研、真实 S3 SDK、Usage 趋势、SCIM PoC ✅ |

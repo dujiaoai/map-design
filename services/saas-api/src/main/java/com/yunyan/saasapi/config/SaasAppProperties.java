@@ -173,5 +173,9 @@ public class SaasAppProperties {
     private String replicationRegion = "";
     /** 合规保留天数；0 表示未启用 */
     private int complianceRetainDays = 0;
+    /** KMS 密钥 ID；配合 serverSideEncryption=aws:kms（Phase 13-5） */
+    private String kmsKeyId = "";
+    /** AES256 | aws:kms；空表示不启用 SSE */
+    private String serverSideEncryption = "";
   }
 }

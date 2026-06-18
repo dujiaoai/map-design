@@ -19,7 +19,7 @@ import {
 } from '~/shared/ui/admin-page-shell'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { formatAdminDate } from '~/shared/ui/admin-status-badge'
-import { AdminFlagBadge } from '~/shared/ui/admin-status-pill'
+import { TenantOidcConfigForm } from '~/features/tenants/ui/tenant-oidc-config-form'
 import { Button, toast } from '@repo/ui'
 
 function formatBytes(bytes: number): string {
@@ -113,7 +113,7 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
         <AdminPanelHeader
           icon={KeyRoundIcon}
           title="租户 OIDC / SSO"
-          description="企业 IdP 连接配置（只读；写 API 待 Admin 表单）"
+          description="企业 IdP 连接配置（不含 client_secret）"
         />
         {oidcQuery.isLoading ? (
           <AdminTableSkeleton rows={3} columns={1} />
@@ -125,19 +125,11 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
             isRetrying={oidcQuery.isFetching}
           />
         ) : (
-          <>
-            <AdminConfigRow
-              label="启用 SSO"
-              value={<AdminFlagBadge enabled={oidcQuery.data.enabled} />}
-            />
-            <AdminConfigRow
-              label="已配置"
-              value={<AdminFlagBadge enabled={oidcQuery.data.configured} />}
-            />
-            <AdminConfigRow label="展示名" value={oidcQuery.data.displayName ?? '—'} />
-            <AdminConfigRow label="Issuer URI" value={oidcQuery.data.issuerUri ?? '—'} mono />
-            <AdminConfigRow label="Client ID" value={oidcQuery.data.clientId ?? '—'} mono />
-          </>
+          <TenantOidcConfigForm
+            tenantId={tenantId}
+            config={oidcQuery.data}
+            readOnly={!canWrite}
+          />
         )}
       </AdminPanel>
 

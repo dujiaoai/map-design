@@ -1,9 +1,22 @@
 package com.yunyan.saasapi.application.admin;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.yunyan.saasapi.config.SaasAppProperties;
+import com.yunyan.saasapi.domain.AdminAuditLogRepository;
+import com.yunyan.saasapi.domain.AdminAuditWebhookCursorRepository;
+import com.yunyan.saasapi.domain.AdminAuditWebhookDeadLetterRepository;
+import com.yunyan.saasapi.domain.entity.SysAdminAuditLog;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +28,10 @@ class AuditLogWebhookDeliveryJobTest {
 
   @Mock private SaasAppProperties saasAppProperties;
   @Mock private AuditWebhookHttpClient auditWebhookHttpClient;
+  @Mock private AdminAuditLogRepository adminAuditLogRepository;
+  @Mock private AdminAuditWebhookCursorRepository cursorRepository;
+  @Mock private AdminAuditWebhookDeadLetterRepository deadLetterRepository;
+  @Mock private AuditWebhookPayloadBuilder payloadBuilder;
 
   @InjectMocks private AuditLogWebhookDeliveryJob job;
 
@@ -25,20 +42,73 @@ class AuditLogWebhookDeliveryJobTest {
     when(saasAppProperties.getAudit()).thenReturn(audit);
 
     job.deliverPendingAuditEvents();
+
+    verify(adminAuditLogRepository, never()).findUndeliveredAfter(any(), anyInt());
   }
 
   @Test
-  void deliverPendingAuditEvents_postsWhenConfigured() {
+  void deliverPendingAuditEvents_skipsWhenNoPendingEvents() {
+    var audit = enabledAudit();
+    when(saasAppProperties.getAudit()).thenReturn(audit);
+    when(cursorRepository.findDefault()).thenReturn(Optional.empty());
+    when(adminAuditLogRepository.findUndeliveredAfter(null, 50)).thenReturn(List.of());
+
+    job.deliverPendingAuditEvents();
+
+    verify(auditWebhookHttpClient, never()).postJson(anyString(), anyString());
+  }
+
+  @Test
+  void deliverPendingAuditEvents_postsBatchAndUpdatesCursor() {
+    var audit = enabledAudit();
+    var log = sampleLog();
+    when(saasAppProperties.getAudit()).thenReturn(audit);
+    when(cursorRepository.findDefault()).thenReturn(Optional.empty());
+    when(adminAuditLogRepository.findUndeliveredAfter(null, 50)).thenReturn(List.of(log));
+    when(payloadBuilder.buildBatchPayload("jsonl", List.of(log))).thenReturn("{\"events\":[]}");
+    when(auditWebhookHttpClient.postJson(audit.getWebhookUrl(), "{\"events\":[]}")).thenReturn(true);
+
+    job.deliverPendingAuditEvents();
+
+    verify(cursorRepository).upsert(log.getId(), log.getCreatedAt());
+    verify(deadLetterRepository, never()).insert(any(), anyString(), anyString());
+  }
+
+  @Test
+  void deliverPendingAuditEvents_writesDeadLetterOnFailure() {
+    var audit = enabledAudit();
+    var log = sampleLog();
+    when(saasAppProperties.getAudit()).thenReturn(audit);
+    when(cursorRepository.findDefault()).thenReturn(Optional.empty());
+    when(adminAuditLogRepository.findUndeliveredAfter(null, 50)).thenReturn(List.of(log));
+    when(payloadBuilder.buildBatchPayload("jsonl", List.of(log))).thenReturn("{\"events\":[]}");
+    when(payloadBuilder.buildSingleEventPayload(log)).thenReturn("{\"id\":\"x\"}\n");
+    when(auditWebhookHttpClient.postJson(audit.getWebhookUrl(), "{\"events\":[]}")).thenReturn(false);
+
+    job.deliverPendingAuditEvents();
+
+    verify(deadLetterRepository).insert(eq(log.getId()), eq("{\"id\":\"x\"}\n"), eq("HTTP delivery failed"));
+    verify(cursorRepository, never()).upsert(any(), any());
+  }
+
+  private static SaasAppProperties.Audit enabledAudit() {
     var audit = new SaasAppProperties.Audit();
     audit.setWebhookEnabled(true);
     audit.setWebhookUrl("https://siem.example/hook");
     audit.setWebhookFormat("jsonl");
-    when(saasAppProperties.getAudit()).thenReturn(audit);
-    when(auditWebhookHttpClient.postJson(audit.getWebhookUrl(), org.mockito.ArgumentMatchers.anyString()))
-        .thenReturn(true);
+    audit.setWebhookBatchSize(50);
+    return audit;
+  }
 
-    job.deliverPendingAuditEvents();
-
-    verify(auditWebhookHttpClient).postJson(org.mockito.ArgumentMatchers.eq(audit.getWebhookUrl()), org.mockito.ArgumentMatchers.anyString());
+  private static SysAdminAuditLog sampleLog() {
+    var log = new SysAdminAuditLog();
+    log.setId(UUID.randomUUID());
+    log.setActorUserId(UUID.randomUUID());
+    log.setActorEmail("admin@test.local");
+    log.setAction("tenant.update");
+    log.setResourceType("tenant");
+    log.setCrossTenant(false);
+    log.setCreatedAt(Instant.now());
+    return log;
   }
 }

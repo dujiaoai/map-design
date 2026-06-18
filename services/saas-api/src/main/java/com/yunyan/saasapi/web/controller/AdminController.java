@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.web.controller;
 
+import com.yunyan.saasapi.application.admin.AdminUsageBudgetAlertService;
 import com.yunyan.saasapi.application.admin.AdminFinOpsService;
 import com.yunyan.saasapi.application.admin.AdminStatsService;
 import com.yunyan.saasapi.application.admin.AdminSystemDependenciesService;
@@ -10,6 +11,7 @@ import com.yunyan.saasapi.application.admin.AdminUsageCapacityRecommendationServ
 import com.yunyan.saasapi.application.admin.AdminUsageForecastService;
 import com.yunyan.saasapi.application.admin.AdminUsageTrendsService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
+import com.yunyan.saasapi.application.storage.ObjectStorageConsistencyCheckService;
 import com.yunyan.saasapi.application.storage.ObjectStorageRpoMonitorService;
 import com.yunyan.saasapi.application.storage.ObjectStorageDrDrillService;
 import com.yunyan.saasapi.web.dto.admin.FeatureCatalogResponse;
@@ -19,11 +21,14 @@ import com.yunyan.saasapi.web.dto.admin.AdminStatsResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemDependenciesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemFlagsResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminObjectStoragePolicyResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminFinOpsBudgetStatusResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminFinOpsCostAttributionResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminObjectStorageRpoResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageAnomaliesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageForecastBundleResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageTrendsResponse;
+import com.yunyan.saasapi.web.dto.admin.ObjectStorageConsistencyCheckResponse;
+import com.yunyan.saasapi.web.dto.admin.ObjectStorageConsistencyStatusResponse;
 import com.yunyan.saasapi.web.dto.admin.ObjectStorageDrDrillResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -56,7 +61,9 @@ public class AdminController {
   private final AdminObjectStoragePolicyService adminObjectStoragePolicyService;
   private final ObjectStorageDrDrillService objectStorageDrDrillService;
   private final ObjectStorageRpoMonitorService objectStorageRpoMonitorService;
+  private final ObjectStorageConsistencyCheckService objectStorageConsistencyCheckService;
   private final AdminFinOpsService adminFinOpsService;
+  private final AdminUsageBudgetAlertService budgetAlertService;
   private final AdminSystemFlagsService adminSystemFlagsService;
   private final AdminSystemDependenciesService adminSystemDependenciesService;
   private final TenantFeatureAdminService tenantFeatureAdminService;
@@ -126,6 +133,14 @@ public class AdminController {
     return adminFinOpsService.attributeCosts();
   }
 
+  @GetMapping("/stats/finops/budget-status")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(summary = "FinOps 预算状态", description = "Phase 16-4：估算成本 vs 月度预算")
+  public AdminFinOpsBudgetStatusResponse finOpsBudgetStatus() {
+    return budgetAlertService.getBudgetStatus();
+  }
+
   @GetMapping("/stats/usage-trends/export")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
   @SecurityRequirement(name = "bearerAuth")
@@ -162,6 +177,23 @@ public class AdminController {
   @Operation(summary = "对象存储 RPO 监控", description = "Phase 15-5：复制延迟与 RPO 达标")
   public AdminObjectStorageRpoResponse objectStorageRpo() {
     return objectStorageRpoMonitorService.getLatestStatus();
+  }
+
+  @PostMapping("/system/object-storage-consistency-check")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(summary = "对象存储一致性校验", description = "Phase 16-5：比对主备 ETag/大小")
+  public ObjectStorageConsistencyCheckResponse objectStorageConsistencyCheck(
+      @AuthenticationPrincipal SaasPrincipal principal) {
+    return objectStorageConsistencyCheckService.runCheck(principal);
+  }
+
+  @GetMapping("/system/object-storage-consistency-status")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(summary = "对象存储一致性状态", description = "Phase 16-5：累计校验与不一致摘要")
+  public ObjectStorageConsistencyStatusResponse objectStorageConsistencyStatus() {
+    return objectStorageConsistencyCheckService.getStatus();
   }
 
   @GetMapping("/feature-catalog")

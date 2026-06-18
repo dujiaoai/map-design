@@ -30,7 +30,8 @@ class AwsS3ObjectStorageClientTest {
     storage.setBucket("tenant-exports");
     storage.setPublicBaseUrl("https://cdn.example/exports");
     s3Client = mock(S3Client.class);
-    client = new AwsS3ObjectStorageClient(saasAppProperties);
+    var lifecycleService = mock(ObjectStorageLifecycleService.class);
+    client = new AwsS3ObjectStorageClient(saasAppProperties, lifecycleService);
     client.setS3Client(s3Client);
   }
 
@@ -69,5 +70,18 @@ class AwsS3ObjectStorageClientTest {
 
     assertThat(url).contains("tenant-1/large.zip");
     verify(s3Client).createMultipartUpload(any(software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest.class));
+  }
+
+  @Test
+  void upload_replicatesWhenTargetBucketConfigured() {
+    saasAppProperties.getObjectStorage().setReplicationTargetBucket("replica-bucket");
+    when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
+        .thenReturn(PutObjectResponse.builder().build());
+    when(s3Client.copyObject(any(software.amazon.awssdk.services.s3.model.CopyObjectRequest.class)))
+        .thenReturn(software.amazon.awssdk.services.s3.model.CopyObjectResponse.builder().build());
+
+    client.upload("tenant-1/pkg.zip", new byte[] {1}, "application/zip");
+
+    verify(s3Client).copyObject(any(software.amazon.awssdk.services.s3.model.CopyObjectRequest.class));
   }
 }

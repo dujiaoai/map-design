@@ -36,6 +36,7 @@ public class AdminAuditWebhookService {
         deliveryMode,
         pendingEstimate,
         deadLetterRepository.countAll(),
-        lastDeliveredAt);
+        lastDeliveredAt,
+        StringUtils.hasText(audit.getWebhookSigningSecret()));
   }
 }

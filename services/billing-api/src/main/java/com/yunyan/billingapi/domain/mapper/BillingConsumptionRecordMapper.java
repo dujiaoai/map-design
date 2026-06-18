@@ -168,4 +168,14 @@ public interface BillingConsumptionRecordMapper {
       @Param("from") Instant from,
       @Param("to") Instant to,
       @Param("productCode") String productCode);
+
+  @Select(
+      """
+      SELECT COUNT(*)
+      FROM billing_consumption_record
+      WHERE status = 'confirmed'
+        AND created_at &gt;= #{from}
+        AND created_at &lt; #{to}
+      """)
+  long countConfirmedEvents(@Param("from") Instant from, @Param("to") Instant to);
 }

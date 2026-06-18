@@ -5,7 +5,9 @@ import com.yunyan.billing.dto.SignupBonusRequest;
 import com.yunyan.billing.dto.WalletHoldRequest;
 import com.yunyan.billingapi.application.hold.HoldService;
 import com.yunyan.billingapi.application.signup.SignupBonusService;
+import com.yunyan.billingapi.domain.mapper.BillingConsumptionRecordMapper;
 import com.yunyan.billingapi.web.dto.HoldResponse;
+import com.yunyan.billingapi.web.dto.InternalBillingEventCountResponse;
 import com.yunyan.billingapi.web.dto.SignupBonusResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +16,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.Instant;
 import java.util.UUID;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,10 +35,15 @@ public class InternalBillingController {
 
   private final SignupBonusService signupBonusService;
   private final HoldService holdService;
+  private final BillingConsumptionRecordMapper consumptionRecordMapper;
 
-  public InternalBillingController(SignupBonusService signupBonusService, HoldService holdService) {
+  public InternalBillingController(
+      SignupBonusService signupBonusService,
+      HoldService holdService,
+      BillingConsumptionRecordMapper consumptionRecordMapper) {
     this.signupBonusService = signupBonusService;
     this.holdService = holdService;
+    this.consumptionRecordMapper = consumptionRecordMapper;
   }
 
   @PostMapping("/signup-bonus")
@@ -74,5 +82,12 @@ public class InternalBillingController {
     return holdService.estimate(
         new WalletHoldRequest(
             tenantId, userId, productCode, ruleCode, quantity, "estimate-only", null));
+  }
+
+  @GetMapping("/usage/event-count")
+  @Operation(summary = "平台 confirmed 消费事件计数（saas-api 内部）")
+  public InternalBillingEventCountResponse countEvents(
+      @RequestParam @NotNull Instant from, @RequestParam @NotNull Instant to) {
+    return new InternalBillingEventCountResponse(consumptionRecordMapper.countConfirmedEvents(from, to));
   }
 }

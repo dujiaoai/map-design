@@ -13,6 +13,8 @@ import type {
   PatchTenantPayload,
   TenantDataExportRequest,
   TenantDataExportRequestListResponse,
+  PutTenantMenuOverridePayload,
+  TenantMenuOverride,
   TenantMenuOverrideListResponse,
   TenantQuotasResponse,
 } from './model'
@@ -78,4 +80,12 @@ export function fetchTenantStorageEstimate(tenantId: string) {
 
 export function fetchTenantMenuOverrides(tenantId: string) {
   return api.get<TenantMenuOverrideListResponse>(`/admin/tenants/${tenantId}/menu-overrides`)
+}
+
+export function putTenantMenuOverride(tenantId: string, payload: PutTenantMenuOverridePayload) {
+  return api.put<TenantMenuOverride>(`/admin/tenants/${tenantId}/menu-overrides`, payload)
+}
+
+export function deleteTenantMenuOverride(tenantId: string, itemId: string) {
+  return api.delete<void>(`/admin/tenants/${tenantId}/menu-overrides/${encodeURIComponent(itemId)}`)
 }

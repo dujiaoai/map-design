@@ -106,3 +106,10 @@ export interface TenantMenuOverride {
 export interface TenantMenuOverrideListResponse {
   overrides: TenantMenuOverride[]
 }
+
+export interface PutTenantMenuOverridePayload {
+  itemId: string
+  enabled?: boolean | null
+  sortOrder?: number | null
+  title?: string | null
+}

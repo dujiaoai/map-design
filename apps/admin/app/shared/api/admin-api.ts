@@ -78,6 +78,8 @@ export type {
   AdminTenantOidcConfig,
   PatchTenantOidcConfigPayload,
   AdminTenantStorageEstimate,
+  PutTenantMenuOverridePayload,
+  TenantMenuOverride,
   TenantMenuOverrideListResponse,
 } from '~/entities/tenant'
 export {
@@ -94,6 +96,8 @@ export {
   fetchTenantStorageEstimate,
   patchAdminTenant,
   patchTenantOidcConfig,
+  putTenantMenuOverride,
+  deleteTenantMenuOverride,
   updateTenantFeatures,
 } from '~/entities/tenant'
 export type { AdminUserListResponse, AdminUserSummary, PatchUserPayload, UserOauthBindItem, UserOauthBindsResponse } from '~/entities/user'

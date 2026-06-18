@@ -16,6 +16,8 @@ const schema = z.object({
   displayName: z.string().max(128),
   issuerUri: z.string().max(512),
   clientId: z.string().max(128),
+  clientSecret: z.string().max(512),
+  scopes: z.string().max(256),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -44,6 +46,8 @@ export function TenantOidcConfigForm({
       displayName: '',
       issuerUri: '',
       clientId: '',
+      clientSecret: '',
+      scopes: '',
     },
   })
 
@@ -55,6 +59,8 @@ export function TenantOidcConfigForm({
       displayName: config.displayName ?? '',
       issuerUri: config.issuerUri ?? '',
       clientId: config.clientId ?? '',
+      clientSecret: '',
+      scopes: config.scopes ?? '',
     })
   }, [config, reset])
 
@@ -66,9 +72,13 @@ export function TenantOidcConfigForm({
       const displayName = values.displayName.trim()
       const issuerUri = values.issuerUri.trim()
       const clientId = values.clientId.trim()
+      const clientSecret = values.clientSecret.trim()
+      const scopes = values.scopes.trim()
       if (displayName) payload.displayName = displayName
       if (issuerUri) payload.issuerUri = issuerUri
       if (clientId) payload.clientId = clientId
+      if (clientSecret) payload.clientSecret = clientSecret
+      if (scopes) payload.scopes = scopes
       return patchTenantOidcConfig(tenantId, payload)
     },
     onSuccess: async () => {
@@ -83,6 +93,10 @@ export function TenantOidcConfigForm({
   function onSubmit(values: FormValues) {
     if (values.enabled && (!values.issuerUri.trim() || !values.clientId.trim())) {
       toast.error('启用 SSO 时须填写 Issuer URI 与 Client ID')
+      return
+    }
+    if (values.enabled && !config.clientSecretConfigured && !values.clientSecret.trim()) {
+      toast.error('启用 SSO 时须填写 Client Secret')
       return
     }
     mutation.mutate(values)
@@ -123,6 +137,33 @@ export function TenantOidcConfigForm({
           disabled={readOnly || isSubmitting}
           className="font-mono text-xs"
           aria-label="OIDC Client ID"
+        />
+      </AdminField>
+      <AdminField
+        label="Client Secret"
+        hint={
+          config.clientSecretConfigured
+            ? '已保存；留空表示不更新'
+            : '启用 SSO 时必填'
+        }
+        error={errors.clientSecret?.message}
+      >
+        <Input
+          {...register('clientSecret')}
+          type="password"
+          placeholder={config.clientSecretConfigured ? '••••••••' : 'oauth-client-secret'}
+          disabled={readOnly || isSubmitting}
+          className="font-mono text-xs"
+          aria-label="OIDC Client Secret"
+        />
+      </AdminField>
+      <AdminField label="Scopes" hint="空格分隔，默认 openid profile email" error={errors.scopes?.message}>
+        <Input
+          {...register('scopes')}
+          placeholder="openid profile email"
+          disabled={readOnly || isSubmitting}
+          className="font-mono text-xs"
+          aria-label="OIDC Scopes"
         />
       </AdminField>
       <AdminFormError message={mutation.isError ? formatAdminApiError(mutation.error) : null} />

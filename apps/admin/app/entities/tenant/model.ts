@@ -77,6 +77,8 @@ export interface AdminTenantOidcConfig {
   issuerUri: string | null
   clientId: string | null
   configured: boolean
+  clientSecretConfigured: boolean
+  scopes: string | null
 }
 
 export interface PatchTenantOidcConfigPayload {
@@ -84,6 +86,8 @@ export interface PatchTenantOidcConfigPayload {
   displayName?: string
   issuerUri?: string
   clientId?: string
+  clientSecret?: string
+  scopes?: string
 }
 
 export interface AdminTenantStorageEstimate {

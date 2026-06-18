@@ -14,4 +14,5 @@ public record MenuItemDto(
     @Schema(description = "kind=map-tool") String toolId,
     @Schema(description = "kind=map-module | map-dock-module") String moduleId,
     @Schema(description = "kind=route") String url,
-    @Schema(description = "kind=external") String href) {}
+    @Schema(description = "kind=external") String href,
+    @Schema(description = "RBAC 门控权限码；空表示不限制") String permissionCode) {}

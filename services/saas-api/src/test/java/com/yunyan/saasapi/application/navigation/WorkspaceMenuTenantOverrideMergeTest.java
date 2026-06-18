@@ -32,5 +32,15 @@ class WorkspaceMenuTenantOverrideMergeTest {
     override.setTitle("Custom");
     assertTrue(
         WorkspaceMenuService.effectiveTitle(item, Map.of("tool-a", override)).contains("Custom"));
+  @Test
+  void effectiveSortOrder_usesOverrideValue() {
+    var item = new WorkspaceMenuItem();
+    item.setId("tool-a");
+    item.setSortOrder(10);
+    var override = new WorkspaceMenuTenantOverride();
+    override.setItemId("tool-a");
+    override.setSortOrder(3);
+    org.junit.jupiter.api.Assertions.assertEquals(
+        3, WorkspaceMenuService.effectiveSortOrder(item, Map.of("tool-a", override)));
   }
 }

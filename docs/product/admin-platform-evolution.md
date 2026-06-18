@@ -139,10 +139,19 @@ flowchart TB
 
 | PR | 内容 |
 | --- | --- |
-| 8-1 | 租户 SSO 完整 OAuth 授权流 |
-| 8-2 | 审计 Webhook 批量事件推送 + 死信表 |
-| 8-3 | GDPR artifact 对象存储（S3/MinIO） |
-| 8-4 | 菜单运行时 sortOrder 覆盖 |
+| 8-1 | 租户 SSO 完整 OAuth 授权流 | ✅ authorize/callback + Admin secret |
+| 8-2 | 审计 Webhook 批量事件推送 + 死信表 | ✅ 游标 + batch Job + dead letter |
+| 8-3 | GDPR artifact 对象存储（S3/MinIO） | 🟡 local 目录存储 + zip 导出 ✅ |
+| 8-4 | 菜单运行时 sortOrder 覆盖 | ✅ |
+
+### Phase 9 · 生产化（Later）
+
+| PR | 内容 |
+| --- | --- |
+| 9-1 | 租户 SSO Admin 回调 URL 校验与 IdP metadata 导入 |
+| 9-2 | 审计 Webhook HMAC 签名与告警 |
+| 9-3 | GDPR artifact S3/MinIO 生产适配 |
+| 9-4 | 菜单覆盖批量导入 |
 
 ---
 
@@ -168,4 +177,4 @@ flowchart TB
 | **Phase 5E** | 多产品菜单/存储 Admin UI 摘要 + migration 骨架 ✅ |
 | **Phase 6** | OIDC 表单、菜单覆盖 CRUD、permission 门控、Job 骨架 ✅ |
 | **Phase 7** | saas-web SSO 入口、Webhook HTTP、GDPR artifact、菜单 diff ✅ |
-| **Phase 8** | 租户 SSO 完整流、SIEM 批量、对象存储 artifact |
+| **Phase 8** | 租户 SSO 完整流、SIEM 批量、对象存储 artifact、sortOrder 运行时 ✅ |

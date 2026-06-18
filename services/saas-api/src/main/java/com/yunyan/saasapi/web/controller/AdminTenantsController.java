@@ -7,6 +7,8 @@ import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
 import com.yunyan.saasapi.application.admin.TenantMenuOverrideAdminService;
 import com.yunyan.saasapi.application.admin.TenantOidcMetadataImportService;
 import com.yunyan.saasapi.application.admin.TenantOidcAdminService;
+import com.yunyan.saasapi.application.admin.TenantSamlAdminService;
+import com.yunyan.saasapi.application.admin.ScimProvisioningAdminService;
 import com.yunyan.saasapi.application.admin.TenantStorageEstimateAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
@@ -17,6 +19,8 @@ import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuDiffResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantOidcConfigDto;
+import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlConfigDto;
+import com.yunyan.saasapi.web.dto.admin.AdminTenantScimProvisioningDto;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportArtifactResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantStorageEstimateDto;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
@@ -61,6 +65,8 @@ public class AdminTenantsController {
   private final TenantDataExportAdminService tenantDataExportAdminService;
   private final TenantOidcAdminService tenantOidcAdminService;
   private final TenantOidcMetadataImportService tenantOidcMetadataImportService;
+  private final TenantSamlAdminService tenantSamlAdminService;
+  private final ScimProvisioningAdminService scimProvisioningAdminService;
   private final TenantStorageEstimateAdminService tenantStorageEstimateAdminService;
   private final TenantMenuOverrideAdminService tenantMenuOverrideAdminService;
 
@@ -151,6 +157,20 @@ public class AdminTenantsController {
   @Operation(summary = "获取租户 OIDC 配置（只读）", description = "Phase 5D-1 骨架；未配置时返回 enabled=false")
   public AdminTenantOidcConfigDto getOidcConfig(@PathVariable UUID tenantId) {
     return tenantOidcAdminService.getConfig(tenantId);
+  }
+
+  @GetMapping("/{tenantId}/saml-config")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "获取租户 SAML 配置摘要（只读）", description = "Phase 10-2 调研骨架；未实现完整 SP 流")
+  public AdminTenantSamlConfigDto getSamlConfig(@PathVariable UUID tenantId) {
+    return tenantSamlAdminService.getConfig(tenantId);
+  }
+
+  @GetMapping("/{tenantId}/scim-provisioning")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "租户 SCIM provisioning 状态（只读）", description = "Phase 10-5 PoC")
+  public AdminTenantScimProvisioningDto getScimProvisioning(@PathVariable UUID tenantId) {
+    return scimProvisioningAdminService.getStatus(tenantId);
   }
 
   @PatchMapping("/{tenantId}/oidc-config")

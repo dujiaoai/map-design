@@ -23,6 +23,8 @@ public class AuditLogWebhookDeliveryJob {
   private final AdminAuditWebhookCursorRepository cursorRepository;
   private final AdminAuditWebhookDeadLetterRepository deadLetterRepository;
   private final AuditWebhookPayloadBuilder payloadBuilder;
+  private final AuditWebhookHmacSigner hmacSigner;
+  private final AuditWebhookAlertService alertService;
 
   @Scheduled(
       fixedDelayString = "${saas.audit.webhook-delivery-ms:300000}",
@@ -40,7 +42,8 @@ public class AuditLogWebhookDeliveryJob {
       return;
     }
     var payload = payloadBuilder.buildBatchPayload(audit.getWebhookFormat(), batch);
-    var ok = auditWebhookHttpClient.postJson(audit.getWebhookUrl(), payload);
+    var signature = hmacSigner.sign(audit.getWebhookSigningSecret(), payload);
+    var ok = auditWebhookHttpClient.postJson(audit.getWebhookUrl(), payload, signature);
     if (!ok) {
       for (var entry : batch) {
         deadLetterRepository.insert(
@@ -48,6 +51,7 @@ public class AuditLogWebhookDeliveryJob {
             payloadBuilder.buildSingleEventPayload(entry),
             "HTTP delivery failed");
       }
+      alertService.notifyIfDeadLettersAccumulated(batch.size());
       log.warn("Audit webhook batch delivery failed, {} event(s) moved to dead letter", batch.size());
       return;
     }

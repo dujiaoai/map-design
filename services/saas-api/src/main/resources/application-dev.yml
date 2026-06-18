@@ -21,6 +21,9 @@ saas:
             - openid
             - profile
             - email
+    saml:
+      metadata-sync-ms: ${SAAS_SAML_METADATA_SYNC_MS:3600000}
+      cert-expiry-alert-ms: ${SAAS_SAML_CERT_EXPIRY_ALERT_MS:86400000}
   # Phase 10-3：对象存储真实 S3 SDK（默认 local；生产设 SAAS_OBJECT_STORAGE_USE_REAL_S3=true）
   object-storage:
     provider: local
@@ -39,6 +42,11 @@ saas:
     # Phase 13-5：SSE/KMS（生产按需配置）
     server-side-encryption: ${SAAS_OBJECT_STORAGE_SSE:}
     kms-key-id: ${SAAS_OBJECT_STORAGE_KMS_KEY_ID:}
+    # Phase 14-5：WORM 与 DR 演练
+    worm-enabled: ${SAAS_OBJECT_STORAGE_WORM_ENABLED:false}
+    object-lock-mode: ${SAAS_OBJECT_STORAGE_OBJECT_LOCK_MODE:GOVERNANCE}
+    dr-drill-target-bucket: ${SAAS_OBJECT_STORAGE_DR_DRILL_BUCKET:}
   audit:
     alert-webhook-url: ${SAAS_AUDIT_ALERT_WEBHOOK_URL:}
     usage-alert-ms: ${SAAS_AUDIT_USAGE_ALERT_MS:3600000}
+    webhook-health-check-ms: ${SAAS_AUDIT_WEBHOOK_HEALTH_CHECK_MS:300000}

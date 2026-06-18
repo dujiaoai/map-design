@@ -147,6 +147,8 @@ public class SaasAppProperties {
     private long deadLetterRetryIntervalMs = 300_000L;
     /** 可选告警 Webhook URL（与主 webhook 分离） */
     private String alertWebhookUrl = "";
+    /** 连续健康检查失败次数达到阈值后自动禁用目标（Phase 14-3） */
+    private int webhookHealthFailureThreshold = 3;
   }
 
   @Data
@@ -177,5 +179,11 @@ public class SaasAppProperties {
     private String kmsKeyId = "";
     /** AES256 | aws:kms；空表示不启用 SSE */
     private String serverSideEncryption = "";
+    /** Phase 14-5：WORM Object Lock */
+    private boolean wormEnabled = false;
+    /** GOVERNANCE | COMPLIANCE */
+    private String objectLockMode = "GOVERNANCE";
+    /** DR 演练目标 bucket */
+    private String drDrillTargetBucket = "";
   }
 }

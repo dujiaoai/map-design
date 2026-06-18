@@ -113,4 +113,69 @@ export async function mockTenantsPageApis(page: Page) {
       body: JSON.stringify(E2E_TENANTS_LIST),
     })
   })
+
+  await page.route(/\/v1\/admin\/tenants\/[^/]+$/, async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.continue()
+      return
+    }
+    const tenantId = new URL(route.request().url()).pathname.split('/').pop()!
+    const tenant = E2E_TENANTS_LIST.tenants.find((row) => row.id === tenantId)
+    if (!tenant) {
+      await route.fulfill({ status: 404, body: '{}' })
+      return
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(tenant),
+    })
+  })
+
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/data-export-requests/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ requests: [] }),
+    })
+  })
+
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/oidc-config/, async (route) => {
+    const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        tenantId,
+        enabled: false,
+        displayName: null,
+        issuerUri: null,
+        clientId: null,
+        configured: false,
+      }),
+    })
+  })
+
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/storage-estimate/, async (route) => {
+    const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        tenantId,
+        attachmentBytes: 0,
+        mapLayerBytes: 0,
+        totalBytes: 0,
+        source: 'skeleton',
+      }),
+    })
+  })
+
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/menu-overrides/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ overrides: [] }),
+    })
+  })
 }

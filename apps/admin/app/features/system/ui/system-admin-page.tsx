@@ -319,6 +319,11 @@ export function SystemAdminPage() {
           <AdminConfigRow label="推送格式" value={flags.audit.webhookFormat} mono />
           <AdminConfigRow label="交付模式" value={flags.audit.deliveryMode} mono />
           <AdminConfigRow
+            label="审计保留天数"
+            value={String(flags.audit.retentionDays)}
+            mono
+          />
+          <AdminConfigRow
             label="审计日志"
             value={
               <Link

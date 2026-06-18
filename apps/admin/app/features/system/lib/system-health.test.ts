@@ -37,6 +37,7 @@ const BASE_FLAGS: AdminSystemFlagsResponse = {
     webhookConfigured: false,
     webhookFormat: 'jsonl',
     deliveryMode: 'csv_only',
+    retentionDays: 365,
   },
   runtime: { activeProfiles: ['dev'], jwtPermEpoch: 1 },
 }

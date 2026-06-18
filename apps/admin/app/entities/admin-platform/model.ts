@@ -57,6 +57,7 @@ export interface AdminSystemFlagsResponse {
     webhookConfigured: boolean
     webhookFormat: string
     deliveryMode: string
+    retentionDays: number
   }
   runtime: {
     activeProfiles: string[]

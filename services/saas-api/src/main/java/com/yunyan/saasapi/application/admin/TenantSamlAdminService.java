@@ -33,11 +33,13 @@ public class TenantSamlAdminService {
         Boolean.TRUE.equals(config.getEnabled()),
         config.getEntityId(),
         config.getSsoUrl(),
+        config.getAcsUrl(),
+        config.getSpEntityId(),
         StringUtils.hasText(config.getCertificatePem()),
         configured);
   }
 
   static AdminTenantSamlConfigDto emptyDto(UUID tenantId) {
-    return new AdminTenantSamlConfigDto(tenantId.toString(), false, null, null, false, false);
+    return new AdminTenantSamlConfigDto(tenantId.toString(), false, null, null, null, null, false, false);
   }
 }

@@ -16,6 +16,8 @@ public class TenantSamlConfig {
 
   private String entityId;
   private String ssoUrl;
+  private String acsUrl;
+  private String spEntityId;
   private String certificatePem;
   private Boolean enabled;
   private Instant createdAt;

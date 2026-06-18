@@ -5,6 +5,7 @@ import com.yunyan.saasapi.application.admin.TenantAdminService;
 import com.yunyan.saasapi.application.admin.TenantDataExportAdminService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
 import com.yunyan.saasapi.application.admin.TenantMenuOverrideAdminService;
+import com.yunyan.saasapi.application.admin.TenantOidcMetadataImportService;
 import com.yunyan.saasapi.application.admin.TenantOidcAdminService;
 import com.yunyan.saasapi.application.admin.TenantStorageEstimateAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
@@ -23,7 +24,7 @@ import com.yunyan.saasapi.web.dto.admin.PatchTenantOidcConfigRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantRequest;
 import com.yunyan.saasapi.web.dto.admin.PutTenantMenuOverrideRequest;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestDto;
-import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestListResponse;
+import com.yunyan.saasapi.web.dto.admin.TenantOidcMetadataImportResponse;
 import com.yunyan.saasapi.web.dto.admin.UpdateTenantFeaturesRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -57,6 +58,7 @@ public class AdminTenantsController {
   private final TenantFeatureAdminService tenantFeatureAdminService;
   private final TenantDataExportAdminService tenantDataExportAdminService;
   private final TenantOidcAdminService tenantOidcAdminService;
+  private final TenantOidcMetadataImportService tenantOidcMetadataImportService;
   private final TenantStorageEstimateAdminService tenantStorageEstimateAdminService;
   private final TenantMenuOverrideAdminService tenantMenuOverrideAdminService;
 
@@ -157,6 +159,14 @@ public class AdminTenantsController {
       @PathVariable UUID tenantId,
       @Valid @RequestBody PatchTenantOidcConfigRequest request) {
     return tenantOidcAdminService.patchConfig(principal, tenantId, request);
+  }
+
+  @PostMapping("/{tenantId}/oidc-config/import-metadata")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "导入 IdP OIDC discovery metadata", description = "Phase 9-1：缓存 authorization/token/userinfo 端点并返回期望回调 URL")
+  public TenantOidcMetadataImportResponse importOidcMetadata(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
+    return tenantOidcMetadataImportService.importMetadata(principal, tenantId);
   }
 
   @GetMapping("/{tenantId}/storage-estimate")

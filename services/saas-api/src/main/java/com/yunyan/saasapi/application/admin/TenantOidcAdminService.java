@@ -21,13 +21,14 @@ public class TenantOidcAdminService {
   private final TenantRepository tenantRepository;
   private final TenantOidcConfigRepository oidcConfigRepository;
   private final AdminAuditLogService adminAuditLogService;
+  private final TenantOidcCallbackUrlValidator callbackUrlValidator;
 
   public AdminTenantOidcConfigDto getConfig(UUID tenantId) {
     tenantRepository.findById(tenantId).orElseThrow(() -> AuthException.notFound("Tenant not found"));
     return oidcConfigRepository
         .findByTenantId(tenantId)
-        .map(TenantOidcAdminService::toDto)
-        .orElseGet(() -> emptyDto(tenantId));
+        .map(config -> toDto(config, tenantId))
+        .orElseGet(() -> emptyDto(tenantId, callbackUrlValidator.expectedCallbackUrl(tenantId)));
   }
 
   @Transactional
@@ -71,6 +72,10 @@ public class TenantOidcAdminService {
     if (StringUtils.hasText(request.scopes())) {
       config.setScopes(request.scopes().trim());
     }
+    if (Boolean.TRUE.equals(config.getEnabled())) {
+      callbackUrlValidator.assertCallbackRegistered(
+          tenantRepository.findById(tenantId).orElseThrow().getSlug());
+    }
     config.setUpdatedAt(Instant.now());
     if (oidcConfigRepository.findByTenantId(tenantId).isEmpty()) {
       oidcConfigRepository.insert(config);
@@ -79,14 +84,18 @@ public class TenantOidcAdminService {
     }
     adminAuditLogService.recordTenantAction(
         principal, "tenant.oidc_config.update", tenantId, "Updated tenant OIDC config skeleton");
-    return toDto(config);
+    return toDto(config, tenantId);
   }
 
   private void ensureTenantExists(UUID tenantId) {
     tenantRepository.findById(tenantId).orElseThrow(() -> AuthException.notFound("Tenant not found"));
   }
 
-  static AdminTenantOidcConfigDto toDto(TenantOidcConfig config) {
+  private AdminTenantOidcConfigDto toDto(TenantOidcConfig config, UUID tenantId) {
+    return toDto(config, callbackUrlValidator.expectedCallbackUrl(tenantId));
+  }
+
+  static AdminTenantOidcConfigDto toDto(TenantOidcConfig config, String expectedCallbackUrl) {
     var configured =
         StringUtils.hasText(config.getIssuerUri())
             && StringUtils.hasText(config.getClientId())
@@ -99,10 +108,14 @@ public class TenantOidcAdminService {
         config.getClientId(),
         configured,
         StringUtils.hasText(config.getClientSecret()),
-        config.getScopes());
+        config.getScopes(),
+        expectedCallbackUrl,
+        config.getMetadataImportedAt() != null,
+        config.getMetadataImportedAt() != null ? config.getMetadataImportedAt().toEpochMilli() : null);
   }
 
-  static AdminTenantOidcConfigDto emptyDto(UUID tenantId) {
-    return new AdminTenantOidcConfigDto(tenantId.toString(), false, null, null, null, false, false, null);
+  static AdminTenantOidcConfigDto emptyDto(UUID tenantId, String expectedCallbackUrl) {
+    return new AdminTenantOidcConfigDto(
+        tenantId.toString(), false, null, null, null, false, false, null, expectedCallbackUrl, false, null);
   }
 }

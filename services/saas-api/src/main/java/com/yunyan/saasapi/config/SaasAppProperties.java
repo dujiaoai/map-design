@@ -15,6 +15,7 @@ public class SaasAppProperties {
   private final PasswordReset passwordReset = new PasswordReset();
   private final Registration registration = new Registration();
   private final RateLimit rateLimit = new RateLimit();
+  private final Audit audit = new Audit();
 
   @Data
   public static class Mail {
@@ -124,5 +125,14 @@ public class SaasAppProperties {
     private Duration ipWindow = Duration.ofHours(1);
     private int emailMaxAttempts = 1;
     private Duration emailWindow = Duration.ofMinutes(15);
+  }
+
+  @Data
+  public static class Audit {
+    /** 为 true 时除 CSV 外可推送 SIEM/Webhook（骨架，默认关闭） */
+    private boolean webhookEnabled = false;
+    private String webhookUrl = "";
+    /** jsonl | ndjson */
+    private String webhookFormat = "jsonl";
   }
 }

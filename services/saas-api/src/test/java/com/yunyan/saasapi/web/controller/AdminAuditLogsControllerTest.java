@@ -168,6 +168,19 @@ class AdminAuditLogsControllerTest {
         .andExpect(jsonPath("$.logs[*].action", hasItem("audit.export")));
   }
 
+  @Test
+  void webhookConfig_withPlatformAdmin_returnsCsvOnlyByDefault() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/audit-logs/webhook-config")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.enabled").value(false))
+        .andExpect(jsonPath("$.configured").value(false))
+        .andExpect(jsonPath("$.format").value("jsonl"))
+        .andExpect(jsonPath("$.deliveryMode").value("csv_only"));
+  }
+
   private String loginAccessToken(String email) throws Exception {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }

@@ -1,10 +1,12 @@
 package com.yunyan.saasapi.web.controller;
 
 import com.yunyan.saasapi.application.admin.AdminAuditLogService;
+import com.yunyan.saasapi.application.admin.AdminAuditWebhookService;
 import com.yunyan.saasapi.application.admin.AuditLogListParams;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditLogListResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookConfigResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminAuditLogsController {
 
   private final AdminAuditLogService adminAuditLogService;
+  private final AdminAuditWebhookService adminAuditWebhookService;
 
   @GetMapping
   @PreAuthorize(PermissionCodes.ADMIN_AUDIT_READ_AUTHORITIES)
@@ -77,5 +80,14 @@ public class AdminAuditLogsController {
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
         .contentType(new MediaType("text", "csv", java.nio.charset.StandardCharsets.UTF_8))
         .body(csv);
+  }
+
+  @GetMapping("/webhook-config")
+  @PreAuthorize(PermissionCodes.ADMIN_AUDIT_READ_AUTHORITIES)
+  @Operation(
+      summary = "审计 Webhook/SIEM 配置摘要（只读）",
+      description = "不含 webhook URL 明文；用于 Admin 合规集成状态展示。")
+  public AdminAuditWebhookConfigResponse webhookConfig() {
+    return adminAuditWebhookService.getConfig();
   }
 }

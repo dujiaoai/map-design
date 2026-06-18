@@ -2,7 +2,6 @@ package com.yunyan.saasapi.application.admin;
 
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.AdminAuditWebhookDeadLetterRepository;
-import java.time.Duration;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -23,6 +22,7 @@ public class AuditWebhookDeadLetterRetryJob {
   private final AuditWebhookHmacSigner hmacSigner;
   private final SaasAppProperties saasAppProperties;
   private final AuditWebhookAlertService alertService;
+  private final AuditWebhookSmartRetryPolicy smartRetryPolicy;
 
   @Scheduled(
       fixedDelayString = "${saas.audit.dead-letter-retry-ms:600000}",
@@ -53,13 +53,12 @@ public class AuditWebhookDeadLetterRetryJob {
     }
   }
 
-  private static boolean isBackoffElapsed(
+  private boolean isBackoffElapsed(
       com.yunyan.saasapi.domain.entity.SysAdminAuditWebhookDeadLetter row, long baseIntervalMs) {
     if (row.getUpdatedAt() == null) {
       return true;
     }
-    var multiplier = Math.max(row.getAttempts(), 1);
-    var wait = Duration.ofMillis(Math.max(baseIntervalMs, 1L) * multiplier);
-    return row.getUpdatedAt().plus(wait).isBefore(Instant.now());
+    var next = smartRetryPolicy.nextRetryAt(row.getAttempts(), baseIntervalMs);
+    return next.isBefore(Instant.now()) || next.equals(Instant.now());
   }
 }

@@ -170,3 +170,5 @@ P0–P4 与路线图外 E2E 已交付。下一阶段按 [docs/product/admin-plat
 | **5C** | 租户生命周期 | plan/trialEndsAt ✅、停用 session 撤销、onboarding 看板 |
 | **5D** | 企业 SSO 与合规 | 租户级 IdP、审计 Webhook |
 | **5E** | 多产品扩展 | 菜单租户覆盖、菜单 RBAC（FND-08 Later） |
+
+**Phase 9（生产化）** ✅：租户 OIDC metadata 导入与回调 URL、审计 Webhook HMAC 签名、GDPR artifact S3 适配器、菜单覆盖 JSON 批量导入。详见 [admin-platform-evolution.md](../../docs/product/admin-platform-evolution.md)。

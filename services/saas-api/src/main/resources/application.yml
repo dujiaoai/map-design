@@ -117,10 +117,12 @@ saas:
       - http://localhost:5182
   tenant:
     trial-expired-suspend-ms: ${SAAS_TRIAL_EXPIRED_SUSPEND_MS:3600000}
+    data-export-process-ms: ${SAAS_TENANT_DATA_EXPORT_PROCESS_MS:600000}
   audit:
     webhook-enabled: ${SAAS_AUDIT_WEBHOOK_ENABLED:false}
     webhook-url: ${SAAS_AUDIT_WEBHOOK_URL:}
     webhook-format: ${SAAS_AUDIT_WEBHOOK_FORMAT:jsonl}
+    retention-days: ${SAAS_AUDIT_RETENTION_DAYS:365}
 
 springdoc:
   api-docs:

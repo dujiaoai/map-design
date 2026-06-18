@@ -30,4 +30,16 @@ public class TenantDataExportRequestRepository {
             .orderByDesc(TenantDataExportRequest::getCreatedAt)
             .last("LIMIT " + limit));
   }
+
+  public List<TenantDataExportRequest> findPending(String status, int limit) {
+    return mapper.selectList(
+        Wrappers.<TenantDataExportRequest>lambdaQuery()
+            .eq(TenantDataExportRequest::getStatus, status)
+            .orderByAsc(TenantDataExportRequest::getCreatedAt)
+            .last("LIMIT " + limit));
+  }
+
+  public void update(TenantDataExportRequest request) {
+    mapper.updateById(request);
+  }
 }

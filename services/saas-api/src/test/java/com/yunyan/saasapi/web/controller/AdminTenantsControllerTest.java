@@ -303,6 +303,17 @@ class AdminTenantsControllerTest {
         .andExpect(jsonPath("$.displayName").value("Corp SSO"));
   }
 
+  @Test
+  void menuOverrides_emptyByDefault() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID + "/menu-overrides")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.overrides").isArray())
+        .andExpect(jsonPath("$.overrides").isEmpty());
+  }
+
   private String loginAccessToken(String email) throws Exception {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }

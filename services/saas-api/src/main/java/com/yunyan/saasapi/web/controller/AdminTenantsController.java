@@ -4,6 +4,7 @@ import com.yunyan.saasapi.application.admin.AdminListParams;
 import com.yunyan.saasapi.application.admin.TenantAdminService;
 import com.yunyan.saasapi.application.admin.TenantDataExportAdminService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
+import com.yunyan.saasapi.application.admin.TenantMenuOverrideAdminService;
 import com.yunyan.saasapi.application.admin.TenantOidcAdminService;
 import com.yunyan.saasapi.application.admin.TenantStorageEstimateAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
@@ -11,6 +12,7 @@ import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantFeaturesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantListResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantOidcConfigDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantStorageEstimateDto;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
@@ -51,6 +53,7 @@ public class AdminTenantsController {
   private final TenantDataExportAdminService tenantDataExportAdminService;
   private final TenantOidcAdminService tenantOidcAdminService;
   private final TenantStorageEstimateAdminService tenantStorageEstimateAdminService;
+  private final TenantMenuOverrideAdminService tenantMenuOverrideAdminService;
 
   @GetMapping
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
@@ -148,5 +151,12 @@ public class AdminTenantsController {
   @Operation(summary = "租户存储用量估算（骨架）", description = "FND-08g 占位；后续对接对象存储计量")
   public AdminTenantStorageEstimateDto getStorageEstimate(@PathVariable UUID tenantId) {
     return tenantStorageEstimateAdminService.estimate(tenantId);
+  }
+
+  @GetMapping("/{tenantId}/menu-overrides")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "列出租户菜单覆盖", description = "Phase 5E-1 骨架；空列表表示全部继承平台模板")
+  public AdminTenantMenuOverrideListResponse listMenuOverrides(@PathVariable UUID tenantId) {
+    return tenantMenuOverrideAdminService.listOverrides(tenantId);
   }
 }

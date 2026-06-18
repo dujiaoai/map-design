@@ -19,6 +19,10 @@ public class TenantSamlConfig {
   private String acsUrl;
   private String spEntityId;
   private String certificatePem;
+  private String metadataUrl;
+  private String spCertificatePem;
+  private Instant spCertificateExpiresAt;
   private Boolean enabled;
   private Instant createdAt;
+  private Instant updatedAt;
 }

@@ -4,6 +4,7 @@ import com.yunyan.saasapi.application.auth.oidc.OidcAuthorizationSession;
 import com.yunyan.saasapi.application.auth.oidc.OidcAuthorizationSessionStore;
 import com.yunyan.saasapi.application.auth.oidc.OidcClientKind;
 import com.yunyan.saasapi.application.auth.oidc.OidcDiscoveryClient;
+import com.yunyan.saasapi.application.auth.oidc.OidcDiscoveryDocument;
 import com.yunyan.saasapi.application.auth.oidc.OidcPkceSupport;
 import com.yunyan.saasapi.application.auth.oidc.OidcTokenClient;
 import com.yunyan.saasapi.application.auth.oidc.OidcUserInfoClient;
@@ -40,7 +41,7 @@ public class TenantSsoOidcAuthService {
   public OidcAuthorizeResponse beginAuthorization(String slug) {
     var normalized = requireSlug(slug);
     var config = requireFlowReadyConfig(normalized);
-    var discovery = oidcDiscoveryClient.discover(config.getIssuerUri());
+    var discovery = resolveDiscovery(config);
     var providerId = TenantSsoOidcSupport.providerId(normalized);
     var redirectUri = callbackUri(normalized);
     var state = oidcPkceSupport.randomState();
@@ -81,7 +82,7 @@ public class TenantSsoOidcAuthService {
       throw AuthException.unauthorized("Tenant slug mismatch");
     }
     var config = requireFlowReadyConfig(normalized);
-    var discovery = oidcDiscoveryClient.discover(config.getIssuerUri());
+    var discovery = resolveDiscovery(config);
     var token =
         oidcTokenClient.exchangeAuthorizationCode(
             config.getClientId(),
@@ -115,6 +116,18 @@ public class TenantSsoOidcAuthService {
     return StringUtils.hasText(config.getIssuerUri())
         && StringUtils.hasText(config.getClientId())
         && StringUtils.hasText(config.getClientSecret());
+  }
+
+  private OidcDiscoveryDocument resolveDiscovery(TenantOidcConfig config) {
+    if (StringUtils.hasText(config.getAuthorizationEndpoint())
+        && StringUtils.hasText(config.getTokenEndpoint())) {
+      return new OidcDiscoveryDocument(
+          config.getIssuerUri(),
+          config.getAuthorizationEndpoint(),
+          config.getTokenEndpoint(),
+          config.getUserinfoEndpoint());
+    }
+    return oidcDiscoveryClient.discover(config.getIssuerUri());
   }
 
   private String callbackUri(String slug) {

@@ -293,6 +293,26 @@ export async function mockTenantsPageApis(page: Page) {
     })
   })
 
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/scim-sync-events\/summary/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        pendingCount: 2,
+        tenantPendingCount: 1,
+        conflictStrategy: 'last_write_wins',
+      }),
+    })
+  })
+
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/saml-idp-federation/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ items: [] }),
+    })
+  })
+
   await page.route(/\/v1\/admin\/tenants\/[^/]+\/storage-estimate/, async (route) => {
     const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
     await route.fulfill({

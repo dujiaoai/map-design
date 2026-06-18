@@ -45,7 +45,8 @@ public record AdminSystemFlagsResponse(
       boolean webhookEnabled,
       boolean webhookConfigured,
       String webhookFormat,
-      String deliveryMode) {}
+      String deliveryMode,
+      int retentionDays) {}
 
   public record RuntimeFlags(List<String> activeProfiles, int jwtPermEpoch) {}
 }

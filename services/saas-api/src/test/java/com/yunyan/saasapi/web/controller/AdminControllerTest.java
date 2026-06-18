@@ -122,6 +122,7 @@ class AdminControllerTest {
         .andExpect(jsonPath("$.oidc.configuredProviderCount").value(0))
         .andExpect(jsonPath("$.audit.webhookEnabled").value(false))
         .andExpect(jsonPath("$.audit.deliveryMode").value("csv_only"))
+        .andExpect(jsonPath("$.audit.retentionDays").value(365))
         .andExpect(jsonPath("$.runtime.activeProfiles").isArray());
   }
 

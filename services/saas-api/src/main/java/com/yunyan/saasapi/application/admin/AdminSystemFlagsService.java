@@ -70,7 +70,8 @@ public class AdminSystemFlagsService {
         webhook.enabled(),
         webhook.configured(),
         webhook.format(),
-        webhook.deliveryMode());
+        webhook.deliveryMode(),
+        saasAppProperties.getAudit().getRetentionDays());
   }
 
   private List<String> activeProfiles() {

@@ -57,15 +57,15 @@ flowchart TB
 
 | 域 | 已交付 | 缺口 |
 | --- | --- | --- |
-| **身份** | 登录、OIDC、MFA TOTP、恢复码 | 租户级 SSO 配置、会话/device 管理 |
-| **租户** | CRUD、停用、feature、配额、存储估算 | 试用/到期、自助注册审核、组织层级 |
+| **身份** | 登录、OIDC、MFA TOTP、恢复码 | 租户级 SSO 配置 UI、会话/device 管理 |
+| **租户** | CRUD、停用、feature、配额、trial/onboarding 看板、存储估算 API 骨架 | 自助注册审核、组织层级 |
 | **成员** | 邀请（邮箱/链接）、角色、seat 门控 | SCIM、批量导入、离职转交 |
 | **RBAC** | 权限目录、系统/租户角色、Transfer | 权限模板包、变更审批流 |
 | **计费** | 钱包/SKU/订单/对账/告警 | live 对公认款、发票平台、用量定价 |
-| **审计** | 列表/导出/详情、计费写操作 | 保留策略、SIEM 推送、告警规则 |
+| **审计** | 列表/导出/详情、计费写操作、Webhook 配置摘要 | 保留策略、SIEM 实推送、告警规则 |
 | **代操作** | impersonation + MFA + banner | 时效/scope 限制 UI、操作录像 |
-| **菜单** | 平台模板 CRUD、拖拽排序 | **租户覆盖**、菜单 RBAC（FND-08 Later） |
-| **质量** | Vitest、mock/real E2E 部分覆盖 | 审计 E2E、CI 门禁、typecheck 全绿 |
+| **菜单** | 平台模板 CRUD、拖拽排序、租户覆盖/permission migration 骨架 | **租户覆盖** Admin UI、菜单 RBAC 运行时门控 |
+| **质量** | Vitest、mock/real E2E（含租户生命周期） | CI mock smoke ✅ |
 
 ---
 
@@ -96,23 +96,24 @@ flowchart TB
 | --- | --- |
 | 5C-1 | 租户 `plan` / `trialEndsAt` 字段 + Admin 展示与编辑 | ✅ |
 | 5C-2 | 停用租户自动化（成员 session 撤销 Job） | ✅ |
+| 5C-2b | 试用到期自动停用 Job | ✅ |
 | 5C-3 | 租户 onboarding 状态（pending / active / suspended）看板 | ✅ |
 
 ### Phase 5D · 企业 SSO 与合规
 
 | PR | 内容 |
 | --- | --- |
-| 5D-1 | 租户级 OIDC 连接配置（Admin CRUD + saas-web 登录入口） |
-| 5D-2 | 审计日志 Webhook / SIEM 导出（除 CSV 外） |
-| 5D-3 | 数据导出请求（GDPR 式租户数据包，骨架 API） |
+| 5D-1 | 租户级 OIDC 连接配置（Admin CRUD + saas-web 登录入口） | 🟡 只读 API + DB 骨架 ✅ |
+| 5D-2 | 审计日志 Webhook / SIEM 导出（除 CSV 外） | ✅ 配置 API + /system 摘要 |
+| 5D-3 | 数据导出请求（GDPR 式租户数据包，骨架 API） | ✅ |
 
 ### Phase 5E · 多产品扩展（FND-08 Later）
 
 | PR | 内容 |
 | --- | --- |
-| 5E-1 | 租户菜单覆盖（inherit 平台模板 + diff） |
-| 5E-2 | 菜单项 RBAC（permission 门控） |
-| 5E-3 | 附件/存储计量 Admin 页（对接 FND-08g 估算 API） |
+| 5E-1 | 租户菜单覆盖（inherit 平台模板 + diff） | 🟡 V34 migration 骨架 ✅ |
+| 5E-2 | 菜单项 RBAC（permission 门控） | 🟡 V35 + entity 骨架 ✅ |
+| 5E-3 | 附件/存储计量 Admin 页（对接 FND-08g 估算 API） | 🟡 估算 API 骨架 ✅ |
 
 ---
 
@@ -134,4 +135,5 @@ flowchart TB
 | **Phase 5A** | 演进文档 + 审计 E2E + CI smoke ✅ |
 | **Phase 5B** | /system 可观测 + runbook 直达 ✅ |
 | **Phase 5C** | 租户生命周期可运维 ✅ |
-| **Phase 5D–E** | 企业客户 SSO + 多产品菜单差异化 |
+| **Phase 5D** | 合规骨架（GDPR 导出 + 审计 Webhook 摘要）✅ |
+| **Phase 5E** | 多产品菜单/存储 migration 骨架 🟡 |

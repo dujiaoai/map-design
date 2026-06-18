@@ -23,4 +23,8 @@ export interface AdminAuditWebhookConfig {
   configured: boolean
   format: string
   deliveryMode: string
+  pendingEstimate?: number
+  deadLetterCount?: number
+  lastDeliveredAt?: number | null
+  signatureEnabled: boolean
 }

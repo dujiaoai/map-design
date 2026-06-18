@@ -42,9 +42,11 @@ test.describe('审计日志（已登录 mock）', () => {
     await expect(page.getByText('审计日志 CSV 已开始下载')).toBeVisible({ timeout: 10_000 })
   })
 
-  test('csv_only 模式展示 SIEM 提示条', async ({ page }) => {
+  test('csv_only 模式展示 Webhook 配置与签名状态', async ({ page }) => {
     await gotoAuditPage(page)
     await expect(page.getByText('csv_only')).toBeVisible()
+    await expect(page.getByText('HMAC 签名')).toBeVisible()
+    await expect(page.getByText('未启用')).toBeVisible()
     await expect(page.getByRole('link', { name: '系统' })).toBeVisible()
   })
 })

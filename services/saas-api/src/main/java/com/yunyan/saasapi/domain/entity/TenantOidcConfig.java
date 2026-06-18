@@ -18,6 +18,8 @@ public class TenantOidcConfig {
   private String displayName;
   private String issuerUri;
   private String clientId;
+  private String clientSecret;
+  private String scopes;
   private Instant createdAt;
   private Instant updatedAt;
 }

@@ -59,4 +59,12 @@ public class AdminAuditWebhookDeadLetterRepository {
   public long countAll() {
     return deadLetterMapper.selectCount(null);
   }
+
+  public java.util.List<SysAdminAuditWebhookDeadLetter> listEligibleForRetry(int maxAttempts, int limit) {
+    return deadLetterMapper.selectList(
+        Wrappers.<SysAdminAuditWebhookDeadLetter>lambdaQuery()
+            .lt(SysAdminAuditWebhookDeadLetter::getAttempts, maxAttempts)
+            .orderByAsc(SysAdminAuditWebhookDeadLetter::getUpdatedAt)
+            .last("LIMIT " + Math.max(limit, 1)));
+  }
 }

@@ -149,6 +149,8 @@ public class SaasAppProperties {
     private String alertWebhookUrl = "";
     /** 连续健康检查失败次数达到阈值后自动禁用目标（Phase 14-3） */
     private int webhookHealthFailureThreshold = 3;
+    /** 降级目标自愈冷却时间（毫秒，Phase 15-3） */
+    private long selfHealCooldownMs = 3_600_000L;
   }
 
   @Data
@@ -185,5 +187,22 @@ public class SaasAppProperties {
     private String objectLockMode = "GOVERNANCE";
     /** DR 演练目标 bucket */
     private String drDrillTargetBucket = "";
+    /** Phase 15-5：跨区域 active-active */
+    private boolean activeActiveEnabled = false;
+    private String secondaryRegion = "";
+    /** RPO 目标秒数 */
+    private int rpoTargetSeconds = 300;
   }
+
+  @Data
+  public static class FinOps {
+    /** 每万次 Billing API 调用估算成本（USD） */
+    private double billingApiCallUnitCost = 0.05;
+    /** 每活跃席位月估算成本（USD） */
+    private double seatUnitCost = 12.0;
+    /** 每 GB 存储月估算成本（USD） */
+    private double storageGbUnitCost = 0.023;
+  }
+
+  private final FinOps finOps = new FinOps();
 }

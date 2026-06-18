@@ -20,6 +20,10 @@ public class TenantOidcConfig {
   private String clientId;
   private String clientSecret;
   private String scopes;
+  private String authorizationEndpoint;
+  private String tokenEndpoint;
+  private String userinfoEndpoint;
+  private Instant metadataImportedAt;
   private Instant createdAt;
   private Instant updatedAt;
 }

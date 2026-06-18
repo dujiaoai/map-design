@@ -31,6 +31,7 @@ const schema = z.object({
   itemId: z.string().min(1, '请输入菜单项 ID').max(64),
   enabled: z.enum(['inherit', 'true', 'false']),
   title: z.string().max(128),
+  sortOrder: z.string().max(8),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -56,7 +57,7 @@ export function TenantMenuOverrideSheet({
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: standardSchemaResolver(schema),
-    defaultValues: { itemId: '', enabled: 'inherit', title: '' },
+    defaultValues: { itemId: '', enabled: 'inherit', title: '', sortOrder: '' },
   })
 
   const enabled = watch('enabled')
@@ -68,6 +69,7 @@ export function TenantMenuOverrideSheet({
       enabled:
         override?.enabled == null ? 'inherit' : override.enabled ? 'true' : 'false',
       title: override?.title ?? '',
+      sortOrder: override?.sortOrder == null ? '' : String(override.sortOrder),
     })
   }, [open, override, reset])
 
@@ -81,6 +83,16 @@ export function TenantMenuOverrideSheet({
       if (values.enabled === 'inherit') payload.enabled = null
       const title = values.title.trim()
       payload.title = title || null
+      const sortOrderRaw = values.sortOrder.trim()
+      if (sortOrderRaw) {
+        const sortOrder = Number(sortOrderRaw)
+        if (!Number.isFinite(sortOrder)) {
+          throw new Error('排序须为数字')
+        }
+        payload.sortOrder = sortOrder
+      } else {
+        payload.sortOrder = null
+      }
       return putTenantMenuOverride(tenantId, payload)
     },
     onSuccess: async () => {
@@ -152,6 +164,15 @@ export function TenantMenuOverrideSheet({
               placeholder="留空表示继承"
               disabled={isSubmitting}
               aria-label="覆盖标题"
+            />
+          </AdminField>
+          <AdminField label="覆盖 sortOrder" error={errors.sortOrder?.message}>
+            <Input
+              {...register('sortOrder')}
+              placeholder="留空表示继承模板排序"
+              disabled={isSubmitting}
+              className="font-mono text-xs"
+              aria-label="覆盖 sortOrder"
             />
           </AdminField>
           <AdminFormError

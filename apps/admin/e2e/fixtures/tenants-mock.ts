@@ -208,8 +208,60 @@ export async function mockTenantsPageApis(page: Page) {
         enabled: false,
         entityId: null,
         ssoUrl: null,
-        certificateConfigured: false,
-        configured: false,
+        acsUrl: null,
+        spEntityId: null,
+        certificateConfigured: true,
+        metadataUrl: 'https://idp.example/metadata.xml',
+        spCertificateConfigured: true,
+        spCertificateExpiresAt: now + 20 * 86_400_000,
+        idpCertExpiresAt: now + 15 * 86_400_000,
+        metadataSyncEnabled: true,
+        lastMetadataSyncAt: now - 3_600_000,
+        configured: true,
+      }),
+    })
+  })
+
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/scim-group-mapping-rules/, async (route) => {
+    const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        tenantId,
+        rules: [
+          {
+            id: 'rule-1',
+            externalGroupPattern: 'Engineering*',
+            tenantRoleId: 'role-engineering',
+            roleName: 'Engineering',
+            priority: 10,
+            createdAt: now,
+          },
+        ],
+      }),
+    })
+  })
+
+  await page.route(/\/v1\/admin\/audit-logs\/webhook-targets/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        primaryWebhookUrl: 'https://siem.example/primary',
+        targets: [
+          {
+            id: 'target-1',
+            url: 'https://siem.example/secondary',
+            format: 'jsonl',
+            enabled: false,
+            priority: 1,
+            createdAt: now,
+            consecutiveFailures: 3,
+            lastHealthCheckAt: now,
+            unhealthySince: now - 600_000,
+          },
+        ],
       }),
     })
   })

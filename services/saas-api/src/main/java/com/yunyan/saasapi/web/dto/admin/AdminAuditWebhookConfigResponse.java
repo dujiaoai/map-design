@@ -9,4 +9,5 @@ public record AdminAuditWebhookConfigResponse(
     @Schema(description = "当前交付模式：webhook | csv_only") String deliveryMode,
     @Schema(description = "待投递事件估算（游标之后）") long pendingEstimate,
     @Schema(description = "死信表记录数") long deadLetterCount,
-    @Schema(description = "上次成功投递时间 epoch millis，可空") Long lastDeliveredAt) {}
+    @Schema(description = "上次成功投递时间 epoch millis，可空") Long lastDeliveredAt,
+    @Schema(description = "是否配置 HMAC 签名") boolean signatureEnabled) {}

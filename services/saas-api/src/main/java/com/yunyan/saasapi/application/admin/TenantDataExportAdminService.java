@@ -79,6 +79,9 @@ public class TenantDataExportAdminService {
         "completed".equals(request.getStatus())
             && org.springframework.util.StringUtils.hasText(request.getArtifactUrl());
     return new TenantDataExportArtifactResponse(
-        request.getId().toString(), request.getArtifactUrl(), downloadable);
+        request.getId().toString(),
+        request.getArtifactUrl(),
+        request.getArtifactObjectKey(),
+        downloadable);
   }
 }

@@ -173,15 +173,25 @@ flowchart TB
 | 11-4 | Usage 大盘图表化 + billing API 调用量聚合 | ✅ |
 | 11-5 | 对象存储 multipart 上传与生命周期策略 | ✅ |
 
-### Phase 12 · 规模化运维（Next）
+### Phase 12 · 规模化运维
 
 | PR | 内容 |
 | --- | --- |
-| 12-1 | 租户 SAML metadata 导入与 SP 证书轮换 |
-| 12-2 | SCIM Groups 与增量 sync |
-| 12-3 | 审计 Webhook 投递 SLA 大盘 |
-| 12-4 | Usage 趋势导出与 billing 对账 |
-| 12-5 | 对象存储跨区复制与合规保留 |
+| 12-1 | 租户 SAML metadata 导入与 SP 证书轮换 | ✅ |
+| 12-2 | SCIM Groups 与增量 sync | ✅ |
+| 12-3 | 审计 Webhook 投递 SLA 大盘 | ✅ |
+| 12-4 | Usage 趋势导出与 billing 对账 | ✅ |
+| 12-5 | 对象存储跨区复制与合规保留 | ✅ |
+
+### Phase 13 · 智能运维（Next）
+
+| PR | 内容 |
+| --- | --- |
+| 13-1 | 租户 SAML SP metadata 对外暴露与 IdP 自助注册 |
+| 13-2 | SCIM Bulk + schema extension |
+| 13-3 | 审计 Webhook 多目标路由 |
+| 13-4 | Usage 异常检测与自动告警 |
+| 13-5 | 对象存储加密与 KMS 集成 |
 
 ---
 

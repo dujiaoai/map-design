@@ -23,6 +23,8 @@ import type {
   TenantMenuOverride,
   TenantMenuOverrideListResponse,
   TenantOidcMetadataImportResponse,
+  TenantSamlMetadataImportResponse,
+  TenantSamlSpCertificateRotateResponse,
   TenantQuotasResponse,
 } from './model'
 
@@ -103,6 +105,20 @@ export function patchTenantSamlConfig(tenantId: string, payload: PatchTenantSaml
 export function importTenantOidcMetadata(tenantId: string) {
   return api.post<TenantOidcMetadataImportResponse>(
     `/admin/tenants/${tenantId}/oidc-config/import-metadata`,
+    {},
+  )
+}
+
+export function importTenantSamlMetadata(tenantId: string) {
+  return api.post<TenantSamlMetadataImportResponse>(
+    `/admin/tenants/${tenantId}/saml-config/import-metadata`,
+    {},
+  )
+}
+
+export function rotateTenantSamlSpCertificate(tenantId: string) {
+  return api.post<TenantSamlSpCertificateRotateResponse>(
+    `/admin/tenants/${tenantId}/saml-config/rotate-sp-certificate`,
     {},
   )
 }

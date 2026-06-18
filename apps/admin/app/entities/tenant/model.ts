@@ -92,6 +92,9 @@ export interface AdminTenantSamlConfig {
   acsUrl: string | null
   spEntityId: string | null
   certificateConfigured: boolean
+  metadataUrl: string | null
+  spCertificateConfigured: boolean
+  spCertificateExpiresAt: number | null
   configured: boolean
 }
 
@@ -102,6 +105,20 @@ export interface PatchTenantSamlConfigPayload {
   acsUrl?: string
   spEntityId?: string
   certificatePem?: string
+  metadataUrl?: string
+}
+
+export interface TenantSamlMetadataImportResponse {
+  tenantId: string
+  entityId: string
+  ssoUrl: string
+  certificateImported: boolean
+  importedAt: number
+}
+
+export interface TenantSamlSpCertificateRotateResponse {
+  tenantId: string
+  spCertificateExpiresAt: number
 }
 
 export interface AdminTenantScimProvisioning {
@@ -109,6 +126,7 @@ export interface AdminTenantScimProvisioning {
   enabled: boolean
   tokenConfigured: boolean
   usersEndpointUrl: string
+  lastSyncAt: number | null
 }
 
 export interface TenantOidcMetadataImportResponse {

@@ -44,4 +44,30 @@ class AwsS3ObjectStorageClientTest {
     assertThat(url).isEqualTo("https://cdn.example/exports/tenant-1/pkg.zip");
     verify(s3Client).putObject(any(PutObjectRequest.class), any(RequestBody.class));
   }
+
+  @Test
+  void uploadLarge_usesMultipartWhenAboveThreshold() {
+    saasAppProperties.getObjectStorage().setMultipartThresholdBytes(4);
+    when(s3Client.createMultipartUpload(any(software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest.class)))
+        .thenReturn(
+            software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse.builder()
+                .uploadId("upload-1")
+                .build());
+    when(s3Client.uploadPart(
+            any(software.amazon.awssdk.services.s3.model.UploadPartRequest.class), any(RequestBody.class)))
+        .thenReturn(
+            software.amazon.awssdk.services.s3.model.UploadPartResponse.builder().eTag("etag-1").build());
+    when(s3Client.completeMultipartUpload(
+            any(software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest.class)))
+        .thenReturn(
+            software.amazon.awssdk.services.s3.model.CompleteMultipartUploadResponse.builder().build());
+
+    var payload = new byte[] {1, 2, 3, 4, 5};
+    var url =
+        client.uploadLarge(
+            "tenant-1/large.zip", new java.io.ByteArrayInputStream(payload), payload.length, "application/zip");
+
+    assertThat(url).contains("tenant-1/large.zip");
+    verify(s3Client).createMultipartUpload(any(software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest.class));
+  }
 }

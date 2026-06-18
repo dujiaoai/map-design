@@ -97,6 +97,14 @@ public class AdminBillingReconciliationService {
         List.copyOf(discrepancies));
   }
 
+  public long countDiffsBetween(LocalDate fromInclusive, LocalDate toInclusive) {
+    long total = 0;
+    for (var day = fromInclusive; !day.isAfter(toInclusive); day = day.plusDays(1)) {
+      total += getDailyReport(day).discrepancies().size();
+    }
+    return total;
+  }
+
   private static BillingReconciliationSummary nullSafe(BillingReconciliationSummary summary) {
     if (summary != null) {
       return summary;

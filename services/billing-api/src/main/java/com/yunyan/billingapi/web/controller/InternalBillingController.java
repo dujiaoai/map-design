@@ -3,12 +3,16 @@ package com.yunyan.billingapi.web.controller;
 import com.yunyan.billing.dto.EstimateResult;
 import com.yunyan.billing.dto.SignupBonusRequest;
 import com.yunyan.billing.dto.WalletHoldRequest;
+import com.yunyan.billingapi.application.admin.AdminBillingReconciliationService;
 import com.yunyan.billingapi.application.hold.HoldService;
 import com.yunyan.billingapi.application.signup.SignupBonusService;
 import com.yunyan.billingapi.domain.mapper.BillingConsumptionRecordMapper;
 import com.yunyan.billingapi.web.dto.HoldResponse;
 import com.yunyan.billingapi.web.dto.InternalBillingEventCountResponse;
+import com.yunyan.billingapi.web.dto.InternalReconciliationDiffCountResponse;
 import com.yunyan.billingapi.web.dto.SignupBonusResponse;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,14 +40,17 @@ public class InternalBillingController {
   private final SignupBonusService signupBonusService;
   private final HoldService holdService;
   private final BillingConsumptionRecordMapper consumptionRecordMapper;
+  private final AdminBillingReconciliationService reconciliationService;
 
   public InternalBillingController(
       SignupBonusService signupBonusService,
       HoldService holdService,
-      BillingConsumptionRecordMapper consumptionRecordMapper) {
+      BillingConsumptionRecordMapper consumptionRecordMapper,
+      AdminBillingReconciliationService reconciliationService) {
     this.signupBonusService = signupBonusService;
     this.holdService = holdService;
     this.consumptionRecordMapper = consumptionRecordMapper;
+    this.reconciliationService = reconciliationService;
   }
 
   @PostMapping("/signup-bonus")
@@ -89,5 +96,18 @@ public class InternalBillingController {
   public InternalBillingEventCountResponse countEvents(
       @RequestParam @NotNull Instant from, @RequestParam @NotNull Instant to) {
     return new InternalBillingEventCountResponse(consumptionRecordMapper.countConfirmedEvents(from, to));
+  }
+
+  @GetMapping("/reconciliation/diff-count")
+  @Operation(summary = "日对账差异计数（saas-api admin usage 聚合）")
+  public InternalReconciliationDiffCountResponse reconciliationDiffCount(
+      @RequestParam @NotNull Instant from, @RequestParam @NotNull Instant to) {
+    var fromDate = LocalDate.ofInstant(from, ZoneOffset.UTC);
+    var toDate = LocalDate.ofInstant(to.minusNanos(1), ZoneOffset.UTC);
+    if (toDate.isBefore(fromDate)) {
+      toDate = fromDate;
+    }
+    return new InternalReconciliationDiffCountResponse(
+        reconciliationService.countDiffsBetween(fromDate, toDate));
   }
 }

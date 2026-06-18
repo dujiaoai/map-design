@@ -40,6 +40,7 @@ export const adminQueryKeys = {
   auditWebhookConfig: ['admin', 'audit-webhook-config'] as const,
   auditWebhookDeadLetters: (params?: AdminListQuery) =>
     ['admin', 'audit-webhook-dead-letters', params ?? {}] as const,
+  auditWebhookSla: ['admin', 'audit-webhook-sla'] as const,
   usageTrends: ['admin', 'usage-trends'] as const,
   systemFlags: ['admin', 'system-flags'] as const,
   systemDependencies: ['admin', 'system-dependencies'] as const,

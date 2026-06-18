@@ -4,6 +4,7 @@ import { api } from '~/shared/api/client'
 import type {
   AdminAuditLogListResponse,
   AdminAuditWebhookConfig,
+  AdminAuditWebhookSla,
   AdminAuditWebhookDeadLetterListResponse,
   AdminAuditWebhookDeadLetterReplayResponse,
 } from './model'
@@ -14,6 +15,10 @@ export function fetchAdminAuditLogs(params?: AdminListQuery) {
 
 export function fetchAdminAuditWebhookConfig() {
   return api.get<AdminAuditWebhookConfig>('/admin/audit-logs/webhook-config')
+}
+
+export function fetchAdminAuditWebhookSla() {
+  return api.get<AdminAuditWebhookSla>('/admin/audit-logs/webhook-sla')
 }
 
 export function fetchAdminAuditWebhookDeadLetters(params?: AdminListQuery) {

@@ -32,6 +32,14 @@ export interface AdminAuditWebhookConfig {
   alertWebhookConfigured?: boolean
 }
 
+export interface AdminAuditWebhookSla {
+  windowDays: number
+  deliveryRatePercent: number
+  avgLatencyMs: number
+  pendingDeadLetters: number
+  deadLetterCount: number
+}
+
 export interface AdminAuditWebhookDeadLetter {
   id: string
   logId: string

@@ -28,3 +28,25 @@ export interface AdminAuditWebhookConfig {
   lastDeliveredAt?: number | null
   signatureEnabled: boolean
 }
+
+export interface AdminAuditWebhookDeadLetter {
+  id: string
+  logId: string
+  attempts: number
+  lastError: string | null
+  createdAt: number
+  updatedAt: number
+}
+
+export interface AdminAuditWebhookDeadLetterListResponse {
+  items: AdminAuditWebhookDeadLetter[]
+  total: number
+  page: number
+  size: number
+}
+
+export interface AdminAuditWebhookDeadLetterReplayResponse {
+  id: string
+  success: boolean
+  message: string
+}

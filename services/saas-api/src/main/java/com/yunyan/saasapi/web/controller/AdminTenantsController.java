@@ -12,6 +12,7 @@ import com.yunyan.saasapi.application.admin.ScimProvisioningAdminService;
 import com.yunyan.saasapi.application.admin.TenantStorageEstimateAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
+import com.yunyan.saasapi.web.dto.admin.AdminGenerateScimTokenResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantFeaturesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantListResponse;
@@ -179,9 +180,17 @@ public class AdminTenantsController {
 
   @GetMapping("/{tenantId}/scim-provisioning")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
-  @Operation(summary = "租户 SCIM provisioning 状态（只读）", description = "Phase 10-5 PoC")
+  @Operation(summary = "租户 SCIM provisioning 状态", description = "Phase 11-2 Directory Sync")
   public AdminTenantScimProvisioningDto getScimProvisioning(@PathVariable UUID tenantId) {
     return scimProvisioningAdminService.getStatus(tenantId);
+  }
+
+  @PostMapping("/{tenantId}/scim-provisioning/generate-token")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "生成 SCIM Bearer token", description = "明文 token 仅本次响应返回")
+  public AdminGenerateScimTokenResponse generateScimToken(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
+    return scimProvisioningAdminService.generateToken(principal, tenantId);
   }
 
   @PatchMapping("/{tenantId}/oidc-config")

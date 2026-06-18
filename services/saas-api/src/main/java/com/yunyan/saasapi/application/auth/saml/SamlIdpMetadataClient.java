@@ -3,6 +3,7 @@ package com.yunyan.saasapi.application.auth.saml;
 import com.yunyan.saasapi.security.AuthException;
 import java.io.StringReader;
 import javax.xml.parsers.DocumentBuilderFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.w3c.dom.Element;
@@ -10,12 +11,14 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 @Component
+@RequiredArgsConstructor
 public class SamlIdpMetadataClient {
 
   private static final String HTTP_REDIRECT =
       "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect";
 
   private final RestClient restClient = RestClient.create();
+  private final SamlCertificateExpiryParser certificateExpiryParser;
 
   public SamlIdpMetadataDocument fetchAndParse(String metadataUrl) {
     if (metadataUrl == null || metadataUrl.isBlank()) {
@@ -46,7 +49,8 @@ public class SamlIdpMetadataClient {
       }
       var ssoUrl = findSsoUrl(root);
       var certificatePem = findSigningCertificate(root);
-      return new SamlIdpMetadataDocument(entityId.trim(), ssoUrl, certificatePem);
+      var certificateExpiresAt = certificateExpiryParser.parseExpiry(certificatePem);
+      return new SamlIdpMetadataDocument(entityId.trim(), ssoUrl, certificatePem, certificateExpiresAt);
     } catch (AuthException ex) {
       throw ex;
     } catch (Exception ex) {
@@ -93,6 +97,4 @@ public class SamlIdpMetadataClient {
     }
     return sb.toString();
   }
-
-  public record SamlIdpMetadataDocument(String entityId, String ssoUrl, String certificatePem) {}
 }

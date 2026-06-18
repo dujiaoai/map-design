@@ -2,9 +2,11 @@ package com.yunyan.saasapi.web.controller;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -312,6 +314,36 @@ class AdminTenantsControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.overrides").isArray())
         .andExpect(jsonPath("$.overrides").isEmpty());
+  }
+
+  @Test
+  void menuOverrides_putUpsertsAndDelete() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            put("/v1/admin/tenants/" + TEST_TENANT_ID + "/menu-overrides")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of("itemId", "tool-measure-distance", "enabled", false))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.itemId").value("tool-measure-distance"))
+        .andExpect(jsonPath("$.enabled").value(false));
+
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID + "/menu-overrides")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.overrides", hasSize(1)));
+
+    mockMvc
+        .perform(
+            delete("/v1/admin/tenants/" + TEST_TENANT_ID + "/menu-overrides/tool-measure-distance")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isNoContent());
   }
 
   private String loginAccessToken(String email) throws Exception {

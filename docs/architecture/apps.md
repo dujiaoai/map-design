@@ -119,6 +119,11 @@ pnpm --filter @repo/saas-web dev
 | Webhook 健康探活（Phase 14） | `audit_webhook_target` 健康字段；连续失败自动禁用 |
 | Usage 预测（Phase 14） | `GET /v1/admin/stats/usage-forecast`；Dashboard 预测面板 |
 | 对象存储 WORM/DR（Phase 14） | WORM Object Lock；`POST /v1/admin/system/object-storage-dr-drill`；见 [ADR-0016](../adr/0016-object-storage-worm-dr.md) |
+| SAML IdP 联邦（Phase 15） | `tenant_saml_idp_federation`；`GET/POST/DELETE .../saml-idp-federation`；SP 证书自动轮换 Job |
+| SCIM 事件同步（Phase 15） | `scim_sync_event`；冲突策略 per tenant；`GET .../scim-sync-events/summary` |
+| Webhook SLA 自愈（Phase 15） | 智能重试退避；`GET .../webhook-sla/self-heal-status`；`audit_webhook_sla_snapshot` |
+| FinOps 成本归因（Phase 15） | `GET /v1/admin/stats/finops`；Dashboard FinOps 面板 |
+| 对象存储 RPO（Phase 15） | `GET /v1/admin/system/object-storage-rpo`；active-active 双写；见 [ADR-0017](../adr/0017-object-storage-active-active-rpo.md) |
 | 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
 
 列表页 loading 使用 Skeleton；Vitest + MockMvc 覆盖 P0～P3 核心路径。

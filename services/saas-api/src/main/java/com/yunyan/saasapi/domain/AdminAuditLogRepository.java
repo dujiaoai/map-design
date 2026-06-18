@@ -35,6 +35,10 @@ public class AdminAuditLogRepository {
     return sysAdminAuditLogMapper.selectList(wrapper);
   }
 
+  public long countCreatedBetween(Instant from, Instant to) {
+    return sysAdminAuditLogMapper.countCreatedBetween(from, to);
+  }
+
   public long countUndeliveredAfter(UUID lastDeliveredId) {
     var wrapper = Wrappers.<SysAdminAuditLog>lambdaQuery();
     if (lastDeliveredId != null) {

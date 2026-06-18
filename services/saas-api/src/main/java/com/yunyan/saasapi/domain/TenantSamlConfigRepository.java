@@ -16,4 +16,12 @@ public class TenantSamlConfigRepository {
   public Optional<TenantSamlConfig> findByTenantId(UUID tenantId) {
     return Optional.ofNullable(mapper.selectById(tenantId));
   }
+
+  public void insert(TenantSamlConfig config) {
+    mapper.insert(config);
+  }
+
+  public void update(TenantSamlConfig config) {
+    mapper.updateById(config);
+  }
 }

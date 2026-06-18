@@ -35,6 +35,7 @@ import { TenantSamlIdpRegistrationsPanel } from '~/features/tenants/ui/tenant-sa
 import { TenantScimStatusCard } from '~/features/tenants/ui/tenant-scim-status-card'
 import { TenantScimSchemaExtensionPanel } from '~/features/tenants/ui/tenant-scim-schema-extension-panel'
 import { TenantScimGroupMappingRulesPanel } from '~/features/tenants/ui/tenant-scim-group-mapping-rules-panel'
+import { TenantScimChangePreviewPanel } from '~/features/tenants/ui/tenant-scim-change-preview-panel'
 import { Button, toast } from '@repo/ui'
 
 function formatBytes(bytes: number): string {
@@ -211,6 +212,8 @@ export function TenantCompliancePanel({ tenantId, tenantSlug }: { tenantId: stri
       <TenantScimSchemaExtensionPanel tenantId={tenantId} />
 
       <TenantScimGroupMappingRulesPanel tenantId={tenantId} />
+
+      <TenantScimChangePreviewPanel tenantId={tenantId} />
 
       <AdminPanel>
         <AdminPanelHeader

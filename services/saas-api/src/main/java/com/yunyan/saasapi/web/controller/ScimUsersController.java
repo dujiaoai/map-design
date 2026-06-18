@@ -18,9 +18,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-@RestController
 @RequestMapping("/scim/v2")
 @RequiredArgsConstructor
 @Tag(name = "SCIM", description = "Directory Sync Users CRUD（Phase 11-2）")
@@ -30,8 +29,9 @@ public class ScimUsersController {
 
   @GetMapping("/Users")
   @Operation(summary = "SCIM Users 列表")
-  public ScimListResponse listUsers(HttpServletRequest request) {
-    return scimUserService.listUsers(requireTenantId(request));
+  public ScimListResponse listUsers(
+      HttpServletRequest request, @RequestParam(required = false) String filter) {
+    return scimUserService.listUsers(requireTenantId(request), filter);
   }
 
   @PostMapping("/Users")

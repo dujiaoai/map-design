@@ -38,11 +38,15 @@ public class ScimUserService {
   private final PasswordEncoder passwordEncoder;
   private final UserSessionRevoker userSessionRevoker;
 
-  public ScimListResponse listUsers(UUID tenantId) {
+  public ScimListResponse listUsers(UUID tenantId, String filter) {
     ensureTenant(tenantId);
+    var since = parseLastModifiedFilter(filter);
     var mappings = externalIdRepository.listByTenantId(tenantId);
     List<Object> resources = new ArrayList<>(mappings.size());
     for (var mapping : mappings) {
+      if (since != null && mapping.getCreatedAt() != null && !mapping.getCreatedAt().isAfter(since)) {
+        continue;
+      }
       userRepository
           .findById(mapping.getUserId())
           .ifPresent(user -> resources.add(toResource(mapping, user)));
@@ -161,5 +165,22 @@ public class ScimUserService {
         user.getEmail(),
         user.getDisplayName(),
         Boolean.TRUE.equals(mapping.getActive()) && STATUS_ACTIVE.equals(user.getStatus()));
+  }
+
+  private static Instant parseLastModifiedFilter(String filter) {
+    if (!StringUtils.hasText(filter)) {
+      return null;
+    }
+    var trimmed = filter.trim();
+    var prefix = "meta.lastModified gt \"";
+    if (!trimmed.startsWith(prefix) || !trimmed.endsWith("\"")) {
+      throw AuthException.badRequest("Unsupported SCIM filter");
+    }
+    var value = trimmed.substring(prefix.length(), trimmed.length() - 1);
+    try {
+      return Instant.parse(value);
+    } catch (Exception ex) {
+      throw AuthException.badRequest("Invalid meta.lastModified filter value");
+    }
   }
 }

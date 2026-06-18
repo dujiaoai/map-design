@@ -167,11 +167,21 @@ flowchart TB
 
 | PR | 内容 |
 | --- | --- |
-| 11-1 | 租户 SAML SP 完整授权流（ACS + Assertion 验证） |
-| 11-2 | SCIM Users CRUD + deprovision 联动成员状态 |
-| 11-3 | 审计 Webhook 死信自动重试策略与告警路由 |
-| 11-4 | Usage 大盘图表化 + billing API 调用量聚合 |
-| 11-5 | 对象存储 multipart 上传与生命周期策略 |
+| 11-1 | 租户 SAML SP 完整授权流（ACS + Assertion 验证） | ✅ |
+| 11-2 | SCIM Users CRUD + deprovision 联动成员状态 | ✅ |
+| 11-3 | 审计 Webhook 死信自动重试策略与告警路由 | ✅ |
+| 11-4 | Usage 大盘图表化 + billing API 调用量聚合 | ✅ |
+| 11-5 | 对象存储 multipart 上传与生命周期策略 | ✅ |
+
+### Phase 12 · 规模化运维（Next）
+
+| PR | 内容 |
+| --- | --- |
+| 12-1 | 租户 SAML metadata 导入与 SP 证书轮换 |
+| 12-2 | SCIM Groups 与增量 sync |
+| 12-3 | 审计 Webhook 投递 SLA 大盘 |
+| 12-4 | Usage 趋势导出与 billing 对账 |
+| 12-5 | 对象存储跨区复制与合规保留 |
 
 ---
 

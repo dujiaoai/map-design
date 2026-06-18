@@ -79,6 +79,19 @@ export interface AdminTenantOidcConfig {
   configured: boolean
   clientSecretConfigured: boolean
   scopes: string | null
+  expectedCallbackUrl: string | null
+  metadataImported: boolean
+  metadataImportedAt: number | null
+}
+
+export interface TenantOidcMetadataImportResponse {
+  tenantId: string
+  issuer: string
+  authorizationEndpoint: string
+  tokenEndpoint: string
+  userinfoEndpoint: string
+  expectedCallbackUrl: string
+  importedAt: number
 }
 
 export interface PatchTenantOidcConfigPayload {
@@ -139,4 +152,8 @@ export interface PutTenantMenuOverridePayload {
   enabled?: boolean | null
   sortOrder?: number | null
   title?: string | null
+}
+
+export interface PostTenantMenuOverrideBatchPayload {
+  overrides: PutTenantMenuOverridePayload[]
 }

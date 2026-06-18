@@ -6,7 +6,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.yunyan.saasapi.application.storage.ObjectStorageClient;
-import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.TenantDataExportRequestRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.entity.SysTenant;

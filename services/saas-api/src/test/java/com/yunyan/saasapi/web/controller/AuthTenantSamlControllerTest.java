@@ -10,9 +10,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yunyan.saasapi.application.auth.TenantSamlAuthService;
+import com.yunyan.saasapi.application.auth.TenantSamlSpMetadataService;
+import com.yunyan.saasapi.application.admin.TenantSamlIdpRegistrationService;
 import com.yunyan.saasapi.web.dto.auth.LoginResponse;
 import com.yunyan.saasapi.web.dto.auth.OidcAuthorizeResponse;
 import com.yunyan.saasapi.web.dto.auth.SamlAcsRequest;
+import com.yunyan.saasapi.web.dto.auth.SamlIdpRegisterRequest;
+import com.yunyan.saasapi.web.dto.auth.SamlIdpRegisterResponse;
 import com.yunyan.saasapi.web.advice.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +32,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class AuthTenantSamlControllerTest {
 
   @Mock TenantSamlAuthService tenantSamlAuthService;
+  @Mock TenantSamlSpMetadataService tenantSamlSpMetadataService;
+  @Mock TenantSamlIdpRegistrationService tenantSamlIdpRegistrationService;
 
   @InjectMocks AuthTenantSamlController controller;
 
@@ -40,6 +46,31 @@ class AuthTenantSamlControllerTest {
         MockMvcBuilders.standaloneSetup(controller)
             .setControllerAdvice(new GlobalExceptionHandler())
             .build();
+  }
+
+  @Test
+  void metadata_returnsXml() throws Exception {
+    when(tenantSamlSpMetadataService.buildMetadataXml("test"))
+        .thenReturn("<md:EntityDescriptor/>");
+
+    mockMvc
+        .perform(get("/v1/auth/tenant-sso/saml/test/metadata"))
+        .andExpect(status().isOk())
+        .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string("<md:EntityDescriptor/>"));
+  }
+
+  @Test
+  void idpRegister_returnsPendingStatus() throws Exception {
+    when(tenantSamlIdpRegistrationService.registerPublic(eq("test"), any(SamlIdpRegisterRequest.class)))
+        .thenReturn(new SamlIdpRegisterResponse("reg-1", "pending"));
+
+    mockMvc
+        .perform(
+            post("/v1/auth/tenant-sso/saml/test/idp-register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new SamlIdpRegisterRequest("tok", "https://idp/entity"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("pending"));
   }
 
   @Test

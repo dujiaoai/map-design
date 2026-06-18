@@ -10,8 +10,10 @@ import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuDiffEntryDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuDiffResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideListResponse;
+import com.yunyan.saasapi.web.dto.admin.PostTenantMenuOverrideBatchRequest;
 import com.yunyan.saasapi.web.dto.admin.PutTenantMenuOverrideRequest;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -97,6 +99,19 @@ public class TenantMenuOverrideAdminService {
     adminAuditLogService.recordTenantAction(
         principal, "tenant.menu_override.upsert", tenantId, "itemId=" + itemId);
     return toDto(row);
+  }
+
+  @Transactional
+  public AdminTenantMenuOverrideListResponse batchUpsert(
+      SaasPrincipal principal, UUID tenantId, PostTenantMenuOverrideBatchRequest request) {
+    ensureTenantExists(tenantId);
+    var results = new ArrayList<AdminTenantMenuOverrideDto>();
+    for (var item : request.overrides()) {
+      results.add(upsertOverride(principal, tenantId, item));
+    }
+    adminAuditLogService.recordTenantAction(
+        principal, "tenant.menu_override.batch_upsert", tenantId, "count=" + results.size());
+    return new AdminTenantMenuOverrideListResponse(results);
   }
 
   @Transactional

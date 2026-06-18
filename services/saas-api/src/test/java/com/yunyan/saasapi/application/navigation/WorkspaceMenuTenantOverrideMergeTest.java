@@ -32,6 +32,8 @@ class WorkspaceMenuTenantOverrideMergeTest {
     override.setTitle("Custom");
     assertTrue(
         WorkspaceMenuService.effectiveTitle(item, Map.of("tool-a", override)).contains("Custom"));
+  }
+
   @Test
   void effectiveSortOrder_usesOverrideValue() {
     var item = new WorkspaceMenuItem();

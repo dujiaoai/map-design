@@ -33,10 +33,14 @@ class AwsS3ObjectStorageClientTest {
     s3Client = mock(S3Client.class);
     var lifecycleService = mock(ObjectStorageLifecycleService.class);
     var encryptionService = mock(ObjectStorageEncryptionService.class);
+    var wormService = mock(ObjectStorageWormService.class);
     lenient()
         .when(encryptionService.applyEncryption(any(PutObjectRequest.Builder.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
-    client = new AwsS3ObjectStorageClient(saasAppProperties, lifecycleService, encryptionService);
+    lenient()
+        .when(wormService.applyObjectLock(any(PutObjectRequest.Builder.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    client = new AwsS3ObjectStorageClient(saasAppProperties, lifecycleService, encryptionService, wormService);
     client.setS3Client(s3Client);
   }
 

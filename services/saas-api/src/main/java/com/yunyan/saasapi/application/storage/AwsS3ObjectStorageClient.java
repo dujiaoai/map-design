@@ -28,6 +28,7 @@ public class AwsS3ObjectStorageClient implements ObjectStorageClient {
   private final SaasAppProperties saasAppProperties;
   private final ObjectStorageLifecycleService lifecycleService;
   private final ObjectStorageEncryptionService encryptionService;
+  private final ObjectStorageWormService wormService;
   private volatile S3Client s3Client;
 
   @Override
@@ -38,12 +39,13 @@ public class AwsS3ObjectStorageClient implements ObjectStorageClient {
     }
     client()
         .putObject(
-            encryptionService
-                .applyEncryption(
-                    PutObjectRequest.builder()
-                        .bucket(storage.getBucket())
-                        .key(objectKey)
-                        .contentType(contentType))
+            wormService
+                .applyObjectLock(
+                    encryptionService.applyEncryption(
+                        PutObjectRequest.builder()
+                            .bucket(storage.getBucket())
+                            .key(objectKey)
+                            .contentType(contentType)))
                 .build(),
             RequestBody.fromBytes(content));
     replicateIfConfigured(objectKey);

@@ -15,6 +15,7 @@ public class AuditLogWebhookDeliveryJob {
   private static final Logger log = LoggerFactory.getLogger(AuditLogWebhookDeliveryJob.class);
 
   private final SaasAppProperties saasAppProperties;
+  private final AuditWebhookHttpClient auditWebhookHttpClient;
 
   @Scheduled(
       fixedDelayString = "${saas.audit.webhook-delivery-ms:300000}",
@@ -24,9 +25,13 @@ public class AuditLogWebhookDeliveryJob {
     if (!audit.isWebhookEnabled() || !StringUtils.hasText(audit.getWebhookUrl())) {
       return;
     }
-    log.debug(
-        "Audit webhook delivery skeleton: url={}, format={}",
-        audit.getWebhookUrl(),
-        audit.getWebhookFormat());
+    var payload =
+        "{\"type\":\"audit.batch.skeleton\",\"format\":\""
+            + audit.getWebhookFormat()
+            + "\",\"events\":[]}";
+    var ok = auditWebhookHttpClient.postJson(audit.getWebhookUrl(), payload);
+    if (ok) {
+      log.debug("Audit webhook heartbeat delivered to {}", audit.getWebhookUrl());
+    }
   }
 }

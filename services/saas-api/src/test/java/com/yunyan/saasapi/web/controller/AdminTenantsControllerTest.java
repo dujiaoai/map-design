@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -371,6 +372,33 @@ class AdminTenantsControllerTest {
         .andExpect(jsonPath("$.entries", hasSize(1)))
         .andExpect(jsonPath("$.entries[0].itemId").value("tool-measure-distance"))
         .andExpect(jsonPath("$.entries[0].overrideTitle").value("Custom Measure"));
+  }
+
+  @Test
+  void menuOverrides_batchUpsertsMultipleItems() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            post("/v1/admin/tenants/" + TEST_TENANT_ID + "/menu-overrides/batch")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "overrides",
+                            List.of(
+                                Map.of("itemId", "tool-measure-distance", "enabled", false),
+                                Map.of("itemId", "tool-measure-area", "sortOrder", 99))))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.overrides", hasSize(2)));
+
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID + "/menu-overrides")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.overrides", hasSize(2)));
   }
 
   @Test

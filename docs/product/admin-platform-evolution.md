@@ -64,8 +64,8 @@ flowchart TB
 | **计费** | 钱包/SKU/订单/对账/告警 | live 对公认款、发票平台、用量定价 |
 | **审计** | 列表/导出/详情、计费写操作、Webhook 配置摘要 | 保留策略、SIEM 实推送、告警规则 |
 | **代操作** | impersonation + MFA + banner | 时效/scope 限制 UI、操作录像 |
-| **菜单** | 平台模板 CRUD、拖拽排序、租户覆盖/permission migration 骨架 | **租户覆盖** Admin UI、菜单 RBAC 运行时门控 |
-| **质量** | Vitest、mock/real E2E（含租户生命周期） | CI mock smoke ✅ |
+| **菜单** | 平台模板 CRUD、拖拽排序、permissionCode 列、租户覆盖只读（合规 Tab） | **租户覆盖** 写 UI、菜单 RBAC 运行时门控 |
+| **质量** | Vitest、mock/real E2E（含租户生命周期、合规 Tab、/system） | CI mock smoke ✅ |
 
 ---
 
@@ -103,7 +103,7 @@ flowchart TB
 
 | PR | 内容 |
 | --- | --- |
-| 5D-1 | 租户级 OIDC 连接配置（Admin CRUD + saas-web 登录入口） | 🟡 只读 API + DB 骨架 ✅ |
+| 5D-1 | 租户级 OIDC 连接配置（Admin CRUD + saas-web 登录入口） | 🟡 只读 API + 合规 Tab 摘要 ✅；写 API ✅ |
 | 5D-2 | 审计日志 Webhook / SIEM 导出（除 CSV 外） | ✅ 配置 API + /system 摘要 |
 | 5D-3 | 数据导出请求（GDPR 式租户数据包，骨架 API） | ✅ |
 
@@ -111,9 +111,20 @@ flowchart TB
 
 | PR | 内容 |
 | --- | --- |
-| 5E-1 | 租户菜单覆盖（inherit 平台模板 + diff） | 🟡 V34 migration 骨架 ✅ |
-| 5E-2 | 菜单项 RBAC（permission 门控） | 🟡 V35 + entity 骨架 ✅ |
-| 5E-3 | 附件/存储计量 Admin 页（对接 FND-08g 估算 API） | 🟡 估算 API 骨架 ✅ |
+| 5E-1 | 租户菜单覆盖（inherit 平台模板 + diff） | 🟡 V34 + list API + 合规 Tab 只读 ✅ |
+| 5E-2 | 菜单项 RBAC（permission 门控） | 🟡 V35 + Admin 列表 permissionCode 列 ✅ |
+| 5E-3 | 附件/存储计量 Admin 页（对接 FND-08g 估算 API） | 🟡 估算 API + 合规 Tab 摘要 ✅ |
+
+### Phase 6 · 企业特性深化（Next）
+
+| PR | 内容 |
+| --- | --- |
+| 6-1 | 租户 OIDC 配置 Admin 表单（PATCH + 校验） |
+| 6-2 | 菜单租户覆盖 CRUD（PUT/DELETE 单条 diff） |
+| 6-3 | saas-web 菜单 permissionCode 运行时门控 |
+| 6-4 | 审计 Webhook 实推送 + 失败重试 Job |
+| 6-5 | GDPR 导出 artifact 生成与下载 |
+| 6-6 | SCIM / Directory Sync 调研与 ADR |
 
 ---
 
@@ -136,4 +147,5 @@ flowchart TB
 | **Phase 5B** | /system 可观测 + runbook 直达 ✅ |
 | **Phase 5C** | 租户生命周期可运维 ✅ |
 | **Phase 5D** | 合规骨架（GDPR 导出 + 审计 Webhook 摘要）✅ |
-| **Phase 5E** | 多产品菜单/存储 migration 骨架 🟡 |
+| **Phase 5E** | 多产品菜单/存储 Admin UI 摘要 + migration 骨架 ✅ |
+| **Phase 6** | 企业 SSO 写 UI、SIEM 实推送、菜单运行时 RBAC |

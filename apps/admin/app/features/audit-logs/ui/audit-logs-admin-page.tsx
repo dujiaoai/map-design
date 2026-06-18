@@ -360,15 +360,26 @@ export function AuditLogsAdminPage() {
         }
       />
 
-      {webhookConfigQuery.data?.deliveryMode === 'csv_only' ? (
-        <AdminPanel className="border-amber-500/30 bg-amber-500/5 px-4 py-3 md:px-5">
+      {webhookConfigQuery.data ? (
+        <AdminPanel className="px-4 py-3 md:px-5">
           <p className="text-sm text-muted-foreground">
-            当前审计交付模式为 <code className="font-mono text-xs">csv_only</code>；SIEM Webhook
-            {webhookConfigQuery.data.configured ? ' 已配置但未启用' : ' 未配置'}。可在{' '}
-            <Link to="/system" className="text-primary hover:underline">
-              系统
-            </Link>{' '}
-            页查看详情。
+            Webhook 交付：
+            <code className="mx-1 font-mono text-xs">{webhookConfigQuery.data.deliveryMode}</code>
+            · 格式 <code className="font-mono text-xs">{webhookConfigQuery.data.format}</code>
+            · HMAC 签名{' '}
+            <Badge variant={webhookConfigQuery.data.signatureEnabled ? 'default' : 'secondary'}>
+              {webhookConfigQuery.data.signatureEnabled ? '已启用' : '未启用'}
+            </Badge>
+            {webhookConfigQuery.data.deliveryMode === 'csv_only' ? (
+              <>
+                {' '}
+                （{webhookConfigQuery.data.configured ? '已配置 URL 但未启用' : '未配置'}，详见{' '}
+                <Link to="/system" className="text-primary hover:underline">
+                  系统
+                </Link>
+                ）
+              </>
+            ) : null}
           </p>
         </AdminPanel>
       ) : null}

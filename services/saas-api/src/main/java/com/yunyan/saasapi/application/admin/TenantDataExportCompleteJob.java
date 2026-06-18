@@ -48,7 +48,13 @@ public class TenantDataExportCompleteJob {
       var manifest = exportCollector.collect(request.getTenantId(), request);
       var zipBytes = exportZipBuilder.buildZip(manifest);
       var objectKey = request.getTenantId() + "/" + request.getId() + ".zip";
-      var artifactUrl = objectStorageClientFactory.client().upload(objectKey, zipBytes, "application/zip");
+      var client = objectStorageClientFactory.client();
+      var artifactUrl =
+          client.uploadLarge(
+              objectKey,
+              new java.io.ByteArrayInputStream(zipBytes),
+              zipBytes.length,
+              "application/zip");
       request.setStatus(STATUS_COMPLETED);
       request.setArtifactObjectKey(objectKey);
       request.setArtifactUrl(artifactUrl);

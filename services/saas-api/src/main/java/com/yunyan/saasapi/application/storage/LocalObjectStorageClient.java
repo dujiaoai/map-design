@@ -2,8 +2,10 @@ package com.yunyan.saasapi.application.storage;
 
 import com.yunyan.saasapi.config.SaasAppProperties;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -23,6 +25,18 @@ public class LocalObjectStorageClient implements ObjectStorageClient {
       return resolvePublicUrl(objectKey);
     } catch (IOException ex) {
       throw new IllegalStateException("Failed to write export artifact: " + objectKey, ex);
+    }
+  }
+
+  @Override
+  public String uploadLarge(String objectKey, InputStream content, long size, String contentType) {
+    var path = resolvePath(objectKey);
+    try {
+      Files.createDirectories(path.getParent());
+      Files.copy(content, path, StandardCopyOption.REPLACE_EXISTING);
+      return resolvePublicUrl(objectKey);
+    } catch (IOException ex) {
+      throw new IllegalStateException("Failed to stream export artifact: " + objectKey, ex);
     }
   }
 

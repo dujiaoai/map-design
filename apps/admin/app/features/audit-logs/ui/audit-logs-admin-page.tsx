@@ -18,6 +18,7 @@ import { buildAuditUsersLink } from '~/features/audit-logs/lib/audit-log-users-n
 import { AuditLogDetailSheet } from '~/features/audit-logs/ui/audit-log-detail-sheet'
 import { AuditWebhookSlaPanel } from '~/features/audit-logs/ui/audit-webhook-sla-panel'
 import { AuditWebhookSelfHealPanel } from '~/features/audit-logs/ui/audit-webhook-self-heal-panel'
+import { AuditWebhookArchiveSummaryPanel } from '~/features/audit-logs/ui/audit-webhook-archive-summary-panel'
 import { AuditWebhookTargetsPanel } from '~/features/audit-logs/ui/audit-webhook-targets-panel'
 import { AuditWebhookDeadLetterPanel } from '~/features/audit-logs/ui/audit-webhook-dead-letter-panel'
 import {
@@ -401,6 +402,7 @@ export function AuditLogsAdminPage() {
 
       {canExportAudit ? <AuditWebhookSlaPanel /> : null}
       {canExportAudit ? <AuditWebhookSelfHealPanel /> : null}
+      {canExportAudit ? <AuditWebhookArchiveSummaryPanel /> : null}
       {canExportAudit ? <AuditWebhookTargetsPanel /> : null}
       {canExportAudit ? <AuditWebhookDeadLetterPanel canManage={canExportAudit} /> : null}
 

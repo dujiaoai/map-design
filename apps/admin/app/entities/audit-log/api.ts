@@ -7,6 +7,7 @@ import type {
   AdminAuditWebhookSla,
   AdminAuditWebhookDeadLetterListResponse,
   AdminAuditWebhookDeadLetterReplayResponse,
+  AdminAuditWebhookArchiveSummary,
 } from './model'
 
 export function fetchAdminAuditLogs(params?: AdminListQuery) {
@@ -35,4 +36,8 @@ export function replayAdminAuditWebhookDeadLetter(id: string) {
 
 export function deleteAdminAuditWebhookDeadLetter(id: string) {
   return api.delete<void>(`/admin/audit-logs/webhook-dead-letters/${id}`)
+}
+
+export function fetchAdminAuditWebhookArchiveSummary() {
+  return api.get<AdminAuditWebhookArchiveSummary>('/admin/audit-logs/webhook-archive-summary')
 }

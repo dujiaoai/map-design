@@ -61,3 +61,13 @@ export interface AdminAuditWebhookDeadLetterReplayResponse {
   success: boolean
   message: string
 }
+
+export interface AdminAuditWebhookArchiveRegionCount {
+  region: string
+  count: number
+}
+
+export interface AdminAuditWebhookArchiveSummary {
+  totalArchived: number
+  byRegion: AdminAuditWebhookArchiveRegionCount[]
+}

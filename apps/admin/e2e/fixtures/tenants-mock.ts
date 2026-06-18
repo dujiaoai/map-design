@@ -187,7 +187,28 @@ export async function mockTenantsPageApis(page: Page) {
     })
   })
 
-  await page.route(/\/v1\/admin\/tenants\/[^/]+\/menu-overrides/, async (route) => {
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/menu-overrides(\/|$)/, async (route) => {
+    const url = route.request().url()
+    if (route.request().method() === 'PUT') {
+      const body = route.request().postDataJSON() as Record<string, unknown>
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          id: 'e2e-override-1',
+          tenantId: 'e2e-tenant-active',
+          itemId: body.itemId,
+          enabled: body.enabled ?? null,
+          sortOrder: body.sortOrder ?? null,
+          title: body.title ?? null,
+        }),
+      })
+      return
+    }
+    if (route.request().method() === 'DELETE') {
+      await route.fulfill({ status: 204, body: '' })
+      return
+    }
     await route.fulfill({
       status: 200,
       contentType: 'application/json',

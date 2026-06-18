@@ -57,14 +57,14 @@ flowchart TB
 
 | 域 | 已交付 | 缺口 |
 | --- | --- | --- |
-| **身份** | 登录、OIDC、MFA TOTP、恢复码 | 租户级 SSO 配置 UI、会话/device 管理 |
+| **身份** | 登录、OIDC、MFA TOTP、恢复码、租户 OIDC Admin 表单 | 会话/device 管理、SCIM（见 ADR-0010） |
 | **租户** | CRUD、停用、feature、配额、trial/onboarding 看板、存储估算 API 骨架 | 自助注册审核、组织层级 |
 | **成员** | 邀请（邮箱/链接）、角色、seat 门控 | SCIM、批量导入、离职转交 |
 | **RBAC** | 权限目录、系统/租户角色、Transfer | 权限模板包、变更审批流 |
 | **计费** | 钱包/SKU/订单/对账/告警 | live 对公认款、发票平台、用量定价 |
-| **审计** | 列表/导出/详情、计费写操作、Webhook 配置摘要 | 保留策略、SIEM 实推送、告警规则 |
+| **审计** | 列表/导出/详情、Webhook 配置摘要、投递 Job 骨架 | SIEM 实 HTTP 推送、告警规则 |
 | **代操作** | impersonation + MFA + banner | 时效/scope 限制 UI、操作录像 |
-| **菜单** | 平台模板 CRUD、拖拽排序、permissionCode 列、租户覆盖只读（合规 Tab） | **租户覆盖** 写 UI、菜单 RBAC 运行时门控 |
+| **菜单** | 平台模板 CRUD、permissionCode 列、租户覆盖 CRUD（合规 Tab）、saas-web 运行时门控 | 菜单覆盖与平台模板 diff 可视化 |
 | **质量** | Vitest、mock/real E2E（含租户生命周期、合规 Tab、/system） | CI mock smoke ✅ |
 
 ---
@@ -119,12 +119,21 @@ flowchart TB
 
 | PR | 内容 |
 | --- | --- |
-| 6-1 | 租户 OIDC 配置 Admin 表单（PATCH + 校验） |
-| 6-2 | 菜单租户覆盖 CRUD（PUT/DELETE 单条 diff） |
-| 6-3 | saas-web 菜单 permissionCode 运行时门控 |
-| 6-4 | 审计 Webhook 实推送 + 失败重试 Job |
-| 6-5 | GDPR 导出 artifact 生成与下载 |
-| 6-6 | SCIM / Directory Sync 调研与 ADR |
+| 6-1 | 租户 OIDC 配置 Admin 表单（PATCH + 校验） | ✅ |
+| 6-2 | 菜单租户覆盖 CRUD（PUT/DELETE 单条 diff） | ✅ |
+| 6-3 | saas-web 菜单 permissionCode 运行时门控 | ✅ |
+| 6-4 | 审计 Webhook 实推送 + 失败重试 Job | 🟡 投递 Job 骨架 ✅ |
+| 6-5 | GDPR 导出 artifact 生成与下载 | 🟡 完成 Job + skeleton URL ✅ |
+| 6-6 | SCIM / Directory Sync 调研与 ADR | ✅ [ADR-0010](../adr/0010-scim-directory-sync-deferred.md) |
+
+### Phase 7 · 深化（Later）
+
+| PR | 内容 |
+| --- | --- |
+| 7-1 | saas-web 租户 OIDC 登录入口 |
+| 7-2 | 审计 Webhook HTTP 实推送 + 死信重试 |
+| 7-3 | GDPR 导出 artifact 对象存储与 Admin 下载 |
+| 7-4 | 菜单覆盖与平台模板 side-by-side diff |
 
 ---
 
@@ -148,4 +157,5 @@ flowchart TB
 | **Phase 5C** | 租户生命周期可运维 ✅ |
 | **Phase 5D** | 合规骨架（GDPR 导出 + 审计 Webhook 摘要）✅ |
 | **Phase 5E** | 多产品菜单/存储 Admin UI 摘要 + migration 骨架 ✅ |
-| **Phase 6** | 企业 SSO 写 UI、SIEM 实推送、菜单运行时 RBAC |
+| **Phase 6** | OIDC 表单、菜单覆盖 CRUD、permission 门控、Job 骨架 ✅ |
+| **Phase 7** | saas-web SSO 登录、SIEM 实推送、GDPR 下载 |

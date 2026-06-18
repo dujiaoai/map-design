@@ -21,5 +21,6 @@ test.describe('租户合规 Tab（已登录 mock）', () => {
     await expect(page.getByText('全部继承平台模板')).toBeVisible()
     await expect(page.getByLabel('OIDC Issuer URI')).toBeVisible()
     await expect(page.getByRole('button', { name: '保存 OIDC 配置' })).toBeVisible()
+    await expect(page.getByRole('button', { name: '新增覆盖' })).toBeVisible()
   })
 })

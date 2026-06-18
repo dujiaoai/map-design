@@ -167,5 +167,11 @@ public class SaasAppProperties {
     private long multipartThresholdBytes = 5L * 1024 * 1024;
     /** 对象生命周期过期天数；0 表示未启用自动清理 */
     private int lifecycleExpireDays = 0;
+    /** 跨区复制目标 bucket；空表示未启用 */
+    private String replicationTargetBucket = "";
+    /** 跨区复制目标 region */
+    private String replicationRegion = "";
+    /** 合规保留天数；0 表示未启用 */
+    private int complianceRetainDays = 0;
   }
 }

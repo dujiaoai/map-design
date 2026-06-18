@@ -32,3 +32,7 @@ saas:
     region: ${SAAS_OBJECT_STORAGE_REGION:us-east-1}
     multipart-threshold-bytes: ${SAAS_OBJECT_STORAGE_MULTIPART_THRESHOLD_BYTES:5242880}
     lifecycle-expire-days: ${SAAS_OBJECT_STORAGE_LIFECYCLE_EXPIRE_DAYS:0}
+    # Phase 12-5：跨区复制与合规保留（生产按需配置）
+    replication-target-bucket: ${SAAS_OBJECT_STORAGE_REPLICATION_BUCKET:}
+    replication-region: ${SAAS_OBJECT_STORAGE_REPLICATION_REGION:}
+    compliance-retain-days: ${SAAS_OBJECT_STORAGE_COMPLIANCE_RETAIN_DAYS:0}

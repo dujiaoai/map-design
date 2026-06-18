@@ -6,11 +6,15 @@ import com.yunyan.saasapi.domain.WorkspaceMenuTenantOverrideRepository;
 import com.yunyan.saasapi.domain.entity.WorkspaceMenuTenantOverride;
 import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.SaasPrincipal;
+import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuDiffEntryDto;
+import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuDiffResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideListResponse;
 import com.yunyan.saasapi.web.dto.admin.PutTenantMenuOverrideRequest;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +28,29 @@ public class TenantMenuOverrideAdminService {
   private final WorkspaceMenuRepository workspaceMenuRepository;
   private final WorkspaceMenuTenantOverrideRepository overrideRepository;
   private final AdminAuditLogService adminAuditLogService;
+
+  public AdminTenantMenuDiffResponse buildDiff(UUID tenantId) {
+    ensureTenantExists(tenantId);
+    var overrideMap =
+        overrideRepository.findByTenantId(tenantId).stream()
+            .collect(Collectors.toMap(WorkspaceMenuTenantOverride::getItemId, Function.identity()));
+    var entries =
+        workspaceMenuRepository.findAllItemsOrdered().stream()
+            .map(
+                item -> {
+                  var override = overrideMap.get(item.getId());
+                  return new AdminTenantMenuDiffEntryDto(
+                      item.getId(),
+                      item.getTitle(),
+                      Boolean.TRUE.equals(item.getEnabled()),
+                      override != null,
+                      override != null ? override.getEnabled() : null,
+                      override != null ? override.getTitle() : null);
+                })
+            .filter(AdminTenantMenuDiffEntryDto::hasOverride)
+            .toList();
+    return new AdminTenantMenuDiffResponse(tenantId.toString(), entries);
+  }
 
   public AdminTenantMenuOverrideListResponse listOverrides(UUID tenantId) {
     tenantRepository.findById(tenantId).orElseThrow(() -> AuthException.notFound("Tenant not found"));

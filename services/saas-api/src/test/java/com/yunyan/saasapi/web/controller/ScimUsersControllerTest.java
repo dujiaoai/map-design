@@ -46,4 +46,25 @@ class ScimUsersControllerTest {
         .andExpect(jsonPath("$.totalResults").value(0))
         .andExpect(jsonPath("$.Resources").isArray());
   }
+
+  @Test
+  @Sql(
+      scripts = {
+        "/sql/auth-test-seed.sql",
+        "/sql/reset-role-permissions.sql",
+        "/sql/scim-test-token.sql"
+      })
+  void createUser_withValidBearer_returnsResource() throws Exception {
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/scim/v2/Users")
+                .header("Authorization", "Bearer scim-test-token")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"externalId":"scim-ext-1","userName":"scim-new@test.local","displayName":"SCIM New","active":true}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.userName").value("scim-new@test.local"));
+  }
 }

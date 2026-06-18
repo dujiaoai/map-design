@@ -202,6 +202,12 @@ public class SaasAppProperties {
     private double seatUnitCost = 12.0;
     /** 每 GB 存储月估算成本（USD） */
     private double storageGbUnitCost = 0.023;
+    /** 月度预算上限（USD）；0 表示未配置 */
+    private double monthlyBudgetUsd = 0;
+    /** 告警阈值百分比（相对预算） */
+    private int alertThresholdPercent = 80;
+    /** 超预算时启用租户 API 节流骨架 */
+    private boolean budgetThrottleEnabled = false;
   }
 
   private final FinOps finOps = new FinOps();

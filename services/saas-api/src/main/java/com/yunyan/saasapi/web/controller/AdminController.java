@@ -4,6 +4,7 @@ import com.yunyan.saasapi.application.admin.AdminStatsService;
 import com.yunyan.saasapi.application.admin.AdminSystemDependenciesService;
 import com.yunyan.saasapi.application.admin.AdminSystemFlagsService;
 import com.yunyan.saasapi.application.admin.AdminObjectStoragePolicyService;
+import com.yunyan.saasapi.application.admin.AdminUsageAnomalyService;
 import com.yunyan.saasapi.application.admin.AdminUsageTrendsService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
 import com.yunyan.saasapi.web.dto.admin.FeatureCatalogResponse;
@@ -13,6 +14,7 @@ import com.yunyan.saasapi.web.dto.admin.AdminStatsResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemDependenciesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemFlagsResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminObjectStoragePolicyResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminUsageAnomaliesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageTrendsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -38,6 +40,7 @@ public class AdminController {
 
   private final AdminStatsService adminStatsService;
   private final AdminUsageTrendsService adminUsageTrendsService;
+  private final AdminUsageAnomalyService adminUsageAnomalyService;
   private final AdminObjectStoragePolicyService adminObjectStoragePolicyService;
   private final AdminSystemFlagsService adminSystemFlagsService;
   private final AdminSystemDependenciesService adminSystemDependenciesService;
@@ -81,6 +84,14 @@ public class AdminController {
   @Operation(summary = "近 7 日用量趋势", description = "新增用户、审计事件、活跃租户（按日桶）")
   public AdminUsageTrendsResponse usageTrends() {
     return adminUsageTrendsService.getTrends();
+  }
+
+  @GetMapping("/stats/usage-anomalies")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(summary = "用量异常检测", description = "Phase 13-4：当日指标超过 7 日均值 2 倍")
+  public AdminUsageAnomaliesResponse usageAnomalies() {
+    return adminUsageAnomalyService.detectAnomalies();
   }
 
   @GetMapping("/stats/usage-trends/export")

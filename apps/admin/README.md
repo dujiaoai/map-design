@@ -57,7 +57,7 @@ pnpm --filter @repo/saas-admin dev
 | `/account` | 账号资料与改密 | 已登录 |
 | `/billing` | 计费运营（钱包、SKU、订单、调账、对账等 Tab） | `admin:billing:*` |
 | `/audit-logs` | 审计日志列表（租户/动作/日期/跨租户筛选；CSV 导出） | `admin:audit:read` / `admin:audit:export` |
-| `/system` | 平台配置只读摘要与健康条（`GET /v1/admin/system/flags`） | `admin:tenants:read` |
+| `/system` | 平台配置只读摘要与健康条（`GET /v1/admin/system/flags`）；含审计 Webhook 摘要 | `admin:tenants:read` |
 | `/403` | 无运营权限 | — |
 | `*` | 404 友好页 | — |
 
@@ -129,6 +129,7 @@ P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）、Later（P
 | **真实 API 联调 E2E** | 依赖 seed + 运行中 saas-api | ✅ `pnpm test:e2e:api` |
 | **计费对账 mock E2E** | 概览警示横幅、日对账 Tab、关闭运维告警 | ✅ `pnpm test:e2e -- billing.spec.ts` |
 | **审计日志 mock E2E** | 列表、日期范围、CSV 导出 | ✅ `pnpm test:e2e -- audit-logs.spec.ts` |
+| **租户生命周期 mock E2E** | 生命周期列、筛选、概览 MetricCard | ✅ `pnpm test:e2e -- tenants.spec.ts` |
 | **CI mock E2E smoke** | GitHub Actions `admin-e2e.yml`；本地 `pnpm validate:admin-e2e` | ✅ |
 
 ## 验证

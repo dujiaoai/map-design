@@ -139,15 +139,7 @@ export function TenantOidcConfigForm({
           aria-label="OIDC Client ID"
         />
       </AdminField>
-      <AdminField
-        label="Client Secret"
-        hint={
-          config.clientSecretConfigured
-            ? '已保存；留空表示不更新'
-            : '启用 SSO 时必填'
-        }
-        error={errors.clientSecret?.message}
-      >
+      <AdminField label="Client Secret（留空不更新）" error={errors.clientSecret?.message}>
         <Input
           {...register('clientSecret')}
           type="password"
@@ -157,7 +149,7 @@ export function TenantOidcConfigForm({
           aria-label="OIDC Client Secret"
         />
       </AdminField>
-      <AdminField label="Scopes" hint="空格分隔，默认 openid profile email" error={errors.scopes?.message}>
+      <AdminField label="Scopes（空格分隔）" error={errors.scopes?.message}>
         <Input
           {...register('scopes')}
           placeholder="openid profile email"

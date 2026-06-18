@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { resolvePermissionsForRoles } from '@repo/auth'
 
 import { fetchOidcProviders, startOidcAuthorize } from '~/shared/api/oidc-auth'
+import { startTenantSsoAuthorize } from '~/shared/api/tenant-sso'
 import { isTenantSsoLoginVisible, useTenantSsoQuery } from '~/shared/hooks/use-tenant-sso'
 import { auth, SaaSRole } from '~/shared/auth/client'
 import { formatLoginError } from '~/shared/auth/format-login-error'
@@ -184,7 +185,18 @@ function SaasLoginForm() {
   }
 
   async function onStartTenantSso() {
-    setSubmitError('租户 SSO 授权流程开发中，请暂用密码或平台 IdP 登录')
+    const tenantId = tenantIdValue?.trim()
+    if (!tenantId) {
+      setSubmitError('企业 SSO 登录请先填写租户标识')
+      return
+    }
+    setSubmitError(null)
+    try {
+      const { authorizationUrl } = await startTenantSsoAuthorize(tenantId)
+      window.location.assign(authorizationUrl)
+    } catch (error) {
+      setSubmitError(formatLoginError(error))
+    }
   }
 
   async function onStartOidc(providerId: string) {

@@ -34,4 +34,25 @@ public class AuditWebhookHttpClient {
       return false;
     }
   }
+
+  public boolean pingTarget(String url) {
+    try {
+      restClient.head().uri(url).retrieve().toBodilessEntity();
+      return true;
+    } catch (RestClientException ex) {
+      try {
+        restClient
+            .post()
+            .uri(url)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{}")
+            .retrieve()
+            .toBodilessEntity();
+        return true;
+      } catch (RestClientException postEx) {
+        log.warn("Audit webhook ping failed: {}", postEx.getMessage());
+        return false;
+      }
+    }
+  }
 }

@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { Link, redirect } from 'react-router'
 
 import { AdminQuickNav } from '~/widgets/admin-overview/ui/admin-quick-nav'
-import { fetchAdminPing, fetchAdminStats } from '~/shared/api/admin-api'
+import { fetchAdminPing, fetchAdminStats, fetchAdminUsageTrends } from '~/shared/api/admin-api'
 import { auth } from '~/shared/auth/client'
 import { canAccessAdminOverview } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
@@ -45,6 +45,10 @@ export default function DashboardRoute() {
     queryKey: adminQueryKeys.stats,
     queryFn: fetchAdminStats,
   })
+  const usageTrendsQuery = useQuery({
+    queryKey: adminQueryKeys.usageTrends,
+    queryFn: fetchAdminUsageTrends,
+  })
   const pingQuery = useQuery({
     queryKey: adminQueryKeys.ping,
     queryFn: fetchAdminPing,
@@ -57,6 +61,7 @@ export default function DashboardRoute() {
     try {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: adminQueryKeys.stats }),
+        queryClient.invalidateQueries({ queryKey: adminQueryKeys.usageTrends }),
         queryClient.invalidateQueries({ queryKey: adminQueryKeys.ping }),
       ])
       toast.success('概览数据已刷新')
@@ -164,6 +169,29 @@ export default function DashboardRoute() {
           hint="created_at 窗口"
         />
       </div>
+
+      <AdminPanel>
+        <AdminPanelHeader icon={TrendingUpIcon} title="近 7 日用量趋势" />
+        {usageTrendsQuery.isLoading ? (
+          <p className="px-4 py-4 text-sm text-muted-foreground md:px-5">加载中…</p>
+        ) : usageTrendsQuery.isError ? (
+          <p className="px-4 py-4 text-sm text-destructive md:px-5">无法加载用量趋势</p>
+        ) : (
+          <ul className="divide-y divide-border/60 px-4 pb-4 md:px-5">
+            {(usageTrendsQuery.data?.days ?? []).map((day) => (
+              <li
+                key={day.date}
+                className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"
+              >
+                <span className="font-mono text-xs text-muted-foreground">{day.date}</span>
+                <span>新增用户 {day.newUsers}</span>
+                <span>审计 {day.auditEvents}</span>
+                <span>活跃租户 {day.activeTenants}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </AdminPanel>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <AdminMetricCard

@@ -163,5 +163,9 @@ public class SaasAppProperties {
     private String region = "us-east-1";
     /** 为 true 且 provider=s3-compatible 时使用 AWS SDK PutObject（Phase 10-3） */
     private boolean useRealS3 = false;
+    /** 超过此字节数时使用 multipart / 流式上传（Phase 11-5） */
+    private long multipartThresholdBytes = 5L * 1024 * 1024;
+    /** 对象生命周期过期天数；0 表示未启用自动清理 */
+    private int lifecycleExpireDays = 0;
   }
 }

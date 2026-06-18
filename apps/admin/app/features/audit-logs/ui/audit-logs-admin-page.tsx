@@ -371,6 +371,17 @@ export function AuditLogsAdminPage() {
             <Badge variant={webhookConfigQuery.data.signatureEnabled ? 'default' : 'secondary'}>
               {webhookConfigQuery.data.signatureEnabled ? '已启用' : '未启用'}
             </Badge>
+            · 死信重试{' '}
+            <code className="font-mono text-xs">
+              max {webhookConfigQuery.data.deadLetterMaxAttempts ?? 5} /{' '}
+              {webhookConfigQuery.data.deadLetterRetryIntervalMs ?? 300000}ms
+            </code>
+            · 告警路由{' '}
+            <Badge
+              variant={webhookConfigQuery.data.alertWebhookConfigured ? 'default' : 'secondary'}
+            >
+              {webhookConfigQuery.data.alertWebhookConfigured ? '已配置' : '未配置'}
+            </Badge>
             {webhookConfigQuery.data.deliveryMode === 'csv_only' ? (
               <>
                 {' '}

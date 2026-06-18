@@ -27,6 +27,9 @@ export interface AdminAuditWebhookConfig {
   deadLetterCount?: number
   lastDeliveredAt?: number | null
   signatureEnabled: boolean
+  deadLetterMaxAttempts?: number
+  deadLetterRetryIntervalMs?: number
+  alertWebhookConfigured?: boolean
 }
 
 export interface AdminAuditWebhookDeadLetter {

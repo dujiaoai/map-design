@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { DatabaseIcon, KeyRoundIcon, LayoutListIcon, PackageIcon, PlusIcon } from 'lucide-react'
+import { DatabaseIcon, KeyRoundIcon, LayoutListIcon, PackageIcon, PlusIcon, UploadIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import { TenantMenuDiffPanel } from '~/features/tenants/ui/tenant-menu-diff-panel'
+import { TenantMenuOverrideBatchSheet } from '~/features/tenants/ui/tenant-menu-override-batch-sheet'
 import { TenantMenuOverrideSheet } from '~/features/tenants/ui/tenant-menu-override-sheet'
 
 import type { TenantMenuOverride } from '~/entities/tenant/model'
@@ -43,6 +44,7 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
     open: boolean
     override: TenantMenuOverride | null
   }>({ open: false, override: null })
+  const [batchSheetOpen, setBatchSheetOpen] = useState(false)
 
   const exportsQuery = useQuery({
     queryKey: adminQueryKeys.tenantDataExports(tenantId),
@@ -184,15 +186,26 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
           description="相对平台模板的租户级 diff（Phase 6-2）"
           actions={
             canWrite ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setMenuOverrideSheet({ open: true, override: null })}
-              >
-                <PlusIcon className="size-4" aria-hidden />
-                新增覆盖
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setBatchSheetOpen(true)}
+                >
+                  <UploadIcon className="size-4" aria-hidden />
+                  批量导入
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setMenuOverrideSheet({ open: true, override: null })}
+                >
+                  <PlusIcon className="size-4" aria-hidden />
+                  新增覆盖
+                </Button>
+              </div>
             ) : null
           }
         />
@@ -238,6 +251,11 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
         override={menuOverrideSheet.override}
         open={menuOverrideSheet.open}
         onOpenChange={(open) => setMenuOverrideSheet((prev) => ({ ...prev, open }))}
+      />
+      <TenantMenuOverrideBatchSheet
+        tenantId={tenantId}
+        open={batchSheetOpen}
+        onOpenChange={setBatchSheetOpen}
       />
     </div>
   )

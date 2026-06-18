@@ -40,6 +40,7 @@ public class AdminAuditWebhookTargetService {
     row.setFormat(normalizeFormat(request.format()));
     row.setEnabled(request.enabled() == null || request.enabled());
     row.setPriority(request.priority() == null ? 0 : request.priority());
+    row.setConsecutiveFailures(0);
     row.setCreatedAt(Instant.now());
     row.setUpdatedAt(Instant.now());
     targetRepository.insert(row);
@@ -91,7 +92,10 @@ public class AdminAuditWebhookTargetService {
         row.getFormat(),
         Boolean.TRUE.equals(row.getEnabled()),
         row.getPriority(),
-        row.getCreatedAt().toEpochMilli());
+        row.getCreatedAt().toEpochMilli(),
+        row.getConsecutiveFailures() == null ? 0 : row.getConsecutiveFailures(),
+        row.getLastHealthCheckAt() == null ? null : row.getLastHealthCheckAt().toEpochMilli(),
+        row.getUnhealthySince() == null ? null : row.getUnhealthySince().toEpochMilli());
   }
 
   private static String requireUrl(String url) {

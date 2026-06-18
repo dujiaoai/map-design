@@ -8,6 +8,8 @@ import type {
   AdminSystemFlagsResponse,
   AdminUsageAnomaliesResponse,
   AdminUsageForecastBundleResponse,
+  AdminFinOpsCostAttribution,
+  AdminAuditWebhookSelfHealStatus,
   AdminUsageTrendsResponse,
 } from './model'
 
@@ -29,6 +31,14 @@ export function fetchAdminUsageAnomalies() {
 
 export function fetchAdminUsageForecast() {
   return api.get<AdminUsageForecastBundleResponse>('/admin/stats/usage-forecast')
+}
+
+export function fetchAdminFinOps() {
+  return api.get<AdminFinOpsCostAttribution>('/admin/stats/finops')
+}
+
+export function fetchAdminAuditWebhookSelfHealStatus() {
+  return api.get<AdminAuditWebhookSelfHealStatus>('/admin/audit-logs/webhook-sla/self-heal-status')
 }
 
 export function fetchAuditWebhookTargets() {

@@ -64,6 +64,35 @@ export interface AdminUsageForecastBundleResponse {
   recommendations: AdminUsageCapacityRecommendation[]
 }
 
+export interface AdminFinOpsTenantConsumer {
+  tenantId: string
+  tenantName: string
+  estimatedMonthlyCostUsd: number
+  billingApiCalls: number
+  seatCount: number
+}
+
+export interface AdminFinOpsCostAttribution {
+  totalEstimatedMonthlyCostUsd: number
+  billingApiCostUsd: number
+  seatCostUsd: number
+  storageCostUsd: number
+  topConsumers: AdminFinOpsTenantConsumer[]
+}
+
+export interface AdminAuditWebhookSelfHealStatus {
+  degradedTargetCount: number
+  eligibleForSelfHealCount: number
+  deliveryRatePercent: number
+  pendingDeadLetters: number
+}
+
+export interface ScimSyncEventSummary {
+  pendingCount: number
+  tenantPendingCount: number
+  conflictStrategy: string
+}
+
 export interface AdminAuditWebhookTarget {
   id: string
   url: string

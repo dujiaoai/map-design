@@ -145,11 +145,15 @@ export type {
   AdminSystemFlagsResponse,
   AdminUsageDayBucket,
   AdminUsageForecastBundleResponse,
+  AdminFinOpsCostAttribution,
+  AdminAuditWebhookSelfHealStatus,
   AdminUsageTrendsResponse,
 } from '~/entities/admin-platform'
 export {
   fetchAdminPing,
   fetchAdminStats,
+  fetchAdminFinOps,
+  fetchAdminAuditWebhookSelfHealStatus,
   fetchAdminUsageForecast,
   fetchAdminUsageTrends,
   fetchAdminSystemDependencies,

@@ -139,6 +139,33 @@ export async function mockAuditPageApis(page: Page) {
     })
   })
 
+  await page.route(/\/v1\/admin\/audit-logs\/webhook-sla\/self-heal-status/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        degradedTargetCount: 1,
+        eligibleForSelfHealCount: 1,
+        deliveryRatePercent: 96.5,
+        pendingDeadLetters: 1,
+      }),
+    })
+  })
+
+  await page.route(/\/v1\/admin\/stats\/finops/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        totalEstimatedMonthlyCostUsd: 120.5,
+        billingApiCostUsd: 50,
+        seatCostUsd: 60,
+        storageCostUsd: 30.5,
+        topConsumers: [],
+      }),
+    })
+  })
+
   await page.route(/\/v1\/admin\/audit-logs\/webhook-sla/, async (route) => {
     await route.fulfill({
       status: 200,

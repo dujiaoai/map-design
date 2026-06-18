@@ -15,6 +15,17 @@ export interface AdminStatsResponse {
   trialExpiredTenantCount: number
 }
 
+export interface AdminUsageDayBucket {
+  date: string
+  newUsers: number
+  auditEvents: number
+  activeTenants: number
+}
+
+export interface AdminUsageTrendsResponse {
+  days: AdminUsageDayBucket[]
+}
+
 export interface AdminSystemFlagsResponse {
   registration: {
     allowPublicOrgSignup: boolean

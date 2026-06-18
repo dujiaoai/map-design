@@ -5,6 +5,7 @@ import type {
   AdminStatsResponse,
   AdminSystemDependenciesResponse,
   AdminSystemFlagsResponse,
+  AdminUsageTrendsResponse,
 } from './model'
 
 export function fetchAdminPing() {
@@ -13,6 +14,10 @@ export function fetchAdminPing() {
 
 export function fetchAdminStats() {
   return api.get<AdminStatsResponse>('/admin/stats')
+}
+
+export function fetchAdminUsageTrends() {
+  return api.get<AdminUsageTrendsResponse>('/admin/stats/usage-trends')
 }
 
 export function fetchAdminSystemFlags() {

@@ -189,7 +189,7 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
           isRetrying={scimQuery.isFetching}
         />
       ) : (
-        <TenantScimStatusCard status={scimQuery.data} />
+        <TenantScimStatusCard readOnly={!canWrite} status={scimQuery.data} tenantId={tenantId} />
       )}
 
       <AdminPanel>

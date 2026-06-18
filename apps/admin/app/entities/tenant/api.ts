@@ -85,6 +85,13 @@ export function fetchTenantScimProvisioning(tenantId: string) {
   return api.get<AdminTenantScimProvisioning>(`/admin/tenants/${tenantId}/scim-provisioning`)
 }
 
+export function generateTenantScimToken(tenantId: string) {
+  return api.post<{ tenantId: string; token: string; usersEndpointUrl: string }>(
+    `/admin/tenants/${tenantId}/scim-provisioning/generate-token`,
+    {},
+  )
+}
+
 export function patchTenantOidcConfig(tenantId: string, payload: PatchTenantOidcConfigPayload) {
   return api.patch<AdminTenantOidcConfig>(`/admin/tenants/${tenantId}/oidc-config`, payload)
 }

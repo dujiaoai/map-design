@@ -113,6 +113,7 @@ export {
   fetchTenantOidcConfig,
   fetchTenantSamlConfig,
   fetchTenantScimProvisioning,
+  generateTenantScimToken,
   importTenantOidcMetadata,
   fetchTenantQuotas,
   fetchTenantStorageEstimate,

@@ -1,6 +1,7 @@
 package com.yunyan.saasapi.web.controller;
 
 import com.yunyan.saasapi.application.admin.AdminAuditLogService;
+import com.yunyan.saasapi.application.admin.AdminAuditWebhookTargetService;
 import com.yunyan.saasapi.application.admin.AdminAuditWebhookDeadLetterService;
 import com.yunyan.saasapi.application.admin.AdminAuditWebhookService;
 import com.yunyan.saasapi.application.admin.AdminAuditWebhookSlaService;
@@ -9,6 +10,10 @@ import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditLogListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookConfigResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookTargetDto;
+import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookTargetListResponse;
+import com.yunyan.saasapi.web.dto.admin.CreateAuditWebhookTargetRequest;
+import com.yunyan.saasapi.web.dto.admin.PatchAuditWebhookTargetRequest;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookSlaResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookDeadLetterListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookDeadLetterReplayResponse;
@@ -25,8 +30,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,6 +49,7 @@ public class AdminAuditLogsController {
   private final AdminAuditWebhookService adminAuditWebhookService;
   private final AdminAuditWebhookSlaService adminAuditWebhookSlaService;
   private final AdminAuditWebhookDeadLetterService adminAuditWebhookDeadLetterService;
+  private final AdminAuditWebhookTargetService adminAuditWebhookTargetService;
 
   @GetMapping
   @PreAuthorize(PermissionCodes.ADMIN_AUDIT_READ_AUTHORITIES)
@@ -130,5 +138,39 @@ public class AdminAuditLogsController {
   public void deleteWebhookDeadLetter(
       @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID id) {
     adminAuditWebhookDeadLetterService.delete(principal, id);
+  }
+
+  @GetMapping("/webhook-targets")
+  @PreAuthorize(PermissionCodes.ADMIN_AUDIT_READ_AUTHORITIES)
+  @Operation(summary = "审计 Webhook 多目标列表", description = "Phase 13-3：除主 webhook 外的附加投递目标")
+  public AdminAuditWebhookTargetListResponse listWebhookTargets() {
+    return adminAuditWebhookTargetService.listTargets();
+  }
+
+  @PostMapping("/webhook-targets")
+  @PreAuthorize(PermissionCodes.ADMIN_AUDIT_EXPORT_AUTHORITIES)
+  @Operation(summary = "创建 Webhook 投递目标")
+  public AdminAuditWebhookTargetDto createWebhookTarget(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @RequestBody @jakarta.validation.Valid CreateAuditWebhookTargetRequest request) {
+    return adminAuditWebhookTargetService.createTarget(principal, request);
+  }
+
+  @PatchMapping("/webhook-targets/{id}")
+  @PreAuthorize(PermissionCodes.ADMIN_AUDIT_EXPORT_AUTHORITIES)
+  @Operation(summary = "更新 Webhook 投递目标")
+  public AdminAuditWebhookTargetDto patchWebhookTarget(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID id,
+      @RequestBody PatchAuditWebhookTargetRequest request) {
+    return adminAuditWebhookTargetService.patchTarget(principal, id, request);
+  }
+
+  @DeleteMapping("/webhook-targets/{id}")
+  @PreAuthorize(PermissionCodes.ADMIN_AUDIT_EXPORT_AUTHORITIES)
+  @Operation(summary = "删除 Webhook 投递目标")
+  public void deleteWebhookTarget(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID id) {
+    adminAuditWebhookTargetService.deleteTarget(principal, id);
   }
 }

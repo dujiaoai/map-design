@@ -1,7 +1,6 @@
 package com.yunyan.saasapi.application.admin;
 
-import com.yunyan.saasapi.application.storage.ObjectStorageClient;
-import com.yunyan.saasapi.config.SaasAppProperties;
+import com.yunyan.saasapi.application.storage.ObjectStorageClientFactory;
 import com.yunyan.saasapi.domain.TenantDataExportRequestRepository;
 import com.yunyan.saasapi.domain.entity.TenantDataExportRequest;
 import java.time.Instant;
@@ -24,8 +23,7 @@ public class TenantDataExportCompleteJob {
   private final TenantDataExportRequestRepository exportRequestRepository;
   private final TenantDataExportCollector exportCollector;
   private final TenantDataExportZipBuilder exportZipBuilder;
-  private final ObjectStorageClient objectStorageClient;
-  private final SaasAppProperties saasAppProperties;
+  private final ObjectStorageClientFactory objectStorageClientFactory;
 
   @Scheduled(
       fixedDelayString = "${saas.tenant.data-export-complete-ms:600000}",
@@ -50,7 +48,7 @@ public class TenantDataExportCompleteJob {
       var manifest = exportCollector.collect(request.getTenantId(), request);
       var zipBytes = exportZipBuilder.buildZip(manifest);
       var objectKey = request.getTenantId() + "/" + request.getId() + ".zip";
-      var artifactUrl = objectStorageClient.upload(objectKey, zipBytes, "application/zip");
+      var artifactUrl = objectStorageClientFactory.client().upload(objectKey, zipBytes, "application/zip");
       request.setStatus(STATUS_COMPLETED);
       request.setArtifactObjectKey(objectKey);
       request.setArtifactUrl(artifactUrl);

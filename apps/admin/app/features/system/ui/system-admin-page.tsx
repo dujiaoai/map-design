@@ -299,6 +299,41 @@ export function SystemAdminPage() {
 
         <AdminPanel>
           <AdminPanelHeader
+            icon={ShieldIcon}
+            title="审计与合规"
+            description="SIEM Webhook 与 CSV 导出"
+          />
+          <AdminConfigRow
+            label="审计 Webhook"
+            value={<AdminFlagBadge enabled={flags.audit.webhookEnabled} />}
+          />
+          <AdminConfigRow
+            label="Webhook 已配置"
+            value={
+              <AdminFlagBadge
+                enabled={flags.audit.webhookConfigured}
+                label={flags.audit.webhookConfigured ? '已配置' : '未配置'}
+              />
+            }
+          />
+          <AdminConfigRow label="推送格式" value={flags.audit.webhookFormat} mono />
+          <AdminConfigRow label="交付模式" value={flags.audit.deliveryMode} mono />
+          <AdminConfigRow
+            label="审计日志"
+            value={
+              <Link
+                to="/audit-logs"
+                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+              >
+                打开列表
+                <ArrowRightIcon className="size-3.5" aria-hidden />
+              </Link>
+            }
+          />
+        </AdminPanel>
+
+        <AdminPanel>
+          <AdminPanelHeader
             icon={MailIcon}
             title="邮件与限流"
             description="出站邮件与登录防护"

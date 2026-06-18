@@ -52,6 +52,12 @@ export interface AdminSystemFlagsResponse {
     authorizationCodeFlowAvailable: boolean
     configuredProviderCount: number
   }
+  audit: {
+    webhookEnabled: boolean
+    webhookConfigured: boolean
+    webhookFormat: string
+    deliveryMode: string
+  }
   runtime: {
     activeProfiles: string[]
     jwtPermEpoch: number

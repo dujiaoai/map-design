@@ -32,6 +32,12 @@ const BASE_FLAGS: AdminSystemFlagsResponse = {
     authorizationCodeFlowAvailable: false,
     configuredProviderCount: 0,
   },
+  audit: {
+    webhookEnabled: false,
+    webhookConfigured: false,
+    webhookFormat: 'jsonl',
+    deliveryMode: 'csv_only',
+  },
   runtime: { activeProfiles: ['dev'], jwtPermEpoch: 1 },
 }
 

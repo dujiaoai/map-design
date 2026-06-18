@@ -11,6 +11,7 @@ import { auth } from '~/shared/auth/client'
 import { canAccessAdminOverview } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
+import { AdminUsageTrendChart } from '~/features/dashboard/ui/admin-usage-trend-chart'
 import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
 import {
   AdminConfigRow,
@@ -177,19 +178,7 @@ export default function DashboardRoute() {
         ) : usageTrendsQuery.isError ? (
           <p className="px-4 py-4 text-sm text-destructive md:px-5">无法加载用量趋势</p>
         ) : (
-          <ul className="divide-y divide-border/60 px-4 pb-4 md:px-5">
-            {(usageTrendsQuery.data?.days ?? []).map((day) => (
-              <li
-                key={day.date}
-                className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"
-              >
-                <span className="font-mono text-xs text-muted-foreground">{day.date}</span>
-                <span>新增用户 {day.newUsers}</span>
-                <span>审计 {day.auditEvents}</span>
-                <span>活跃租户 {day.activeTenants}</span>
-              </li>
-            ))}
-          </ul>
+          <AdminUsageTrendChart days={usageTrendsQuery.data?.days ?? []} />
         )}
       </AdminPanel>
 

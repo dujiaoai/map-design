@@ -20,6 +20,7 @@ export interface AdminUsageDayBucket {
   newUsers: number
   auditEvents: number
   activeTenants: number
+  billingApiCallsPerDay?: number
 }
 
 export interface AdminUsageTrendsResponse {

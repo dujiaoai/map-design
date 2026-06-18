@@ -47,13 +47,13 @@ pnpm --filter @repo/saas-admin dev
 | `/auth/oidc/callback/:providerId` | OIDC 授权码回调 | 公开 |
 | `/` | 运营概览（`GET /v1/admin/stats` + ping） | `admin:tenants:read` 等 |
 | `/tenants` | 租户列表、创建、编辑；服务端分页/搜索 | `admin:tenants:read` |
-| `/tenants/:tenantId` | 租户详情（`?tab=` 信息 / 成员 / 自定义角色 / 能力；快捷跳转用户与计费） | `admin:tenants:read` |
+| `/tenants/:tenantId` | 租户详情（`?tab=` 信息 / 成员 / 自定义角色 / 能力 / **合规**；快捷跳转用户与计费） | `admin:tenants:read` |
 | `/users` | 用户列表、邀请、编辑；`?tenantId=` 筛选 | `admin:users:read` |
 | `/members` | 成员管理；`?tenantId=`（平台可跨租户） | `admin:members:read` 或平台角色 |
 | `/tenant-roles` | 租户自定义角色与权限配置 | `admin:members:read` 或平台角色 |
 | `/roles` | 系统角色权限（平台级） | `admin:roles:read` |
 | `/permissions` | 权限目录（模块/权限项 CRUD；Ant Tree） | `admin:roles:read`（写：`admin:roles:write`） |
-| `/menus` | 工作台菜单配置（段/项显隐、排序、标题） | `admin:menus:read`（写：`admin:menus:write`） |
+| `/menus` | 工作台菜单配置（段/项显隐、排序、标题、**permissionCode**） | `admin:menus:read`（写：`admin:menus:write`） |
 | `/account` | 账号资料与改密 | 已登录 |
 | `/billing` | 计费运营（钱包、SKU、订单、调账、对账等 Tab） | `admin:billing:*` |
 | `/audit-logs` | 审计日志列表（租户/动作/日期/跨租户筛选；CSV 导出） | `admin:audit:read` / `admin:audit:export` |
@@ -130,6 +130,8 @@ P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）、Later（P
 | **计费对账 mock E2E** | 概览警示横幅、日对账 Tab、关闭运维告警 | ✅ `pnpm test:e2e -- billing.spec.ts` |
 | **审计日志 mock E2E** | 列表、日期范围、CSV 导出 | ✅ `pnpm test:e2e -- audit-logs.spec.ts` |
 | **租户生命周期 mock E2E** | 生命周期列、筛选、概览 MetricCard | ✅ `pnpm test:e2e -- tenants.spec.ts` |
+| **租户合规 Tab mock E2E** | GDPR/OIDC/存储/菜单覆盖只读面板 | ✅ `pnpm test:e2e -- tenant-compliance.spec.ts` |
+| **/system mock E2E** | 审计保留天数、Webhook 摘要 | ✅ `pnpm test:e2e -- system.spec.ts` |
 | **CI mock E2E smoke** | GitHub Actions `admin-e2e.yml`；本地 `pnpm validate:admin-e2e` | ✅ |
 
 ## 验证

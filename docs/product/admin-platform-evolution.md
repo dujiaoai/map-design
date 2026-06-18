@@ -193,15 +193,25 @@ flowchart TB
 | 13-4 | Usage 异常检测与自动告警 | ✅ |
 | 13-5 | 对象存储加密与 KMS 集成 | ✅ |
 
-### Phase 14 · 自治运维（Next）
+### Phase 14 · 自治运维 ✅
 
 | PR | 内容 |
 | --- | --- |
-| 14-1 | 租户 SAML IdP metadata 自动同步与证书到期告警 |
-| 14-2 | SCIM 增量 Bulk + Group 映射规则引擎 |
-| 14-3 | 审计 Webhook 目标健康检查与自动降级 |
-| 14-4 | Usage 预测与容量规划建议 |
-| 14-5 | 对象存储 WORM 与跨区域 DR 演练 |
+| 14-1 | 租户 SAML IdP metadata 自动同步与证书到期告警 | ✅ |
+| 14-2 | SCIM 增量 Bulk + Group 映射规则引擎 | ✅ |
+| 14-3 | 审计 Webhook 目标健康检查与自动降级 | ✅ |
+| 14-4 | Usage 预测与容量规划建议 | ✅ |
+| 14-5 | 对象存储 WORM 与跨区域 DR 演练 | ✅ |
+
+### Phase 15 · 自治运维深化（Next）
+
+| PR | 内容 |
+| --- | --- |
+| 15-1 | 租户 SAML 多 IdP 联邦与证书自动轮换 |
+| 15-2 | SCIM 事件驱动同步与冲突解决 |
+| 15-3 | 审计 Webhook 智能重试与 SLA 自愈 |
+| 15-4 | Usage 成本归因与 FinOps 仪表盘 |
+| 15-5 | 对象存储 跨区域 active-active 与 RPO 监控 |
 
 ---
 

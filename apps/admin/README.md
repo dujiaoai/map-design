@@ -130,7 +130,7 @@ P0–P2（Ant 策略、服务端排序、计费 IA、批量操作）、Later（P
 | **计费对账 mock E2E** | 概览警示横幅、日对账 Tab、关闭运维告警 | ✅ `pnpm test:e2e -- billing.spec.ts` |
 | **审计日志 mock E2E** | 列表、日期范围、CSV 导出 | ✅ `pnpm test:e2e -- audit-logs.spec.ts` |
 | **租户生命周期 mock E2E** | 生命周期列、筛选、概览 MetricCard | ✅ `pnpm test:e2e -- tenants.spec.ts` |
-| **租户合规 Tab mock E2E** | GDPR/OIDC/存储/菜单覆盖只读面板 | ✅ `pnpm test:e2e -- tenant-compliance.spec.ts` |
+| **租户合规 Tab mock E2E** | GDPR/OIDC/存储/菜单覆盖/diff 面板 | ✅ `pnpm test:e2e -- tenant-compliance.spec.ts` |
 | **/system mock E2E** | 审计保留天数、Webhook 摘要 | ✅ `pnpm test:e2e -- system.spec.ts` |
 | **CI mock E2E smoke** | GitHub Actions `admin-e2e.yml`；本地 `pnpm validate:admin-e2e` | ✅ |
 

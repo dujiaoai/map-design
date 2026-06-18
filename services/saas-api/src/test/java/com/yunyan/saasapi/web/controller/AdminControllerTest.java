@@ -97,6 +97,17 @@ class AdminControllerTest {
   }
 
   @Test
+  void usageTrends_withPlatformAdmin_returnsSevenDays() throws Exception {
+    var accessToken = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(get("/v1/admin/stats/usage-trends").header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.days").isArray())
+        .andExpect(jsonPath("$.days.length()").value(7));
+  }
+
+  @Test
   void systemFlags_withoutToken_returnsUnauthorized() throws Exception {
     mockMvc.perform(get("/v1/admin/system/flags")).andExpect(status().isUnauthorized());
   }

@@ -17,3 +17,10 @@ export interface AdminAuditLogListResponse {
   page?: number
   size?: number
 }
+
+export interface AdminAuditWebhookConfig {
+  enabled: boolean
+  configured: boolean
+  format: string
+  deliveryMode: string
+}

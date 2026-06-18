@@ -33,6 +33,7 @@ export const adminQueryKeys = {
     ['admin', 'tenants', tenantId, 'roles', roleId, 'permissions'] as const,
   inviteLinks: (tenantId: string) => ['admin', 'invite-links', tenantId] as const,
   auditLogs: (params?: AdminListQuery) => ['admin', 'audit-logs', params ?? {}] as const,
+  auditWebhookConfig: ['admin', 'audit-webhook-config'] as const,
   systemFlags: ['admin', 'system-flags'] as const,
   systemDependencies: ['admin', 'system-dependencies'] as const,
   mfaStatus: ['admin', 'mfa-status'] as const,

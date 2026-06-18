@@ -1,7 +1,7 @@
 export type { AdminListQuery } from '~/shared/lib/admin-list-query'
 export { buildAdminListQuery } from '~/shared/lib/admin-list-query'
-export type { AdminAuditLogEntry, AdminAuditLogListResponse } from '~/entities/audit-log'
-export { fetchAdminAuditLogs } from '~/entities/audit-log'
+export type { AdminAuditLogEntry, AdminAuditLogListResponse, AdminAuditWebhookConfig } from '~/entities/audit-log'
+export { fetchAdminAuditLogs, fetchAdminAuditWebhookConfig } from '~/entities/audit-log'
 export type { TenantMemberListResponse, InviteMemberByEmailPayload } from '~/entities/member'
 export {
   fetchTenantMembers,

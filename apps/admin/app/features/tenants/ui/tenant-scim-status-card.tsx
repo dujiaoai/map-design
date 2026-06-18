@@ -7,6 +7,7 @@ import type { AdminTenantScimProvisioning } from '~/entities/tenant/model'
 import { generateTenantScimToken } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
+import { formatAdminDate } from '~/shared/ui/admin-status-badge'
 import { AdminConfigRow, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
 
 export function TenantScimStatusCard({
@@ -51,6 +52,10 @@ export function TenantScimStatusCard({
         value={status.tokenConfigured ? '已配置' : '未配置'}
       />
       <AdminConfigRow label="Users Endpoint" value={status.usersEndpointUrl} mono />
+      <AdminConfigRow
+        label="最后 Sync"
+        value={status.lastSyncAt ? formatAdminDate(status.lastSyncAt) : '尚无同步记录'}
+      />
       {revealedToken ? (
         <AdminConfigRow
           label="新生成 Token"

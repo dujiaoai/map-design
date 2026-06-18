@@ -12,12 +12,14 @@ import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantFeaturesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantListResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantOidcConfigDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantStorageEstimateDto;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantOidcConfigRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantRequest;
+import com.yunyan.saasapi.web.dto.admin.PutTenantMenuOverrideRequest;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestDto;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestListResponse;
 import com.yunyan.saasapi.web.dto.admin.UpdateTenantFeaturesRequest;
@@ -30,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -158,5 +161,26 @@ public class AdminTenantsController {
   @Operation(summary = "列出租户菜单覆盖", description = "Phase 5E-1 骨架；空列表表示全部继承平台模板")
   public AdminTenantMenuOverrideListResponse listMenuOverrides(@PathVariable UUID tenantId) {
     return tenantMenuOverrideAdminService.listOverrides(tenantId);
+  }
+
+  @PutMapping("/{tenantId}/menu-overrides")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "创建或更新租户菜单覆盖", description = "Phase 6-2；按 itemId upsert 单条 diff")
+  public AdminTenantMenuOverrideDto upsertMenuOverride(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @Valid @RequestBody PutTenantMenuOverrideRequest request) {
+    return tenantMenuOverrideAdminService.upsertOverride(principal, tenantId, request);
+  }
+
+  @DeleteMapping("/{tenantId}/menu-overrides/{itemId}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "删除租户菜单覆盖", description = "恢复继承平台模板")
+  public void deleteMenuOverride(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @PathVariable String itemId) {
+    tenantMenuOverrideAdminService.deleteOverride(principal, tenantId, itemId);
   }
 }

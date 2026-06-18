@@ -107,6 +107,26 @@ export interface TenantMenuOverrideListResponse {
   overrides: TenantMenuOverride[]
 }
 
+export interface TenantDataExportArtifact {
+  requestId: string
+  artifactUrl: string | null
+  downloadable: boolean
+}
+
+export interface TenantMenuDiffEntry {
+  itemId: string
+  templateTitle: string
+  templateEnabled: boolean
+  hasOverride: boolean
+  overrideEnabled: boolean | null
+  overrideTitle: string | null
+}
+
+export interface TenantMenuDiffResponse {
+  tenantId: string
+  entries: TenantMenuDiffEntry[]
+}
+
 export interface PutTenantMenuOverridePayload {
   itemId: string
   enabled?: boolean | null

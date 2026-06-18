@@ -109,6 +109,11 @@ pnpm --filter @repo/saas-web dev
 | Webhook SLA（Phase 12） | `GET /v1/admin/audit-logs/webhook-sla` |
 | Usage 导出（Phase 12） | `GET /v1/admin/stats/usage-trends/export`（含 `billingReconcileDiffsPerDay`） |
 | 对象存储策略（Phase 12） | `GET /v1/admin/system/object-storage-policy` |
+| SAML SP metadata（Phase 13） | `GET /v1/auth/tenant-sso/saml/{slug}/metadata`；`POST .../idp-register`；Admin `GET/POST .../saml-idp-registrations` |
+| SCIM Bulk（Phase 13） | `POST /scim/v2/Bulk`（max 20）；`GET /v1/admin/tenants/{id}/scim-schema-extension` |
+| Webhook 多目标（Phase 13） | `GET/POST/PATCH/DELETE /v1/admin/audit-logs/webhook-targets` |
+| Usage 异常（Phase 13） | `GET /v1/admin/stats/usage-anomalies`；定时 Job + `saas.audit.alert-webhook-url` |
+| 对象存储 SSE（Phase 13） | `saas.object-storage.server-side-encryption` + `kms-key-id`；见 [ADR-0015](../adr/0015-object-storage-kms.md) |
 | 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
 
 列表页 loading 使用 Skeleton；Vitest + MockMvc 覆盖 P0～P3 核心路径。

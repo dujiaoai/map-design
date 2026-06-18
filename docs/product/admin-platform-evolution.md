@@ -183,15 +183,25 @@ flowchart TB
 | 12-4 | Usage 趋势导出与 billing 对账 | ✅ |
 | 12-5 | 对象存储跨区复制与合规保留 | ✅ |
 
-### Phase 13 · 智能运维（Next）
+### Phase 13 · 智能运维 ✅
 
 | PR | 内容 |
 | --- | --- |
-| 13-1 | 租户 SAML SP metadata 对外暴露与 IdP 自助注册 |
-| 13-2 | SCIM Bulk + schema extension |
-| 13-3 | 审计 Webhook 多目标路由 |
-| 13-4 | Usage 异常检测与自动告警 |
-| 13-5 | 对象存储加密与 KMS 集成 |
+| 13-1 | 租户 SAML SP metadata 对外暴露与 IdP 自助注册 | ✅ |
+| 13-2 | SCIM Bulk + schema extension | ✅ |
+| 13-3 | 审计 Webhook 多目标路由 | ✅ |
+| 13-4 | Usage 异常检测与自动告警 | ✅ |
+| 13-5 | 对象存储加密与 KMS 集成 | ✅ |
+
+### Phase 14 · 自治运维（Next）
+
+| PR | 内容 |
+| --- | --- |
+| 14-1 | 租户 SAML IdP metadata 自动同步与证书到期告警 |
+| 14-2 | SCIM 增量 Bulk + Group 映射规则引擎 |
+| 14-3 | 审计 Webhook 目标健康检查与自动降级 |
+| 14-4 | Usage 预测与容量规划建议 |
+| 14-5 | 对象存储 WORM 与跨区域 DR 演练 |
 
 ---
 

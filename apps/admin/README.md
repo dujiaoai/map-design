@@ -180,3 +180,5 @@ P0–P4 与路线图外 E2E 已交付。下一阶段按 [docs/product/admin-plat
 **Phase 11（企业集成深化）** ✅：租户 SAML SP 授权流、SCIM Users CRUD + token 生成、审计死信自动重试与告警路由、Usage 图表 + billing 聚合、对象存储 multipart 与生命周期配置。
 
 **Phase 12（规模化运维）** ✅：SAML metadata 导入与 SP 证书轮换、SCIM Groups + 增量 sync、审计 Webhook SLA 大盘、Usage CSV 导出 + billing 对账、对象存储跨区复制与合规保留。
+
+**Phase 13（智能运维）** ✅：SAML SP metadata 对外暴露与 IdP 自助注册、SCIM Bulk + schema extension、审计 Webhook 多目标路由、Usage 异常检测与自动告警、对象存储 SSE/KMS 集成。

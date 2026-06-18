@@ -9,6 +9,7 @@ import {
   ScrollTextIcon,
   ShieldPlusIcon,
   SparklesIcon,
+  ScaleIcon,
   UsersIcon,
   UserCogIcon,
 } from 'lucide-react'
@@ -41,6 +42,7 @@ import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badg
 import { AdminStatusPill } from '~/shared/ui/admin-status-pill'
 
 import { EditTenantSheet } from './edit-tenant-sheet'
+import { TenantCompliancePanel } from './tenant-compliance-panel'
 import { TenantFeaturesPanel } from './tenant-features-panel'
 
 const BILLING_PERMISSIONS = [
@@ -190,6 +192,10 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
             <SparklesIcon className="size-3.5" />
             能力
           </TabsTrigger>
+          <TabsTrigger value="compliance">
+            <ScaleIcon className="size-3.5" />
+            合规
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="mt-4">
@@ -220,6 +226,10 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
 
         <TabsContent value="features" className="mt-4">
           <TenantFeaturesPanel tenantId={tenantId} />
+        </TabsContent>
+
+        <TabsContent value="compliance" className="mt-4">
+          <TenantCompliancePanel tenantId={tenantId} />
         </TabsContent>
       </Tabs>
 

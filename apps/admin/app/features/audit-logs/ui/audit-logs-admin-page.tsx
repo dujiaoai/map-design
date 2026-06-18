@@ -1,5 +1,6 @@
 import { Badge, Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
+import { useQuery } from '@tanstack/react-query'
 import { CreditCardIcon, DownloadIcon } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
@@ -22,7 +23,7 @@ import {
   adminAntSortOrder,
   createAdminAntSortHandler,
 } from '~/shared/ant'
-import { fetchAdminAuditLogs, fetchAdminTenants, type AdminAuditLogEntry } from '~/shared/api/admin-api'
+import { fetchAdminAuditLogs, fetchAdminAuditWebhookConfig, fetchAdminTenants, type AdminAuditLogEntry } from '~/shared/api/admin-api'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
@@ -121,6 +122,13 @@ export function AuditLogsAdminPage() {
   const tenantsQuery = useAdminPagedQuery({
     queryKey: adminQueryKeys.tenantsAll,
     queryFn: () => fetchAdminTenants(),
+  })
+
+  const webhookConfigQuery = useQuery({
+    queryKey: adminQueryKeys.auditWebhookConfig,
+    queryFn: fetchAdminAuditWebhookConfig,
+    enabled: canExportAudit,
+    staleTime: 60_000,
   })
 
   const query = useAdminPagedQuery({
@@ -351,6 +359,19 @@ export function AuditLogsAdminPage() {
           </>
         }
       />
+
+      {webhookConfigQuery.data?.deliveryMode === 'csv_only' ? (
+        <AdminPanel className="border-amber-500/30 bg-amber-500/5 px-4 py-3 md:px-5">
+          <p className="text-sm text-muted-foreground">
+            当前审计交付模式为 <code className="font-mono text-xs">csv_only</code>；SIEM Webhook
+            {webhookConfigQuery.data.configured ? ' 已配置但未启用' : ' 未配置'}。可在{' '}
+            <Link to="/system" className="text-primary hover:underline">
+              系统
+            </Link>{' '}
+            页查看详情。
+          </p>
+        </AdminPanel>
+      ) : null}
 
       {tenantFilterId ? (
         <AdminTenantContextBanner

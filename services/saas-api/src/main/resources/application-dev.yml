@@ -4,6 +4,8 @@ saas:
     enabled: false
   billing:
     enabled: true
+    usage:
+      enabled: ${SAAS_BILLING_USAGE_CLIENT_ENABLED:false}
   # OIDC：默认关闭；配齐 SAAS_OAUTH2_KEYCLOAK_CLIENT_SECRET 后设 SAAS_OAUTH2_ENABLED=true
   # 详见 application-oidc.example.yml 与 docs/runbooks/oidc-dev-setup.md
   auth:
@@ -28,3 +30,5 @@ saas:
     access-key: ${SAAS_OBJECT_STORAGE_ACCESS_KEY:}
     secret-key: ${SAAS_OBJECT_STORAGE_SECRET_KEY:}
     region: ${SAAS_OBJECT_STORAGE_REGION:us-east-1}
+    multipart-threshold-bytes: ${SAAS_OBJECT_STORAGE_MULTIPART_THRESHOLD_BYTES:5242880}
+    lifecycle-expire-days: ${SAAS_OBJECT_STORAGE_LIFECYCLE_EXPIRE_DAYS:0}

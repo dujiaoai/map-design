@@ -44,4 +44,14 @@ test.describe('运营概览（已登录 mock）', () => {
     await expect(page.getByText('2026-06-18')).toBeVisible()
     await expect(page.getByText('审计 7')).toBeVisible()
   })
+
+  test('展示用量异常告警横幅', async ({ page }) => {
+    await seedPlatformAdminSession(page)
+    await mockAdminOverviewApis(page)
+
+    await page.goto('/')
+    await expect(page.getByText('加载中…')).toBeHidden({ timeout: 45_000 })
+    await expect(page.getByText('用量异常告警')).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('auditEvents')).toBeVisible()
+  })
 })

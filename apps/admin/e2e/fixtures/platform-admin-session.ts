@@ -65,6 +65,24 @@ export async function mockAdminOverviewApis(page: Page) {
 
   await page.route('**/admin/stats', async (route) => {
     const url = route.request().url()
+    if (url.includes('/usage-anomalies')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          anomalies: [
+            {
+              metric: 'auditEvents',
+              currentValue: 50,
+              sevenDayAverage: 5,
+              ratio: 10,
+              day: '2026-06-18',
+            },
+          ],
+        }),
+      })
+      return
+    }
     if (url.includes('/usage-trends')) {
       await route.fulfill({
         status: 200,

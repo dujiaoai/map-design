@@ -3,6 +3,7 @@ package com.yunyan.saasapi.web.controller;
 import com.yunyan.saasapi.application.admin.AdminStatsService;
 import com.yunyan.saasapi.application.admin.AdminSystemDependenciesService;
 import com.yunyan.saasapi.application.admin.AdminSystemFlagsService;
+import com.yunyan.saasapi.application.admin.AdminUsageTrendsService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
 import com.yunyan.saasapi.web.dto.admin.FeatureCatalogResponse;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
@@ -10,6 +11,7 @@ import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminStatsResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemDependenciesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemFlagsResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminUsageTrendsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
   private final AdminStatsService adminStatsService;
+  private final AdminUsageTrendsService adminUsageTrendsService;
   private final AdminSystemFlagsService adminSystemFlagsService;
   private final AdminSystemDependenciesService adminSystemDependenciesService;
   private final TenantFeatureAdminService tenantFeatureAdminService;
@@ -63,6 +66,14 @@ public class AdminController {
   @Operation(summary = "运营概览统计", description = "租户总数、用户总数、活跃租户数")
   public AdminStatsResponse stats() {
     return adminStatsService.getStats();
+  }
+
+  @GetMapping("/stats/usage-trends")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(summary = "近 7 日用量趋势", description = "新增用户、审计事件、活跃租户（按日桶）")
+  public AdminUsageTrendsResponse usageTrends() {
+    return adminUsageTrendsService.getTrends();
   }
 
   @GetMapping("/feature-catalog")

@@ -49,4 +49,11 @@ test.describe('审计日志（已登录 mock）', () => {
     await expect(page.getByText('未启用')).toBeVisible()
     await expect(page.getByRole('link', { name: '系统' })).toBeVisible()
   })
+
+  test('展示 Webhook 死信面板与重放按钮', async ({ page }) => {
+    await gotoAuditPage(page)
+    await expect(page.getByText('Webhook 死信')).toBeVisible()
+    await expect(page.getByRole('button', { name: '重放' })).toBeVisible()
+    await expect(page.getByText('HTTP delivery failed')).toBeVisible()
+  })
 })

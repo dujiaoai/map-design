@@ -152,4 +152,44 @@ export async function mockAuditPageApis(page: Page) {
       }),
     })
   })
+
+  await page.route(/\/v1\/admin\/audit-logs\/webhook-dead-letters/, async (route) => {
+    const method = route.request().method()
+    const url = route.request().url()
+    if (method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          items: [
+            {
+              id: 'e2e-dead-letter-1',
+              logId: 'e2e-audit-1',
+              attempts: 2,
+              lastError: 'HTTP delivery failed',
+              createdAt: 1_700_000_200_000,
+              updatedAt: 1_700_000_300_000,
+            },
+          ],
+          total: 1,
+          page: 1,
+          size: 10,
+        }),
+      })
+      return
+    }
+    if (method === 'POST' && url.includes('/replay')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ id: 'e2e-dead-letter-1', success: true, message: 'Delivered' }),
+      })
+      return
+    }
+    if (method === 'DELETE') {
+      await route.fulfill({ status: 204, body: '' })
+      return
+    }
+    await route.continue()
+  })
 }

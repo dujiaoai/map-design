@@ -8,7 +8,8 @@ import com.yunyan.saasapi.application.admin.TenantMenuOverrideAdminService;
 import com.yunyan.saasapi.application.admin.TenantOidcMetadataImportService;
 import com.yunyan.saasapi.application.admin.TenantOidcAdminService;
 import com.yunyan.saasapi.application.admin.TenantSamlAdminService;
-import com.yunyan.saasapi.application.admin.TenantSamlIdpFederationAdminService;
+import com.yunyan.saasapi.application.admin.TenantSamlDisconnectDrillService;
+import com.yunyan.saasapi.application.admin.TenantSamlIdpHealthService;
 import com.yunyan.saasapi.application.admin.TenantSamlIdpRegistrationService;
 import com.yunyan.saasapi.application.admin.TenantSamlMetadataImportService;
 import com.yunyan.saasapi.application.admin.TenantSamlSpCertificateService;
@@ -40,6 +41,9 @@ import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantSamlIdpFederationRequest;
 import com.yunyan.saasapi.web.dto.admin.TenantSamlIdpFederationDto;
 import com.yunyan.saasapi.web.dto.admin.TenantSamlIdpFederationListResponse;
+import com.yunyan.saasapi.web.dto.admin.TenantSamlDisconnectDrillRequest;
+import com.yunyan.saasapi.web.dto.admin.TenantSamlDisconnectDrillResponse;
+import com.yunyan.saasapi.web.dto.admin.TenantSamlIdpHealthResponse;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantOidcConfigRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantSamlConfigRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantRequest;
@@ -89,6 +93,8 @@ public class AdminTenantsController {
   private final TenantSamlSpCertificateService tenantSamlSpCertificateService;
   private final TenantSamlIdpRegistrationService tenantSamlIdpRegistrationService;
   private final TenantSamlIdpFederationAdminService tenantSamlIdpFederationAdminService;
+  private final TenantSamlIdpHealthService tenantSamlIdpHealthService;
+  private final TenantSamlDisconnectDrillService tenantSamlDisconnectDrillService;
   private final ScimProvisioningAdminService scimProvisioningAdminService;
   private final ScimSchemaExtensionAdminService scimSchemaExtensionAdminService;
   private final ScimGroupMappingRuleService scimGroupMappingRuleService;
@@ -368,5 +374,23 @@ public class AdminTenantsController {
       @PathVariable UUID tenantId,
       @PathVariable String itemId) {
     tenantMenuOverrideAdminService.deleteOverride(principal, tenantId, itemId);
+  }
+
+  @GetMapping("/{tenantId}/saml-idp-health")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "SAML IdP 健康状态", description = "Phase 16-1：SSO 可达与 metadata 新鲜度")
+  public TenantSamlIdpHealthResponse getSamlIdpHealth(@PathVariable UUID tenantId) {
+    return tenantSamlIdpHealthService.assess(tenantId);
+  }
+
+  @PostMapping("/{tenantId}/saml-disconnect-drill")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "SAML 断连演练", description = "Phase 16-1：模拟 AuthnRequest 不完成登录")
+  public TenantSamlDisconnectDrillResponse runSamlDisconnectDrill(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @Valid @RequestBody(required = false) TenantSamlDisconnectDrillRequest request) {
+    var idpEntityId = request == null ? null : request.idpEntityId();
+    return tenantSamlDisconnectDrillService.runDrill(principal, tenantId, idpEntityId);
   }
 }

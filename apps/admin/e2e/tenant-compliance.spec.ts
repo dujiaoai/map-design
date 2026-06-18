@@ -19,5 +19,7 @@ test.describe('租户合规 Tab（已登录 mock）', () => {
     await expect(page.getByText('存储用量估算')).toBeVisible()
     await expect(page.getByText('菜单覆盖')).toBeVisible()
     await expect(page.getByText('全部继承平台模板')).toBeVisible()
+    await expect(page.getByLabel('OIDC Issuer URI')).toBeVisible()
+    await expect(page.getByRole('button', { name: '保存 OIDC 配置' })).toBeVisible()
   })
 })

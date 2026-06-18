@@ -142,6 +142,22 @@ export async function mockTenantsPageApis(page: Page) {
 
   await page.route(/\/v1\/admin\/tenants\/[^/]+\/oidc-config/, async (route) => {
     const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
+    if (route.request().method() === 'PATCH') {
+      const body = route.request().postDataJSON() as Record<string, unknown>
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          tenantId,
+          enabled: body.enabled ?? false,
+          displayName: body.displayName ?? null,
+          issuerUri: body.issuerUri ?? null,
+          clientId: body.clientId ?? null,
+          configured: Boolean(body.issuerUri && body.clientId),
+        }),
+      })
+      return
+    }
     await route.fulfill({
       status: 200,
       contentType: 'application/json',

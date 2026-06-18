@@ -20,6 +20,7 @@ public class AuditWebhookTarget {
   private Boolean enabled;
   private Integer priority;
   private Integer consecutiveFailures;
+  private String region;
   private Instant lastHealthCheckAt;
   private Instant unhealthySince;
   private Instant createdAt;

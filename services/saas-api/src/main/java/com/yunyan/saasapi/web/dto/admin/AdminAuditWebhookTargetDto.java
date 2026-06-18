@@ -6,6 +6,7 @@ public record AdminAuditWebhookTargetDto(
     String format,
     boolean enabled,
     int priority,
+    String region,
     long createdAt,
     int consecutiveFailures,
     Long lastHealthCheckAt,

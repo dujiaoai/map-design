@@ -40,6 +40,7 @@ public class AdminAuditWebhookTargetService {
     row.setFormat(normalizeFormat(request.format()));
     row.setEnabled(request.enabled() == null || request.enabled());
     row.setPriority(request.priority() == null ? 0 : request.priority());
+    row.setRegion("default");
     row.setConsecutiveFailures(0);
     row.setCreatedAt(Instant.now());
     row.setUpdatedAt(Instant.now());
@@ -92,6 +93,7 @@ public class AdminAuditWebhookTargetService {
         row.getFormat(),
         Boolean.TRUE.equals(row.getEnabled()),
         row.getPriority(),
+        StringUtils.hasText(row.getRegion()) ? row.getRegion() : "default",
         row.getCreatedAt().toEpochMilli(),
         row.getConsecutiveFailures() == null ? 0 : row.getConsecutiveFailures(),
         row.getLastHealthCheckAt() == null ? null : row.getLastHealthCheckAt().toEpochMilli(),

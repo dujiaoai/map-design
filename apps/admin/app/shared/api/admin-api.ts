@@ -78,9 +78,9 @@ export type {
   AdminTenantOidcConfig,
   PatchTenantOidcConfigPayload,
   AdminTenantStorageEstimate,
+  TenantDataExportArtifact,
+  TenantMenuDiffResponse,
   PutTenantMenuOverridePayload,
-  TenantMenuOverride,
-  TenantMenuOverrideListResponse,
 } from '~/entities/tenant'
 export {
   createAdminTenant,
@@ -90,6 +90,8 @@ export {
   fetchFeatureCatalog,
   fetchTenantDataExportRequests,
   fetchTenantFeatures,
+  fetchTenantDataExportArtifact,
+  fetchTenantMenuDiff,
   fetchTenantMenuOverrides,
   fetchTenantOidcConfig,
   fetchTenantQuotas,

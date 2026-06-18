@@ -13,6 +13,8 @@ import type {
   PatchTenantPayload,
   TenantDataExportRequest,
   TenantDataExportRequestListResponse,
+  TenantDataExportArtifact,
+  TenantMenuDiffResponse,
   PutTenantMenuOverridePayload,
   TenantMenuOverride,
   TenantMenuOverrideListResponse,
@@ -88,4 +90,14 @@ export function putTenantMenuOverride(tenantId: string, payload: PutTenantMenuOv
 
 export function deleteTenantMenuOverride(tenantId: string, itemId: string) {
   return api.delete<void>(`/admin/tenants/${tenantId}/menu-overrides/${encodeURIComponent(itemId)}`)
+}
+
+export function fetchTenantDataExportArtifact(tenantId: string, requestId: string) {
+  return api.get<TenantDataExportArtifact>(
+    `/admin/tenants/${tenantId}/data-export-requests/${requestId}/artifact`,
+  )
+}
+
+export function fetchTenantMenuDiff(tenantId: string) {
+  return api.get<TenantMenuDiffResponse>(`/admin/tenants/${tenantId}/menu-overrides/diff`)
 }

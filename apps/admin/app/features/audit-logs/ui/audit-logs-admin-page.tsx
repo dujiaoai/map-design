@@ -16,6 +16,7 @@ import {
 import { AUDIT_EXPORT_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
 import { buildAuditUsersLink } from '~/features/audit-logs/lib/audit-log-users-nav'
 import { AuditLogDetailSheet } from '~/features/audit-logs/ui/audit-log-detail-sheet'
+import { AuditWebhookSlaPanel } from '~/features/audit-logs/ui/audit-webhook-sla-panel'
 import { AuditWebhookDeadLetterPanel } from '~/features/audit-logs/ui/audit-webhook-dead-letter-panel'
 import {
   AdminAntDateRange,
@@ -396,6 +397,7 @@ export function AuditLogsAdminPage() {
         </AdminPanel>
       ) : null}
 
+      {canExportAudit ? <AuditWebhookSlaPanel /> : null}
       {canExportAudit ? <AuditWebhookDeadLetterPanel canManage={canExportAudit} /> : null}
 
       {tenantFilterId ? (

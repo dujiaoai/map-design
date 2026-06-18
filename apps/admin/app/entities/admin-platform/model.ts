@@ -40,6 +40,30 @@ export interface AdminUsageAnomaliesResponse {
   anomalies: AdminUsageAnomaly[]
 }
 
+export interface AdminUsageForecastDay {
+  date: string
+  metric: string
+  projectedValue: number
+}
+
+export interface AdminUsageForecastResponse {
+  newUsers: AdminUsageForecastDay[]
+  auditEvents: AdminUsageForecastDay[]
+  billingApiCalls: AdminUsageForecastDay[]
+}
+
+export interface AdminUsageCapacityRecommendation {
+  category: string
+  action: string
+  projectedAverage: number
+  rationale: string
+}
+
+export interface AdminUsageForecastBundleResponse {
+  forecast: AdminUsageForecastResponse
+  recommendations: AdminUsageCapacityRecommendation[]
+}
+
 export interface AdminAuditWebhookTarget {
   id: string
   url: string
@@ -47,6 +71,9 @@ export interface AdminAuditWebhookTarget {
   enabled: boolean
   priority: number
   createdAt: number
+  consecutiveFailures: number
+  lastHealthCheckAt: number | null
+  unhealthySince: number | null
 }
 
 export interface AdminAuditWebhookTargetListResponse {

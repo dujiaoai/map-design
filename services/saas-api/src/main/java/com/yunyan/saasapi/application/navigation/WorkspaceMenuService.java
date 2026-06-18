@@ -2,8 +2,10 @@ package com.yunyan.saasapi.application.navigation;
 
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.WorkspaceMenuRepository;
+import com.yunyan.saasapi.domain.WorkspaceMenuTenantOverrideRepository;
 import com.yunyan.saasapi.domain.entity.WorkspaceMenuItem;
 import com.yunyan.saasapi.domain.entity.WorkspaceMenuSection;
+import com.yunyan.saasapi.domain.entity.WorkspaceMenuTenantOverride;
 import com.yunyan.saasapi.domain.navigation.WorkspaceMenuCatalog;
 import com.yunyan.saasapi.domain.navigation.WorkspaceMenuCatalog.MenuItemDef;
 import com.yunyan.saasapi.domain.navigation.WorkspaceMenuCatalog.SectionDef;
@@ -15,8 +17,11 @@ import com.yunyan.saasapi.web.dto.navigation.MenusResponse;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -27,6 +32,7 @@ public class WorkspaceMenuService {
 
   private final TenantRepository tenantRepository;
   private final WorkspaceMenuRepository workspaceMenuRepository;
+  private final WorkspaceMenuTenantOverrideRepository menuTenantOverrideRepository;
 
   public MenusResponse getMenusForCurrentTenant(SaasPrincipal principal) {
     requirePrincipal(principal);
@@ -36,14 +42,41 @@ public class WorkspaceMenuService {
     }
     var enabledFeatures = loadEnabledFeatures(tenantId);
     var userPermissions = new LinkedHashSet<>(principal.permissionCodes());
+    var overrides = loadOverrides(tenantId);
 
     if (workspaceMenuRepository.hasPersistedData()) {
-      return buildFromDatabase(enabledFeatures, userPermissions);
+      return buildFromDatabase(enabledFeatures, userPermissions, overrides);
     }
     return buildFromCatalog(enabledFeatures, userPermissions);
   }
 
-  private MenusResponse buildFromDatabase(Set<String> enabledFeatures, Set<String> userPermissions) {
+  private Map<String, WorkspaceMenuTenantOverride> loadOverrides(UUID tenantId) {
+    return menuTenantOverrideRepository.findByTenantId(tenantId).stream()
+        .collect(Collectors.toMap(WorkspaceMenuTenantOverride::getItemId, Function.identity()));
+  }
+
+  static boolean isEffectiveEnabled(
+      WorkspaceMenuItem item, Map<String, WorkspaceMenuTenantOverride> overrides) {
+    var override = overrides.get(item.getId());
+    if (override != null && override.getEnabled() != null) {
+      return override.getEnabled();
+    }
+    return Boolean.TRUE.equals(item.getEnabled());
+  }
+
+  static String effectiveTitle(
+      WorkspaceMenuItem item, Map<String, WorkspaceMenuTenantOverride> overrides) {
+    var override = overrides.get(item.getId());
+    if (override != null && StringUtils.hasText(override.getTitle())) {
+      return override.getTitle().trim();
+    }
+    return item.getTitle();
+  }
+
+  private MenusResponse buildFromDatabase(
+      Set<String> enabledFeatures,
+      Set<String> userPermissions,
+      Map<String, WorkspaceMenuTenantOverride> overrides) {
     var sections = new ArrayList<MenuSectionDto>();
     var flatItems = new LinkedHashSet<String>();
     var items = new ArrayList<MenuItemDto>();
@@ -51,13 +84,14 @@ public class WorkspaceMenuService {
     for (WorkspaceMenuSection section : workspaceMenuRepository.findEnabledSectionsOrdered()) {
       var visibleItems =
           workspaceMenuRepository.findEnabledItemsBySection(section.getId()).stream()
+              .filter(item -> isEffectiveEnabled(item, overrides))
               .filter(item -> isVisible(item.getTenantFeature(), enabledFeatures))
               .filter(item -> hasPermission(item.getPermissionCode(), userPermissions))
               .toList();
       if (visibleItems.isEmpty()) {
         continue;
       }
-      var itemDtos = visibleItems.stream().map(this::toDto).toList();
+      var itemDtos = visibleItems.stream().map(item -> toDto(item, overrides)).toList();
       sections.add(
           new MenuSectionDto(
               section.getId(),
@@ -74,13 +108,16 @@ public class WorkspaceMenuService {
     }
 
     for (WorkspaceMenuItem tool : workspaceMenuRepository.findEnabledToolItemsOrdered()) {
+      if (!isEffectiveEnabled(tool, overrides)) {
+        continue;
+      }
       if (!isVisible(tool.getTenantFeature(), enabledFeatures)) {
         continue;
       }
       if (!hasPermission(tool.getPermissionCode(), userPermissions)) {
         continue;
       }
-      var dto = toDto(tool);
+      var dto = toDto(tool, overrides);
       if (flatItems.add(dto.id())) {
         items.add(dto);
       }
@@ -103,7 +140,7 @@ public class WorkspaceMenuService {
       if (visibleItems.isEmpty()) {
         continue;
       }
-      var itemDtos = visibleItems.stream().map(this::toDto).toList();
+      var itemDtos = visibleItems.stream().map(item -> toDto(item, overrides)).toList();
       sections.add(
           new MenuSectionDto(
               section.id(),
@@ -170,10 +207,10 @@ public class WorkspaceMenuService {
         null);
   }
 
-  private MenuItemDto toDto(WorkspaceMenuItem item) {
+  private MenuItemDto toDto(WorkspaceMenuItem item, Map<String, WorkspaceMenuTenantOverride> overrides) {
     return new MenuItemDto(
         item.getId(),
-        item.getTitle(),
+        effectiveTitle(item, overrides),
         item.getKind(),
         item.getIcon(),
         item.getToolId(),

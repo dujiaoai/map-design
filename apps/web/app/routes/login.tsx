@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { resolvePermissionsForRoles } from '@repo/auth'
 
 import { fetchOidcProviders, startOidcAuthorize } from '~/shared/api/oidc-auth'
+import { isTenantSsoLoginVisible, useTenantSsoQuery } from '~/shared/hooks/use-tenant-sso'
 import { auth, SaaSRole } from '~/shared/auth/client'
 import { formatLoginError } from '~/shared/auth/format-login-error'
 import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
@@ -112,6 +113,7 @@ function SaasLoginForm() {
   })
 
   const tenantIdValue = watch('tenantId')
+  const tenantSsoQuery = useTenantSsoQuery(tenantIdValue)
 
   useEffect(() => {
     const state = location.state as { mfaChallengeToken?: string; email?: string } | null
@@ -179,6 +181,10 @@ function SaasLoginForm() {
     } finally {
       setIsMfaSubmitting(false)
     }
+  }
+
+  async function onStartTenantSso() {
+    setSubmitError('租户 SSO 授权流程开发中，请暂用密码或平台 IdP 登录')
   }
 
   async function onStartOidc(providerId: string) {
@@ -334,8 +340,25 @@ function SaasLoginForm() {
         </Button>
       </div>
 
-      {oidcQuery.data?.enabled && oidcQuery.data.authorizationCodeFlowAvailable ? (
+      {isTenantSsoLoginVisible(tenantSsoQuery.data) ? (
         <div className="login-field-group space-y-2" style={{ '--field-i': 5 } as CSSProperties}>
+          <p className={cn('text-center text-xs', authSubtleTextClassName)}>租户企业 SSO</p>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 w-full rounded-[10px] text-sm"
+            disabled={isSubmitting}
+            onClick={() => {
+              void onStartTenantSso()
+            }}
+          >
+            使用 {tenantSsoQuery.data?.displayName} 登录
+          </Button>
+        </div>
+      ) : null}
+
+      {oidcQuery.data?.enabled && oidcQuery.data.authorizationCodeFlowAvailable ? (
+        <div className="login-field-group space-y-2" style={{ '--field-i': 6 } as CSSProperties}>
           <p className={cn('text-center text-xs', authSubtleTextClassName)}>或使用企业账号</p>
           {oidcQuery.data.providers.map((provider) => (
             <Button

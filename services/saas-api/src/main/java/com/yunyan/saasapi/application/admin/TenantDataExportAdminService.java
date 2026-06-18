@@ -7,6 +7,7 @@ import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestDto;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestListResponse;
+import com.yunyan.saasapi.web.dto.admin.TenantDataExportArtifactResponse;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -65,5 +66,19 @@ public class TenantDataExportAdminService {
         request.getArtifactUrl(),
         request.getCreatedAt() != null ? request.getCreatedAt().toEpochMilli() : null,
         request.getCompletedAt() != null ? request.getCompletedAt().toEpochMilli() : null);
+  }
+
+  public TenantDataExportArtifactResponse getArtifact(UUID tenantId, UUID requestId) {
+    ensureTenantExists(tenantId);
+    var request =
+        exportRequestRepository
+            .findById(requestId)
+            .filter(row -> tenantId.equals(row.getTenantId()))
+            .orElseThrow(() -> AuthException.notFound("Export request not found"));
+    var downloadable =
+        "completed".equals(request.getStatus())
+            && org.springframework.util.StringUtils.hasText(request.getArtifactUrl());
+    return new TenantDataExportArtifactResponse(
+        request.getId().toString(), request.getArtifactUrl(), downloadable);
   }
 }

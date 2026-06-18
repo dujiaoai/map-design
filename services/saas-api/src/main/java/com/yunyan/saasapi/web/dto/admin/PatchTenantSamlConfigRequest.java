@@ -9,4 +9,5 @@ public record PatchTenantSamlConfigRequest(
     @Schema(description = "SP ACS URL") String acsUrl,
     @Schema(description = "SP Entity ID") String spEntityId,
     @Schema(description = "IdP X.509 证书 PEM") String certificatePem,
-    @Schema(description = "IdP metadata XML URL") String metadataUrl) {}
+    @Schema(description = "IdP metadata XML URL") String metadataUrl,
+    @Schema(description = "是否启用 metadata 自动同步") Boolean metadataSyncEnabled) {}

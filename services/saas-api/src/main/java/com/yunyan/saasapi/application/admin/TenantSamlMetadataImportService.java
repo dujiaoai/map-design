@@ -39,6 +39,7 @@ public class TenantSamlMetadataImportService {
     if (StringUtils.hasText(metadata.certificatePem())) {
       config.setCertificatePem(metadata.certificatePem());
     }
+    config.setIdpCertExpiresAt(metadata.certificateExpiresAt());
     config.setUpdatedAt(Instant.now());
     samlConfigRepository.update(config);
     adminAuditLogService.recordTenantAction(

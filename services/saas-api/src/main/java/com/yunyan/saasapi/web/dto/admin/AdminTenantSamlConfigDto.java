@@ -13,4 +13,7 @@ public record AdminTenantSamlConfigDto(
     @Schema(description = "IdP metadata URL") String metadataUrl,
     @Schema(description = "是否已配置 SP 签名证书") boolean spCertificateConfigured,
     @Schema(description = "SP 证书到期 epoch millis") Long spCertificateExpiresAt,
+    @Schema(description = "IdP 证书到期 epoch millis") Long idpCertExpiresAt,
+    @Schema(description = "是否启用 metadata 自动同步") boolean metadataSyncEnabled,
+    @Schema(description = "上次 metadata 同步 epoch millis") Long lastMetadataSyncAt,
     @Schema(description = "是否已填写 IdP entity_id + sso_url") boolean configured) {}

@@ -27,8 +27,6 @@ class AdminAuditWebhookTargetServiceTest {
 
   @Test
   void createTarget_persistsRow() {
-    when(saasAppProperties.getAudit()).thenReturn(new com.yunyan.saasapi.config.SaasAppProperties.Audit());
-
     var dto =
         service.createTarget(
             principal(),

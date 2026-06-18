@@ -2,6 +2,7 @@ package com.yunyan.saasapi.application.storage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,7 +32,11 @@ class AwsS3ObjectStorageClientTest {
     storage.setPublicBaseUrl("https://cdn.example/exports");
     s3Client = mock(S3Client.class);
     var lifecycleService = mock(ObjectStorageLifecycleService.class);
-    client = new AwsS3ObjectStorageClient(saasAppProperties, lifecycleService);
+    var encryptionService = mock(ObjectStorageEncryptionService.class);
+    lenient()
+        .when(encryptionService.applyEncryption(any(PutObjectRequest.Builder.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    client = new AwsS3ObjectStorageClient(saasAppProperties, lifecycleService, encryptionService);
     client.setS3Client(s3Client);
   }
 

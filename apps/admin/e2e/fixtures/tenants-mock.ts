@@ -142,6 +142,22 @@ export async function mockTenantsPageApis(page: Page) {
 
   await page.route(/\/v1\/admin\/tenants\/[^/]+\/oidc-config/, async (route) => {
     const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
+    if (route.request().url().includes('/import-metadata') && route.request().method() === 'POST') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          tenantId,
+          issuer: 'https://idp.example.com',
+          authorizationEndpoint: 'https://idp.example.com/oauth2/authorize',
+          tokenEndpoint: 'https://idp.example.com/oauth2/token',
+          userinfoEndpoint: 'https://idp.example.com/oauth2/userinfo',
+          expectedCallbackUrl: `http://localhost:5175/auth/tenant-sso/callback/${tenantId}`,
+          importedAt: Date.now(),
+        }),
+      })
+      return
+    }
     if (route.request().method() === 'PATCH') {
       const body = route.request().postDataJSON() as Record<string, unknown>
       await route.fulfill({
@@ -154,6 +170,11 @@ export async function mockTenantsPageApis(page: Page) {
           issuerUri: body.issuerUri ?? null,
           clientId: body.clientId ?? null,
           configured: Boolean(body.issuerUri && body.clientId),
+          clientSecretConfigured: false,
+          scopes: body.scopes ?? null,
+          expectedCallbackUrl: 'http://localhost:5175/auth/tenant-sso/callback/active-corp',
+          metadataImported: false,
+          metadataImportedAt: null,
         }),
       })
       return
@@ -165,9 +186,14 @@ export async function mockTenantsPageApis(page: Page) {
         tenantId,
         enabled: false,
         displayName: null,
-        issuerUri: null,
+        issuerUri: 'https://idp.example.com',
         clientId: null,
         configured: false,
+        clientSecretConfigured: false,
+        scopes: null,
+        expectedCallbackUrl: 'http://localhost:5175/auth/tenant-sso/callback/active-corp',
+        metadataImported: false,
+        metadataImportedAt: null,
       }),
     })
   })
@@ -211,6 +237,24 @@ export async function mockTenantsPageApis(page: Page) {
 
   await page.route(/\/v1\/admin\/tenants\/[^/]+\/menu-overrides(\/|$)/, async (route) => {
     const url = route.request().url()
+    if (url.includes('/batch') && route.request().method() === 'POST') {
+      const body = route.request().postDataJSON() as { overrides: Array<Record<string, unknown>> }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          overrides: (body.overrides ?? []).map((row, index) => ({
+            id: `e2e-batch-${index}`,
+            tenantId: 'e2e-tenant-active',
+            itemId: row.itemId,
+            enabled: row.enabled ?? null,
+            sortOrder: row.sortOrder ?? null,
+            title: row.title ?? null,
+          })),
+        }),
+      })
+      return
+    }
     if (route.request().method() === 'PUT') {
       const body = route.request().postDataJSON() as Record<string, unknown>
       await route.fulfill({

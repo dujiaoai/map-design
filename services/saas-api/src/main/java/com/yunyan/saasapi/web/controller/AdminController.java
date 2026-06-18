@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.web.controller;
 
+import com.yunyan.saasapi.application.admin.AdminFinOpsService;
 import com.yunyan.saasapi.application.admin.AdminStatsService;
 import com.yunyan.saasapi.application.admin.AdminSystemDependenciesService;
 import com.yunyan.saasapi.application.admin.AdminSystemFlagsService;
@@ -9,6 +10,7 @@ import com.yunyan.saasapi.application.admin.AdminUsageCapacityRecommendationServ
 import com.yunyan.saasapi.application.admin.AdminUsageForecastService;
 import com.yunyan.saasapi.application.admin.AdminUsageTrendsService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
+import com.yunyan.saasapi.application.storage.ObjectStorageRpoMonitorService;
 import com.yunyan.saasapi.application.storage.ObjectStorageDrDrillService;
 import com.yunyan.saasapi.web.dto.admin.FeatureCatalogResponse;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
@@ -16,7 +18,8 @@ import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminStatsResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemDependenciesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemFlagsResponse;
-import com.yunyan.saasapi.web.dto.admin.AdminObjectStoragePolicyResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminFinOpsCostAttributionResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminObjectStorageRpoResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageAnomaliesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageForecastBundleResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageTrendsResponse;
@@ -51,6 +54,8 @@ public class AdminController {
   private final AdminUsageCapacityRecommendationService adminUsageCapacityRecommendationService;
   private final AdminObjectStoragePolicyService adminObjectStoragePolicyService;
   private final ObjectStorageDrDrillService objectStorageDrDrillService;
+  private final ObjectStorageRpoMonitorService objectStorageRpoMonitorService;
+  private final AdminFinOpsService adminFinOpsService;
   private final AdminSystemFlagsService adminSystemFlagsService;
   private final AdminSystemDependenciesService adminSystemDependenciesService;
   private final TenantFeatureAdminService tenantFeatureAdminService;
@@ -112,6 +117,14 @@ public class AdminController {
         adminUsageForecastService.forecast(), adminUsageCapacityRecommendationService.recommend());
   }
 
+  @GetMapping("/stats/finops")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(summary = "FinOps 成本归因", description = "Phase 15-4：按租户估算月度成本")
+  public AdminFinOpsCostAttributionResponse finOps() {
+    return adminFinOpsService.attributeCosts();
+  }
+
   @GetMapping("/stats/usage-trends/export")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
   @SecurityRequirement(name = "bearerAuth")
@@ -140,6 +153,14 @@ public class AdminController {
   public ObjectStorageDrDrillResponse objectStorageDrDrill(
       @AuthenticationPrincipal SaasPrincipal principal) {
     return objectStorageDrDrillService.executeDrill(principal);
+  }
+
+  @GetMapping("/system/object-storage-rpo")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(summary = "对象存储 RPO 监控", description = "Phase 15-5：复制延迟与 RPO 达标")
+  public AdminObjectStorageRpoResponse objectStorageRpo() {
+    return objectStorageRpoMonitorService.getLatestStatus();
   }
 
   @GetMapping("/feature-catalog")

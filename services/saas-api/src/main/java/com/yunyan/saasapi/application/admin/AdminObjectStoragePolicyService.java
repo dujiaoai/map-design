@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.application.admin;
 
+import com.yunyan.saasapi.application.storage.ObjectStorageEncryptionService;
 import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.ObjectStorageLifecycleAuditRepository;
 import com.yunyan.saasapi.web.dto.admin.AdminObjectStoragePolicyResponse;
@@ -13,6 +14,7 @@ public class AdminObjectStoragePolicyService {
 
   private final SaasAppProperties saasAppProperties;
   private final ObjectStorageLifecycleAuditRepository lifecycleAuditRepository;
+  private final ObjectStorageEncryptionService encryptionService;
 
   public AdminObjectStoragePolicyResponse getPolicySummary() {
     var storage = saasAppProperties.getObjectStorage();
@@ -22,6 +24,7 @@ public class AdminObjectStoragePolicyService {
         storage.getComplianceRetainDays(),
         StringUtils.hasText(storage.getReplicationTargetBucket()),
         storage.getReplicationRegion(),
-        lifecycleAuditRepository.countAll());
+        lifecycleAuditRepository.countAll(),
+        encryptionService.isEncryptionConfigured());
   }
 }

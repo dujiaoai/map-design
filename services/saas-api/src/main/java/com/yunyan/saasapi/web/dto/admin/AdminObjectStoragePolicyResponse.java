@@ -8,4 +8,5 @@ public record AdminObjectStoragePolicyResponse(
     @Schema(description = "合规保留天数") int complianceRetainDays,
     @Schema(description = "是否启用跨区复制") boolean replicationEnabled,
     @Schema(description = "复制目标区域") String replicationRegion,
-    @Schema(description = "生命周期审计记录数") long lifecycleAuditCount) {}
+    @Schema(description = "生命周期审计记录数") long lifecycleAuditCount,
+    @Schema(description = "是否配置 SSE/KMS") boolean encryptionConfigured) {}

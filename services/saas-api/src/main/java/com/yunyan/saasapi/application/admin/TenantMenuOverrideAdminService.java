@@ -43,9 +43,11 @@ public class TenantMenuOverrideAdminService {
                       item.getId(),
                       item.getTitle(),
                       Boolean.TRUE.equals(item.getEnabled()),
+                      item.getSortOrder(),
                       override != null,
                       override != null ? override.getEnabled() : null,
-                      override != null ? override.getTitle() : null);
+                      override != null ? override.getTitle() : null,
+                      override != null ? override.getSortOrder() : null);
                 })
             .filter(AdminTenantMenuDiffEntryDto::hasOverride)
             .toList();

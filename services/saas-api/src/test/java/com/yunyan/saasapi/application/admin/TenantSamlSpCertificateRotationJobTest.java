@@ -4,7 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.yunyan.saasapi.application.auth.saml.SelfSignedSpCertificateGenerator;
+import com.yunyan.saasapi.domain.TenantSamlConfigRepository;
 import com.yunyan.saasapi.domain.entity.TenantSamlConfig;
 import java.time.Instant;
 import java.util.List;

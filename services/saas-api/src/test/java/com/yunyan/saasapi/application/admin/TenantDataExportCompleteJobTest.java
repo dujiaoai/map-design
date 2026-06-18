@@ -28,7 +28,6 @@ class TenantDataExportCompleteJobTest {
   @Mock private TenantDataExportCollector exportCollector;
   @Mock private TenantDataExportZipBuilder exportZipBuilder;
   @Mock private ObjectStorageClient objectStorageClient;
-  @Mock private SaasAppProperties saasAppProperties;
 
   @InjectMocks private TenantDataExportCompleteJob job;
 
@@ -39,9 +38,6 @@ class TenantDataExportCompleteJobTest {
     request.setId(UUID.randomUUID());
     request.setTenantId(tenantId);
     request.setStatus("processing");
-    var storage = new SaasAppProperties.ObjectStorage();
-    storage.setBucket("tenant-exports");
-    when(saasAppProperties.getObjectStorage()).thenReturn(storage);
     when(exportRequestRepository.findPending("processing", 20)).thenReturn(List.of(request));
     when(exportCollector.collect(eq(tenantId), eq(request))).thenReturn(Map.of("tenantId", tenantId.toString()));
     when(exportZipBuilder.buildZip(any())).thenReturn(new byte[] {1, 2, 3});

@@ -259,6 +259,28 @@ class AdminTenantsControllerTest {
         .andExpect(jsonPath("$.requests[0].status").value("pending"));
   }
 
+  @Test
+  void oidcConfig_withoutRow_returnsDisabled() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID + "/oidc-config")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.enabled").value(false))
+        .andExpect(jsonPath("$.configured").value(false));
+  }
+
+  @Test
+  void storageEstimate_returnsSkeleton() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID + "/storage-estimate")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalBytes").value(0))
+        .andExpect(jsonPath("$.source").value("skeleton"));
+  }
+
   private String loginAccessToken(String email) throws Exception {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }

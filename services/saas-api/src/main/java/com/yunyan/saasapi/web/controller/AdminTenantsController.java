@@ -4,11 +4,15 @@ import com.yunyan.saasapi.application.admin.AdminListParams;
 import com.yunyan.saasapi.application.admin.TenantAdminService;
 import com.yunyan.saasapi.application.admin.TenantDataExportAdminService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
+import com.yunyan.saasapi.application.admin.TenantOidcAdminService;
+import com.yunyan.saasapi.application.admin.TenantStorageEstimateAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantFeaturesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantListResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminTenantOidcConfigDto;
+import com.yunyan.saasapi.web.dto.admin.AdminTenantStorageEstimateDto;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantRequest;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestDto;
@@ -44,6 +48,8 @@ public class AdminTenantsController {
   private final TenantAdminService tenantAdminService;
   private final TenantFeatureAdminService tenantFeatureAdminService;
   private final TenantDataExportAdminService tenantDataExportAdminService;
+  private final TenantOidcAdminService tenantOidcAdminService;
+  private final TenantStorageEstimateAdminService tenantStorageEstimateAdminService;
 
   @GetMapping
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
@@ -117,5 +123,19 @@ public class AdminTenantsController {
   public TenantDataExportRequestDto createDataExportRequest(
       @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
     return tenantDataExportAdminService.createRequest(principal, tenantId);
+  }
+
+  @GetMapping("/{tenantId}/oidc-config")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "获取租户 OIDC 配置（只读）", description = "Phase 5D-1 骨架；未配置时返回 enabled=false")
+  public AdminTenantOidcConfigDto getOidcConfig(@PathVariable UUID tenantId) {
+    return tenantOidcAdminService.getConfig(tenantId);
+  }
+
+  @GetMapping("/{tenantId}/storage-estimate")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "租户存储用量估算（骨架）", description = "FND-08g 占位；后续对接对象存储计量")
+  public AdminTenantStorageEstimateDto getStorageEstimate(@PathVariable UUID tenantId) {
+    return tenantStorageEstimateAdminService.estimate(tenantId);
   }
 }

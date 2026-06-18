@@ -29,6 +29,9 @@ public class WorkspaceMenuItem {
 
   private String tenantFeature;
 
+  /** RBAC permission 门控（Phase 5E-2） */
+  private String permissionCode;
+
   private Integer sortOrder;
 
   private Boolean enabled;

@@ -7,4 +7,5 @@ public record AdminUsageDayBucket(
     @Schema(description = "当日新增用户数") long newUsers,
     @Schema(description = "当日审计事件数") long auditEvents,
     @Schema(description = "当日活跃租户数（近似）") long activeTenants,
-    @Schema(description = "billing-api 当日 confirmed 事件数") long billingApiCallsPerDay) {}
+    @Schema(description = "billing-api 当日 confirmed 事件数") long billingApiCallsPerDay,
+    @Schema(description = "billing 对账差异数") long billingReconcileDiffsPerDay) {}

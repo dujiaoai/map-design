@@ -139,6 +139,20 @@ export async function mockAuditPageApis(page: Page) {
     })
   })
 
+  await page.route(/\/v1\/admin\/audit-logs\/webhook-archive-summary/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        totalArchived: 12,
+        byRegion: [
+          { region: 'us-east-1', count: 8 },
+          { region: 'eu-west-1', count: 4 },
+        ],
+      }),
+    })
+  })
+
   await page.route(/\/v1\/admin\/audit-logs\/webhook-sla\/self-heal-status/, async (route) => {
     await route.fulfill({
       status: 200,
@@ -148,6 +162,21 @@ export async function mockAuditPageApis(page: Page) {
         eligibleForSelfHealCount: 1,
         deliveryRatePercent: 96.5,
         pendingDeadLetters: 1,
+      }),
+    })
+  })
+
+  await page.route(/\/v1\/admin\/stats\/finops\/budget-status/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        monthlyBudgetUsd: 1000,
+        estimatedMonthlyCostUsd: 920,
+        utilizationPercent: 92,
+        alert: true,
+        overBudget: false,
+        throttleActive: false,
       }),
     })
   })

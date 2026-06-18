@@ -21,7 +21,6 @@ class LocalObjectStorageClientTest {
 
     assertThat(url).startsWith("file://");
     assertThat(client.exists("tenant-exports/demo/export.zip")).isTrue();
-    assertThat(Files.exists(tempDir.resolve("tenant-exports").resolve("tenant-exports/demo/export.zip")
-        .normalize())).isTrue();
+    assertThat(Files.exists(tempDir.resolve("tenant-exports").resolve("demo").resolve("export.zip"))).isTrue();
   }
 }

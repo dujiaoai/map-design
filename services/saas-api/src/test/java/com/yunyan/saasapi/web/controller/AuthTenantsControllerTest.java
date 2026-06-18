@@ -57,7 +57,8 @@ class AuthTenantsControllerTest {
                             "enabled", true,
                             "displayName", "Corp SSO",
                             "issuerUri", "https://idp.example.com",
-                            "clientId", "corp-client"))))
+                            "clientId", "corp-client",
+                            "clientSecret", "corp-secret"))))
         .andExpect(status().isOk());
 
     mockMvc

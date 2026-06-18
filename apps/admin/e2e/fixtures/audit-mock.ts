@@ -139,6 +139,20 @@ export async function mockAuditPageApis(page: Page) {
     })
   })
 
+  await page.route(/\/v1\/admin\/audit-logs\/webhook-sla/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        windowDays: 7,
+        deliveryRatePercent: 96.5,
+        avgLatencyMs: 120,
+        pendingDeadLetters: 1,
+        deadLetterCount: 2,
+      }),
+    })
+  })
+
   await page.route(/\/v1\/admin\/audit-logs\/webhook-config/, async (route) => {
     await route.fulfill({
       status: 200,

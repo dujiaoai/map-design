@@ -50,6 +50,12 @@ test.describe('审计日志（已登录 mock）', () => {
     await expect(page.getByRole('link', { name: '系统' })).toBeVisible()
   })
 
+  test('展示 Webhook SLA 指标卡片', async ({ page }) => {
+    await gotoAuditPage(page)
+    await expect(page.getByText('Webhook 投递 SLA')).toBeVisible()
+    await expect(page.getByText('96.5%')).toBeVisible()
+  })
+
   test('展示 Webhook 死信面板与重放按钮', async ({ page }) => {
     await gotoAuditPage(page)
     await expect(page.getByText('Webhook 死信')).toBeVisible()

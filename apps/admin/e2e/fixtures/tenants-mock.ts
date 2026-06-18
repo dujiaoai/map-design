@@ -191,7 +191,21 @@ export async function mockTenantsPageApis(page: Page) {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ tenantId: 'e2e-tenant-active', entries: [] }),
+      body: JSON.stringify({
+        tenantId: 'e2e-tenant-active',
+        entries: [
+          {
+            itemId: 'tool-a',
+            templateTitle: '测距',
+            templateEnabled: true,
+            templateSortOrder: 10,
+            hasOverride: true,
+            overrideEnabled: null,
+            overrideTitle: null,
+            overrideSortOrder: 1,
+          },
+        ],
+      }),
     })
   })
 

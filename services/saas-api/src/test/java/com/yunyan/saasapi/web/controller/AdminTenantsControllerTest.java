@@ -346,6 +346,57 @@ class AdminTenantsControllerTest {
         .andExpect(status().isNoContent());
   }
 
+  @Test
+  void menuOverrideDiff_afterUpsert_returnsEntry() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            put("/v1/admin/tenants/" + TEST_TENANT_ID + "/menu-overrides")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "itemId", "tool-measure-distance",
+                            "enabled", false,
+                            "title", "Custom Measure"))))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID + "/menu-overrides/diff")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.entries", hasSize(1)))
+        .andExpect(jsonPath("$.entries[0].itemId").value("tool-measure-distance"))
+        .andExpect(jsonPath("$.entries[0].overrideTitle").value("Custom Measure"));
+  }
+
+  @Test
+  void dataExportArtifact_completedRequest_returnsDownloadable() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    var createBody =
+        mockMvc
+            .perform(
+                post("/v1/admin/tenants/" + TEST_TENANT_ID + "/data-export-requests")
+                    .header("Authorization", "Bearer " + token))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    var requestId = JsonPath.read(createBody, "$.id");
+
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID + "/data-export-requests/" + requestId + "/artifact")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.downloadable").value(false));
+  }
+
   private String loginAccessToken(String email) throws Exception {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }

@@ -35,6 +35,22 @@ export async function seedPlatformAdminSession(page: Page) {
 }
 
 export async function mockAdminOverviewApis(page: Page) {
+  await page.route('**/auth/refresh', async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue()
+      return
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        accessToken: 'e2e-access-token',
+        refreshToken: 'e2e-refresh-token',
+        expiresIn: 3600,
+      }),
+    })
+  })
+
   await page.route('**/admin/ping', async (route) => {
     await route.fulfill({
       status: 200,

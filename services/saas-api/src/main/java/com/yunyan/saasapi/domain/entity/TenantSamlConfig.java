@@ -23,6 +23,9 @@ public class TenantSamlConfig {
   private String spCertificatePem;
   private Instant spCertificateExpiresAt;
   private Boolean enabled;
+  private Boolean metadataSyncEnabled;
+  private Instant lastMetadataSyncAt;
+  private Instant idpCertExpiresAt;
   private Instant createdAt;
   private Instant updatedAt;
 }

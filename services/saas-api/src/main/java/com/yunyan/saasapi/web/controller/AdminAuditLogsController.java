@@ -3,11 +3,13 @@ package com.yunyan.saasapi.web.controller;
 import com.yunyan.saasapi.application.admin.AdminAuditLogService;
 import com.yunyan.saasapi.application.admin.AdminAuditWebhookDeadLetterService;
 import com.yunyan.saasapi.application.admin.AdminAuditWebhookService;
+import com.yunyan.saasapi.application.admin.AdminAuditWebhookSlaService;
 import com.yunyan.saasapi.application.admin.AuditLogListParams;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditLogListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookConfigResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookSlaResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookDeadLetterListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookDeadLetterReplayResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +40,7 @@ public class AdminAuditLogsController {
 
   private final AdminAuditLogService adminAuditLogService;
   private final AdminAuditWebhookService adminAuditWebhookService;
+  private final AdminAuditWebhookSlaService adminAuditWebhookSlaService;
   private final AdminAuditWebhookDeadLetterService adminAuditWebhookDeadLetterService;
 
   @GetMapping
@@ -87,6 +90,13 @@ public class AdminAuditLogsController {
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
         .contentType(new MediaType("text", "csv", java.nio.charset.StandardCharsets.UTF_8))
         .body(csv);
+  }
+
+  @GetMapping("/webhook-sla")
+  @PreAuthorize(PermissionCodes.ADMIN_AUDIT_READ_AUTHORITIES)
+  @Operation(summary = "审计 Webhook 投递 SLA", description = "Phase 12-3：近 7 日成功率/延迟/死信")
+  public AdminAuditWebhookSlaResponse webhookSla() {
+    return adminAuditWebhookSlaService.getSlaSummary();
   }
 
   @GetMapping("/webhook-config")

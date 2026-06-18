@@ -8,8 +8,9 @@ import { Link, redirect } from 'react-router'
 import { downloadAdminUsageTrendsCsv } from '~/features/dashboard/lib/usage-trends-export'
 
 import { AdminQuickNav } from '~/widgets/admin-overview/ui/admin-quick-nav'
-import { fetchAdminPing, fetchAdminStats, fetchAdminUsageForecast, fetchAdminUsageTrends } from '~/shared/api/admin-api'
+import { fetchAdminPing, fetchAdminStats, fetchAdminFinOps, fetchAdminUsageForecast, fetchAdminUsageTrends } from '~/shared/api/admin-api'
 import { AdminUsageForecastPanel } from '~/features/dashboard/ui/admin-usage-forecast-panel'
+import { AdminFinOpsPanel } from '~/features/dashboard/ui/admin-finops-panel'
 import { auth } from '~/shared/auth/client'
 import { canAccessAdminOverview } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
@@ -58,6 +59,10 @@ export default function DashboardRoute() {
   const usageForecastQuery = useQuery({
     queryKey: adminQueryKeys.usageForecast,
     queryFn: fetchAdminUsageForecast,
+  })
+  const finOpsQuery = useQuery({
+    queryKey: adminQueryKeys.finOps,
+    queryFn: fetchAdminFinOps,
   })
   const pingQuery = useQuery({
     queryKey: adminQueryKeys.ping,
@@ -228,6 +233,17 @@ export default function DashboardRoute() {
             forecast={usageForecastQuery.data.forecast}
             recommendations={usageForecastQuery.data.recommendations}
           />
+        ) : null}
+      </AdminPanel>
+
+      <AdminPanel>
+        <AdminPanelHeader icon={TrendingUpIcon} title="FinOps 成本估算" description="Phase 15-4" />
+        {finOpsQuery.isLoading ? (
+          <p className="px-4 py-4 text-sm text-muted-foreground md:px-5">加载中…</p>
+        ) : finOpsQuery.isError ? (
+          <p className="px-4 py-4 text-sm text-destructive md:px-5">无法加载 FinOps</p>
+        ) : finOpsQuery.data ? (
+          <AdminFinOpsPanel finops={finOpsQuery.data} />
         ) : null}
       </AdminPanel>
 

@@ -114,6 +114,11 @@ pnpm --filter @repo/saas-web dev
 | Webhook 多目标（Phase 13） | `GET/POST/PATCH/DELETE /v1/admin/audit-logs/webhook-targets` |
 | Usage 异常（Phase 13） | `GET /v1/admin/stats/usage-anomalies`；定时 Job + `saas.audit.alert-webhook-url` |
 | 对象存储 SSE（Phase 13） | `saas.object-storage.server-side-encryption` + `kms-key-id`；见 [ADR-0015](../adr/0015-object-storage-kms.md) |
+| SAML metadata 自动同步（Phase 14） | `tenant_saml_config.metadata_sync_enabled`；Job + 证书到期告警；Admin SAML 表单 |
+| SCIM 映射规则（Phase 14） | `scim_group_mapping_rule`；Bulk 增量 filter + bulkId 幂等；`GET .../scim-group-mapping-rules` |
+| Webhook 健康探活（Phase 14） | `audit_webhook_target` 健康字段；连续失败自动禁用 |
+| Usage 预测（Phase 14） | `GET /v1/admin/stats/usage-forecast`；Dashboard 预测面板 |
+| 对象存储 WORM/DR（Phase 14） | WORM Object Lock；`POST /v1/admin/system/object-storage-dr-drill`；见 [ADR-0016](../adr/0016-object-storage-worm-dr.md) |
 | 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
 
 列表页 loading 使用 Skeleton；Vitest + MockMvc 覆盖 P0～P3 核心路径。

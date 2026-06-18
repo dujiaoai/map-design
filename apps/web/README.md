@@ -62,7 +62,7 @@ pnpm --filter @repo/saas-web validate      # typecheck + lint + test
 - **`@repo/auth`**：`app/shared/auth/client.ts` 创建 `auth` 实例（`storageKeyPrefix: saas-web`）
 - **`@repo/api-client`**：`app/shared/api/client.ts` 注入 token 与 401 刷新
 - 受保护路由：`layouts/app-layout.tsx` 调用 `auth.requireAuthenticated(redirect)`
-- `/login`：配置 `VITE_API_URL` 后走 `auth.login()` → `POST /v1/auth/login`（邮箱 + 密码 + 租户 slug）；已配置 OIDC 时可用 IdP 按钮（须填租户）；未配置时降级为 `auth.devLogin()` 占位会话
+- `/login`：配置 `VITE_API_URL` 后走 `auth.login()` → `POST /v1/auth/login`（邮箱 + 密码 + 租户 slug）；已配置 OIDC 时可用 IdP 按钮（须填租户）；填写租户 slug 后会探测 `GET /v1/auth/tenants/{slug}/sso` 展示企业 SSO 入口（Phase 7-1）；未配置时降级为 `auth.devLogin()` 占位会话
 - `/register`：`auth.register()` → `POST /v1/auth/register`（邮箱 + 密码 ≥8 位 + 租户 slug + 可选显示名），成功后查收验证邮件；`/verify-email?token=...` 确认后登录
 - Bootstrap / 顶栏用户：`useWorkspaceSession` + `GET /v1/users/me`；**无** `ruoyi-profile-store`（C-08～C-12）
 - 侧栏：**FND-08 ✅** `GET /v1/menus` + `useWorkspaceNavMainItems`（无 API 时 mock-nav + C-09）

@@ -22,8 +22,10 @@ import com.yunyan.saasapi.web.dto.admin.AdminTenantStorageEstimateDto;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantOidcConfigRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantRequest;
+import com.yunyan.saasapi.web.dto.admin.PostTenantMenuOverrideBatchRequest;
 import com.yunyan.saasapi.web.dto.admin.PutTenantMenuOverrideRequest;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestDto;
+import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestListResponse;
 import com.yunyan.saasapi.web.dto.admin.TenantOidcMetadataImportResponse;
 import com.yunyan.saasapi.web.dto.admin.UpdateTenantFeaturesRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -198,6 +200,16 @@ public class AdminTenantsController {
       @PathVariable UUID tenantId,
       @Valid @RequestBody PutTenantMenuOverrideRequest request) {
     return tenantMenuOverrideAdminService.upsertOverride(principal, tenantId, request);
+  }
+
+  @PostMapping("/{tenantId}/menu-overrides/batch")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "批量创建或更新租户菜单覆盖", description = "Phase 9-4；JSON 数组 upsert")
+  public AdminTenantMenuOverrideListResponse batchUpsertMenuOverrides(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @Valid @RequestBody PostTenantMenuOverrideBatchRequest request) {
+    return tenantMenuOverrideAdminService.batchUpsert(principal, tenantId, request);
   }
 
   @DeleteMapping("/{tenantId}/menu-overrides/{itemId}")

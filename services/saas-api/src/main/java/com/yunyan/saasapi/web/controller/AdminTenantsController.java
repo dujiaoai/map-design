@@ -8,6 +8,7 @@ import com.yunyan.saasapi.application.admin.TenantMenuOverrideAdminService;
 import com.yunyan.saasapi.application.admin.TenantOidcMetadataImportService;
 import com.yunyan.saasapi.application.admin.TenantOidcAdminService;
 import com.yunyan.saasapi.application.admin.TenantSamlAdminService;
+import com.yunyan.saasapi.application.admin.TenantSamlIdpFederationAdminService;
 import com.yunyan.saasapi.application.admin.TenantSamlIdpRegistrationService;
 import com.yunyan.saasapi.application.admin.TenantSamlMetadataImportService;
 import com.yunyan.saasapi.application.admin.TenantSamlSpCertificateService;
@@ -33,7 +34,9 @@ import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlConfigDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantScimProvisioningDto;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportArtifactResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantStorageEstimateDto;
-import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
+import com.yunyan.saasapi.web.dto.admin.CreateTenantSamlIdpFederationRequest;
+import com.yunyan.saasapi.web.dto.admin.TenantSamlIdpFederationDto;
+import com.yunyan.saasapi.web.dto.admin.TenantSamlIdpFederationListResponse;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantOidcConfigRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantSamlConfigRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantRequest;
@@ -82,6 +85,7 @@ public class AdminTenantsController {
   private final TenantSamlMetadataImportService tenantSamlMetadataImportService;
   private final TenantSamlSpCertificateService tenantSamlSpCertificateService;
   private final TenantSamlIdpRegistrationService tenantSamlIdpRegistrationService;
+  private final TenantSamlIdpFederationAdminService tenantSamlIdpFederationAdminService;
   private final ScimProvisioningAdminService scimProvisioningAdminService;
   private final ScimSchemaExtensionAdminService scimSchemaExtensionAdminService;
   private final ScimGroupMappingRuleService scimGroupMappingRuleService;
@@ -273,6 +277,34 @@ public class AdminTenantsController {
       @PathVariable UUID tenantId,
       @PathVariable UUID registrationId) {
     return tenantSamlIdpRegistrationService.approve(principal, tenantId, registrationId);
+  }
+
+  @GetMapping("/{tenantId}/saml-idp-federation")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "SAML IdP 联邦列表", description = "Phase 15-1 多 IdP 联邦")
+  public TenantSamlIdpFederationListResponse listSamlIdpFederation(@PathVariable UUID tenantId) {
+    return tenantSamlIdpFederationAdminService.list(tenantId);
+  }
+
+  @PostMapping("/{tenantId}/saml-idp-federation")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "添加 SAML IdP 联邦", description = "Phase 15-1")
+  public TenantSamlIdpFederationDto addSamlIdpFederation(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @Valid @RequestBody CreateTenantSamlIdpFederationRequest request) {
+    return tenantSamlIdpFederationAdminService.add(principal, tenantId, request);
+  }
+
+  @DeleteMapping("/{tenantId}/saml-idp-federation/{federationId}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "移除 SAML IdP 联邦", description = "Phase 15-1")
+  public void removeSamlIdpFederation(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @PathVariable UUID federationId) {
+    tenantSamlIdpFederationAdminService.remove(principal, tenantId, federationId);
   }
 
   @GetMapping("/{tenantId}/storage-estimate")

@@ -148,10 +148,20 @@ flowchart TB
 
 | PR | 内容 |
 | --- | --- |
-| 9-1 | 租户 SSO Admin 回调 URL 校验与 IdP metadata 导入 |
-| 9-2 | 审计 Webhook HMAC 签名与告警 |
-| 9-3 | GDPR artifact S3/MinIO 生产适配 |
-| 9-4 | 菜单覆盖批量导入 |
+| 9-1 | 租户 SSO Admin 回调 URL 校验与 IdP metadata 导入 | ✅ |
+| 9-2 | 审计 Webhook HMAC 签名与告警 | ✅ |
+| 9-3 | GDPR artifact S3/MinIO 生产适配 | ✅ |
+| 9-4 | 菜单覆盖批量导入 | ✅ |
+
+### Phase 10 · 可观测与规模化（Next）
+
+| PR | 内容 |
+| --- | --- |
+| 10-1 | 审计 Webhook 死信 Admin 重放 UI |
+| 10-2 | 租户 SSO SAML 连接（调研） |
+| 10-3 | 对象存储真实 S3 SDK 上传（替换 local 委托） |
+| 10-4 | Admin Usage 大盘（活跃租户 / API 调用趋势） |
+| 10-5 | SCIM Directory Sync PoC |
 
 ---
 
@@ -178,3 +188,4 @@ flowchart TB
 | **Phase 6** | OIDC 表单、菜单覆盖 CRUD、permission 门控、Job 骨架 ✅ |
 | **Phase 7** | saas-web SSO 入口、Webhook HTTP、GDPR artifact、菜单 diff ✅ |
 | **Phase 8** | 租户 SSO 完整流、SIEM 批量、对象存储 artifact、sortOrder 运行时 ✅ |
+| **Phase 9** | SSO metadata 导入、Webhook HMAC、S3 适配器、菜单批量覆盖 ✅ |

@@ -121,12 +121,35 @@ export interface TenantSamlSpCertificateRotateResponse {
   spCertificateExpiresAt: number
 }
 
+export interface AdminTenantSamlIdpRegistration {
+  id: string
+  idpEntityId: string | null
+  status: string
+  createdAt: number
+}
+
+export interface AdminTenantSamlIdpRegistrationListResponse {
+  registrations: AdminTenantSamlIdpRegistration[]
+}
+
+export interface AdminTenantSamlIdpApproveResponse {
+  registrationId: string
+  status: string
+}
+
 export interface AdminTenantScimProvisioning {
   tenantId: string
   enabled: boolean
   tokenConfigured: boolean
   usersEndpointUrl: string
   lastSyncAt: number | null
+}
+
+export interface AdminScimSchemaExtension {
+  tenantId: string
+  attributesJson: string
+  enterpriseFields: string[]
+  configured: boolean
 }
 
 export interface TenantOidcMetadataImportResponse {

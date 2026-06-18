@@ -7,6 +7,7 @@ import type {
   AdminTenantOidcConfig,
   AdminTenantSamlConfig,
   AdminTenantScimProvisioning,
+  AdminScimSchemaExtension,
   AdminTenantStorageEstimate,
   AdminTenantSummary,
   CreateTenantPayload,
@@ -25,6 +26,8 @@ import type {
   TenantOidcMetadataImportResponse,
   TenantSamlMetadataImportResponse,
   TenantSamlSpCertificateRotateResponse,
+  AdminTenantSamlIdpRegistrationListResponse,
+  AdminTenantSamlIdpApproveResponse,
   TenantQuotasResponse,
 } from './model'
 
@@ -87,6 +90,10 @@ export function fetchTenantScimProvisioning(tenantId: string) {
   return api.get<AdminTenantScimProvisioning>(`/admin/tenants/${tenantId}/scim-provisioning`)
 }
 
+export function fetchTenantScimSchemaExtension(tenantId: string) {
+  return api.get<AdminScimSchemaExtension>(`/admin/tenants/${tenantId}/scim-schema-extension`)
+}
+
 export function generateTenantScimToken(tenantId: string) {
   return api.post<{ tenantId: string; token: string; usersEndpointUrl: string }>(
     `/admin/tenants/${tenantId}/scim-provisioning/generate-token`,
@@ -119,6 +126,19 @@ export function importTenantSamlMetadata(tenantId: string) {
 export function rotateTenantSamlSpCertificate(tenantId: string) {
   return api.post<TenantSamlSpCertificateRotateResponse>(
     `/admin/tenants/${tenantId}/saml-config/rotate-sp-certificate`,
+    {},
+  )
+}
+
+export function fetchTenantSamlIdpRegistrations(tenantId: string) {
+  return api.get<AdminTenantSamlIdpRegistrationListResponse>(
+    `/admin/tenants/${tenantId}/saml-idp-registrations`,
+  )
+}
+
+export function approveTenantSamlIdpRegistration(tenantId: string, registrationId: string) {
+  return api.post<AdminTenantSamlIdpApproveResponse>(
+    `/admin/tenants/${tenantId}/saml-idp-registrations/${registrationId}/approve`,
     {},
   )
 }

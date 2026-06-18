@@ -4,6 +4,7 @@ export default [
   layout('layouts/auth-layout.tsx', [
     route('login', 'routes/login.tsx'),
     route('auth/oidc/callback/:providerId', 'routes/auth.oidc.callback.$providerId.tsx'),
+    route('auth/tenant-sso/saml/callback/:slug', 'routes/auth.tenant-sso.saml.callback.$slug.tsx'),
     route('register', 'routes/register.tsx'),
     route('accept-invite', 'routes/accept-invite.tsx'),
     route('join', 'routes/join.tsx'),

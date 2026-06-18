@@ -76,6 +76,13 @@ export async function mockAdminOverviewApis(page: Page) {
         suspendedTenantCount: 0,
         trialActiveTenantCount: 1,
         trialExpiredTenantCount: 0,
+        audit: {
+          webhookEnabled: false,
+          webhookConfigured: false,
+          webhookFormat: 'jsonl',
+          deliveryMode: 'csv_only',
+          retentionDays: 365,
+        },
       }),
     })
   })

@@ -1,4 +1,4 @@
-export const TENANT_DETAIL_TABS = ['info', 'members', 'custom-roles', 'features'] as const
+export const TENANT_DETAIL_TABS = ['info', 'members', 'custom-roles', 'features', 'compliance'] as const
 
 export type TenantDetailTab = (typeof TENANT_DETAIL_TABS)[number]
 
@@ -10,7 +10,8 @@ export function parseTenantDetailTab(
     value === 'info' ||
     value === 'members' ||
     value === 'custom-roles' ||
-    value === 'features'
+    value === 'features' ||
+    value === 'compliance'
   ) {
     return value
   }

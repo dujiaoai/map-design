@@ -11,6 +11,7 @@ describe('parseTenantDetailTab', () => {
   it('falls back when tab is missing or invalid', () => {
     expect(parseTenantDetailTab(null)).toBe('info')
     expect(parseTenantDetailTab('unknown', 'features')).toBe('features')
+    expect(parseTenantDetailTab('compliance')).toBe('compliance')
   })
 })
 

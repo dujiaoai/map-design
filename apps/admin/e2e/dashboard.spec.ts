@@ -40,5 +40,8 @@ test.describe('运营概览（已登录 mock）', () => {
     await expect(
       page.locator('section.admin-metric-card').filter({ hasText: '试用已到期' }),
     ).toContainText('0')
+    await expect(page.getByText('近 7 日用量趋势')).toBeVisible()
+    await expect(page.getByText('2026-06-18')).toBeVisible()
+    await expect(page.getByText('审计 7')).toBeVisible()
   })
 })

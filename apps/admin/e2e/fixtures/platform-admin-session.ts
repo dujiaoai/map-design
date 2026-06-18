@@ -64,6 +64,25 @@ export async function mockAdminOverviewApis(page: Page) {
   })
 
   await page.route('**/admin/stats', async (route) => {
+    const url = route.request().url()
+    if (url.includes('/usage-trends')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          days: [
+            { date: '2026-06-12', newUsers: 1, auditEvents: 5, activeTenants: 2 },
+            { date: '2026-06-13', newUsers: 0, auditEvents: 3, activeTenants: 1 },
+            { date: '2026-06-14', newUsers: 2, auditEvents: 8, activeTenants: 2 },
+            { date: '2026-06-15', newUsers: 1, auditEvents: 4, activeTenants: 2 },
+            { date: '2026-06-16', newUsers: 0, auditEvents: 6, activeTenants: 3 },
+            { date: '2026-06-17', newUsers: 3, auditEvents: 2, activeTenants: 2 },
+            { date: '2026-06-18', newUsers: 1, auditEvents: 7, activeTenants: 2 },
+          ],
+        }),
+      })
+      return
+    }
     await route.fulfill({
       status: 200,
       contentType: 'application/json',

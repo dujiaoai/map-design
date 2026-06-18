@@ -8,8 +8,10 @@ import com.yunyan.saasapi.application.admin.TenantMenuOverrideAdminService;
 import com.yunyan.saasapi.application.admin.TenantOidcMetadataImportService;
 import com.yunyan.saasapi.application.admin.TenantOidcAdminService;
 import com.yunyan.saasapi.application.admin.TenantSamlAdminService;
+import com.yunyan.saasapi.application.admin.TenantSamlIdpRegistrationService;
 import com.yunyan.saasapi.application.admin.TenantSamlMetadataImportService;
 import com.yunyan.saasapi.application.admin.TenantSamlSpCertificateService;
+import com.yunyan.saasapi.application.scim.ScimSchemaExtensionAdminService;
 import com.yunyan.saasapi.application.admin.ScimProvisioningAdminService;
 import com.yunyan.saasapi.application.admin.TenantStorageEstimateAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
@@ -22,6 +24,9 @@ import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuDiffResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantOidcConfigDto;
+import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlIdpApproveResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlIdpRegistrationListResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminScimSchemaExtensionResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlConfigDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantScimProvisioningDto;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportArtifactResponse;
@@ -74,7 +79,9 @@ public class AdminTenantsController {
   private final TenantSamlAdminService tenantSamlAdminService;
   private final TenantSamlMetadataImportService tenantSamlMetadataImportService;
   private final TenantSamlSpCertificateService tenantSamlSpCertificateService;
+  private final TenantSamlIdpRegistrationService tenantSamlIdpRegistrationService;
   private final ScimProvisioningAdminService scimProvisioningAdminService;
+  private final ScimSchemaExtensionAdminService scimSchemaExtensionAdminService;
   private final TenantStorageEstimateAdminService tenantStorageEstimateAdminService;
   private final TenantMenuOverrideAdminService tenantMenuOverrideAdminService;
 
@@ -199,6 +206,13 @@ public class AdminTenantsController {
     return scimProvisioningAdminService.generateToken(principal, tenantId);
   }
 
+  @GetMapping("/{tenantId}/scim-schema-extension")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "SCIM schema extension 摘要", description = "Phase 13-2 只读自定义属性")
+  public AdminScimSchemaExtensionResponse getScimSchemaExtension(@PathVariable UUID tenantId) {
+    return scimSchemaExtensionAdminService.getSummary(tenantId);
+  }
+
   @PatchMapping("/{tenantId}/oidc-config")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
   @Operation(summary = "更新租户 OIDC 配置（骨架）", description = "不含 client_secret；后续对接 saas-web 登录入口")
@@ -231,6 +245,24 @@ public class AdminTenantsController {
   public TenantSamlSpCertificateRotateResponse rotateSamlSpCertificate(
       @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
     return tenantSamlSpCertificateService.rotateCertificate(principal, tenantId);
+  }
+
+  @GetMapping("/{tenantId}/saml-idp-registrations")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "待审批 IdP 注册列表", description = "Phase 13-1 IdP 自助注册")
+  public AdminTenantSamlIdpRegistrationListResponse listPendingSamlIdpRegistrations(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
+    return tenantSamlIdpRegistrationService.listPending(principal, tenantId);
+  }
+
+  @PostMapping("/{tenantId}/saml-idp-registrations/{registrationId}/approve")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "审批 IdP 注册", description = "Phase 13-1 将 pending 注册标记为 approved")
+  public AdminTenantSamlIdpApproveResponse approveSamlIdpRegistration(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable UUID tenantId,
+      @PathVariable UUID registrationId) {
+    return tenantSamlIdpRegistrationService.approve(principal, tenantId, registrationId);
   }
 
   @GetMapping("/{tenantId}/storage-estimate")

@@ -35,6 +35,14 @@ public class AdminAuditLogRepository {
     return sysAdminAuditLogMapper.selectList(wrapper);
   }
 
+  public long countUndeliveredAfter(UUID lastDeliveredId) {
+    var wrapper = Wrappers.<SysAdminAuditLog>lambdaQuery();
+    if (lastDeliveredId != null) {
+      wrapper.gt(SysAdminAuditLog::getId, lastDeliveredId);
+    }
+    return sysAdminAuditLogMapper.selectCount(wrapper);
+  }
+
   public AdminPagedResult<SysAdminAuditLog> findLogs(AuditLogListParams params) {
     var wrapper = Wrappers.<SysAdminAuditLog>lambdaQuery();
     applyAuditSort(wrapper, params.toListParams());

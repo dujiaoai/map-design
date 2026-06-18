@@ -3,6 +3,7 @@ package com.yunyan.saasapi.web.controller;
 import com.yunyan.saasapi.application.admin.AdminStatsService;
 import com.yunyan.saasapi.application.admin.AdminSystemDependenciesService;
 import com.yunyan.saasapi.application.admin.AdminSystemFlagsService;
+import com.yunyan.saasapi.application.admin.AdminObjectStoragePolicyService;
 import com.yunyan.saasapi.application.admin.AdminUsageTrendsService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
 import com.yunyan.saasapi.web.dto.admin.FeatureCatalogResponse;
@@ -11,13 +12,18 @@ import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminStatsResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemDependenciesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemFlagsResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminObjectStoragePolicyResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageTrendsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +38,7 @@ public class AdminController {
 
   private final AdminStatsService adminStatsService;
   private final AdminUsageTrendsService adminUsageTrendsService;
+  private final AdminObjectStoragePolicyService adminObjectStoragePolicyService;
   private final AdminSystemFlagsService adminSystemFlagsService;
   private final AdminSystemDependenciesService adminSystemDependenciesService;
   private final TenantFeatureAdminService tenantFeatureAdminService;
@@ -74,6 +81,27 @@ public class AdminController {
   @Operation(summary = "近 7 日用量趋势", description = "新增用户、审计事件、活跃租户（按日桶）")
   public AdminUsageTrendsResponse usageTrends() {
     return adminUsageTrendsService.getTrends();
+  }
+
+  @GetMapping("/stats/usage-trends/export")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(summary = "导出近 7 日用量趋势 CSV", description = "Phase 12-4")
+  public ResponseEntity<byte[]> exportUsageTrends() {
+    var csv = adminUsageTrendsService.exportCsv();
+    var filename = "usage-trends-" + Instant.now().toString().substring(0, 10) + ".csv";
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+        .contentType(new MediaType("text", "csv", java.nio.charset.StandardCharsets.UTF_8))
+        .body(csv);
+  }
+
+  @GetMapping("/system/object-storage-policy")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @SecurityRequirement(name = "bearerAuth")
+  @Operation(summary = "对象存储策略摘要", description = "Phase 12-5：跨区复制与合规保留")
+  public AdminObjectStoragePolicyResponse objectStoragePolicy() {
+    return adminObjectStoragePolicyService.getPolicySummary();
   }
 
   @GetMapping("/feature-catalog")

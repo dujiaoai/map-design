@@ -28,6 +28,32 @@ export interface AdminUsageTrendsResponse {
   days: AdminUsageDayBucket[]
 }
 
+export interface AdminUsageAnomaly {
+  metric: string
+  currentValue: number
+  sevenDayAverage: number
+  ratio: number
+  day: string
+}
+
+export interface AdminUsageAnomaliesResponse {
+  anomalies: AdminUsageAnomaly[]
+}
+
+export interface AdminAuditWebhookTarget {
+  id: string
+  url: string
+  format: string
+  enabled: boolean
+  priority: number
+  createdAt: number
+}
+
+export interface AdminAuditWebhookTargetListResponse {
+  primaryWebhookUrl: string
+  targets: AdminAuditWebhookTarget[]
+}
+
 export interface AdminSystemFlagsResponse {
   registration: {
     allowPublicOrgSignup: boolean

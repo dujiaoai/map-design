@@ -1,10 +1,12 @@
 import { api } from '~/shared/api/client'
 
 import type {
+  AdminAuditWebhookTargetListResponse,
   AdminPingResponse,
   AdminStatsResponse,
   AdminSystemDependenciesResponse,
   AdminSystemFlagsResponse,
+  AdminUsageAnomaliesResponse,
   AdminUsageTrendsResponse,
 } from './model'
 
@@ -18,6 +20,14 @@ export function fetchAdminStats() {
 
 export function fetchAdminUsageTrends() {
   return api.get<AdminUsageTrendsResponse>('/admin/stats/usage-trends')
+}
+
+export function fetchAdminUsageAnomalies() {
+  return api.get<AdminUsageAnomaliesResponse>('/admin/stats/usage-anomalies')
+}
+
+export function fetchAuditWebhookTargets() {
+  return api.get<AdminAuditWebhookTargetListResponse>('/admin/audit-logs/webhook-targets')
 }
 
 export function fetchAdminSystemFlags() {

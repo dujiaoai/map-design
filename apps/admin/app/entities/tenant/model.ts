@@ -155,6 +155,30 @@ export interface AdminTenantSamlIdpApproveResponse {
   status: string
 }
 
+export interface TenantSamlIdpFederation {
+  id: string
+  tenantId: string
+  idpEntityId: string
+  ssoUrl: string
+  hasCertificate: boolean
+  priority: number
+  enabled: boolean
+  createdAt: number
+  updatedAt: number
+}
+
+export interface TenantSamlIdpFederationListResponse {
+  items: TenantSamlIdpFederation[]
+}
+
+export interface CreateTenantSamlIdpFederationPayload {
+  idpEntityId: string
+  ssoUrl: string
+  certificatePem?: string
+  priority: number
+  enabled?: boolean
+}
+
 export interface AdminTenantScimProvisioning {
   tenantId: string
   enabled: boolean

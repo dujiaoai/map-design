@@ -14,6 +14,8 @@ export const adminQueryKeys = {
   tenantSamlConfig: (tenantId: string) => ['admin', 'tenants', tenantId, 'saml-config'] as const,
   tenantSamlIdpRegistrations: (tenantId: string) =>
     ['admin', 'tenants', tenantId, 'saml-idp-registrations'] as const,
+  tenantSamlIdpFederation: (tenantId: string) =>
+    ['admin', 'tenants', tenantId, 'saml-idp-federation'] as const,
   tenantScimProvisioning: (tenantId: string) =>
     ['admin', 'tenants', tenantId, 'scim-provisioning'] as const,
   tenantStorageEstimate: (tenantId: string) =>

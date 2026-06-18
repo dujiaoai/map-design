@@ -29,6 +29,8 @@ import type {
   AdminTenantSamlIdpRegistrationListResponse,
   AdminTenantSamlIdpApproveResponse,
   AdminScimGroupMappingRuleListResponse,
+  TenantSamlIdpFederationListResponse,
+  CreateTenantSamlIdpFederationPayload,
   TenantQuotasResponse,
 } from './model'
 
@@ -183,5 +185,24 @@ export function fetchTenantMenuDiff(tenantId: string) {
 export function fetchTenantScimGroupMappingRules(tenantId: string) {
   return api.get<AdminScimGroupMappingRuleListResponse>(
     `/admin/tenants/${tenantId}/scim-group-mapping-rules`,
+  )
+}
+
+export function fetchTenantSamlIdpFederation(tenantId: string) {
+  return api.get<TenantSamlIdpFederationListResponse>(
+    `/admin/tenants/${tenantId}/saml-idp-federation`,
+  )
+}
+
+export function addTenantSamlIdpFederation(
+  tenantId: string,
+  payload: CreateTenantSamlIdpFederationPayload,
+) {
+  return api.post(`/admin/tenants/${tenantId}/saml-idp-federation`, payload)
+}
+
+export function removeTenantSamlIdpFederation(tenantId: string, federationId: string) {
+  return api.delete<void>(
+    `/admin/tenants/${tenantId}/saml-idp-federation/${encodeURIComponent(federationId)}`,
   )
 }

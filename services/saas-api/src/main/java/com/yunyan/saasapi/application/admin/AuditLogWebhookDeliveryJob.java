@@ -25,6 +25,7 @@ public class AuditLogWebhookDeliveryJob {
   private final AuditWebhookPayloadBuilder payloadBuilder;
   private final AuditWebhookHmacSigner hmacSigner;
   private final AuditWebhookAlertService alertService;
+  private final AuditWebhookDeliveryMetricRecorder deliveryMetricRecorder;
 
   @Scheduled(
       fixedDelayString = "${saas.audit.webhook-delivery-ms:300000}",
@@ -43,8 +44,11 @@ public class AuditLogWebhookDeliveryJob {
     }
     var payload = payloadBuilder.buildBatchPayload(audit.getWebhookFormat(), batch);
     var signature = hmacSigner.sign(audit.getWebhookSigningSecret(), payload);
+    var started = System.currentTimeMillis();
     var ok = auditWebhookHttpClient.postJson(audit.getWebhookUrl(), payload, signature);
+    var latencyMs = System.currentTimeMillis() - started;
     if (!ok) {
+      deliveryMetricRecorder.recordFailure(latencyMs);
       for (var entry : batch) {
         deadLetterRepository.insert(
             entry.getId(),
@@ -57,6 +61,7 @@ public class AuditLogWebhookDeliveryJob {
     }
     var last = batch.get(batch.size() - 1);
     cursorRepository.upsert(last.getId(), last.getCreatedAt());
+    deliveryMetricRecorder.recordSuccess(latencyMs);
     log.debug("Audit webhook delivered {} event(s) to {}", batch.size(), audit.getWebhookUrl());
   }
 }

@@ -12,6 +12,7 @@ import type {
   CreateTenantPayload,
   FeatureCatalogResponse,
   PatchTenantOidcConfigPayload,
+  PatchTenantSamlConfigPayload,
   PatchTenantPayload,
   PostTenantMenuOverrideBatchPayload,
   TenantDataExportRequest,
@@ -86,6 +87,10 @@ export function fetchTenantScimProvisioning(tenantId: string) {
 
 export function patchTenantOidcConfig(tenantId: string, payload: PatchTenantOidcConfigPayload) {
   return api.patch<AdminTenantOidcConfig>(`/admin/tenants/${tenantId}/oidc-config`, payload)
+}
+
+export function patchTenantSamlConfig(tenantId: string, payload: PatchTenantSamlConfigPayload) {
+  return api.patch<AdminTenantSamlConfig>(`/admin/tenants/${tenantId}/saml-config`, payload)
 }
 
 export function importTenantOidcMetadata(tenantId: string) {

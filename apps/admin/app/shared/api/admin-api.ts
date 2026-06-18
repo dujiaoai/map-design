@@ -118,6 +118,7 @@ export {
   fetchTenantStorageEstimate,
   patchAdminTenant,
   patchTenantOidcConfig,
+  patchTenantSamlConfig,
   postTenantMenuOverridesBatch,
   putTenantMenuOverride,
   deleteTenantMenuOverride,

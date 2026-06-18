@@ -89,8 +89,19 @@ export interface AdminTenantSamlConfig {
   enabled: boolean
   entityId: string | null
   ssoUrl: string | null
+  acsUrl: string | null
+  spEntityId: string | null
   certificateConfigured: boolean
   configured: boolean
+}
+
+export interface PatchTenantSamlConfigPayload {
+  enabled?: boolean
+  entityId?: string
+  ssoUrl?: string
+  acsUrl?: string
+  spEntityId?: string
+  certificatePem?: string
 }
 
 export interface AdminTenantScimProvisioning {

@@ -28,7 +28,7 @@ import {
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { formatAdminDate } from '~/shared/ui/admin-status-badge'
 import { TenantOidcConfigForm } from '~/features/tenants/ui/tenant-oidc-config-form'
-import { TenantSamlConfigCard } from '~/features/tenants/ui/tenant-saml-config-card'
+import { TenantSamlConfigForm } from '~/features/tenants/ui/tenant-saml-config-form'
 import { TenantScimStatusCard } from '~/features/tenants/ui/tenant-scim-status-card'
 import { Button, toast } from '@repo/ui'
 
@@ -176,7 +176,7 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
           isRetrying={samlQuery.isFetching}
         />
       ) : (
-        <TenantSamlConfigCard config={samlQuery.data} />
+        <TenantSamlConfigForm config={samlQuery.data} readOnly={!canWrite} tenantId={tenantId} />
       )}
 
       {scimQuery.isLoading ? (

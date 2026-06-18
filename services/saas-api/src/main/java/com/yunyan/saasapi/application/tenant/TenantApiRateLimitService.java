@@ -18,16 +18,27 @@ import org.springframework.stereotype.Service;
 public class TenantApiRateLimitService {
 
   static final String MSG_EXCEEDED = "Tenant API rate limit exceeded for current plan";
+  static final String MSG_BUDGET_THROTTLE = "Tenant API throttled due to platform budget limit";
 
   private final RateLimitStore rateLimitStore;
   private final SaasAppProperties saasAppProperties;
   private final TenantRepository tenantRepository;
+  private final AdminUsageBudgetAlertService budgetAlertService;
 
   private final Map<UUID, CachedPlan> planCache = new ConcurrentHashMap<>();
 
   public void check(UUID tenantId) {
     if (!enabled()) {
       return;
+    }
+    if (budgetAlertService.isBudgetThrottleActive()) {
+      var config = saasAppProperties.getRateLimit().getTenantApi();
+      var retryAfterSeconds =
+          rateLimitStore.tryConsume("tenant-api-budget:" + tenantId, 1, config.getWindow());
+      if (retryAfterSeconds.isPresent()) {
+        throw RateLimitException.exceeded(
+            java.time.Duration.ofSeconds(Math.max(1, retryAfterSeconds.getAsLong())), MSG_BUDGET_THROTTLE);
+      }
     }
     var config = saasAppProperties.getRateLimit().getTenantApi();
     var maxPerMinute = resolveMaxPerMinute(tenantId, config.getMaxPerMinuteOverride());

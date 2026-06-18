@@ -19,3 +19,12 @@ saas:
             - openid
             - profile
             - email
+  # Phase 10-3：对象存储真实 S3 SDK（默认 local；生产设 SAAS_OBJECT_STORAGE_USE_REAL_S3=true）
+  object-storage:
+    provider: local
+    use-real-s3: ${SAAS_OBJECT_STORAGE_USE_REAL_S3:false}
+    bucket: tenant-exports
+    endpoint: ${SAAS_OBJECT_STORAGE_ENDPOINT:}
+    access-key: ${SAAS_OBJECT_STORAGE_ACCESS_KEY:}
+    secret-key: ${SAAS_OBJECT_STORAGE_SECRET_KEY:}
+    region: ${SAAS_OBJECT_STORAGE_REGION:us-east-1}

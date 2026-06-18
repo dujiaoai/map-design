@@ -21,6 +21,7 @@ export interface AdminUsageDayBucket {
   auditEvents: number
   activeTenants: number
   billingApiCallsPerDay?: number
+  billingReconcileDiffsPerDay?: number
 }
 
 export interface AdminUsageTrendsResponse {

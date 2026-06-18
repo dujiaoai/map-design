@@ -12,9 +12,11 @@ import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantFeaturesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantListResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuDiffResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideDto;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantMenuOverrideListResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantOidcConfigDto;
+import com.yunyan.saasapi.web.dto.admin.TenantDataExportArtifactResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantStorageEstimateDto;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantOidcConfigRequest;
@@ -132,6 +134,14 @@ public class AdminTenantsController {
     return tenantDataExportAdminService.createRequest(principal, tenantId);
   }
 
+  @GetMapping("/{tenantId}/data-export-requests/{requestId}/artifact")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "获取 GDPR 导出 artifact 元数据", description = "Phase 7-3；skeleton URL 占位")
+  public TenantDataExportArtifactResponse getDataExportArtifact(
+      @PathVariable UUID tenantId, @PathVariable UUID requestId) {
+    return tenantDataExportAdminService.getArtifact(tenantId, requestId);
+  }
+
   @GetMapping("/{tenantId}/oidc-config")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
   @Operation(summary = "获取租户 OIDC 配置（只读）", description = "Phase 5D-1 骨架；未配置时返回 enabled=false")
@@ -161,6 +171,13 @@ public class AdminTenantsController {
   @Operation(summary = "列出租户菜单覆盖", description = "Phase 5E-1 骨架；空列表表示全部继承平台模板")
   public AdminTenantMenuOverrideListResponse listMenuOverrides(@PathVariable UUID tenantId) {
     return tenantMenuOverrideAdminService.listOverrides(tenantId);
+  }
+
+  @GetMapping("/{tenantId}/menu-overrides/diff")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "租户菜单覆盖与平台模板 diff", description = "Phase 7-4 side-by-side 数据")
+  public AdminTenantMenuDiffResponse menuOverrideDiff(@PathVariable UUID tenantId) {
+    return tenantMenuOverrideAdminService.buildDiff(tenantId);
   }
 
   @PutMapping("/{tenantId}/menu-overrides")

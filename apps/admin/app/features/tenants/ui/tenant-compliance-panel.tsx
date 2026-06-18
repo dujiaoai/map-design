@@ -12,6 +12,8 @@ import {
   fetchTenantDataExportRequests,
   fetchTenantMenuOverrides,
   fetchTenantOidcConfig,
+  fetchTenantSamlConfig,
+  fetchTenantScimProvisioning,
   fetchTenantStorageEstimate,
 } from '~/shared/api/admin-api'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
@@ -26,6 +28,8 @@ import {
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { formatAdminDate } from '~/shared/ui/admin-status-badge'
 import { TenantOidcConfigForm } from '~/features/tenants/ui/tenant-oidc-config-form'
+import { TenantSamlConfigCard } from '~/features/tenants/ui/tenant-saml-config-card'
+import { TenantScimStatusCard } from '~/features/tenants/ui/tenant-scim-status-card'
 import { Button, toast } from '@repo/ui'
 
 function formatBytes(bytes: number): string {
@@ -53,6 +57,14 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
   const oidcQuery = useQuery({
     queryKey: adminQueryKeys.tenantOidcConfig(tenantId),
     queryFn: () => fetchTenantOidcConfig(tenantId),
+  })
+  const samlQuery = useQuery({
+    queryKey: adminQueryKeys.tenantSamlConfig(tenantId),
+    queryFn: () => fetchTenantSamlConfig(tenantId),
+  })
+  const scimQuery = useQuery({
+    queryKey: adminQueryKeys.tenantScimProvisioning(tenantId),
+    queryFn: () => fetchTenantScimProvisioning(tenantId),
   })
   const storageQuery = useQuery({
     queryKey: adminQueryKeys.tenantStorageEstimate(tenantId),
@@ -153,6 +165,32 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
           />
         )}
       </AdminPanel>
+
+      {samlQuery.isLoading ? (
+        <AdminTableSkeleton rows={3} columns={1} />
+      ) : samlQuery.isError || !samlQuery.data ? (
+        <AdminEmptyState
+          icon={KeyRoundIcon}
+          message="无法加载 SAML 配置"
+          onRetry={() => void samlQuery.refetch()}
+          isRetrying={samlQuery.isFetching}
+        />
+      ) : (
+        <TenantSamlConfigCard config={samlQuery.data} />
+      )}
+
+      {scimQuery.isLoading ? (
+        <AdminTableSkeleton rows={2} columns={1} />
+      ) : scimQuery.isError || !scimQuery.data ? (
+        <AdminEmptyState
+          icon={KeyRoundIcon}
+          message="无法加载 SCIM 状态"
+          onRetry={() => void scimQuery.refetch()}
+          isRetrying={scimQuery.isFetching}
+        />
+      ) : (
+        <TenantScimStatusCard status={scimQuery.data} />
+      )}
 
       <AdminPanel>
         <AdminPanelHeader

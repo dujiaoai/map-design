@@ -62,4 +62,10 @@ test.describe('审计日志（已登录 mock）', () => {
     await expect(page.getByRole('button', { name: '重放' })).toBeVisible()
     await expect(page.getByText('HTTP delivery failed')).toBeVisible()
   })
+
+  test('展示 Webhook 多目标路由面板', async ({ page }) => {
+    await gotoAuditPage(page)
+    await expect(page.getByText('Webhook 多目标路由')).toBeVisible()
+    await expect(page.getByText('https://siem.example/hook')).toBeVisible()
+  })
 })

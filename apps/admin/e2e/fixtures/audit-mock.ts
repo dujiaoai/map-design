@@ -167,6 +167,26 @@ export async function mockAuditPageApis(page: Page) {
     })
   })
 
+  await page.route(/\/v1\/admin\/audit-logs\/webhook-targets/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        primaryWebhookUrl: '',
+        targets: [
+          {
+            id: 'e2e-target-1',
+            url: 'https://siem.example/hook',
+            format: 'jsonl',
+            enabled: true,
+            priority: 1,
+            createdAt: 1_700_000_000_000,
+          },
+        ],
+      }),
+    })
+  })
+
   await page.route(/\/v1\/admin\/audit-logs\/webhook-dead-letters/, async (route) => {
     const method = route.request().method()
     const url = route.request().url()

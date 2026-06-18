@@ -50,6 +50,19 @@ public class UserRepository {
     return TenantRlsBypass.call(() -> sysUserMapper.countDistinctTenantsWithLoginSince(since));
   }
 
+  public List<UUID> findUserIdsByTenantId(UUID tenantId) {
+    return TenantRlsBypass.call(
+        () ->
+            sysUserMapper
+                .selectList(
+                    Wrappers.<SysUser>lambdaQuery()
+                        .eq(SysUser::getTenantId, tenantId)
+                        .select(SysUser::getId))
+                .stream()
+                .map(SysUser::getId)
+                .toList());
+  }
+
   /** active + invited 成员计入席位占用 */
   public long countSeatUsage(UUID tenantId) {
     return TenantRlsBypass.call(

@@ -139,6 +139,17 @@ public class TenantRepository {
                         .isNull(SysTenant::getStatus)));
   }
 
+  public List<UUID> findSuspendedTenantIds() {
+    return sysTenantMapper
+        .selectList(
+            Wrappers.<SysTenant>lambdaQuery()
+                .eq(SysTenant::getStatus, "suspended")
+                .select(SysTenant::getId))
+        .stream()
+        .map(SysTenant::getId)
+        .toList();
+  }
+
   public List<SysTenant> findByIds(List<UUID> tenantIds) {
     if (tenantIds.isEmpty()) {
       return List.of();

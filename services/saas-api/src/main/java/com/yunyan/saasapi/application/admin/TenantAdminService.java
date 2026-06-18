@@ -20,10 +20,12 @@ import org.springframework.util.StringUtils;
 public class TenantAdminService {
 
   private static final String STATUS_ACTIVE = "active";
+  private static final String STATUS_SUSPENDED = "suspended";
   private static final String DEFAULT_PLAN = "free";
 
   private final TenantRepository tenantRepository;
   private final AdminAuditLogService adminAuditLogService;
+  private final TenantSessionRevocationService tenantSessionRevocationService;
 
   public AdminTenantListResponse listTenants(AdminListParams params) {
     var result = tenantRepository.findTenants(params);
@@ -81,6 +83,7 @@ public class TenantAdminService {
         tenantRepository
             .findById(tenantId)
             .orElseThrow(() -> AuthException.notFound("Tenant not found"));
+    var previousStatus = tenant.getStatus();
 
     if (StringUtils.hasText(request.name())) {
       tenant.setName(request.name().trim());
@@ -98,6 +101,14 @@ public class TenantAdminService {
     }
 
     tenantRepository.update(tenant);
+    if (isNewlySuspended(previousStatus, tenant.getStatus())) {
+      var revokedSessions = tenantSessionRevocationService.revokeAllMemberSessions(tenantId);
+      adminAuditLogService.recordTenantAction(
+          principal,
+          "tenant.sessions.revoke",
+          tenantId,
+          "Revoked " + revokedSessions + " member session(s) after suspend");
+    }
     var changes = new StringBuilder();
     if (StringUtils.hasText(request.name())) {
       changes.append("name ");
@@ -141,6 +152,13 @@ public class TenantAdminService {
       return DEFAULT_PLAN;
     }
     return plan.trim();
+  }
+
+  private static boolean isNewlySuspended(String previousStatus, String newStatus) {
+    if (!STATUS_SUSPENDED.equalsIgnoreCase(newStatus)) {
+      return false;
+    }
+    return previousStatus == null || !STATUS_SUSPENDED.equalsIgnoreCase(previousStatus);
   }
 
   private static AdminTenantDto toDto(SysTenant tenant) {

@@ -73,15 +73,27 @@ export type {
   FeatureCatalogResponse,
   PatchTenantPayload,
   TenantQuotasResponse,
+  TenantDataExportRequest,
+  TenantDataExportRequestListResponse,
+  AdminTenantOidcConfig,
+  PatchTenantOidcConfigPayload,
+  AdminTenantStorageEstimate,
+  TenantMenuOverrideListResponse,
 } from '~/entities/tenant'
 export {
   createAdminTenant,
+  createTenantDataExportRequest,
   fetchAdminTenant,
   fetchAdminTenants,
   fetchFeatureCatalog,
+  fetchTenantDataExportRequests,
   fetchTenantFeatures,
+  fetchTenantMenuOverrides,
+  fetchTenantOidcConfig,
   fetchTenantQuotas,
+  fetchTenantStorageEstimate,
   patchAdminTenant,
+  patchTenantOidcConfig,
   updateTenantFeatures,
 } from '~/entities/tenant'
 export type { AdminUserListResponse, AdminUserSummary, PatchUserPayload, UserOauthBindItem, UserOauthBindsResponse } from '~/entities/user'

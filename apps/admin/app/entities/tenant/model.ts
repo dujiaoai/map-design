@@ -55,3 +55,54 @@ export interface TenantQuotasResponse {
   apiRate: { limitPerMinute: number }
   storage: { limitBytes: number; usedBytes: number }
 }
+
+export interface TenantDataExportRequest {
+  id: string
+  tenantId: string
+  status: string
+  requestedByUserId: string | null
+  artifactUrl: string | null
+  createdAt: number | null
+  completedAt: number | null
+}
+
+export interface TenantDataExportRequestListResponse {
+  requests: TenantDataExportRequest[]
+}
+
+export interface AdminTenantOidcConfig {
+  tenantId: string
+  enabled: boolean
+  displayName: string | null
+  issuerUri: string | null
+  clientId: string | null
+  configured: boolean
+}
+
+export interface PatchTenantOidcConfigPayload {
+  enabled?: boolean
+  displayName?: string
+  issuerUri?: string
+  clientId?: string
+}
+
+export interface AdminTenantStorageEstimate {
+  tenantId: string
+  attachmentBytes: number
+  mapLayerBytes: number
+  totalBytes: number
+  source: string
+}
+
+export interface TenantMenuOverride {
+  id: string
+  tenantId: string
+  itemId: string
+  enabled: boolean | null
+  sortOrder: number | null
+  title: string | null
+}
+
+export interface TenantMenuOverrideListResponse {
+  overrides: TenantMenuOverride[]
+}

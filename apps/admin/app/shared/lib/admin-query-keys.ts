@@ -9,6 +9,12 @@ export const adminQueryKeys = {
   featureCatalog: ['admin', 'feature-catalog'] as const,
   tenantFeatures: (tenantId: string) => ['admin', 'tenants', tenantId, 'features'] as const,
   tenantQuotas: (tenantId: string) => ['admin', 'tenants', tenantId, 'quotas'] as const,
+  tenantDataExports: (tenantId: string) => ['admin', 'tenants', tenantId, 'data-exports'] as const,
+  tenantOidcConfig: (tenantId: string) => ['admin', 'tenants', tenantId, 'oidc-config'] as const,
+  tenantStorageEstimate: (tenantId: string) =>
+    ['admin', 'tenants', tenantId, 'storage-estimate'] as const,
+  tenantMenuOverrides: (tenantId: string) =>
+    ['admin', 'tenants', tenantId, 'menu-overrides'] as const,
   users: (tenantId?: string, params?: AdminListQuery) =>
     ['admin', 'users', tenantId ?? 'all', params ?? {}] as const,
   sessionTenants: ['admin', 'session-tenants'] as const,

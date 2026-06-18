@@ -26,4 +26,16 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
   @Select(
       "SELECT COUNT(DISTINCT tenant_id) FROM sys_user WHERE last_login_at IS NOT NULL AND last_login_at >= #{since}")
   long countDistinctTenantsWithLoginSince(@Param("since") java.time.Instant since);
+
+  @InterceptorIgnore(tenantLine = "true")
+  @Select(
+      "SELECT COUNT(*) FROM sys_user WHERE created_at >= #{from} AND created_at < #{to}")
+  long countUsersCreatedBetween(
+      @Param("from") java.time.Instant from, @Param("to") java.time.Instant to);
+
+  @InterceptorIgnore(tenantLine = "true")
+  @Select(
+      "SELECT COUNT(DISTINCT tenant_id) FROM sys_user WHERE last_login_at >= #{from} AND last_login_at < #{to}")
+  long countActiveTenantsBetween(
+      @Param("from") java.time.Instant from, @Param("to") java.time.Instant to);
 }

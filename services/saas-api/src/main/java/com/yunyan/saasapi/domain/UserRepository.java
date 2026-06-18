@@ -50,6 +50,14 @@ public class UserRepository {
     return TenantRlsBypass.call(() -> sysUserMapper.countDistinctTenantsWithLoginSince(since));
   }
 
+  public long countUsersCreatedBetween(Instant from, Instant to) {
+    return TenantRlsBypass.call(() -> sysUserMapper.countUsersCreatedBetween(from, to));
+  }
+
+  public long countActiveTenantsBetween(Instant from, Instant to) {
+    return TenantRlsBypass.call(() -> sysUserMapper.countActiveTenantsBetween(from, to));
+  }
+
   public List<UUID> findUserIdsByTenantId(UUID tenantId) {
     return TenantRlsBypass.call(
         () ->

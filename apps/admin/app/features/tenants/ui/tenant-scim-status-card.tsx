@@ -1,9 +1,10 @@
 import { Badge, Button, toast } from '@repo/ui'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CopyIcon, UsersIcon } from 'lucide-react'
 import { useState } from 'react'
 
 import type { AdminTenantScimProvisioning } from '~/entities/tenant/model'
+import { fetchTenantScimSyncEventSummary } from '~/entities/tenant/api'
 import { generateTenantScimToken } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
@@ -22,6 +23,11 @@ export function TenantScimStatusCard({
   const queryClient = useQueryClient()
   const [revealedToken, setRevealedToken] = useState<string | null>(null)
 
+  const syncEventsQuery = useQuery({
+    queryKey: adminQueryKeys.tenantScimSyncEvents(tenantId),
+    queryFn: () => fetchTenantScimSyncEventSummary(tenantId),
+  })
+
   const generateMutation = useMutation({
     mutationFn: () => generateTenantScimToken(tenantId),
     onSuccess: (data) => {
@@ -38,6 +44,13 @@ export function TenantScimStatusCard({
         icon={UsersIcon}
         title="SCIM Directory Sync"
         description="目录同步 Users CRUD（Phase 11-2）"
+        actions={
+          syncEventsQuery.data && syncEventsQuery.data.tenantPendingCount > 0 ? (
+            <Badge variant="destructive">
+              冲突 {syncEventsQuery.data.tenantPendingCount}
+            </Badge>
+          ) : null
+        }
       />
       <AdminConfigRow
         label="Provisioning"

@@ -16,8 +16,8 @@ export const adminQueryKeys = {
     ['admin', 'tenants', tenantId, 'saml-idp-registrations'] as const,
   tenantSamlIdpFederation: (tenantId: string) =>
     ['admin', 'tenants', tenantId, 'saml-idp-federation'] as const,
-  tenantScimProvisioning: (tenantId: string) =>
-    ['admin', 'tenants', tenantId, 'scim-provisioning'] as const,
+  tenantScimSyncEvents: (tenantId: string) =>
+    ['admin', 'tenants', tenantId, 'scim-sync-events'] as const,
   tenantStorageEstimate: (tenantId: string) =>
     ['admin', 'tenants', tenantId, 'storage-estimate'] as const,
   tenantMenuOverrides: (tenantId: string) =>
@@ -45,6 +45,8 @@ export const adminQueryKeys = {
   auditWebhookDeadLetters: (params?: AdminListQuery) =>
     ['admin', 'audit-webhook-dead-letters', params ?? {}] as const,
   auditWebhookSla: ['admin', 'audit-webhook-sla'] as const,
+  auditWebhookSelfHeal: ['admin', 'audit-webhook-self-heal'] as const,
+  finOps: ['admin', 'finops'] as const,
   auditWebhookTargets: ['admin', 'audit-webhook-targets'] as const,
   usageTrends: ['admin', 'usage-trends'] as const,
   usageAnomalies: ['admin', 'usage-anomalies'] as const,

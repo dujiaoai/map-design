@@ -31,6 +31,7 @@ import type {
   AdminScimGroupMappingRuleListResponse,
   TenantSamlIdpFederationListResponse,
   CreateTenantSamlIdpFederationPayload,
+  ScimSyncEventSummary,
   TenantQuotasResponse,
 } from './model'
 
@@ -87,6 +88,10 @@ export function fetchTenantOidcConfig(tenantId: string) {
 
 export function fetchTenantSamlConfig(tenantId: string) {
   return api.get<AdminTenantSamlConfig>(`/admin/tenants/${tenantId}/saml-config`)
+}
+
+export function fetchTenantScimSyncEventSummary(tenantId: string) {
+  return api.get<ScimSyncEventSummary>(`/admin/tenants/${tenantId}/scim-sync-events/summary`)
 }
 
 export function fetchTenantScimProvisioning(tenantId: string) {

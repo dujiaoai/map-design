@@ -179,6 +179,12 @@ export interface CreateTenantSamlIdpFederationPayload {
   enabled?: boolean
 }
 
+export interface ScimSyncEventSummary {
+  pendingCount: number
+  tenantPendingCount: number
+  conflictStrategy: string
+}
+
 export interface AdminTenantScimProvisioning {
   tenantId: string
   enabled: boolean

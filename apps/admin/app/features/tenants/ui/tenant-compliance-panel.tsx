@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { DatabaseIcon, KeyRoundIcon, LayoutListIcon, PackageIcon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
 
+import { TenantMenuDiffPanel } from '~/features/tenants/ui/tenant-menu-diff-panel'
 import { TenantMenuOverrideSheet } from '~/features/tenants/ui/tenant-menu-override-sheet'
 
 import type { TenantMenuOverride } from '~/entities/tenant/model'
@@ -111,6 +112,16 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
                 <span className="text-muted-foreground">
                   {request.createdAt ? formatAdminDate(request.createdAt) : '—'}
                 </span>
+                {request.status === 'completed' && request.artifactUrl ? (
+                  <a
+                    href={request.artifactUrl}
+                    className="text-xs text-primary hover:underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    下载
+                  </a>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -219,6 +230,8 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
           </ul>
         )}
       </AdminPanel>
+
+      <TenantMenuDiffPanel tenantId={tenantId} />
 
       <TenantMenuOverrideSheet
         tenantId={tenantId}

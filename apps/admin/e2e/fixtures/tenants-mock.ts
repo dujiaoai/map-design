@@ -187,6 +187,14 @@ export async function mockTenantsPageApis(page: Page) {
     })
   })
 
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/menu-overrides\/diff/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ tenantId: 'e2e-tenant-active', entries: [] }),
+    })
+  })
+
   await page.route(/\/v1\/admin\/tenants\/[^/]+\/menu-overrides(\/|$)/, async (route) => {
     const url = route.request().url()
     if (route.request().method() === 'PUT') {

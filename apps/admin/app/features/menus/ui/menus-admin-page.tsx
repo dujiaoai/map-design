@@ -277,6 +277,7 @@ export function MenusAdminPage() {
                   <th className="px-4 py-3 font-medium">类型</th>
                   <th className="px-4 py-3 font-medium">关联 ID</th>
                   <th className="px-4 py-3 font-medium">能力门控</th>
+                  <th className="px-4 py-3 font-medium">权限码</th>
                   <th className="px-4 py-3 font-medium">启用</th>
                   {canWrite ? (
                     <>
@@ -327,6 +328,9 @@ export function MenusAdminPage() {
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
                       {item.tenantFeature ?? '—'}
+                    </td>
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                      {item.permissionCode ?? '—'}
                     </td>
                     <td className="px-4 py-3">
                       <Checkbox

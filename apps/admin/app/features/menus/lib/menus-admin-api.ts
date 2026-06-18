@@ -11,6 +11,7 @@ export interface AdminMenuItem {
   url: string | null
   href: string | null
   tenantFeature: string | null
+  permissionCode: string | null
   sortOrder: number
   enabled: boolean
 }

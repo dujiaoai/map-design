@@ -140,7 +140,7 @@ public class WorkspaceMenuService {
       if (visibleItems.isEmpty()) {
         continue;
       }
-      var itemDtos = visibleItems.stream().map(item -> toDto(item, overrides)).toList();
+      var itemDtos = visibleItems.stream().map(this::toDto).toList();
       sections.add(
           new MenuSectionDto(
               section.id(),

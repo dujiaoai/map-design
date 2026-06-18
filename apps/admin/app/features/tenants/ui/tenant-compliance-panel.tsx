@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { DatabaseIcon, KeyRoundIcon, LayoutListIcon, PackageIcon } from 'lucide-react'
+import { DatabaseIcon, KeyRoundIcon, LayoutListIcon, PackageIcon, PlusIcon } from 'lucide-react'
+import { useState } from 'react'
 
+import { TenantMenuOverrideSheet } from '~/features/tenants/ui/tenant-menu-override-sheet'
+
+import type { TenantMenuOverride } from '~/entities/tenant/model'
 import {
   createTenantDataExportRequest,
   fetchTenantDataExportRequests,
@@ -34,6 +38,10 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
   const { can } = useAdminPermissions()
   const canWrite = can('admin:tenants:write')
   const queryClient = useQueryClient()
+  const [menuOverrideSheet, setMenuOverrideSheet] = useState<{
+    open: boolean
+    override: TenantMenuOverride | null
+  }>({ open: false, override: null })
 
   const exportsQuery = useQuery({
     queryKey: adminQueryKeys.tenantDataExports(tenantId),
@@ -162,7 +170,20 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
         <AdminPanelHeader
           icon={LayoutListIcon}
           title="菜单覆盖"
-          description="相对平台模板的租户级 diff（Phase 5E-1 骨架）"
+          description="相对平台模板的租户级 diff（Phase 6-2）"
+          actions={
+            canWrite ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setMenuOverrideSheet({ open: true, override: null })}
+              >
+                <PlusIcon className="size-4" aria-hidden />
+                新增覆盖
+              </Button>
+            ) : null
+          }
         />
         {menuOverridesQuery.isLoading ? (
           <AdminTableSkeleton rows={1} columns={1} />
@@ -178,17 +199,33 @@ export function TenantCompliancePanel({ tenantId }: { tenantId: string }) {
         ) : (
           <ul className="divide-y divide-border/60 px-4 pb-4">
             {menuOverridesQuery.data.overrides.map((row) => (
-              <li key={row.id} className="flex flex-wrap gap-3 py-3 text-sm">
-                <span className="font-mono text-xs">{row.itemId}</span>
+              <li key={row.id} className="flex flex-wrap items-center gap-3 py-3 text-sm">
+                <button
+                  type="button"
+                  className="font-mono text-xs text-primary hover:underline"
+                  disabled={!canWrite}
+                  onClick={() => setMenuOverrideSheet({ open: true, override: row })}
+                >
+                  {row.itemId}
+                </button>
                 {row.title ? <span>{row.title}</span> : null}
                 {row.enabled != null ? (
                   <span className="text-muted-foreground">{row.enabled ? '启用' : '禁用'}</span>
-                ) : null}
+                ) : (
+                  <span className="text-muted-foreground">继承</span>
+                )}
               </li>
             ))}
           </ul>
         )}
       </AdminPanel>
+
+      <TenantMenuOverrideSheet
+        tenantId={tenantId}
+        override={menuOverrideSheet.override}
+        open={menuOverrideSheet.open}
+        onOpenChange={(open) => setMenuOverrideSheet((prev) => ({ ...prev, open }))}
+      />
     </div>
   )
 }

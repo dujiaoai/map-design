@@ -93,10 +93,12 @@ pnpm --filter @repo/saas-web dev
 | --- | --- |
 | 平台统计 | `GET /v1/admin/stats` |
 | 租户 CRUD + 分页 | `GET/POST/PATCH /v1/admin/tenants`；`GET /v1/admin/tenants/{id}` |
+| 租户生命周期 | `trialEndsAt` / onboarding 阶段；试用到期停用 Job |
+| 租户合规骨架 | `GET/POST .../data-export-requests`；`GET .../oidc-config`；`GET .../storage-estimate` |
 | 租户能力 | `GET /v1/admin/feature-catalog`；`GET/PUT /v1/admin/tenants/{id}/features` |
 | 用户 CRUD + 分页 | `GET/PATCH /v1/admin/users`（成员邀请见 invite-links） |
 | 成员与角色 | `GET/PATCH /v1/admin/tenants/{id}/members`；`PUT .../roles`；邀请见 invite-links |
-| 审计日志 | `GET /v1/admin/audit-logs`、`GET /v1/admin/audit-logs/export`；`admin:audit:read` / `admin:audit:export` |
+| 审计日志 | `GET /v1/admin/audit-logs`、`GET /v1/admin/audit-logs/export`；`GET .../webhook-config`；`admin:audit:read` / `admin:audit:export` |
 | 权限配置 | `GET /v1/admin/roles`、`/permissions`；`GET/PUT /v1/admin/roles/{id}/permissions` |
 
 列表页 loading 使用 Skeleton；Vitest + MockMvc 覆盖 P0～P3 核心路径。

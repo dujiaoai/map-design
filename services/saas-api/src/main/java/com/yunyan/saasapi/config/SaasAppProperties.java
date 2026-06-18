@@ -141,6 +141,12 @@ public class SaasAppProperties {
     private String webhookSigningSecret = "";
     /** 审计日志保留天数；0 表示未配置策略 */
     private int retentionDays = 365;
+    /** 死信自动重试最大次数 */
+    private int deadLetterMaxAttempts = 5;
+    /** 死信重试基础间隔（毫秒），按 attempts 指数退避 */
+    private long deadLetterRetryIntervalMs = 300_000L;
+    /** 可选告警 Webhook URL（与主 webhook 分离） */
+    private String alertWebhookUrl = "";
   }
 
   @Data

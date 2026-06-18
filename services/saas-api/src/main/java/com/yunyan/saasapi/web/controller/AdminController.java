@@ -18,6 +18,7 @@ import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminStatsResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemDependenciesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminSystemFlagsResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminObjectStoragePolicyResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminFinOpsCostAttributionResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminObjectStorageRpoResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminUsageAnomaliesResponse;

@@ -63,7 +63,7 @@ public class TenantSamlAuthService {
     return authService.loginAfterOidc(providerId, assertion.nameId(), assertion.nameId(), normalized);
   }
 
-  private com.yunyan.saasapi.application.auth.saml.SamlAssertionValidator.ValidatedAssertion validateWithFederationFallback(
+  private com.yunyan.saasapi.application.auth.saml.SamlAssertionValidator.ParsedAssertion validateWithFederationFallback(
       SamlAcsRequest request,
       TenantSamlConfig config,
       List<TenantSamlIdpFederation> federation,

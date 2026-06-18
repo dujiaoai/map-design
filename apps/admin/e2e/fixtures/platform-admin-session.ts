@@ -65,6 +65,20 @@ export async function mockAdminOverviewApis(page: Page) {
 
   await page.route('**/admin/stats', async (route) => {
     const url = route.request().url()
+    if (url.includes('/finops')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          totalEstimatedMonthlyCostUsd: 99,
+          billingApiCostUsd: 40,
+          seatCostUsd: 50,
+          storageCostUsd: 9,
+          topConsumers: [],
+        }),
+      })
+      return
+    }
     if (url.includes('/usage-forecast')) {
       await route.fulfill({
         status: 200,

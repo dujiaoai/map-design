@@ -78,6 +78,22 @@ export async function mockSystemPageApis(page: Page) {
     })
   })
 
+  await page.route('**/admin/system/object-storage-rpo', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        activeActiveEnabled: true,
+        primaryRegion: 'us-east-1',
+        secondaryRegion: 'us-west-2',
+        replicationLagSeconds: 45,
+        rpoTargetSeconds: 300,
+        withinRpo: true,
+        recordedAt: Date.now(),
+      }),
+    })
+  })
+
   await page.route('**/admin/mfa/status', async (route) => {
     await route.fulfill({
       status: 200,

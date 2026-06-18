@@ -17,7 +17,7 @@ public class ObjectStorageActiveActiveService {
 
   public void dualWrite(String key, byte[] bytes) {
     var storage = saasAppProperties.getObjectStorage();
-    var client = clientFactory.getClient();
+    var client = clientFactory.client();
     client.upload(key, bytes, "application/octet-stream");
     if (!storage.isActiveActiveEnabled()
         || !org.springframework.util.StringUtils.hasText(storage.getSecondaryRegion())) {

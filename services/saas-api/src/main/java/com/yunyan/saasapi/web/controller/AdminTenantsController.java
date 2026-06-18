@@ -35,6 +35,8 @@ import com.yunyan.saasapi.web.dto.admin.AdminTenantSamlConfigDto;
 import com.yunyan.saasapi.web.dto.admin.ScimSyncEventSummaryResponse;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportArtifactResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantStorageEstimateDto;
+import com.yunyan.saasapi.web.dto.admin.AdminTenantScimProvisioningDto;
+import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantSamlIdpFederationRequest;
 import com.yunyan.saasapi.web.dto.admin.TenantSamlIdpFederationDto;
 import com.yunyan.saasapi.web.dto.admin.TenantSamlIdpFederationListResponse;

@@ -22,7 +22,7 @@ class ObjectStorageActiveActiveServiceTest {
   @Test
   void dualWrite_uploadsToPrimary() {
     when(saasAppProperties.getObjectStorage()).thenReturn(new SaasAppProperties.ObjectStorage());
-    when(clientFactory.getClient()).thenReturn(client);
+    when(clientFactory.client()).thenReturn(client);
     service.dualWrite("key", new byte[] {1});
     verify(client).upload("key", new byte[] {1}, "application/octet-stream");
   }

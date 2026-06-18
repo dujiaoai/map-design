@@ -2,6 +2,7 @@ package com.yunyan.saasapi.web.controller;
 
 import com.yunyan.saasapi.application.admin.AdminListParams;
 import com.yunyan.saasapi.application.admin.TenantAdminService;
+import com.yunyan.saasapi.application.admin.TenantDataExportAdminService;
 import com.yunyan.saasapi.application.admin.TenantFeatureAdminService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
@@ -10,6 +11,8 @@ import com.yunyan.saasapi.web.dto.admin.AdminTenantFeaturesResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantListResponse;
 import com.yunyan.saasapi.web.dto.admin.CreateTenantRequest;
 import com.yunyan.saasapi.web.dto.admin.PatchTenantRequest;
+import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestDto;
+import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestListResponse;
 import com.yunyan.saasapi.web.dto.admin.UpdateTenantFeaturesRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -40,6 +43,7 @@ public class AdminTenantsController {
 
   private final TenantAdminService tenantAdminService;
   private final TenantFeatureAdminService tenantFeatureAdminService;
+  private final TenantDataExportAdminService tenantDataExportAdminService;
 
   @GetMapping
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
@@ -97,5 +101,21 @@ public class AdminTenantsController {
       @PathVariable UUID tenantId,
       @Valid @RequestBody PatchTenantRequest request) {
     return tenantAdminService.patchTenant(principal, tenantId, request);
+  }
+
+  @GetMapping("/{tenantId}/data-export-requests")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "列出租户数据导出请求", description = "GDPR 式数据包导出队列（骨架）")
+  public TenantDataExportRequestListResponse listDataExportRequests(@PathVariable UUID tenantId) {
+    return tenantDataExportAdminService.listRequests(tenantId);
+  }
+
+  @PostMapping("/{tenantId}/data-export-requests")
+  @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "创建租户数据导出请求", description = "入队 pending 状态；异步打包待后续 Job 实现")
+  public TenantDataExportRequestDto createDataExportRequest(
+      @AuthenticationPrincipal SaasPrincipal principal, @PathVariable UUID tenantId) {
+    return tenantDataExportAdminService.createRequest(principal, tenantId);
   }
 }

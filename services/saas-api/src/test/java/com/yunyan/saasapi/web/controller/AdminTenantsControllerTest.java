@@ -238,6 +238,27 @@ class AdminTenantsControllerTest {
         .andExpect(jsonPath("$.trialEndsAt").doesNotExist());
   }
 
+  @Test
+  void dataExportRequests_createAndList() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+
+    mockMvc
+        .perform(
+            post("/v1/admin/tenants/" + TEST_TENANT_ID + "/data-export-requests")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.status").value("pending"))
+        .andExpect(jsonPath("$.tenantId").value(TEST_TENANT_ID.toString()));
+
+    mockMvc
+        .perform(
+            get("/v1/admin/tenants/" + TEST_TENANT_ID + "/data-export-requests")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.requests").isArray())
+        .andExpect(jsonPath("$.requests[0].status").value("pending"));
+  }
+
   private String loginAccessToken(String email) throws Exception {
     return JsonPath.read(loginBody(email), "$.accessToken");
   }

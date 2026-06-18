@@ -313,6 +313,42 @@ export async function mockTenantsPageApis(page: Page) {
     })
   })
 
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/saml-idp-health/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        items: [
+          {
+            idpEntityId: 'https://idp.example/metadata',
+            ssoUrl: 'https://idp.example/sso',
+            ssoReachable: true,
+            metadataFresh: true,
+            healthy: true,
+            source: 'primary',
+          },
+        ],
+      }),
+    })
+  })
+
+  await page.route(/\/v1\/admin\/tenants\/[^/]+\/saml-disconnect-drill/, async (route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue()
+      return
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        drillLogId: 'e2e-drill-log',
+        idpEntityId: 'https://idp.example/metadata',
+        result: 'success',
+        latencyMs: 42,
+      }),
+    })
+  })
+
   await page.route(/\/v1\/admin\/tenants\/[^/]+\/storage-estimate/, async (route) => {
     const tenantId = route.request().url().split('/tenants/')[1]?.split('/')[0] ?? ''
     await route.fulfill({

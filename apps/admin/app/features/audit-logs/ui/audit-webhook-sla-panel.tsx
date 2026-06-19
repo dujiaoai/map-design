@@ -4,7 +4,8 @@ import { ActivityIcon } from 'lucide-react'
 
 import { fetchAdminAuditWebhookSla } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
-import { AdminConfigRow, AdminMetricCard, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
+import { AdminConfigRow, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
+import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
 
 export function AuditWebhookSlaPanel() {
   const slaQuery = useQuery({

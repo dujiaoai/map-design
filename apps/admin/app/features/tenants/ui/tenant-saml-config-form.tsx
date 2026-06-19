@@ -18,7 +18,8 @@ import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
-import { AdminStatusPill, formatAdminDate } from '~/shared/ui/admin-status-badge'
+import { formatAdminDate } from '~/shared/ui/admin-status-badge'
+import { AdminStatusPill } from '~/shared/ui/admin-status-pill'
 import { ShieldIcon } from 'lucide-react'
 
 function certExpiryHint(expiresAt: number | null | undefined): { label: string; warn: boolean } {

@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { auth } from '~/shared/auth/client'
 import { fetchOidcProviders, startOidcAuthorize } from '~/shared/api/admin-api'
 import { getAdminHomePath, hasAdminAccess } from '~/shared/auth/admin-access'
+import { resolveAdminLoginReturnTo } from '~/shared/auth/resolve-login-return-to'
 import {
   clearRememberLogin,
   loadRememberLogin,
@@ -71,6 +72,9 @@ export async function clientLoader() {
 export default function LoginRoute() {
   const navigate = useNavigate()
   const location = useLocation()
+  const returnTo = resolveAdminLoginReturnTo(
+    new URLSearchParams(location.search).get('returnTo'),
+  )
   const [rememberMe, setRememberMe] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [mfaChallenge, setMfaChallenge] = useState<{ token: string; email?: string } | null>(
@@ -140,7 +144,7 @@ export default function LoginRoute() {
       } else {
         clearRememberLogin()
       }
-      void navigate(getAdminHomePath(auth.getSession()), { replace: true })
+      void navigate(returnTo ?? getAdminHomePath(auth.getSession()), { replace: true })
     } catch (error) {
       if (isLoginMfaRequiredError(error)) {
         setMfaChallenge({ token: error.challengeToken, email: error.userEmail })
@@ -162,7 +166,7 @@ export default function LoginRoute() {
         mfaChallengeToken: mfaChallenge.token,
         code: mfaCode.trim(),
       })
-      void navigate(getAdminHomePath(auth.getSession()), { replace: true })
+      void navigate(returnTo ?? getAdminHomePath(auth.getSession()), { replace: true })
     } catch (error) {
       setSubmitError(formatLoginError(error))
     } finally {

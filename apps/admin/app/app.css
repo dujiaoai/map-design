@@ -503,3 +503,40 @@ html:not(.dark) .admin-create-trial-chip {
   background: color-mix(in srgb, var(--admin-light-elevated) 68%, var(--admin-light-paper));
   border-color: var(--admin-light-border-soft);
 }
+
+/* ── 菜单覆盖 ── */
+
+.admin-menu-override-preview {
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-menu-override-preview::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    145deg,
+    color-mix(in oklab, var(--primary) 10%, transparent) 0%,
+    transparent 58%
+  );
+  pointer-events: none;
+}
+
+.admin-menu-override-card:hover {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) 18%, transparent);
+}
+
+.admin-menu-override-enabled-chip:focus-visible,
+.admin-menu-override-preset:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
+
+html:not(.dark) .admin-menu-override-preview,
+html:not(.dark) .admin-menu-override-card,
+html:not(.dark) .admin-menu-override-enabled-chip,
+html:not(.dark) .admin-menu-override-preset {
+  background: color-mix(in srgb, var(--admin-light-elevated) 68%, var(--admin-light-paper));
+  border-color: var(--admin-light-border-soft);
+}

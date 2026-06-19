@@ -15,6 +15,7 @@ export function formatAdminApiError(error: unknown, fallback = '操作失败，�
   if (error instanceof ApiError) {
     const detail = readProblemDetail(error.body)
     if (detail) return detail
+    if (error.status === 401) return '登录已过期，请重新登录'
     if (error.status === 403) return '无权执行此操作'
     if (error.status === 404) return '资源不存在'
     if (error.status === 400) return '请求参数无效，请检查 UUID 等筛选条件格式'

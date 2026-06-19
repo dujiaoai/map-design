@@ -5,10 +5,10 @@ import { fetchTenantScimChangePreview } from '~/entities/tenant/api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import {
   AdminEmptyState,
-  AdminMetricCard,
   AdminPanel,
   AdminPanelHeader,
 } from '~/shared/ui/admin-page-shell'
+import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 
 export function TenantScimChangePreviewPanel({ tenantId }: { tenantId: string }) {

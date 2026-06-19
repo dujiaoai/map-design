@@ -15,7 +15,7 @@ export function AdminMetricCard({
   onRetry,
   isRetrying = false,
 }: {
-  icon: LucideIcon
+  icon?: LucideIcon
   label: string
   value: ReactNode
   hint?: string
@@ -42,7 +42,7 @@ export function AdminMetricCard({
         aria-hidden
       />
       <div className="relative flex items-center gap-2 text-sm text-muted-foreground">
-        <Icon className="size-4 text-primary" aria-hidden />
+        {Icon ? <Icon className="size-4 text-primary" aria-hidden /> : null}
         {label}
       </div>
       <p className="admin-display relative mt-3 text-3xl font-semibold tracking-tight tabular-nums">

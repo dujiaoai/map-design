@@ -10,10 +10,10 @@ import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import {
   AdminEmptyState,
-  AdminMetricCard,
   AdminPanel,
   AdminPanelHeader,
 } from '~/shared/ui/admin-page-shell'
+import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { Button, toast } from '@repo/ui'
 
@@ -47,7 +47,7 @@ export function TenantSamlIdpHealthPanel({ tenantId }: { tenantId: string }) {
         icon={ActivityIcon}
         title="SAML IdP 健康"
         description="SSO 可达与 metadata 新鲜度（Phase 16-1）"
-        action={
+        actions={
           canWrite ? (
             <Button
               disabled={drillMutation.isPending}

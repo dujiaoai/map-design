@@ -1,16 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { DatabaseIcon, KeyRoundIcon, LayoutListIcon, PackageIcon, PlusIcon, UploadIcon } from 'lucide-react'
-import { useState } from 'react'
+import { DatabaseIcon, KeyRoundIcon, PackageIcon } from 'lucide-react'
 
 import { TenantMenuDiffPanel } from '~/features/tenants/ui/tenant-menu-diff-panel'
-import { TenantMenuOverrideBatchSheet } from '~/features/tenants/ui/tenant-menu-override-batch-sheet'
-import { TenantMenuOverrideSheet } from '~/features/tenants/ui/tenant-menu-override-sheet'
-
-import type { TenantMenuOverride } from '~/entities/tenant/model'
+import { TenantMenuOverridesPanel } from '~/features/tenants/ui/tenant-menu-overrides-panel'
 import {
   createTenantDataExportRequest,
   fetchTenantDataExportRequests,
-  fetchTenantMenuOverrides,
   fetchTenantOidcConfig,
   fetchTenantSamlConfig,
   fetchTenantScimProvisioning,
@@ -50,11 +45,6 @@ export function TenantCompliancePanel({ tenantId, tenantSlug }: { tenantId: stri
   const { can } = useAdminPermissions()
   const canWrite = can('admin:tenants:write')
   const queryClient = useQueryClient()
-  const [menuOverrideSheet, setMenuOverrideSheet] = useState<{
-    open: boolean
-    override: TenantMenuOverride | null
-  }>({ open: false, override: null })
-  const [batchSheetOpen, setBatchSheetOpen] = useState(false)
 
   const exportsQuery = useQuery({
     queryKey: adminQueryKeys.tenantDataExports(tenantId),
@@ -75,10 +65,6 @@ export function TenantCompliancePanel({ tenantId, tenantSlug }: { tenantId: stri
   const storageQuery = useQuery({
     queryKey: adminQueryKeys.tenantStorageEstimate(tenantId),
     queryFn: () => fetchTenantStorageEstimate(tenantId),
-  })
-  const menuOverridesQuery = useQuery({
-    queryKey: adminQueryKeys.tenantMenuOverrides(tenantId),
-    queryFn: () => fetchTenantMenuOverrides(tenantId),
   })
 
   const createExportMutation = useMutation({
@@ -240,84 +226,9 @@ export function TenantCompliancePanel({ tenantId, tenantSlug }: { tenantId: stri
         )}
       </AdminPanel>
 
-      <AdminPanel>
-        <AdminPanelHeader
-          icon={LayoutListIcon}
-          title="菜单覆盖"
-          description="相对平台模板的租户级 diff（Phase 6-2）"
-          actions={
-            canWrite ? (
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setBatchSheetOpen(true)}
-                >
-                  <UploadIcon className="size-4" aria-hidden />
-                  批量导入
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setMenuOverrideSheet({ open: true, override: null })}
-                >
-                  <PlusIcon className="size-4" aria-hidden />
-                  新增覆盖
-                </Button>
-              </div>
-            ) : null
-          }
-        />
-        {menuOverridesQuery.isLoading ? (
-          <AdminTableSkeleton rows={1} columns={1} />
-        ) : menuOverridesQuery.isError ? (
-          <AdminEmptyState
-            icon={LayoutListIcon}
-            message="无法加载菜单覆盖"
-            onRetry={() => void menuOverridesQuery.refetch()}
-            isRetrying={menuOverridesQuery.isFetching}
-          />
-        ) : !menuOverridesQuery.data?.overrides.length ? (
-          <p className="px-4 pb-4 text-sm text-muted-foreground">无覆盖项，全部继承平台模板</p>
-        ) : (
-          <ul className="divide-y divide-border/60 px-4 pb-4">
-            {menuOverridesQuery.data.overrides.map((row) => (
-              <li key={row.id} className="flex flex-wrap items-center gap-3 py-3 text-sm">
-                <button
-                  type="button"
-                  className="font-mono text-xs text-primary hover:underline"
-                  disabled={!canWrite}
-                  onClick={() => setMenuOverrideSheet({ open: true, override: row })}
-                >
-                  {row.itemId}
-                </button>
-                {row.title ? <span>{row.title}</span> : null}
-                {row.enabled != null ? (
-                  <span className="text-muted-foreground">{row.enabled ? '启用' : '禁用'}</span>
-                ) : (
-                  <span className="text-muted-foreground">继承</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </AdminPanel>
+      <TenantMenuOverridesPanel tenantId={tenantId} canWrite={canWrite} />
 
       <TenantMenuDiffPanel tenantId={tenantId} />
-
-      <TenantMenuOverrideSheet
-        tenantId={tenantId}
-        override={menuOverrideSheet.override}
-        open={menuOverrideSheet.open}
-        onOpenChange={(open) => setMenuOverrideSheet((prev) => ({ ...prev, open }))}
-      />
-      <TenantMenuOverrideBatchSheet
-        tenantId={tenantId}
-        open={batchSheetOpen}
-        onOpenChange={setBatchSheetOpen}
-      />
     </div>
   )
 }

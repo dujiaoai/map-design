@@ -3,7 +3,8 @@ import { HeartPulseIcon } from 'lucide-react'
 
 import { fetchAdminAuditWebhookSelfHealStatus } from '~/shared/api/admin-api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
-import { AdminConfigRow, AdminMetricCard, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
+import { AdminConfigRow, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
+import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
 
 export function AuditWebhookSelfHealPanel() {
   const query = useQuery({

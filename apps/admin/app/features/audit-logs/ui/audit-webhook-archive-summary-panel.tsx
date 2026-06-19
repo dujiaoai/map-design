@@ -3,7 +3,8 @@ import { ArchiveIcon } from 'lucide-react'
 
 import { fetchAdminAuditWebhookArchiveSummary } from '~/entities/audit-log/api'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
-import { AdminMetricCard, AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
+import { AdminPanel, AdminPanelHeader } from '~/shared/ui/admin-page-shell'
+import { AdminMetricCard } from '~/shared/ui/admin-metric-card'
 
 export function AuditWebhookArchiveSummaryPanel() {
   const query = useQuery({

@@ -471,3 +471,35 @@ html:not(.dark) .admin-tenants-phase-chip {
   background: color-mix(in srgb, var(--admin-light-elevated) 72%, var(--admin-light-paper));
   border-color: var(--admin-light-border-soft);
 }
+
+/* ── 新建租户 Sheet ── */
+
+.admin-create-tenant-preview {
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-create-tenant-preview::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--primary) 12%, transparent) 0%,
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+.admin-create-plan-chip:focus-visible,
+.admin-create-trial-chip:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
+
+html:not(.dark) .admin-create-tenant-preview,
+html:not(.dark) .admin-create-plan-chip,
+html:not(.dark) .admin-create-trial-chip {
+  background: color-mix(in srgb, var(--admin-light-elevated) 68%, var(--admin-light-paper));
+  border-color: var(--admin-light-border-soft);
+}

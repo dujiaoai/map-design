@@ -82,7 +82,8 @@ public class TenantDataExportAdminService {
         isDownloadable(request));
   }
 
-  public TenantDataExportStream prepareArtifactDownload(UUID tenantId, UUID requestId) {
+  public TenantDataExportStream prepareArtifactDownload(
+      SaasPrincipal principal, UUID tenantId, UUID requestId) {
     var request = requireCompletedArtifactRequest(tenantId, requestId);
     if (!isDownloadable(request)) {
       throw AuthException.badRequest("Export artifact is not ready for download");
@@ -94,6 +95,11 @@ public class TenantDataExportAdminService {
     }
     var contentLength = client.contentLength(objectKey);
     enforceMaxArtifactSize(contentLength);
+    adminAuditLogService.recordTenantAction(
+        principal,
+        "tenant.data_export.download",
+        tenantId,
+        "requestId=" + requestId + " bytes=" + contentLength);
     return new TenantDataExportStream(
         request.getId() + ".zip", contentLength, client.openStream(objectKey));
   }

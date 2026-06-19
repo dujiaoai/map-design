@@ -2,6 +2,7 @@ package com.yunyan.saasapi.application.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,8 +15,10 @@ import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.entity.SysTenant;
 import com.yunyan.saasapi.domain.entity.TenantDataExportRequest;
 import com.yunyan.saasapi.security.AuthException;
+import com.yunyan.saasapi.security.SaasPrincipal;
 import java.io.ByteArrayInputStream;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,12 +68,18 @@ class TenantDataExportAdminServiceTest {
     when(objectStorageClient.openStream(request.getArtifactObjectKey()))
         .thenReturn(new ByteArrayInputStream(new byte[] {1, 2, 3}));
 
-    var download = service.prepareArtifactDownload(TENANT_ID, REQUEST_ID);
+    var download = service.prepareArtifactDownload(platformPrincipal(), TENANT_ID, REQUEST_ID);
 
     assertThat(download.filename()).isEqualTo(REQUEST_ID + ".zip");
     assertThat(download.contentLength()).isEqualTo(3L);
     assertThat(download.inputStream().readAllBytes()).containsExactly(1, 2, 3);
     verify(objectStorageClient).openStream(eq(request.getArtifactObjectKey()));
+    verify(adminAuditLogService)
+        .recordTenantAction(
+            any(SaasPrincipal.class),
+            eq("tenant.data_export.download"),
+            eq(TENANT_ID),
+            eq("requestId=" + REQUEST_ID + " bytes=3"));
   }
 
   @Test
@@ -86,7 +95,7 @@ class TenantDataExportAdminServiceTest {
     when(objectStorageClient.exists(request.getArtifactObjectKey())).thenReturn(true);
     when(objectStorageClient.contentLength(request.getArtifactObjectKey())).thenReturn(3L);
 
-    assertThatThrownBy(() -> service.prepareArtifactDownload(TENANT_ID, REQUEST_ID))
+    assertThatThrownBy(() -> service.prepareArtifactDownload(platformPrincipal(), TENANT_ID, REQUEST_ID))
         .isInstanceOf(AuthException.class);
   }
 
@@ -113,8 +122,20 @@ class TenantDataExportAdminServiceTest {
     request.setStatus("pending");
     when(exportRequestRepository.findById(REQUEST_ID)).thenReturn(Optional.of(request));
 
-    assertThatThrownBy(() -> service.prepareArtifactDownload(TENANT_ID, REQUEST_ID))
+    assertThatThrownBy(() -> service.prepareArtifactDownload(platformPrincipal(), TENANT_ID, REQUEST_ID))
         .isInstanceOf(AuthException.class);
+  }
+
+  private static SaasPrincipal platformPrincipal() {
+    return new SaasPrincipal(
+        UUID.randomUUID(),
+        TENANT_ID,
+        null,
+        "admin@demo.local",
+        List.of("PLATFORM_ADMIN"),
+        List.of("admin:tenants:read"),
+        "jti",
+        Instant.now().plusSeconds(900));
   }
 
   private static TenantDataExportRequest completedRequest() {

@@ -194,8 +194,11 @@ public class AdminTenantsController {
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
   @Operation(summary = "下载 GDPR 导出包", description = "本地对象存储通过 API 流式返回，避免浏览器拦截 file:// URL")
   public org.springframework.http.ResponseEntity<org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody>
-      downloadDataExportArtifact(@PathVariable UUID tenantId, @PathVariable UUID requestId) {
-    var artifact = tenantDataExportAdminService.prepareArtifactDownload(tenantId, requestId);
+      downloadDataExportArtifact(
+          @AuthenticationPrincipal SaasPrincipal principal,
+          @PathVariable UUID tenantId,
+          @PathVariable UUID requestId) {
+    var artifact = tenantDataExportAdminService.prepareArtifactDownload(principal, tenantId, requestId);
     var responseBuilder =
         org.springframework.http.ResponseEntity.ok()
             .header(

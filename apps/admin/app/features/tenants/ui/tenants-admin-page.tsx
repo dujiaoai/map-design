@@ -15,6 +15,7 @@ import {
 import { CreateTenantSheet } from '~/features/tenants/ui/create-tenant-sheet'
 import { EditTenantSheet } from '~/features/tenants/ui/edit-tenant-sheet'
 import { TenantNameCell } from '~/features/tenants/ui/tenant-name-cell'
+import { TenantRowAction, TenantRowActions } from '~/features/tenants/ui/tenant-row-actions'
 import { TenantsFilterBar } from '~/features/tenants/ui/tenants-filter-bar'
 import { TenantsOverviewStrip } from '~/features/tenants/ui/tenants-overview-strip'
 import { fetchAdminTenants, patchAdminTenant, type AdminTenantSummary } from '~/shared/api/admin-api'
@@ -47,6 +48,8 @@ const TENANT_TABLE_COLUMNS = [
   { key: 'status', label: '状态' },
   { key: 'createdAt', label: '创建时间' },
 ] as const
+
+const TENANT_TABLE_SCROLL_X = 1180
 
 export function TenantsAdminPage() {
   const navigate = useNavigate()
@@ -168,6 +171,7 @@ export function TenantsAdminPage() {
           title: '名称',
           dataIndex: 'name',
           key: 'name',
+          width: 220,
           sorter: true,
           sortOrder: adminAntSortOrder(sort, 'name'),
           render: (_name: string, tenant: AdminTenantSummary) => (
@@ -178,6 +182,7 @@ export function TenantsAdminPage() {
           title: 'Slug',
           dataIndex: 'slug',
           key: 'slug',
+          width: 128,
           sorter: true,
           sortOrder: adminAntSortOrder(sort, 'slug'),
           render: (slug: string) => <span className="font-mono text-xs text-muted-foreground">{slug}</span>,
@@ -186,6 +191,7 @@ export function TenantsAdminPage() {
           title: '计划',
           dataIndex: 'plan',
           key: 'plan',
+          width: 148,
           render: (plan: string, tenant: AdminTenantSummary) => (
             <span className="inline-flex flex-wrap items-center gap-1.5">
               <Badge variant="outline" className="font-mono text-[11px] font-normal">
@@ -208,6 +214,7 @@ export function TenantsAdminPage() {
           title: '试用截止',
           dataIndex: 'trialEndsAt',
           key: 'trialEndsAt',
+          width: 116,
           render: (trialEndsAt: number | null | undefined) => (
             <span className="text-muted-foreground">{formatTenantTrialEndsAt(trialEndsAt)}</span>
           ),
@@ -215,6 +222,7 @@ export function TenantsAdminPage() {
         {
           title: '生命周期',
           key: 'onboardingPhase',
+          width: 108,
           render: (_value: unknown, tenant: AdminTenantSummary) => {
             const phase = resolveOnboardingPhase(tenant)
             return (
@@ -235,12 +243,14 @@ export function TenantsAdminPage() {
           title: '状态',
           dataIndex: 'status',
           key: 'status',
+          width: 96,
           render: (status: string) => <AdminStatusBadge status={status} />,
         },
         {
           title: '创建时间',
           dataIndex: 'createdAt',
           key: 'createdAt',
+          width: 124,
           sorter: true,
           sortOrder: adminAntSortOrder(sort, 'createdAt'),
           render: (createdAt: number) => (
@@ -252,51 +262,40 @@ export function TenantsAdminPage() {
           key: 'actions',
           align: 'right' as const,
           fixed: 'right' as const,
-          width: 220,
+          width: 168,
           render: (_value: unknown, tenant: AdminTenantSummary) => (
-            <div className="admin-tenant-row-actions flex justify-end gap-0.5">
-              <Button
-                variant="ghost"
-                size="sm"
-                nativeButton={false}
+            <TenantRowActions>
+              <TenantRowAction
+                label="查看详情"
+                icon={EyeIcon}
                 render={<Link to={`/tenants/${tenant.id}`} />}
-              >
-                <EyeIcon className="size-3.5" />
-                详情
-              </Button>
+              />
               {canReadUsers ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  nativeButton={false}
+                <TenantRowAction
+                  label="查看用户"
+                  icon={UsersIcon}
                   render={<Link to={`/users?tenantId=${tenant.id}`} />}
-                >
-                  <UsersIcon className="size-3.5" />
-                  用户
-                </Button>
+                />
               ) : null}
               {canViewBilling ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  nativeButton={false}
+                <TenantRowAction
+                  label="计费"
+                  icon={CreditCardIcon}
                   render={
                     <Link
                       to={`/billing?tab=wallets&tenantId=${encodeURIComponent(tenant.id)}`}
                     />
                   }
-                >
-                  <CreditCardIcon className="size-3.5" />
-                  计费
-                </Button>
+                />
               ) : null}
               {canWrite ? (
-                <Button variant="ghost" size="sm" onClick={() => setEditingTenant(tenant)}>
-                  <PencilIcon className="size-3.5" />
-                  编辑
-                </Button>
+                <TenantRowAction
+                  label="编辑租户"
+                  icon={PencilIcon}
+                  onClick={() => setEditingTenant(tenant)}
+                />
               ) : null}
-            </div>
+            </TenantRowActions>
           ),
         },
       ].filter((column) => {
@@ -434,7 +433,9 @@ export function TenantsAdminPage() {
           />
         ) : (
           <AdminAntTable<AdminTenantSummary>
+            className="admin-tenants-table"
             bodyHeight={ADMIN_LIST_TABLE_BODY_HEIGHT}
+            scroll={{ x: TENANT_TABLE_SCROLL_X }}
             rowKey="id"
             columns={columns}
             dataSource={filteredTenants}

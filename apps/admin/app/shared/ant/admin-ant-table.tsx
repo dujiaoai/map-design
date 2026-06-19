@@ -31,7 +31,14 @@ export function AdminAntTable<T extends object>({
           ...pagination,
         }
 
-  const resolvedScroll = bodyHeight != null ? { ...scroll, y: bodyHeight } : scroll
+  const resolvedScroll =
+    bodyHeight != null
+      ? {
+          x: scroll?.x ?? 1160,
+          ...scroll,
+          y: bodyHeight,
+        }
+      : scroll
   const resolvedVirtual = bodyHeight != null ? true : virtual
 
   return (

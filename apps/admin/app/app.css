@@ -466,6 +466,15 @@ html:not(.dark) .admin-overview-hero-stat {
   background: color-mix(in oklab, var(--primary) 5%, transparent) !important;
 }
 
+.admin-tenant-row-actions .size-8 {
+  border-radius: 0.5rem;
+}
+
+html:not(.dark) .admin-tenant-row-actions [data-slot='button']:hover {
+  background: color-mix(in srgb, var(--brand) 10%, var(--admin-light-paper));
+  color: var(--brand);
+}
+
 html:not(.dark) .admin-tenants-strip-total,
 html:not(.dark) .admin-tenants-phase-chip {
   background: color-mix(in srgb, var(--admin-light-elevated) 72%, var(--admin-light-paper));

@@ -28,6 +28,36 @@
   padding-right: 1.25rem;
 }
 
+/* 虚拟滚动 + 右侧固定列：保证操作列浮于内容之上 */
+.admin-ant-root .admin-tenants-table .ant-table-cell-fix-right {
+  z-index: 3;
+  background: color-mix(in oklab, var(--card) 94%, transparent);
+  box-shadow: -8px 0 16px -12px color-mix(in oklab, var(--foreground) 22%, transparent);
+}
+
+.admin-ant-root .admin-tenants-table .ant-table-thead > tr > th.ant-table-cell-fix-right {
+  z-index: 4;
+  background: color-mix(in oklab, var(--muted) 38%, var(--card)) !important;
+}
+
+.admin-ant-root .admin-tenants-table .ant-table-tbody > tr.admin-tenant-row:hover > td.ant-table-cell-fix-right {
+  background: color-mix(in oklab, var(--primary) 7%, var(--card)) !important;
+}
+
+html:not(.dark) .admin-ant-root .admin-tenants-table .ant-table-cell-fix-right {
+  background: var(--admin-light-elevated, #ffffff);
+  box-shadow: -8px 0 18px -12px rgba(9, 19, 32, 0.1);
+}
+
+html:not(.dark)
+  .admin-ant-root
+  .admin-tenants-table
+  .ant-table-thead
+  > tr
+  > th.ant-table-cell-fix-right {
+  background: var(--admin-light-surface, #ebf0f5) !important;
+}
+
 .admin-ant-root .admin-ant-table .ant-table-pagination {
   margin: 0 !important;
   padding: 1rem 1.25rem;

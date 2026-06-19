@@ -119,6 +119,7 @@ saas:
     trial-expired-suspend-ms: ${SAAS_TRIAL_EXPIRED_SUSPEND_MS:3600000}
     data-export-process-ms: ${SAAS_TENANT_DATA_EXPORT_PROCESS_MS:600000}
     data-export-complete-ms: ${SAAS_TENANT_DATA_EXPORT_COMPLETE_MS:600000}
+    data-export-max-artifact-bytes: ${SAAS_TENANT_DATA_EXPORT_MAX_ARTIFACT_BYTES:104857600}
   audit:
     webhook-enabled: ${SAAS_AUDIT_WEBHOOK_ENABLED:false}
     webhook-url: ${SAAS_AUDIT_WEBHOOK_URL:}

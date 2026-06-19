@@ -211,4 +211,11 @@ public class SaasAppProperties {
   }
 
   private final FinOps finOps = new FinOps();
+  private final Tenant tenant = new Tenant();
+
+  @Data
+  public static class Tenant {
+    /** GDPR 导出 zip 最大字节数；0 表示不限制 */
+    private long dataExportMaxArtifactBytes = 104_857_600L;
+  }
 }

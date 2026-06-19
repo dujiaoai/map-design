@@ -19,4 +19,8 @@ public interface ObjectStorageClient {
   default java.io.InputStream openStream(String objectKey) {
     throw new UnsupportedOperationException("openStream not supported for object key: " + objectKey);
   }
+
+  default long contentLength(String objectKey) {
+    throw new UnsupportedOperationException("contentLength not supported for object key: " + objectKey);
+  }
 }

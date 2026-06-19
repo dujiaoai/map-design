@@ -23,6 +23,7 @@ class LocalObjectStorageClientTest {
     assertThat(client.exists("demo/export.zip")).isTrue();
     assertThat(Files.readAllBytes(tempDir.resolve("tenant-exports").resolve("demo").resolve("export.zip")))
         .containsExactly(9, 8, 7);
+    assertThat(client.contentLength("demo/export.zip")).isEqualTo(3L);
     try (var stream = client.openStream("demo/export.zip")) {
       assertThat(stream.readAllBytes()).containsExactly(9, 8, 7);
     }

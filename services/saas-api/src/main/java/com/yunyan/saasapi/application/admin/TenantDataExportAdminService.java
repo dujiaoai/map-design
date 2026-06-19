@@ -1,17 +1,17 @@
 package com.yunyan.saasapi.application.admin;
 
 import com.yunyan.saasapi.application.storage.ObjectStorageClientFactory;
+import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.TenantDataExportRequestRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.entity.TenantDataExportRequest;
 import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.SaasPrincipal;
+import com.yunyan.saasapi.web.dto.admin.TenantDataExportArtifactResponse;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestDto;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestListResponse;
-import com.yunyan.saasapi.web.dto.admin.TenantDataExportArtifactResponse;
-import java.io.IOException;
+import java.io.InputStream;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +29,7 @@ public class TenantDataExportAdminService {
   private final TenantDataExportRequestRepository exportRequestRepository;
   private final AdminAuditLogService adminAuditLogService;
   private final ObjectStorageClientFactory objectStorageClientFactory;
+  private final SaasAppProperties saasAppProperties;
 
   public TenantDataExportRequestListResponse listRequests(UUID tenantId) {
     ensureTenantExists(tenantId);
@@ -81,7 +82,7 @@ public class TenantDataExportAdminService {
         isDownloadable(request));
   }
 
-  public TenantDataExportDownload downloadArtifact(UUID tenantId, UUID requestId) {
+  public TenantDataExportStream prepareArtifactDownload(UUID tenantId, UUID requestId) {
     var request = requireCompletedArtifactRequest(tenantId, requestId);
     if (!isDownloadable(request)) {
       throw AuthException.badRequest("Export artifact is not ready for download");
@@ -91,10 +92,16 @@ public class TenantDataExportAdminService {
     if (!client.exists(objectKey)) {
       throw AuthException.notFound("Export artifact not found");
     }
-    try (var stream = client.openStream(objectKey)) {
-      return new TenantDataExportDownload(stream.readAllBytes(), request.getId() + ".zip");
-    } catch (IOException ex) {
-      throw new IllegalStateException("Failed to read export artifact: " + requestId, ex);
+    var contentLength = client.contentLength(objectKey);
+    enforceMaxArtifactSize(contentLength);
+    return new TenantDataExportStream(
+        request.getId() + ".zip", contentLength, client.openStream(objectKey));
+  }
+
+  private void enforceMaxArtifactSize(long contentLength) {
+    var maxBytes = saasAppProperties.getTenant().getDataExportMaxArtifactBytes();
+    if (maxBytes > 0 && contentLength > maxBytes) {
+      throw AuthException.badRequest("Export artifact exceeds maximum allowed size");
     }
   }
 
@@ -121,5 +128,5 @@ public class TenantDataExportAdminService {
     return artifactUrl;
   }
 
-  public record TenantDataExportDownload(byte[] content, String filename) {}
+  public record TenantDataExportStream(String filename, long contentLength, InputStream inputStream) {}
 }

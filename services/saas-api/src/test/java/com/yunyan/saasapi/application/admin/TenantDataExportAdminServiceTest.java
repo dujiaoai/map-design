@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.yunyan.saasapi.application.storage.ObjectStorageClient;
 import com.yunyan.saasapi.application.storage.ObjectStorageClientFactory;
+import com.yunyan.saasapi.config.SaasAppProperties;
 import com.yunyan.saasapi.domain.TenantDataExportRequestRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.entity.SysTenant;
@@ -17,9 +18,9 @@ import java.io.ByteArrayInputStream;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -35,10 +36,23 @@ class TenantDataExportAdminServiceTest {
   @Mock private ObjectStorageClientFactory objectStorageClientFactory;
   @Mock private ObjectStorageClient objectStorageClient;
 
-  @InjectMocks private TenantDataExportAdminService service;
+  private final SaasAppProperties saasAppProperties = new SaasAppProperties();
+
+  private TenantDataExportAdminService service;
+
+  @BeforeEach
+  void setUp() {
+    service =
+        new TenantDataExportAdminService(
+            tenantRepository,
+            exportRequestRepository,
+            adminAuditLogService,
+            objectStorageClientFactory,
+            saasAppProperties);
+  }
 
   @Test
-  void downloadArtifact_completedRequest_returnsZipBytes() throws Exception {
+  void prepareArtifactDownload_completedRequest_returnsStreamMetadata() throws Exception {
     var tenant = new SysTenant();
     tenant.setId(TENANT_ID);
     when(tenantRepository.findById(TENANT_ID)).thenReturn(Optional.of(tenant));
@@ -47,14 +61,33 @@ class TenantDataExportAdminServiceTest {
     when(exportRequestRepository.findById(REQUEST_ID)).thenReturn(Optional.of(request));
     when(objectStorageClientFactory.client()).thenReturn(objectStorageClient);
     when(objectStorageClient.exists(request.getArtifactObjectKey())).thenReturn(true);
+    when(objectStorageClient.contentLength(request.getArtifactObjectKey())).thenReturn(3L);
     when(objectStorageClient.openStream(request.getArtifactObjectKey()))
         .thenReturn(new ByteArrayInputStream(new byte[] {1, 2, 3}));
 
-    var download = service.downloadArtifact(TENANT_ID, REQUEST_ID);
+    var download = service.prepareArtifactDownload(TENANT_ID, REQUEST_ID);
 
     assertThat(download.filename()).isEqualTo(REQUEST_ID + ".zip");
-    assertThat(download.content()).containsExactly(1, 2, 3);
+    assertThat(download.contentLength()).isEqualTo(3L);
+    assertThat(download.inputStream().readAllBytes()).containsExactly(1, 2, 3);
     verify(objectStorageClient).openStream(eq(request.getArtifactObjectKey()));
+  }
+
+  @Test
+  void prepareArtifactDownload_exceedsMaxSize_rejected() {
+    saasAppProperties.getTenant().setDataExportMaxArtifactBytes(2L);
+    var tenant = new SysTenant();
+    tenant.setId(TENANT_ID);
+    when(tenantRepository.findById(TENANT_ID)).thenReturn(Optional.of(tenant));
+
+    var request = completedRequest();
+    when(exportRequestRepository.findById(REQUEST_ID)).thenReturn(Optional.of(request));
+    when(objectStorageClientFactory.client()).thenReturn(objectStorageClient);
+    when(objectStorageClient.exists(request.getArtifactObjectKey())).thenReturn(true);
+    when(objectStorageClient.contentLength(request.getArtifactObjectKey())).thenReturn(3L);
+
+    assertThatThrownBy(() -> service.prepareArtifactDownload(TENANT_ID, REQUEST_ID))
+        .isInstanceOf(AuthException.class);
   }
 
   @Test
@@ -71,7 +104,7 @@ class TenantDataExportAdminServiceTest {
   }
 
   @Test
-  void downloadArtifact_pendingRequest_rejected() {
+  void prepareArtifactDownload_pendingRequest_rejected() {
     var tenant = new SysTenant();
     tenant.setId(TENANT_ID);
     when(tenantRepository.findById(TENANT_ID)).thenReturn(Optional.of(tenant));
@@ -80,7 +113,7 @@ class TenantDataExportAdminServiceTest {
     request.setStatus("pending");
     when(exportRequestRepository.findById(REQUEST_ID)).thenReturn(Optional.of(request));
 
-    assertThatThrownBy(() -> service.downloadArtifact(TENANT_ID, REQUEST_ID))
+    assertThatThrownBy(() -> service.prepareArtifactDownload(TENANT_ID, REQUEST_ID))
         .isInstanceOf(AuthException.class);
   }
 

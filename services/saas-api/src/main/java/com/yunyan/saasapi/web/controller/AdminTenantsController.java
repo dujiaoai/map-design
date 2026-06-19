@@ -193,15 +193,24 @@ public class AdminTenantsController {
       produces = "application/zip")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
   @Operation(summary = "下载 GDPR 导出包", description = "本地对象存储通过 API 流式返回，避免浏览器拦截 file:// URL")
-  public org.springframework.http.ResponseEntity<byte[]> downloadDataExportArtifact(
-      @PathVariable UUID tenantId, @PathVariable UUID requestId) {
-    var download = tenantDataExportAdminService.downloadArtifact(tenantId, requestId);
-    return org.springframework.http.ResponseEntity.ok()
-        .header(
-            org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
-            "attachment; filename=\"" + download.filename() + "\"")
-        .contentType(org.springframework.http.MediaType.parseMediaType("application/zip"))
-        .body(download.content());
+  public org.springframework.http.ResponseEntity<org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody>
+      downloadDataExportArtifact(@PathVariable UUID tenantId, @PathVariable UUID requestId) {
+    var artifact = tenantDataExportAdminService.prepareArtifactDownload(tenantId, requestId);
+    var responseBuilder =
+        org.springframework.http.ResponseEntity.ok()
+            .header(
+                org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + artifact.filename() + "\"")
+            .contentType(org.springframework.http.MediaType.parseMediaType("application/zip"));
+    if (artifact.contentLength() > 0) {
+      responseBuilder.contentLength(artifact.contentLength());
+    }
+    return responseBuilder.body(
+        outputStream -> {
+          try (var inputStream = artifact.inputStream()) {
+            inputStream.transferTo(outputStream);
+          }
+        });
   }
 
   @GetMapping("/{tenantId}/oidc-config")

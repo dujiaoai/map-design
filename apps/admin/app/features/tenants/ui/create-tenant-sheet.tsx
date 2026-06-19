@@ -15,6 +15,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { createAdminTenant } from '~/shared/api/admin-api'
+import { suggestTenantSlug } from '~/features/tenants/lib/tenant-slug'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
@@ -43,11 +44,21 @@ export function CreateTenantSheet({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: standardSchemaResolver(schema),
     defaultValues: { name: '', slug: '', plan: 'free' },
   })
+
+  const nameValue = watch('name')
+  const slugValue = watch('slug')
+
+  function applySuggestedSlug() {
+    const suggested = suggestTenantSlug(nameValue)
+    if (suggested) setValue('slug', suggested, { shouldDirty: true })
+  }
 
   const mutation = useMutation({
     mutationFn: createAdminTenant,
@@ -80,7 +91,29 @@ export function CreateTenantSheet({
             <Input id="tenant-name" placeholder="Acme Corp" {...register('name')} />
           </AdminField>
           <AdminField label="Slug" htmlFor="tenant-slug" error={errors.slug?.message}>
-            <Input id="tenant-slug" className="font-mono" placeholder="acme" {...register('slug')} />
+            <div className="flex gap-2">
+              <Input
+                id="tenant-slug"
+                className="font-mono"
+                placeholder="acme"
+                {...register('slug')}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                disabled={!nameValue.trim()}
+                onClick={applySuggestedSlug}
+              >
+                生成
+              </Button>
+            </div>
+            {nameValue.trim() && !slugValue.trim() ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                建议：<button type="button" className="font-mono text-primary hover:underline" onClick={applySuggestedSlug}>{suggestTenantSlug(nameValue) || '—'}</button>
+              </p>
+            ) : null}
           </AdminField>
           <AdminField label="计划" htmlFor="tenant-plan" error={errors.plan?.message}>
             <Input id="tenant-plan" placeholder="free" {...register('plan')} />

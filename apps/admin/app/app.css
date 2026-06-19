@@ -367,3 +367,107 @@ html:not(.dark) .admin-quick-link:hover {
   border-color: color-mix(in oklab, var(--brand) 32%, var(--admin-light-border-soft));
   background: color-mix(in oklab, var(--brand) 9%, var(--admin-light-paper));
 }
+
+/* ── 运营概览 · 观测台 ── */
+
+.admin-overview-hero-stat {
+  transition:
+    border-color 0.25s ease,
+    background-color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.admin-overview-hero-stat:hover {
+  border-color: color-mix(in oklab, var(--primary) 28%, transparent);
+  transform: translateY(-1px);
+}
+
+.admin-overview-bento > .admin-panel {
+  height: 100%;
+}
+
+.admin-trend-bar-track {
+  display: flex;
+  height: 3.5rem;
+  align-items: flex-end;
+  border-radius: 0.375rem;
+  background: color-mix(in oklab, var(--muted) 55%, transparent);
+  padding: 0.25rem;
+}
+
+.admin-trend-bar-fill {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 0.25rem;
+  transition: height 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.admin-trend-chart .group:hover .admin-trend-bar-fill {
+  filter: brightness(1.08);
+}
+
+.admin-forecast-bar-track {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: flex-end;
+  border-radius: 0.25rem;
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+  padding: 0.125rem;
+}
+
+.admin-forecast-bar-fill {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 0.2rem;
+  transition: height 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.admin-finops-stack > div:first-child {
+  border-radius: 9999px 0 0 9999px;
+}
+
+.admin-finops-stack > div:last-child {
+  border-radius: 0 9999px 9999px 0;
+}
+
+.admin-finops-stack > div:only-child {
+  border-radius: 9999px;
+}
+
+html:not(.dark) .admin-trend-summary,
+html:not(.dark) .admin-trend-chart,
+html:not(.dark) .admin-overview-hero-stat {
+  background: color-mix(in srgb, var(--admin-light-elevated) 70%, var(--admin-light-paper));
+  border-color: var(--admin-light-border-soft);
+}
+
+/* ── 租户列表 · Registry ── */
+
+.admin-tenants-phase-chip {
+  cursor: pointer;
+}
+
+.admin-tenants-phase-chip:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.admin-tenants-phase-warn:not([class*='border-primary']) {
+  border-color: color-mix(in oklab, var(--destructive) 22%, var(--border));
+}
+
+.admin-tenant-avatar {
+  font-family: 'Syne', 'Noto Sans SC', system-ui, sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.admin-tenant-row:hover td {
+  background: color-mix(in oklab, var(--primary) 5%, transparent) !important;
+}
+
+html:not(.dark) .admin-tenants-strip-total,
+html:not(.dark) .admin-tenants-phase-chip {
+  background: color-mix(in srgb, var(--admin-light-elevated) 72%, var(--admin-light-paper));
+  border-color: var(--admin-light-border-soft);
+}

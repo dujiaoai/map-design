@@ -30,6 +30,7 @@ public class TenantDataExportAdminService {
   private final AdminAuditLogService adminAuditLogService;
   private final ObjectStorageClientFactory objectStorageClientFactory;
   private final SaasAppProperties saasAppProperties;
+  private final AdminDataExportRateLimitService adminDataExportRateLimitService;
 
   public TenantDataExportRequestListResponse listRequests(UUID tenantId) {
     ensureTenantExists(tenantId);
@@ -84,6 +85,7 @@ public class TenantDataExportAdminService {
 
   public TenantDataExportStream prepareArtifactDownload(
       SaasPrincipal principal, UUID tenantId, UUID requestId) {
+    adminDataExportRateLimitService.checkDownload(principal);
     var request = requireCompletedArtifactRequest(tenantId, requestId);
     if (!isDownloadable(request)) {
       throw AuthException.badRequest("Export artifact is not ready for download");

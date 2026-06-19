@@ -99,6 +99,15 @@ public class SaasAppProperties {
     private ThrottledEmailEndpoint register = new ThrottledEmailEndpoint();
     private ThrottledEmailEndpoint passwordReset = new ThrottledEmailEndpoint();
     private TenantApiRateLimit tenantApi = new TenantApiRateLimit();
+    private AdminDataExportRateLimit adminDataExport = new AdminDataExportRateLimit();
+  }
+
+  @Data
+  public static class AdminDataExportRateLimit {
+    /** 对已认证 admin 用户下载 GDPR 导出包限流 */
+    private boolean enabled = true;
+    private int maxPerUserPerWindow = 30;
+    private Duration window = Duration.ofHours(1);
   }
 
   @Data

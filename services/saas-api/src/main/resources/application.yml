@@ -87,6 +87,10 @@ saas:
       enabled: true
       window: PT1M
       plan-cache-ttl: PT5M
+    admin-data-export:
+      enabled: true
+      max-per-user-per-window: ${SAAS_ADMIN_DATA_EXPORT_MAX_PER_HOUR:30}
+      window: PT1H
   billing:
     enabled: ${SAAS_BILLING_ENABLED:false}
     base-url: ${SAAS_BILLING_API_BASE_URL:http://localhost:8083}

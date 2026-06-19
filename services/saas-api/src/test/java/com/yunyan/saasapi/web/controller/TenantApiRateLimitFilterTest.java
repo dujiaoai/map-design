@@ -77,6 +77,35 @@ class TenantApiRateLimitFilterTest {
     }
   }
 
+  @Test
+  @Order(3)
+  void adminEndpoints_areNotTenantApiRateLimited() throws Exception {
+    var token = loginPlatformAccessToken();
+
+    for (var i = 0; i < 5; i++) {
+      mockMvc
+          .perform(get("/v1/admin/tenants").header("Authorization", "Bearer " + token))
+          .andExpect(status().isOk());
+    }
+  }
+
+  private String loginPlatformAccessToken() throws Exception {
+    var body =
+        objectMapper.writeValueAsString(
+            Map.of(
+                "email", "platform@test.local",
+                "password", "password",
+                "tenantId", "test"));
+    var response =
+        mockMvc
+            .perform(post("/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return JsonPath.read(response, "$.accessToken");
+  }
+
   private String loginAccessToken() throws Exception {
     var body =
         objectMapper.writeValueAsString(

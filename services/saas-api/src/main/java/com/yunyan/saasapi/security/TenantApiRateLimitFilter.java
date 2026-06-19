@@ -72,7 +72,7 @@ public class TenantApiRateLimitFilter extends OncePerRequestFilter {
     if (uri.startsWith("/v1/auth/")) {
       return true;
     }
-    if (HttpMethod.GET.matches(method) && "/v1/admin/ping".equals(uri)) {
+    if (uri.startsWith("/v1/admin/")) {
       return true;
     }
     return false;

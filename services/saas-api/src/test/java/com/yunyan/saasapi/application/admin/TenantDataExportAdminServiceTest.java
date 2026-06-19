@@ -43,6 +43,8 @@ class TenantDataExportAdminServiceTest {
 
   private TenantDataExportAdminService service;
 
+  @Mock private AdminDataExportRateLimitService adminDataExportRateLimitService;
+
   @BeforeEach
   void setUp() {
     service =
@@ -51,7 +53,8 @@ class TenantDataExportAdminServiceTest {
             exportRequestRepository,
             adminAuditLogService,
             objectStorageClientFactory,
-            saasAppProperties);
+            saasAppProperties,
+            adminDataExportRateLimitService);
   }
 
   @Test

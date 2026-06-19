@@ -15,4 +15,8 @@ public interface ObjectStorageClient {
   }
 
   boolean exists(String objectKey);
+
+  default java.io.InputStream openStream(String objectKey) {
+    throw new UnsupportedOperationException("openStream not supported for object key: " + objectKey);
+  }
 }

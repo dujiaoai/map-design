@@ -45,6 +45,19 @@ public class LocalObjectStorageClient implements ObjectStorageClient {
     return Files.exists(resolvePath(objectKey));
   }
 
+  @Override
+  public InputStream openStream(String objectKey) {
+    var path = resolvePath(objectKey);
+    if (!Files.exists(path)) {
+      throw new IllegalStateException("Export artifact not found: " + objectKey);
+    }
+    try {
+      return Files.newInputStream(path);
+    } catch (IOException ex) {
+      throw new IllegalStateException("Failed to open export artifact: " + objectKey, ex);
+    }
+  }
+
   private Path resolvePath(String objectKey) {
     var storage = saasAppProperties.getObjectStorage();
     var base = Path.of(storage.getLocalPath()).toAbsolutePath().normalize();

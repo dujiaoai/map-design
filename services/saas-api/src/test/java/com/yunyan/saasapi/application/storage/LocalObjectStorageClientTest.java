@@ -11,7 +11,7 @@ import org.junit.jupiter.api.io.TempDir;
 class LocalObjectStorageClientTest {
 
   @Test
-  void upload_writesFileAndReturnsFileUrl(@TempDir java.nio.file.Path tempDir) {
+  void upload_writesFileAndReturnsFileUrl(@TempDir java.nio.file.Path tempDir) throws Exception {
     var properties = new SaasAppProperties();
     properties.getObjectStorage().setLocalPath(tempDir.toString());
     properties.getObjectStorage().setBucket("tenant-exports");
@@ -21,6 +21,10 @@ class LocalObjectStorageClientTest {
 
     assertThat(url).startsWith("file://");
     assertThat(client.exists("demo/export.zip")).isTrue();
-    assertThat(Files.exists(tempDir.resolve("tenant-exports").resolve("demo").resolve("export.zip"))).isTrue();
+    assertThat(Files.readAllBytes(tempDir.resolve("tenant-exports").resolve("demo").resolve("export.zip")))
+        .containsExactly(9, 8, 7);
+    try (var stream = client.openStream("demo/export.zip")) {
+      assertThat(stream.readAllBytes()).containsExactly(9, 8, 7);
+    }
   }
 }

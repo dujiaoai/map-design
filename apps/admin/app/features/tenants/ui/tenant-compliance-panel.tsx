@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { DatabaseIcon, KeyRoundIcon, PackageIcon } from 'lucide-react'
+import { useState } from 'react'
 
+import { downloadTenantDataExport } from '~/features/tenants/lib/tenant-data-export-download'
 import { TenantMenuDiffPanel } from '~/features/tenants/ui/tenant-menu-diff-panel'
 import { TenantMenuOverridesPanel } from '~/features/tenants/ui/tenant-menu-overrides-panel'
 import {
@@ -77,6 +79,7 @@ export function TenantCompliancePanel({ tenantId, tenantSlug }: { tenantId: stri
       toast.error(formatAdminApiError(error, '创建导出请求失败'))
     },
   })
+  const [downloadingRequestId, setDownloadingRequestId] = useState<string | null>(null)
 
   return (
     <div className="space-y-6 admin-stagger">
@@ -118,15 +121,39 @@ export function TenantCompliancePanel({ tenantId, tenantSlug }: { tenantId: stri
                 <span className="text-muted-foreground">
                   {request.createdAt ? formatAdminDate(request.createdAt) : '—'}
                 </span>
-                {request.status === 'completed' && request.artifactUrl ? (
-                  <a
-                    href={request.artifactUrl}
-                    className="text-xs text-primary hover:underline"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    下载
-                  </a>
+                {request.status === 'completed' ? (
+                  request.artifactUrl?.startsWith('http') ? (
+                    <a
+                      href={request.artifactUrl}
+                      className="text-xs text-primary hover:underline"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      下载
+                    </a>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto px-0 text-xs text-primary hover:text-primary"
+                      disabled={downloadingRequestId === request.id}
+                      onClick={() => {
+                        setDownloadingRequestId(request.id)
+                        void downloadTenantDataExport(tenantId, request.id)
+                          .catch((error) => {
+                            toast.error(formatAdminApiError(error, '下载导出包失败'))
+                          })
+                          .finally(() => {
+                            setDownloadingRequestId((current) =>
+                              current === request.id ? null : current,
+                            )
+                          })
+                      }}
+                    >
+                      {downloadingRequestId === request.id ? '下载中…' : '下载'}
+                    </Button>
+                  )
                 ) : null}
               </li>
             ))}

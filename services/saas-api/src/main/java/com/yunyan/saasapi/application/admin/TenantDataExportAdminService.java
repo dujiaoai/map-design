@@ -1,5 +1,6 @@
 package com.yunyan.saasapi.application.admin;
 
+import com.yunyan.saasapi.application.storage.ObjectStorageClientFactory;
 import com.yunyan.saasapi.domain.TenantDataExportRequestRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.entity.TenantDataExportRequest;
@@ -8,12 +9,14 @@ import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestDto;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportRequestListResponse;
 import com.yunyan.saasapi.web.dto.admin.TenantDataExportArtifactResponse;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class TenantDataExportAdminService {
   private final TenantRepository tenantRepository;
   private final TenantDataExportRequestRepository exportRequestRepository;
   private final AdminAuditLogService adminAuditLogService;
+  private final ObjectStorageClientFactory objectStorageClientFactory;
 
   public TenantDataExportRequestListResponse listRequests(UUID tenantId) {
     ensureTenantExists(tenantId);
@@ -63,25 +67,59 @@ public class TenantDataExportAdminService {
         request.getTenantId().toString(),
         request.getStatus(),
         request.getRequestedByUserId() != null ? request.getRequestedByUserId().toString() : null,
-        request.getArtifactUrl(),
+        sanitizeArtifactUrl(request.getArtifactUrl()),
         request.getCreatedAt() != null ? request.getCreatedAt().toEpochMilli() : null,
         request.getCompletedAt() != null ? request.getCompletedAt().toEpochMilli() : null);
   }
 
   public TenantDataExportArtifactResponse getArtifact(UUID tenantId, UUID requestId) {
-    ensureTenantExists(tenantId);
-    var request =
-        exportRequestRepository
-            .findById(requestId)
-            .filter(row -> tenantId.equals(row.getTenantId()))
-            .orElseThrow(() -> AuthException.notFound("Export request not found"));
-    var downloadable =
-        "completed".equals(request.getStatus())
-            && org.springframework.util.StringUtils.hasText(request.getArtifactUrl());
+    var request = requireCompletedArtifactRequest(tenantId, requestId);
     return new TenantDataExportArtifactResponse(
         request.getId().toString(),
-        request.getArtifactUrl(),
+        sanitizeArtifactUrl(request.getArtifactUrl()),
         request.getArtifactObjectKey(),
-        downloadable);
+        isDownloadable(request));
   }
+
+  public TenantDataExportDownload downloadArtifact(UUID tenantId, UUID requestId) {
+    var request = requireCompletedArtifactRequest(tenantId, requestId);
+    if (!isDownloadable(request)) {
+      throw AuthException.badRequest("Export artifact is not ready for download");
+    }
+    var objectKey = request.getArtifactObjectKey();
+    var client = objectStorageClientFactory.client();
+    if (!client.exists(objectKey)) {
+      throw AuthException.notFound("Export artifact not found");
+    }
+    try (var stream = client.openStream(objectKey)) {
+      return new TenantDataExportDownload(stream.readAllBytes(), request.getId() + ".zip");
+    } catch (IOException ex) {
+      throw new IllegalStateException("Failed to read export artifact: " + requestId, ex);
+    }
+  }
+
+  private TenantDataExportRequest requireCompletedArtifactRequest(UUID tenantId, UUID requestId) {
+    ensureTenantExists(tenantId);
+    return exportRequestRepository
+        .findById(requestId)
+        .filter(row -> tenantId.equals(row.getTenantId()))
+        .orElseThrow(() -> AuthException.notFound("Export request not found"));
+  }
+
+  private static boolean isDownloadable(TenantDataExportRequest request) {
+    return "completed".equals(request.getStatus())
+        && StringUtils.hasText(request.getArtifactObjectKey());
+  }
+
+  private static String sanitizeArtifactUrl(String artifactUrl) {
+    if (!StringUtils.hasText(artifactUrl)) {
+      return artifactUrl;
+    }
+    if (artifactUrl.startsWith("file:")) {
+      return null;
+    }
+    return artifactUrl;
+  }
+
+  public record TenantDataExportDownload(byte[] content, String filename) {}
 }

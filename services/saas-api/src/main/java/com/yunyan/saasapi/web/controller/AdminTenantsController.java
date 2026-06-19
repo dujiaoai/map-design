@@ -188,6 +188,22 @@ public class AdminTenantsController {
     return tenantDataExportAdminService.getArtifact(tenantId, requestId);
   }
 
+  @GetMapping(
+      value = "/{tenantId}/data-export-requests/{requestId}/artifact/download",
+      produces = "application/zip")
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
+  @Operation(summary = "下载 GDPR 导出包", description = "本地对象存储通过 API 流式返回，避免浏览器拦截 file:// URL")
+  public org.springframework.http.ResponseEntity<byte[]> downloadDataExportArtifact(
+      @PathVariable UUID tenantId, @PathVariable UUID requestId) {
+    var download = tenantDataExportAdminService.downloadArtifact(tenantId, requestId);
+    return org.springframework.http.ResponseEntity.ok()
+        .header(
+            org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+            "attachment; filename=\"" + download.filename() + "\"")
+        .contentType(org.springframework.http.MediaType.parseMediaType("application/zip"))
+        .body(download.content());
+  }
+
   @GetMapping("/{tenantId}/oidc-config")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
   @Operation(summary = "获取租户 OIDC 配置（只读）", description = "Phase 5D-1 骨架；未配置时返回 enabled=false")

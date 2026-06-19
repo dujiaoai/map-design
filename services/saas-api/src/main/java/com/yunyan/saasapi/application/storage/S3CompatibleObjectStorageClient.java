@@ -38,6 +38,14 @@ public class S3CompatibleObjectStorageClient implements ObjectStorageClient {
     return localObjectStorageClient.exists(objectKey);
   }
 
+  @Override
+  public java.io.InputStream openStream(String objectKey) {
+    if (useRealS3()) {
+      return awsS3ObjectStorageClient.openStream(objectKey);
+    }
+    return localObjectStorageClient.openStream(objectKey);
+  }
+
   private boolean useRealS3() {
     var storage = saasAppProperties.getObjectStorage();
     return storage.isUseRealS3()

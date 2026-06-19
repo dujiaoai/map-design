@@ -21,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ObjectStorageDrDrillServiceTest {
 
   @Mock private SaasAppProperties saasAppProperties;
-  @Mock private ObjectStorageClient objectStorageClient;
+  @Mock private ObjectStorageClientFactory objectStorageClientFactory;
   @Mock private ObjectStorageDrDrillLogRepository drillLogRepository;
   @Mock private AdminAuditLogService adminAuditLogService;
 

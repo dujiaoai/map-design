@@ -20,7 +20,7 @@ public class ObjectStorageDrDrillService {
   private static final String SAMPLE_KEY = "dr-drill/sample.txt";
 
   private final SaasAppProperties saasAppProperties;
-  private final ObjectStorageClient objectStorageClient;
+  private final ObjectStorageClientFactory objectStorageClientFactory;
   private final ObjectStorageDrDrillLogRepository drillLogRepository;
   private final AdminAuditLogService adminAuditLogService;
 
@@ -31,6 +31,7 @@ public class ObjectStorageDrDrillService {
       return record(principal, "skipped", "drDrillTargetBucket not configured");
     }
     try {
+      var objectStorageClient = objectStorageClientFactory.client();
       objectStorageClient.upload(SAMPLE_KEY, "dr-drill".getBytes(), "text/plain");
       var verified = objectStorageClient.exists(SAMPLE_KEY);
       if (!verified) {

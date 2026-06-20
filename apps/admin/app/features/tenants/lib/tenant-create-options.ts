@@ -1,4 +1,9 @@
-import { trialDateToEpochMs } from '~/features/tenants/lib/tenant-lifecycle'
+import {
+  trialDateToEpochMs,
+  trialEpochMsToDate,
+} from '~/features/tenants/lib/tenant-lifecycle'
+
+import type { PatchTenantPayload } from '~/entities/tenant'
 
 export const TENANT_PLAN_OPTIONS = [
   {
@@ -79,4 +84,69 @@ export function describeTrialPreset(
   if (preset === '30d') return `试用至 ${addDaysToDateString(30)}`
   if (!customDate.trim()) return '请选择试用截止日'
   return `试用至 ${customDate}`
+}
+
+export function applyTrialPreset(
+  preset: TenantTrialPreset,
+  setValue: (
+    name: 'trialEndsAtDate' | 'plan',
+    value: string,
+    options?: { shouldDirty?: boolean; shouldValidate?: boolean },
+  ) => void,
+  currentPlan: string,
+) {
+  if (preset === '14d') {
+    setValue('trialEndsAtDate', addDaysToDateString(14), { shouldDirty: true, shouldValidate: true })
+    if (currentPlan === 'free') {
+      setValue('plan', 'trial', { shouldDirty: true, shouldValidate: true })
+    }
+    return
+  }
+  if (preset === '30d') {
+    setValue('trialEndsAtDate', addDaysToDateString(30), { shouldDirty: true, shouldValidate: true })
+    if (currentPlan === 'free') {
+      setValue('plan', 'trial', { shouldDirty: true, shouldValidate: true })
+    }
+    return
+  }
+  if (preset === 'none') {
+    setValue('trialEndsAtDate', '', { shouldDirty: true, shouldValidate: true })
+  }
+}
+
+export function inferTrialPresetFromEndsAt(trialEndsAt: number | null | undefined): {
+  preset: TenantTrialPreset
+  customDate: string
+} {
+  if (trialEndsAt == null) {
+    return { preset: 'none', customDate: '' }
+  }
+  return { preset: 'custom', customDate: trialEpochMsToDate(trialEndsAt) }
+}
+
+export function resolveEditTrialPatch(
+  preset: TenantTrialPreset,
+  customDate: string,
+): Pick<PatchTenantPayload, 'trialEndsAt' | 'clearTrialEndsAt'> {
+  if (preset === 'none') {
+    return { clearTrialEndsAt: true }
+  }
+  const trialEndsAt = resolveCreateTrialEndsAt(preset, customDate)
+  if (trialEndsAt == null) return {}
+  return { trialEndsAt }
+}
+
+export function planOptionsForTenant(currentPlan: string) {
+  const normalized = currentPlan.trim().toLowerCase()
+  if (!normalized || TENANT_PLAN_OPTIONS.some((option) => option.value === normalized)) {
+    return TENANT_PLAN_OPTIONS
+  }
+  return [
+    {
+      value: currentPlan,
+      label: `${currentPlan}（当前）`,
+      description: '未在标准目录中的计划，可改选下方标准项',
+    },
+    ...TENANT_PLAN_OPTIONS,
+  ]
 }

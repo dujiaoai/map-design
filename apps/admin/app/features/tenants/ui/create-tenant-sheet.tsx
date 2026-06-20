@@ -19,11 +19,10 @@ import { useNavigate } from 'react-router'
 import { z } from 'zod'
 
 import {
-  addDaysToDateString,
+  applyTrialPreset,
   resolveCreateTrialEndsAt,
   TENANT_PLAN_OPTIONS,
   TENANT_TRIAL_PRESETS,
-  type TenantTrialPreset,
 } from '~/features/tenants/lib/tenant-create-options'
 import { suggestTenantSlug } from '~/features/tenants/lib/tenant-slug'
 import { CreateTenantPreview } from '~/features/tenants/ui/create-tenant-preview'
@@ -63,30 +62,6 @@ const DEFAULT_VALUES: FormValues = {
   plan: 'free',
   trialPreset: 'none',
   trialEndsAtDate: '',
-}
-
-function applyTrialPreset(
-  preset: TenantTrialPreset,
-  setValue: ReturnType<typeof useForm<FormValues>>['setValue'],
-  currentPlan: string,
-) {
-  if (preset === '14d') {
-    setValue('trialEndsAtDate', addDaysToDateString(14), { shouldDirty: true, shouldValidate: true })
-    if (currentPlan === 'free') {
-      setValue('plan', 'trial', { shouldDirty: true, shouldValidate: true })
-    }
-    return
-  }
-  if (preset === '30d') {
-    setValue('trialEndsAtDate', addDaysToDateString(30), { shouldDirty: true, shouldValidate: true })
-    if (currentPlan === 'free') {
-      setValue('plan', 'trial', { shouldDirty: true, shouldValidate: true })
-    }
-    return
-  }
-  if (preset === 'none') {
-    setValue('trialEndsAtDate', '', { shouldDirty: true, shouldValidate: true })
-  }
 }
 
 export function CreateTenantSheet({

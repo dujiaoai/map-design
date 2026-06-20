@@ -8,12 +8,16 @@ export function PermissionsGuidanceStrip({
   loaded,
   canWrite = false,
   onCreateModule,
+  rolesHref,
+  tenantRolesHref,
 }: {
   moduleTotal: number
   permissionTotal: number
   loaded: boolean
   canWrite?: boolean
   onCreateModule?: () => void
+  rolesHref: string
+  tenantRolesHref: string
 }) {
   const description = loaded
     ? `按模块组织 RBAC 权限码；系统内置模块由迁移维护，可新建自定义模块扩展能力。共 ${moduleTotal} 个模块、${permissionTotal} 项权限。`
@@ -30,11 +34,11 @@ export function PermissionsGuidanceStrip({
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button nativeButton={false} variant="outline" size="sm" render={<Link to="/roles" />}>
+          <Button nativeButton={false} variant="outline" size="sm" render={<Link to={rolesHref} />}>
             <KeyRoundIcon className="size-3.5" />
             系统角色
           </Button>
-          <Button nativeButton={false} variant="outline" size="sm" render={<Link to="/tenant-roles" />}>
+          <Button nativeButton={false} variant="outline" size="sm" render={<Link to={tenantRolesHref} />}>
             <ShieldIcon className="size-3.5" />
             自定义角色
           </Button>

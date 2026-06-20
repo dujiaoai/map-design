@@ -29,6 +29,10 @@ import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
+import {
+  buildRbacAdminCrossLink,
+  resolveRbacAdminBackLink,
+} from '~/shared/lib/rbac-admin-nav'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminFormError } from '~/shared/ui/admin-field'
 import {
@@ -37,13 +41,19 @@ import {
 } from '~/shared/ui/admin-table-skeleton'
 
 export function RolesAdminPage() {
-  const { can } = useAdminPermissions()
+  const { can, session } = useAdminPermissions()
   const canWrite = can('admin:roles:write')
   const queryClient = useQueryClient()
   const { confirm, confirmDialog } = useConfirmDialog()
   const [searchParams] = useSearchParams()
   const searchInputRef = useRef<HTMLInputElement>(null)
   useAdminListSearchShortcut(searchInputRef)
+
+  const backLink = resolveRbacAdminBackLink(searchParams)
+  const permissionsHref = buildRbacAdminCrossLink('permissions', 'roles', searchParams)
+  const tenantRolesHref = buildRbacAdminCrossLink('tenant-roles', 'roles', searchParams, {
+    tenantId: session?.tenant?.id,
+  })
 
   const rolesQuery = useQuery({ queryKey: adminQueryKeys.roles, queryFn: fetchAdminRoles })
   const permissionsQuery = useQuery({
@@ -157,13 +167,18 @@ export function RolesAdminPage() {
         size="sm"
         className="-ml-2 w-fit"
         nativeButton={false}
-        render={<Link to="/" />}
+        render={<Link to={backLink.to} />}
       >
         <ArrowLeftIcon className="size-3.5" />
-        返回概览
+        {backLink.label}
       </Button>
 
-      <SystemRolesGuidanceStrip total={roles.length} loaded={Boolean(rolesQuery.data)} />
+      <SystemRolesGuidanceStrip
+        total={roles.length}
+        loaded={Boolean(rolesQuery.data)}
+        permissionsHref={permissionsHref}
+        tenantRolesHref={tenantRolesHref}
+      />
 
       <section className="space-y-3">
         <h2 className="admin-display text-xs tracking-[0.18em] text-muted-foreground uppercase">
@@ -316,7 +331,7 @@ export function RolesAdminPage() {
                     nativeButton={false}
                     variant="outline"
                     size="sm"
-                    render={<Link to="/permissions" />}
+                    render={<Link to={permissionsHref} />}
                   >
                     <KeyRoundIcon className="size-3.5" />
                     权限目录

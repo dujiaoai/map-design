@@ -8,6 +8,7 @@ import { fetchAdminTenant } from '~/shared/api/admin-api'
 import { isPlatformAdmin } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
+import { resolveRbacAdminBackLink } from '~/shared/lib/rbac-admin-nav'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
 
 export function TenantCustomRolesPage({ tenantId }: { tenantId: string }) {
@@ -29,10 +30,12 @@ export function TenantCustomRolesPage({ tenantId }: { tenantId: string }) {
     ? `${tenantQuery.data.name} (${tenantQuery.data.slug})`
     : resolvedTenantName
 
-  const backLink =
+  const backLink = resolveRbacAdminBackLink(
+    searchParams,
     canReadTenants
       ? { to: `/tenants/${tenantId}?tab=custom-roles`, label: '返回租户' }
-      : { to: '/', label: '返回概览' }
+      : { to: '/', label: '返回概览' },
+  )
 
   return (
     <div className="space-y-6 admin-stagger">

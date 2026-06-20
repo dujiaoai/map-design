@@ -42,6 +42,10 @@ import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
+import {
+  buildRbacAdminCrossLink,
+  resolveRbacAdminBackLink,
+} from '~/shared/lib/rbac-admin-nav'
 import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 import { AdminSidebarListSkeleton } from '~/shared/ui/admin-table-skeleton'
@@ -50,13 +54,19 @@ import { PermissionActionTreeView } from '~/shared/ui/permission-action-tree-vie
 const SCOPE_OPTIONS: AdminPermissionModule['scope'][] = ['platform', 'tenant', 'workspace']
 
 export function PermissionsAdminPage() {
-  const { can } = useAdminPermissions()
+  const { can, session } = useAdminPermissions()
   const canWrite = can('admin:roles:write')
   const queryClient = useQueryClient()
   const { confirm, confirmDialog } = useConfirmDialog()
   const [searchParams] = useSearchParams()
   const searchInputRef = useRef<HTMLInputElement>(null)
   useAdminListSearchShortcut(searchInputRef)
+
+  const backLink = resolveRbacAdminBackLink(searchParams)
+  const rolesHref = buildRbacAdminCrossLink('roles', 'permissions', searchParams)
+  const tenantRolesHref = buildRbacAdminCrossLink('tenant-roles', 'permissions', searchParams, {
+    tenantId: session?.tenant?.id,
+  })
 
   const modulesQuery = useQuery({
     queryKey: adminQueryKeys.permissionModules,
@@ -405,10 +415,10 @@ export function PermissionsAdminPage() {
         size="sm"
         className="-ml-2 w-fit"
         nativeButton={false}
-        render={<Link to="/" />}
+        render={<Link to={backLink.to} />}
       >
         <ArrowLeftIcon className="size-3.5" />
-        返回概览
+        {backLink.label}
       </Button>
 
       <PermissionsGuidanceStrip
@@ -417,6 +427,8 @@ export function PermissionsAdminPage() {
         loaded={Boolean(modulesQuery.data)}
         canWrite={canWrite}
         onCreateModule={openCreateModuleDialog}
+        rolesHref={rolesHref}
+        tenantRolesHref={tenantRolesHref}
       />
 
       <section className="space-y-3">
@@ -690,7 +702,7 @@ export function PermissionsAdminPage() {
                     nativeButton={false}
                     variant="outline"
                     size="sm"
-                    render={<Link to="/roles" />}
+                    render={<Link to={rolesHref} />}
                   >
                     <KeyRoundIcon className="size-3.5" />
                     系统角色

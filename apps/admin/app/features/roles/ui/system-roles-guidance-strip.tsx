@@ -7,9 +7,13 @@ import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description
 export function SystemRolesGuidanceStrip({
   total,
   loaded,
+  permissionsHref,
+  tenantRolesHref,
 }: {
   total: number
   loaded: boolean
+  permissionsHref: string
+  tenantRolesHref: string
 }) {
   return (
     <section className="admin-create-tenant-preview rounded-xl border border-primary/25 bg-primary/6 px-4 py-4 md:px-5">
@@ -27,7 +31,7 @@ export function SystemRolesGuidanceStrip({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button nativeButton={false} variant="outline" size="sm" render={<Link to="/permissions" />}>
+          <Button nativeButton={false} variant="outline" size="sm" render={<Link to={permissionsHref} />}>
             <KeyRoundIcon className="size-3.5" />
             权限目录
           </Button>
@@ -35,7 +39,7 @@ export function SystemRolesGuidanceStrip({
             <UsersIcon className="size-3.5" />
             用户列表
           </Button>
-          <Button nativeButton={false} variant="outline" size="sm" render={<Link to="/tenant-roles" />}>
+          <Button nativeButton={false} variant="outline" size="sm" render={<Link to={tenantRolesHref} />}>
             <ShieldIcon className="size-3.5" />
             自定义角色
           </Button>

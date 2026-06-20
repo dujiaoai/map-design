@@ -19,6 +19,7 @@ import {
 } from '~/shared/lib/remember-login'
 import { formatLoginError } from '~/shared/auth/format-login-error'
 import { adminBrand } from '~/shared/config/admin-brand'
+import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
 import { PasswordInput } from '~/shared/ui/password-input'
 
 import type { Route } from './+types/login'
@@ -46,7 +47,7 @@ const adminLoginFieldInputClassName =
   'admin-login-input h-11 rounded-[10px] border-white/10 bg-[var(--admin-login-field-bg)] text-[var(--text-on-dark)] shadow-none placeholder:text-white/35 focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/30'
 
 export function meta(_args: Route.MetaArgs) {
-  return [{ title: '登录 · 云眼运营后台' }]
+  return [{ title: `登录 · ${adminBrand.appName}` }]
 }
 
 export function links() {
@@ -201,8 +202,8 @@ export default function LoginRoute() {
       <div className="admin-login-grid" aria-hidden="true" />
 
       <div className="admin-login-card">
-        <p className="admin-login-kicker">Platform Console</p>
-        <h1 className="admin-login-title">运营后台登录</h1>
+        <p className="admin-login-kicker">{adminBrand.loginEyebrow}</p>
+        <h1 className="admin-login-title">{adminBrand.loginTitle}</h1>
         <p className="mt-2 text-sm text-white/55">PLATFORM_ADMIN / TENANT_ADMIN 账号</p>
 
         <form

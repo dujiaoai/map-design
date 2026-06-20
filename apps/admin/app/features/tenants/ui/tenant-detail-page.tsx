@@ -204,7 +204,11 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
 
         {canReadMembers ? (
           <TabsContent value="custom-roles" className="mt-4">
-            <TenantCustomRolesPanel tenantId={tenantId} />
+            <TenantCustomRolesPanel
+              tenantId={tenantId}
+              tenantLabel={`${tenant.name} (${tenant.slug})`}
+              embedded
+            />
           </TabsContent>
         ) : null}
 

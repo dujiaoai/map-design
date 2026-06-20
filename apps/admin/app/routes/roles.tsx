@@ -4,7 +4,7 @@ import { requireAdminPermissions } from '~/shared/auth/require-admin-permissions
 import type { Route } from './+types/roles'
 
 export function meta(_args: Route.MetaArgs) {
-  return [{ title: '角色 · 云眼运营后台' }]
+  return [{ title: '系统角色 · 云眼运营后台' }]
 }
 
 export async function clientLoader(_args: Route.ClientLoaderArgs) {

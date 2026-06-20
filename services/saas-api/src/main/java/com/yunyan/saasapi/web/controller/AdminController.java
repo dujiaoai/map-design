@@ -199,8 +199,12 @@ public class AdminController {
   @GetMapping("/feature-catalog")
   @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_READ + "')")
   @SecurityRequirement(name = "bearerAuth")
-  @Operation(summary = "租户能力码目录", description = "可开通模块能力列表，与 saas-web tenantFeature 对齐")
-  public FeatureCatalogResponse featureCatalog() {
+  @Operation(summary = "租户能力码目录", description = "可开通模块能力列表；可选 product 按产品线过滤")
+  public FeatureCatalogResponse featureCatalog(
+      @org.springframework.web.bind.annotation.RequestParam(required = false) String product) {
+    if (product != null && !product.isBlank()) {
+      return tenantFeatureAdminService.getCatalogForProduct(product.trim());
+    }
     return tenantFeatureAdminService.getCatalog();
   }
 

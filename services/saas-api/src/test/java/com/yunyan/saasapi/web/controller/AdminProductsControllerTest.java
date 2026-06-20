@@ -60,6 +60,16 @@ class AdminProductsControllerTest {
         .andExpect(jsonPath("$.name").value("地图工作台"));
   }
 
+  @Test
+  void productFeatureCatalog_withPlatformAdmin_returnsCatalog() throws Exception {
+    mockMvc
+        .perform(
+            get("/v1/admin/products/map-design/features")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.features", hasSize(3)));
+  }
+
   private String loginAccessToken(String email) throws Exception {
     var response =
         mockMvc

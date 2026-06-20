@@ -59,7 +59,7 @@ class AdminTenantFeaturesControllerTest {
             get("/v1/admin/feature-catalog")
                 .header("Authorization", "Bearer " + loginAccessToken("platform@test.local")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.features", hasSize(2)))
+        .andExpect(jsonPath("$.features", hasSize(3)))
         .andExpect(jsonPath("$.features[*].code", hasItem("custom.highway-alert")));
   }
 

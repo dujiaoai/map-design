@@ -13,7 +13,7 @@ export default [
     route('tenants/:tenantId', 'routes/tenants.$tenantId.tsx'),
     route('users', 'routes/users.tsx'),
     route('members', 'routes/members.tsx'),
-    route('tenant-roles/new', 'routes/tenant-roles.new.tsx'),
+    route('tenant-roles/new', 'routes/tenant-roles-new.tsx'),
     route('tenant-roles', 'routes/tenant-roles.tsx'),
     route('roles', 'routes/roles.tsx'),
     route('permissions', 'routes/permissions.tsx'),

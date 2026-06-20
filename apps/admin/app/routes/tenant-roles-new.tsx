@@ -8,7 +8,7 @@ import {
 } from '~/shared/auth/admin-access'
 import { auth } from '~/shared/auth/client'
 
-import type { Route } from './+types/tenant-roles.new'
+import type { Route } from './+types/tenant-roles-new'
 
 export function meta(_args: Route.MetaArgs) {
   return [{ title: '新建自定义角色 · 云眼运营后台' }]

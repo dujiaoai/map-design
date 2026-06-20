@@ -1,6 +1,6 @@
 import { Button } from '@repo/ui'
 import { useQueryClient } from '@tanstack/react-query'
-import { RefreshCwIcon } from 'lucide-react'
+import { RefreshCwIcon, ArrowLeftIcon } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
@@ -33,6 +33,7 @@ import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-
 export function BillingAdminPage() {
   const { can } = useAdminPermissions()
   const canRead = can('admin:billing:read')
+  const canReadTenants = can('admin:tenants:read')
   const canAdjust = can('admin:billing:adjust')
   const canWritePackages = can('admin:billing:packages:write')
   const canRefund = can('admin:billing:refund')
@@ -126,8 +127,24 @@ export function BillingAdminPage() {
     )
   }
 
+  const backLink =
+    filterSeed.tenantId && canReadTenants
+      ? { to: `/tenants/${filterSeed.tenantId}?tab=info`, label: '返回租户' }
+      : { to: '/', label: '返回概览' }
+
   return (
     <div className="space-y-6 admin-stagger">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-2 w-fit"
+        nativeButton={false}
+        render={<Link to={backLink.to} />}
+      >
+        <ArrowLeftIcon className="size-3.5" />
+        {backLink.label}
+      </Button>
+
       <AdminPageHeader
         eyebrow="Billing"
         title="计费"

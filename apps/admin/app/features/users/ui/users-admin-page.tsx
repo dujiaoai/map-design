@@ -1,7 +1,7 @@
 import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast, useConfirmDialog } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { PencilIcon, ScrollTextIcon } from 'lucide-react'
+import { PencilIcon, ScrollTextIcon, ArrowLeftIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
@@ -43,6 +43,7 @@ const USER_TABLE_COLUMNS = [
 export function UsersAdminPage() {
   const { can, canAny } = useAdminPermissions()
   const canWrite = can('admin:users:write')
+  const canReadTenants = can('admin:tenants:read')
   const canViewAudit = canAny([...AUDIT_READ_PERMISSIONS])
   const [searchParams, setSearchParams] = useSearchParams()
   const tenantFilterId = searchParams.get('tenantId') ?? undefined
@@ -98,6 +99,10 @@ export function UsersAdminPage() {
     const tenant = tenantsQuery.data?.tenants.find((item) => item.id === tenantFilterId)
     return tenant ? `${tenant.name} (${tenant.slug})` : tenantFilterId
   }, [tenantFilterId, tenantsQuery.data?.tenants])
+
+  const backLink = tenantFilterId && canReadTenants
+    ? { to: `/tenants/${tenantFilterId}?tab=info`, label: '返回租户' }
+    : { to: '/', label: '返回概览' }
 
   const userSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName', 'tenantSlug']
   const filteredUsers = useMemo(() => {
@@ -266,6 +271,17 @@ export function UsersAdminPage() {
 
   return (
     <div className="space-y-6 admin-stagger">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-2 w-fit"
+        nativeButton={false}
+        render={<Link to={backLink.to} />}
+      >
+        <ArrowLeftIcon className="size-3.5" />
+        {backLink.label}
+      </Button>
+
       <AdminPageHeader
         eyebrow="Users"
         title="用户"

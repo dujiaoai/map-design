@@ -1,7 +1,7 @@
 import { Badge, Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import { CreditCardIcon, DownloadIcon } from 'lucide-react'
+import { CreditCardIcon, DownloadIcon, ArrowLeftIcon } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { toast } from '@repo/ui'
@@ -327,8 +327,24 @@ export function AuditLogsAdminPage() {
     [canReadTenants, canReadUsers, columnPrefs.isColumnVisible, columnPrefs.visible, sort],
   )
 
+  const backLink =
+    tenantFilterId && canReadTenants
+      ? { to: `/tenants/${tenantFilterId}?tab=info`, label: '返回租户' }
+      : { to: '/', label: '返回概览' }
+
   return (
     <div className="space-y-6 admin-stagger">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-ml-2 w-fit"
+        nativeButton={false}
+        render={<Link to={backLink.to} />}
+      >
+        <ArrowLeftIcon className="size-3.5" />
+        {backLink.label}
+      </Button>
+
       <AdminPageHeader
         eyebrow="Operations"
         title="审计日志"

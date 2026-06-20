@@ -8,6 +8,7 @@ import { useAdminTeamSwitcher } from '~/features/team-switcher/model/use-admin-t
 import { adminTenantsToTeams } from '../lib/admin-tenant-team-mapper'
 import { buildAdminNavSections } from '../lib/build-admin-nav-sections'
 import { AdminBrandLogo } from './admin-brand-logo'
+import { adminBrand } from '~/shared/config/admin-brand'
 
 export function AdminAppSidebar() {
   const session = useSession()

@@ -1,5 +1,7 @@
 import { ShieldCheckIcon } from 'lucide-react'
 
+import { adminBrand } from '~/shared/config/admin-brand'
+
 export function AdminBrandLogo() {
   return (
     <div className="relative flex size-full items-center justify-center overflow-hidden rounded-md border border-primary/35 bg-brand-gradient shadow-[0_0_18px_color-mix(in_oklab,var(--primary)_28%,transparent)]">

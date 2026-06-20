@@ -6,35 +6,34 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 
 import { formatMemberRoleLabel } from '~/features/members/lib/member-role-labels'
+import { EditMemberSheet } from '~/features/members/ui/edit-member-sheet'
+import { InviteMemberSheet } from '~/features/members/ui/invite-member-sheet'
+import { MemberNameCell } from '~/features/members/ui/member-name-cell'
+import { MembersGuidanceStrip } from '~/features/members/ui/members-guidance-strip'
+import { MembersStatusFilter } from '~/features/members/ui/members-status-filter'
+import { TenantDetailMetrics } from '~/features/tenants/ui/tenant-detail-metrics'
+import { TenantRowAction, TenantRowActions } from '~/features/tenants/ui/tenant-row-actions'
 import { fetchAdminTenant, fetchTenantMembers, fetchTenantQuotas, type AdminUserSummary } from '~/shared/api/admin-api'
 import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
 import { isPlatformAdmin } from '~/shared/auth/admin-access'
-import {
-  useAdminTableFilterState,
-} from '~/shared/hooks/use-admin-table-filter'
+import { useAdminTableFilterState } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
-import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
-import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
 
-import { EditMemberSheet } from './edit-member-sheet'
-import { InviteMemberSheet } from './invite-member-sheet'
-import { TenantQuotaSummary } from './tenant-quota-summary'
-
 type MemberSortKey = 'email' | 'displayName' | 'lastLoginAt' | 'createdAt'
 
 const MEMBER_TABLE_COLUMNS = [
-  { key: 'email', label: '邮箱' },
-  { key: 'displayName', label: '显示名' },
+  { key: 'member', label: '成员' },
   { key: 'roles', label: '角色' },
   { key: 'status', label: '状态' },
   { key: 'lastLoginAt', label: '最近登录' },
@@ -134,18 +133,11 @@ export function MembersAdminPage({
     () =>
       [
         {
-          title: '邮箱',
-          dataIndex: 'email',
-          key: 'email',
+          title: '成员',
+          key: 'member',
           sorter: true,
           sortOrder: adminAntSortOrder(sort, 'email'),
-        },
-        {
-          title: '显示名',
-          dataIndex: 'displayName',
-          key: 'displayName',
-          sorter: true,
-          sortOrder: adminAntSortOrder(sort, 'displayName'),
+          render: (_value: unknown, member: AdminUserSummary) => <MemberNameCell member={member} />,
         },
         {
           title: '角色',
@@ -193,12 +185,16 @@ export function MembersAdminPage({
               {
                 title: '操作',
                 key: 'actions',
-                align: 'right' as const,
+                fixed: 'right' as const,
+                width: 72,
                 render: (_value: unknown, member: AdminUserSummary) => (
-                  <Button variant="ghost" size="sm" onClick={() => setEditingMember(member)}>
-                    <PencilIcon className="size-3.5" />
-                    编辑
-                  </Button>
+                  <TenantRowActions>
+                    <TenantRowAction
+                      label="编辑"
+                      icon={PencilIcon}
+                      onClick={() => setEditingMember(member)}
+                    />
+                  </TenantRowActions>
                 ),
               },
             ]
@@ -210,17 +206,6 @@ export function MembersAdminPage({
       }),
     [canWrite, columnPrefs.isColumnVisible, columnPrefs.visible, sort],
   )
-
-  const inviteButton = canWrite ? (
-    <Button
-      onClick={() => setInviteOpen(true)}
-      disabled={seatFull}
-      title={seatFull ? '成员席位已满，无法继续邀请' : undefined}
-    >
-      <UserPlusIcon className="size-3.5" />
-      {embedded ? '邀请成员' : '邀请成员'}
-    </Button>
-  ) : null
 
   const content = (
     <>
@@ -237,24 +222,16 @@ export function MembersAdminPage({
         </Button>
       ) : null}
 
-      {!embedded ? (
-        <AdminPageHeader
-          eyebrow="Members"
-          title="租户成员"
-          description={appendAdminListTotal(
-            `${resolvedTenantName} · 管理本租户成员与角色分配。`,
-            { total: memberTotal, loaded: Boolean(membersQuery.data), unit: '名' },
-          )}
-          actions={inviteButton}
-        />
-      ) : canWrite ? (
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted-foreground">
-            管理成员、角色与邀请；跨租户用户请前往「用户」页。
-          </p>
-          {inviteButton}
-        </div>
-      ) : null}
+      <MembersGuidanceStrip
+        tenantId={tenantId}
+        tenantLabel={tenantContextLabel}
+        total={memberTotal}
+        loaded={Boolean(membersQuery.data)}
+        embedded={embedded}
+        seatFull={seatFull}
+        canWrite={canWrite}
+        onInvite={() => setInviteOpen(true)}
+      />
 
       {!embedded ? (
         <AdminTenantContextBanner
@@ -266,21 +243,20 @@ export function MembersAdminPage({
         />
       ) : null}
 
-      <TenantQuotaSummary tenantId={tenantId} />
+      <TenantDetailMetrics tenantId={tenantId} />
+
+      <section className="space-y-3">
+        <h2 className="admin-display text-xs tracking-[0.18em] text-muted-foreground uppercase">
+          状态筛选
+        </h2>
+        <MembersStatusFilter value={filter.status} onChange={filter.setStatus} />
+      </section>
 
       <AdminTableToolbar
         searchInputRef={searchInputRef}
         search={filter.search}
         onSearchChange={filter.setSearch}
         searchPlaceholder="搜索邮箱或显示名…"
-        status={filter.status}
-        onStatusChange={filter.setStatus}
-        statusOptions={[
-          { value: 'all', label: '全部状态' },
-          { value: 'active', label: 'active' },
-          { value: 'invited', label: 'invited' },
-          { value: 'disabled', label: 'disabled' },
-        ]}
         trailing={
           <AdminTableColumnPicker
             columns={[...MEMBER_TABLE_COLUMNS]}
@@ -295,7 +271,7 @@ export function MembersAdminPage({
 
       <AdminPanel className="p-0">
         {membersQuery.isLoading ? (
-          <AdminTableSkeleton columns={canWrite ? 7 : 6} />
+          <AdminTableSkeleton columns={canWrite ? 6 : 5} />
         ) : membersQuery.isError ? (
           <AdminEmptyState
             message="加载失败，请确认租户权限后重试"

@@ -1,14 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import {
-  Button,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  toast,
-} from '@repo/ui'
+import { Button, Input, toast } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
@@ -22,7 +13,7 @@ import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
 import { AdminField, AdminFormError } from '~/shared/ui/admin-field'
 
-import { formatMemberRoleLabel } from '../lib/member-role-labels'
+import { MemberRoleChipPicker } from './member-role-chip-picker'
 
 const schema = z.object({
   email: z.string().min(1, '请输入邮箱').email('请输入有效邮箱'),
@@ -104,18 +95,11 @@ export function TenantEmailInvitePanel({ tenantId }: { tenantId: string }) {
         <Input id="email-invite-name" placeholder="留空则使用邮箱前缀" {...register('displayName')} />
       </AdminField>
       <AdminField label="角色" error={errors.roleCode?.message}>
-        <Select value={roleCode} onValueChange={(value) => setValue('roleCode', value ?? '')}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="选择角色" />
-          </SelectTrigger>
-          <SelectContent>
-            {roles.map((role) => (
-              <SelectItem key={role.code} value={role.code}>
-                {formatMemberRoleLabel(role.code, role.name)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <MemberRoleChipPicker
+          roles={roles}
+          value={roleCode}
+          onChange={(value) => setValue('roleCode', value)}
+        />
       </AdminField>
       <AdminFormError message={inviteMutation.isError ? formatAdminApiError(inviteMutation.error) : null} />
       <Button

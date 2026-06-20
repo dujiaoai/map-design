@@ -2,11 +2,6 @@ import {
   Badge,
   Button,
   Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   toast,
 } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -32,6 +27,7 @@ import {
   formatMemberRoleLabel,
   INVITE_LINK_STATUS_LABELS,
 } from '../lib/member-role-labels'
+import { MemberRoleChipPicker } from './member-role-chip-picker'
 
 type CreateLinkFormValues = {
   roleCode: string
@@ -135,22 +131,11 @@ export function TenantInviteLinksPanel({ tenantId }: { tenantId: string }) {
       >
         <p className="text-sm font-medium">创建新链接</p>
         <AdminField label="默认角色">
-          <Select
+          <MemberRoleChipPicker
+            roles={assignableRolesQuery.data?.roles ?? []}
             value={roleCode}
-            onValueChange={(value) => setValue('roleCode', value ?? defaultRoleCode)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="选择角色" />
-            </SelectTrigger>
-            <SelectContent>
-              {(assignableRolesQuery.data?.roles ?? []).map((role) => (
-                <SelectItem key={role.id} value={role.code}>
-                  {role.name}
-                  <span className="ml-2 font-mono text-xs text-muted-foreground">{role.code}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onChange={(value) => setValue('roleCode', value)}
+          />
         </AdminField>
         <AdminField label="备注" htmlFor="invite-link-label">
           <Input id="invite-link-label" placeholder="例如：Q2 项目组" {...register('label')} />

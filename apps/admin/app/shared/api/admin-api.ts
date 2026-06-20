@@ -1,7 +1,7 @@
 export type { AdminListQuery } from '~/shared/lib/admin-list-query'
 export { buildAdminListQuery } from '~/shared/lib/admin-list-query'
 export type { AdminProduct, AdminProductListResponse } from '~/entities/product'
-export { fetchAdminProduct, fetchAdminProducts } from '~/entities/product'
+export { fetchAdminProduct, fetchAdminProductFeatureCatalog, fetchAdminProducts } from '~/entities/product'
 export type {
   AdminAuditLogEntry,
   AdminAuditLogListResponse,
@@ -150,6 +150,7 @@ export type {
   AdminUsageForecastBundleResponse,
   AdminFinOpsCostAttribution,
   AdminAuditWebhookSelfHealStatus,
+  AdminNavigationResponse,
   AdminUsageTrendsResponse,
 } from '~/entities/admin-platform'
 export {
@@ -157,6 +158,7 @@ export {
   fetchAdminStats,
   fetchAdminFinOps,
   fetchAdminAuditWebhookSelfHealStatus,
+  fetchAdminNavigation,
   fetchAdminUsageForecast,
   fetchAdminUsageTrends,
   fetchAdminSystemDependencies,

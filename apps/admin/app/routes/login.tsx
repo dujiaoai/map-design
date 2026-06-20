@@ -18,7 +18,7 @@ import {
   saveRememberLogin,
 } from '~/shared/lib/remember-login'
 import { formatLoginError } from '~/shared/auth/format-login-error'
-import { isSaasAuthEnabled } from '~/shared/config/saas-auth-enabled'
+import { adminBrand } from '~/shared/config/admin-brand'
 import { PasswordInput } from '~/shared/ui/password-input'
 
 import type { Route } from './+types/login'

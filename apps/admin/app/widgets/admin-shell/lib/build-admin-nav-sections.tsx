@@ -5,6 +5,8 @@ import type { Session } from '@repo/auth'
 
 import { hasAnyPermissionCodes, isPlatformAdmin } from '~/shared/auth/admin-access'
 
+import { filterNavItemsForProduct } from '~/shared/lib/admin-module-registry'
+
 import { adminNavItems, type AdminNavItem } from './nav-items'
 
 export const ADMIN_NAV_SECTION_DEFS = [
@@ -39,12 +41,14 @@ function canSeeAdminNavItem(item: AdminNavItem, session: Session | null): boolea
 export function buildAdminNavSections(
   pathname: string,
   session: Session | null,
+  productCode?: string | null,
 ): NavMapSectionUi[] {
+  const visibleItems = filterNavItemsForProduct(adminNavItems, productCode)
   return ADMIN_NAV_SECTION_DEFS.map((def) => ({
     id: def.id,
     label: def.label,
     items: def.routes
-      .map((route) => adminNavItems.find((item) => item.to === route))
+      .map((route) => visibleItems.find((item) => item.to === route))
       .filter((item): item is AdminNavItem => Boolean(item && canSeeAdminNavItem(item, session)))
       .map((item) => toNavMainItem(item, pathname)),
   })).filter((section) => section.items.length > 0)

@@ -2,6 +2,7 @@ import { Button } from '@repo/ui'
 import { Link2Icon, PlusIcon, UsersIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
+import { buildCreateTenantRoleHref } from '~/features/roles/lib/tenant-role-nav'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 
 export function TenantRolesGuidanceStrip({
@@ -11,7 +12,6 @@ export function TenantRolesGuidanceStrip({
   loaded,
   embedded = false,
   canWrite = false,
-  onCreate,
 }: {
   tenantId: string
   tenantLabel: string
@@ -19,7 +19,6 @@ export function TenantRolesGuidanceStrip({
   loaded: boolean
   embedded?: boolean
   canWrite?: boolean
-  onCreate?: () => void
 }) {
   const description = embedded
     ? appendAdminListTotal('为本租户定义角色并配置 tenant / workspace 权限集合。', {
@@ -32,6 +31,10 @@ export function TenantRolesGuidanceStrip({
         loaded,
         unit: '个',
       })
+
+  const createHref = buildCreateTenantRoleHref(tenantId, {
+    from: embedded ? 'tenant-detail' : undefined,
+  })
 
   return (
     <section
@@ -60,7 +63,7 @@ export function TenantRolesGuidanceStrip({
             成员管理
           </Button>
           {canWrite ? (
-            <Button size="sm" onClick={onCreate}>
+            <Button nativeButton={false} size="sm" render={<Link to={createHref} />}>
               <PlusIcon className="size-3.5" />
               新建角色
             </Button>

@@ -56,7 +56,11 @@ export function TenantCustomRolesPage({ tenantId }: { tenantId: string }) {
         />
       ) : null}
 
-      <TenantCustomRolesPanel tenantId={tenantId} tenantLabel={tenantContextLabel} />
+      <TenantCustomRolesPanel
+        tenantId={tenantId}
+        tenantLabel={tenantContextLabel}
+        initialRoleId={searchParams.get('roleId') ?? undefined}
+      />
     </div>
   )
 }

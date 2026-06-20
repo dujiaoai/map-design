@@ -1,10 +1,10 @@
 import { Badge, Button, cn, Input, toast, useConfirmDialog } from '@repo/ui'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router'
-import { PencilIcon, SearchIcon, Trash2Icon, UsersIcon } from 'lucide-react'
+import { PencilIcon, PlusIcon, SearchIcon, Trash2Icon, UsersIcon } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { CreateTenantRoleSheet } from '~/features/roles/ui/create-tenant-role-sheet'
+import { buildCreateTenantRoleHref } from '~/features/roles/lib/tenant-role-nav'
 import { EditTenantRoleSheet } from '~/features/roles/ui/edit-tenant-role-sheet'
 import { TenantRolesGuidanceStrip } from '~/features/roles/ui/tenant-roles-guidance-strip'
 import {
@@ -33,10 +33,12 @@ export function TenantCustomRolesPanel({
   tenantId,
   tenantLabel,
   embedded = false,
+  initialRoleId,
 }: {
   tenantId: string
   tenantLabel?: string
   embedded?: boolean
+  initialRoleId?: string
 }) {
   const { can, session } = useAdminPermissions()
   const canWrite =
@@ -45,6 +47,10 @@ export function TenantCustomRolesPanel({
   const { confirm, confirmDialog } = useConfirmDialog()
   const searchInputRef = useRef<HTMLInputElement>(null)
   useAdminListSearchShortcut(searchInputRef)
+
+  const createHref = buildCreateTenantRoleHref(tenantId, {
+    from: embedded ? 'tenant-detail' : undefined,
+  })
 
   const rolesQuery = useQuery({
     queryKey: adminQueryKeys.tenantCustomRoles(tenantId),
@@ -59,8 +65,8 @@ export function TenantCustomRolesPanel({
   const [selectedCodes, setSelectedCodes] = useState<string[]>([])
   const [formError, setFormError] = useState<string | null>(null)
   const [roleSearch, setRoleSearch] = useState('')
-  const [createOpen, setCreateOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
+  const initialRoleAppliedRef = useRef(false)
 
   const rolePermissionsQuery = useQuery({
     queryKey: adminQueryKeys.tenantRolePermissions(tenantId, selectedRole?.id ?? ''),
@@ -81,10 +87,22 @@ export function TenantCustomRolesPanel({
   }, [roleSearch, roles])
 
   useEffect(() => {
-    if (!selectedRole && roles.length) {
-      setSelectedRole(roles[0] ?? null)
+    if (!roles.length) return
+    if (!initialRoleAppliedRef.current) {
+      if (initialRoleId) {
+        const matched = roles.find((role) => role.id === initialRoleId)
+        if (matched) {
+          setSelectedRole(matched)
+          initialRoleAppliedRef.current = true
+          return
+        }
+      }
+      if (!selectedRole) {
+        setSelectedRole(roles[0] ?? null)
+      }
+      initialRoleAppliedRef.current = true
     }
-  }, [roles, selectedRole])
+  }, [initialRoleId, roles, selectedRole])
 
   useEffect(() => {
     if (!selectedRole) return
@@ -178,7 +196,6 @@ export function TenantCustomRolesPanel({
           loaded={Boolean(rolesQuery.data)}
           embedded={embedded}
           canWrite={canWrite}
-          onCreate={() => setCreateOpen(true)}
         />
       ) : null}
 
@@ -216,7 +233,8 @@ export function TenantCustomRolesPanel({
               message="暂无角色"
               action={
                 canWrite ? (
-                  <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
+                  <Button nativeButton={false} size="sm" render={<Link to={createHref} />}>
+                    <PlusIcon className="size-3.5" />
                     创建首个角色
                   </Button>
                 ) : undefined
@@ -274,7 +292,8 @@ export function TenantCustomRolesPanel({
               message="请选择或创建自定义角色"
               action={
                 canWrite ? (
-                  <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
+                  <Button nativeButton={false} size="sm" render={<Link to={createHref} />}>
+                    <PlusIcon className="size-3.5" />
                     新建角色
                   </Button>
                 ) : undefined
@@ -388,12 +407,6 @@ export function TenantCustomRolesPanel({
         </AdminPanel>
       </div>
 
-      <CreateTenantRoleSheet
-        tenantId={tenantId}
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        onCreated={(role) => setSelectedRole(role)}
-      />
       <EditTenantRoleSheet
         tenantId={tenantId}
         role={selectedRole}

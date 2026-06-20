@@ -208,6 +208,7 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
               tenantId={tenantId}
               tenantLabel={`${tenant.name} (${tenant.slug})`}
               embedded
+              initialRoleId={searchParams.get('roleId') ?? undefined}
             />
           </TabsContent>
         ) : null}

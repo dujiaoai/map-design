@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useEnabledTenantFeatures } from '~/features/team-switcher'
 import { useWorkspaceMenusQuery } from '~/shared/queries/menu-queries'
 import { usesSaasSessionBootstrap } from '~/shared/session/fetch-saas-session'
-import { useSessionAccess } from '~/shared/session/use-session-access'
+import { useSessionPermissions } from '~/shared/session/use-session-access'
 
 import { filterNavMainItemsForTenant } from '../lib/filter-nav-by-tenant'
 import {
@@ -21,7 +21,7 @@ import type { NavMainItem, NavMapSectionDef } from '../model/types'
 export function useWorkspaceNavMainItems(): NavMainItem[] {
   const saasBootstrap = usesSaasSessionBootstrap()
   const enabledTenantFeatures = useEnabledTenantFeatures()
-  const { permissions } = useSessionAccess()
+  const permissions = useSessionPermissions()
   const menusQuery = useWorkspaceMenusQuery(saasBootstrap)
 
   return useMemo(() => {
@@ -36,7 +36,7 @@ export function useWorkspaceNavMainItems(): NavMainItem[] {
 export function useWorkspaceNavSectionDefs(): NavMapSectionDef[] {
   const saasBootstrap = usesSaasSessionBootstrap()
   const enabledTenantFeatures = useEnabledTenantFeatures()
-  const { permissions } = useSessionAccess()
+  const permissions = useSessionPermissions()
   const menusQuery = useWorkspaceMenusQuery(saasBootstrap)
 
   return useMemo(() => {

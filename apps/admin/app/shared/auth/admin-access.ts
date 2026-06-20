@@ -64,6 +64,13 @@ export function canAccessAdminMembers(session: Session | null): boolean {
   return hasAnyPermission(session, ['admin:members:read'])
 }
 
+/** 成员/租户角色写操作：平台运营或具备 members/tenants 写权限 */
+export function canWriteAdminMembers(session: Session | null): boolean {
+  if (!session) return false
+  if (isPlatformAdmin(session)) return true
+  return hasAnyPermission(session, ['admin:members:write', 'admin:tenants:write'])
+}
+
 /** 解析成员页目标租户：平台可读 ?tenantId=，租户管理员仅本租户 */
 export function resolveMembersTenantId(
   session: Session | null,

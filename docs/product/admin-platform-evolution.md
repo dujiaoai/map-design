@@ -233,6 +233,16 @@ flowchart TB
 | 17-4 | Usage 成本预测与自动扩缩容建议 |
 | 17-5 | 对象存储 智能分层与生命周期优化 |
 
+### Phase 18 · 多 SaaS 基座（ADR-0019）✅
+
+| PR | 内容 |
+| --- | --- |
+| 18-1 | ADR-0019 产品线维度 + sys_product / tenant.primary_product_id |
+| 18-2 | GET /v1/admin/products 与 /products/{code}/features |
+| 18-3 | Admin 品牌外置（VITE_ADMIN_*）与 product entity |
+| 18-4 | admin-module-registry + GET /v1/admin/navigation |
+| 18-5 | 侧栏产品选择器 + 租户列表 productCode 筛选/徽章 |
+
 ---
 
 ## 5. 架构原则（演进时遵守）

@@ -29,3 +29,25 @@ export function formatInviteLinkUses(useCount: number, maxUses: number | null) {
   if (maxUses == null) return `${useCount} 次（不限）`
   return `${useCount} / ${maxUses}`
 }
+
+export const MEMBER_ROLE_HINTS: Partial<Record<TenantMemberRole, string>> = {
+  TENANT_ADMIN: '可管理成员、设置与邀请',
+  MEMBER: '可使用租户内标准功能',
+  VIEWER: '只读访问，不可修改数据',
+}
+
+export function describeMemberRole(role: { code: string; name: string }): string {
+  return (
+    MEMBER_ROLE_HINTS[role.code as TenantMemberRole] ??
+    (role.name ? `${role.name}（${role.code}）` : role.code)
+  )
+}
+
+export function memberInitials(displayName: string, email: string): string {
+  const name = displayName.trim()
+  if (name.length >= 2) return name.slice(0, 2).toUpperCase()
+  if (name.length === 1) return name.toUpperCase()
+  const local = email.split('@')[0]?.trim() ?? ''
+  if (local.length >= 2) return local.slice(0, 2).toUpperCase()
+  return local.slice(0, 1).toUpperCase() || '?'
+}

@@ -1,11 +1,12 @@
 import { Badge, Button } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import { PencilIcon } from 'lucide-react'
+import { ArrowLeftIcon, PencilIcon, UserPlusIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 
-import { fetchAdminTenant, fetchTenantMembers, type AdminUserSummary } from '~/shared/api/admin-api'
+import { formatMemberRoleLabel } from '~/features/members/lib/member-role-labels'
+import { fetchAdminTenant, fetchTenantMembers, fetchTenantQuotas, type AdminUserSummary } from '~/shared/api/admin-api'
 import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
 import { isPlatformAdmin } from '~/shared/auth/admin-access'
 import {
@@ -52,6 +53,7 @@ export function MembersAdminPage({
   const { can, session } = useAdminPermissions()
   const canWrite =
     isPlatformAdmin(session) || can('admin:members:write') || can('admin:tenants:write')
+  const canReadTenants = can('admin:tenants:read')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const showTenantClear =
@@ -96,10 +98,25 @@ export function MembersAdminPage({
     staleTime: 60_000,
   })
 
+  const quotasQuery = useQuery({
+    queryKey: adminQueryKeys.tenantQuotas(tenantId),
+    queryFn: () => fetchTenantQuotas(tenantId),
+    staleTime: 30_000,
+  })
+
+  const seatFull =
+    quotasQuery.data?.seats.limit != null &&
+    quotasQuery.data.seats.used >= quotasQuery.data.seats.limit
+
   const resolvedTenantName = tenantName ?? tenantQuery.data?.name ?? session?.tenant?.name ?? '当前租户'
   const tenantContextLabel = tenantQuery.data
     ? `${tenantQuery.data.name} (${tenantQuery.data.slug})`
     : resolvedTenantName
+
+  const backLink =
+    canReadTenants
+      ? { to: `/tenants/${tenantId}?tab=members`, label: '返回租户' }
+      : { to: '/', label: '返回概览' }
 
   const members = membersQuery.data?.members ?? []
 
@@ -137,7 +154,7 @@ export function MembersAdminPage({
             <div className="flex flex-wrap gap-1">
               {member.roles.map((role) => (
                 <Badge key={role} variant="outline" className="font-mono text-[10px]">
-                  {role}
+                  {formatMemberRoleLabel(role)}
                 </Badge>
               ))}
             </div>
@@ -194,8 +211,32 @@ export function MembersAdminPage({
     [canWrite, columnPrefs.isColumnVisible, columnPrefs.visible, sort],
   )
 
+  const inviteButton = canWrite ? (
+    <Button
+      onClick={() => setInviteOpen(true)}
+      disabled={seatFull}
+      title={seatFull ? '成员席位已满，无法继续邀请' : undefined}
+    >
+      <UserPlusIcon className="size-3.5" />
+      {embedded ? '邀请成员' : '邀请成员'}
+    </Button>
+  ) : null
+
   const content = (
     <>
+      {!embedded ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="-ml-2 w-fit"
+          nativeButton={false}
+          render={<Link to={backLink.to} />}
+        >
+          <ArrowLeftIcon className="size-3.5" />
+          {backLink.label}
+        </Button>
+      ) : null}
+
       {!embedded ? (
         <AdminPageHeader
           eyebrow="Members"
@@ -204,15 +245,14 @@ export function MembersAdminPage({
             `${resolvedTenantName} · 管理本租户成员与角色分配。`,
             { total: memberTotal, loaded: Boolean(membersQuery.data), unit: '名' },
           )}
-          actions={
-            canWrite ? (
-              <Button onClick={() => setInviteOpen(true)}>邀请链接</Button>
-            ) : null
-          }
+          actions={inviteButton}
         />
       ) : canWrite ? (
-        <div className="flex justify-end">
-          <Button onClick={() => setInviteOpen(true)}>邀请成员</Button>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            管理成员、角色与邀请；跨租户用户请前往「用户」页。
+          </p>
+          {inviteButton}
         </div>
       ) : null}
 
@@ -238,6 +278,7 @@ export function MembersAdminPage({
         statusOptions={[
           { value: 'all', label: '全部状态' },
           { value: 'active', label: 'active' },
+          { value: 'invited', label: 'invited' },
           { value: 'disabled', label: 'disabled' },
         ]}
         trailing={
@@ -269,6 +310,13 @@ export function MembersAdminPage({
                 <Button type="button" variant="outline" size="sm" onClick={clearMemberFilters}>
                   清除筛选
                 </Button>
+              ) : canWrite && !seatFull ? (
+                <Button type="button" size="sm" onClick={() => setInviteOpen(true)}>
+                  <UserPlusIcon className="size-3.5" />
+                  邀请首位成员
+                </Button>
+              ) : seatFull ? (
+                <p className="text-xs text-muted-foreground">成员席位已满</p>
               ) : undefined
             }
           />

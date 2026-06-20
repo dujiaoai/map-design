@@ -1,27 +1,24 @@
 import { useSession } from '@repo/auth'
 import { AppSidebar as UiAppSidebar } from '@repo/ui'
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 
 import { useAdminTeamSwitcher } from '~/features/team-switcher/model/use-admin-team-switcher'
+import { useAdminNavigation } from '~/shared/hooks/use-admin-navigation'
+import { adminBrand } from '~/shared/config/admin-brand'
 
 import { adminTenantsToTeams } from '../lib/admin-tenant-team-mapper'
-import { buildAdminNavSections } from '../lib/build-admin-nav-sections'
 import { AdminBrandLogo } from './admin-brand-logo'
-import { adminBrand } from '~/shared/config/admin-brand'
+import { AdminProductSelector } from './admin-product-selector'
 
 export function AdminAppSidebar() {
   const session = useSession()
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { teams, activeTeamId, showTeamSwitcher, onTeamChange } = useAdminTeamSwitcher()
+  const { navMapSections } = useAdminNavigation(pathname, session)
 
-  const navMapSections = useMemo(
-    () => buildAdminNavSections(pathname, session),
-    [pathname, session],
-  )
-
-  const teamSwitcherTeams = useMemo(() => adminTenantsToTeams(teams), [teams])
+  const teamSwitcherTeams = adminTenantsToTeams(teams)
 
   const handleNavSelect = useCallback(
     (id: string) => {
@@ -33,23 +30,27 @@ export function AdminAppSidebar() {
   const brandSubtitle = session?.tenant?.slug ?? session?.tenant?.name
 
   return (
-    <UiAppSidebar
-      hideFooter
-      hideNotifications
-      brand={
-        showTeamSwitcher
-          ? undefined
-          : {
-              logo: <AdminBrandLogo />,
-              title: '运营控制台',
-              subtitle: brandSubtitle,
-            }
-      }
-      teams={showTeamSwitcher ? teamSwitcherTeams : undefined}
-      activeTeamId={activeTeamId}
-      onTeamChange={(tenantId) => void onTeamChange(tenantId)}
-      navMapSections={navMapSections}
-      onNavSelect={handleNavSelect}
-    />
+    <div className="flex h-full min-h-0 flex-col">
+      <UiAppSidebar
+        className="min-h-0 flex-1"
+        hideFooter
+        hideNotifications
+        brand={
+          showTeamSwitcher
+            ? undefined
+            : {
+                logo: <AdminBrandLogo />,
+                title: adminBrand.consoleTitle,
+                subtitle: brandSubtitle,
+              }
+        }
+        teams={showTeamSwitcher ? teamSwitcherTeams : undefined}
+        activeTeamId={activeTeamId}
+        onTeamChange={(tenantId) => void onTeamChange(tenantId)}
+        navMapSections={navMapSections}
+        onNavSelect={handleNavSelect}
+      />
+      <AdminProductSelector />
+    </div>
   )
 }

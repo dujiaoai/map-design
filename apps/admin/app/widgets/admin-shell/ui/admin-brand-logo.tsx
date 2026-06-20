@@ -10,6 +10,7 @@ export function AdminBrandLogo() {
         aria-hidden
       />
       <ShieldCheckIcon className="relative size-4 text-primary-foreground" aria-hidden />
+      <span className="sr-only">{adminBrand.appName}</span>
     </div>
   )
 }

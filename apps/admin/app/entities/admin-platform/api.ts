@@ -2,6 +2,7 @@ import { api } from '~/shared/api/client'
 
 import type {
   AdminAuditWebhookTargetListResponse,
+  AdminNavigationResponse,
   AdminPingResponse,
   AdminStatsResponse,
   AdminSystemDependenciesResponse,
@@ -56,4 +57,9 @@ export function fetchAdminSystemFlags() {
 
 export function fetchAdminSystemDependencies() {
   return api.get<AdminSystemDependenciesResponse>('/admin/system/dependencies')
+}
+
+export function fetchAdminNavigation(productCode?: string) {
+  const query = productCode ? `?product=${encodeURIComponent(productCode)}` : ''
+  return api.get<AdminNavigationResponse>(`/admin/navigation${query}`)
 }

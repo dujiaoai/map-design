@@ -185,3 +185,20 @@ export interface AdminSystemDependenciesResponse {
     detail: string
   }>
 }
+
+export interface AdminNavigationItem {
+  to: string
+  label: string
+  permissions: string[]
+}
+
+export interface AdminNavigationSection {
+  id: string
+  label: string
+  items: AdminNavigationItem[]
+}
+
+export interface AdminNavigationResponse {
+  productCode: string
+  sections: AdminNavigationSection[]
+}

@@ -85,7 +85,14 @@ public class TenantRepository {
   }
 
   public AdminPagedResult<SysTenant> findTenants(AdminListParams params) {
+    return findTenants(params, null);
+  }
+
+  public AdminPagedResult<SysTenant> findTenants(AdminListParams params, UUID primaryProductId) {
     var wrapper = Wrappers.<SysTenant>lambdaQuery();
+    if (primaryProductId != null) {
+      wrapper.eq(SysTenant::getPrimaryProductId, primaryProductId);
+    }
     applyTenantSort(wrapper, params);
     var query = params.normalizedQuery();
     if (StringUtils.hasText(query)) {

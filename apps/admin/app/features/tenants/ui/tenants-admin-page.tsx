@@ -25,6 +25,7 @@ import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
+import { useAdminProductContext } from '~/shared/hooks/use-admin-product-context'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
@@ -40,6 +41,7 @@ import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
 type TenantSortKey = 'name' | 'slug' | 'createdAt'
 
 const TENANT_TABLE_COLUMNS = [
+  { key: 'productCode', label: '产品线' },
   { key: 'name', label: '名称' },
   { key: 'slug', label: 'Slug' },
   { key: 'plan', label: '计划' },
@@ -86,12 +88,15 @@ export function TenantsAdminPage() {
     [toggleSort, setPage],
   )
 
+  const { productCode } = useAdminProductContext()
+
   const queryParams = useMemo(
     () => ({
       ...baseQueryParams,
+      productCode,
       ...(sort ? { sortBy: sort.key, sortDir: sort.direction } : {}),
     }),
-    [baseQueryParams, sort],
+    [baseQueryParams, productCode, sort],
   )
 
   const query = useAdminPagedQuery({
@@ -167,6 +172,17 @@ export function TenantsAdminPage() {
   const columns = useMemo<TableColumnsType<AdminTenantSummary>>(
     () =>
       [
+        {
+          title: '产品线',
+          dataIndex: 'productCode',
+          key: 'productCode',
+          width: 120,
+          render: (productCode: string | undefined) => (
+            <Badge variant="outline" className="font-mono text-[10px]">
+              {productCode ?? 'map-design'}
+            </Badge>
+          ),
+        },
         {
           title: '名称',
           dataIndex: 'name',

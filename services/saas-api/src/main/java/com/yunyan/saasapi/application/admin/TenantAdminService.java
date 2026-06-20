@@ -31,7 +31,19 @@ public class TenantAdminService {
   private final TenantSessionRevocationService tenantSessionRevocationService;
 
   public AdminTenantListResponse listTenants(AdminListParams params) {
-    var result = tenantRepository.findTenants(params);
+    return listTenants(params, null);
+  }
+
+  public AdminTenantListResponse listTenants(AdminListParams params, String productCode) {
+    UUID productId = null;
+    if (StringUtils.hasText(productCode)) {
+      productId =
+          productRepository
+              .findByCode(productCode.trim())
+              .map(p -> p.getId())
+              .orElse(null);
+    }
+    var result = tenantRepository.findTenants(params, productId);
     var tenants = result.items().stream().map(this::toDto).toList();
     if (params.isPaginated()) {
       return AdminTenantListResponse.paged(

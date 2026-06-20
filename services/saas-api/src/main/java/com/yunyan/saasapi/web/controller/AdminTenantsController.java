@@ -116,8 +116,10 @@ public class AdminTenantsController {
       @RequestParam(required = false) Integer page,
       @RequestParam(required = false) Integer size,
       @RequestParam(required = false) String sortBy,
-      @RequestParam(required = false) String sortDir) {
-    return tenantAdminService.listTenants(new AdminListParams(q, page, size, null, sortBy, sortDir));
+      @RequestParam(required = false) String sortDir,
+      @RequestParam(required = false) String productCode) {
+    return tenantAdminService.listTenants(
+        new AdminListParams(q, page, size, null, sortBy, sortDir), productCode);
   }
 
   @GetMapping("/{tenantId}")

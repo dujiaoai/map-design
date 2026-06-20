@@ -11,6 +11,7 @@ export interface AdminListQuery {
   from?: number
   to?: number
   actorUserId?: string
+  productCode?: string
 }
 
 export function buildAdminListQuery(params?: AdminListQuery) {
@@ -27,6 +28,7 @@ export function buildAdminListQuery(params?: AdminListQuery) {
   if (params?.from != null) search.set('from', String(params.from))
   if (params?.to != null) search.set('to', String(params.to))
   if (params?.actorUserId) search.set('actorUserId', params.actorUserId)
+  if (params?.productCode) search.set('productCode', params.productCode)
   const query = search.toString()
   return query ? `?${query}` : ''
 }

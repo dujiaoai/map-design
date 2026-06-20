@@ -1,12 +1,18 @@
 import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast, useConfirmDialog } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { PencilIcon, ScrollTextIcon, ArrowLeftIcon } from 'lucide-react'
+import { ArrowLeftIcon, PencilIcon, ScrollTextIcon, UserPlusIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
 import { AUDIT_READ_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
 import { buildAuditLogsLink } from '~/features/audit-logs/lib/audit-log-nav'
+import { TenantRowAction, TenantRowActions } from '~/features/tenants/ui/tenant-row-actions'
+import { formatUserRoleLabel } from '~/features/users/lib/user-role-labels'
+import { EditUserSheet } from '~/features/users/ui/edit-user-sheet'
+import { UserNameCell } from '~/features/users/ui/user-name-cell'
+import { UsersGuidanceStrip } from '~/features/users/ui/users-guidance-strip'
+import { UsersStatusFilter } from '~/features/users/ui/users-status-filter'
 import { fetchAdminTenants, fetchAdminUsers, patchAdminUser, type AdminUserSummary } from '~/shared/api/admin-api'
 import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
@@ -16,23 +22,19 @@ import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-
 import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
-import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
 import { AdminTableBulkBar } from '~/shared/ui/admin-table-bulk-bar'
-import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
 import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
 
-import { EditUserSheet } from './edit-user-sheet'
-
 type UserSortKey = 'email' | 'displayName' | 'tenantSlug' | 'lastLoginAt' | 'createdAt'
 
 const USER_TABLE_COLUMNS = [
-  { key: 'email', label: '邮箱' },
-  { key: 'displayName', label: '显示名' },
+  { key: 'user', label: '用户' },
   { key: 'tenantSlug', label: '租户' },
   { key: 'roles', label: '角色' },
   { key: 'status', label: '状态' },
@@ -100,9 +102,10 @@ export function UsersAdminPage() {
     return tenant ? `${tenant.name} (${tenant.slug})` : tenantFilterId
   }, [tenantFilterId, tenantsQuery.data?.tenants])
 
-  const backLink = tenantFilterId && canReadTenants
-    ? { to: `/tenants/${tenantFilterId}?tab=info`, label: '返回租户' }
-    : { to: '/', label: '返回概览' }
+  const backLink =
+    tenantFilterId && canReadTenants
+      ? { to: `/tenants/${tenantFilterId}?tab=info`, label: '返回租户' }
+      : { to: '/', label: '返回概览' }
 
   const userSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName', 'tenantSlug']
   const filteredUsers = useMemo(() => {
@@ -114,6 +117,13 @@ export function UsersAdminPage() {
 
   const total = usersQuery.data?.total ?? usersQuery.data?.users.length ?? 0
   const showActions = canWrite || canViewAudit
+
+  const hasUserFilters =
+    searchInput.trim().length > 0 ||
+    statusFilter !== 'all' ||
+    Boolean(sort) ||
+    Boolean(tenantFilterId) ||
+    Boolean(qFromUrl)
 
   const selectedUsers = useMemo(
     () => filteredUsers.filter((user) => selectedRowKeys.includes(user.id)),
@@ -158,22 +168,22 @@ export function UsersAdminPage() {
     setSearchParams({})
   }
 
+  function handleStatusFilterChange(value: string) {
+    setStatusFilter(value)
+    setPage(1)
+  }
+
   const columns = useMemo<TableColumnsType<AdminUserSummary>>(
     () =>
       [
         {
-          title: '邮箱',
-          dataIndex: 'email',
-          key: 'email',
+          title: '用户',
+          key: 'user',
           sorter: true,
           sortOrder: adminAntSortOrder(sort, 'email'),
-        },
-        {
-          title: '显示名',
-          dataIndex: 'displayName',
-          key: 'displayName',
-          sorter: true,
-          sortOrder: adminAntSortOrder(sort, 'displayName'),
+          render: (_value: unknown, user: AdminUserSummary) => (
+            <UserNameCell user={user} tenantFilterId={tenantFilterId} />
+          ),
         },
         {
           title: '租户',
@@ -181,7 +191,17 @@ export function UsersAdminPage() {
           key: 'tenantSlug',
           sorter: true,
           sortOrder: adminAntSortOrder(sort, 'tenantSlug'),
-          render: (slug: string) => <span className="font-mono text-xs">{slug}</span>,
+          render: (slug: string, user: AdminUserSummary) =>
+            tenantFilterId ? (
+              <span className="font-mono text-xs">{slug}</span>
+            ) : (
+              <Link
+                to={`/users?tenantId=${encodeURIComponent(user.tenantId)}`}
+                className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
+              >
+                {slug}
+              </Link>
+            ),
         },
         {
           title: '角色',
@@ -190,7 +210,7 @@ export function UsersAdminPage() {
             <div className="flex flex-wrap gap-1">
               {user.roles.map((role) => (
                 <Badge key={role} variant="outline" className="font-mono text-[10px]">
-                  {role}
+                  {formatUserRoleLabel(role)}
                 </Badge>
               ))}
             </div>
@@ -229,14 +249,14 @@ export function UsersAdminPage() {
               {
                 title: '操作',
                 key: 'actions',
-                align: 'right' as const,
+                fixed: 'right' as const,
+                width: 96,
                 render: (_value: unknown, user: AdminUserSummary) => (
-                  <div className="flex justify-end gap-1">
+                  <TenantRowActions>
                     {canViewAudit ? (
-                      <Button
-                        nativeButton={false}
-                        variant="ghost"
-                        size="sm"
+                      <TenantRowAction
+                        label="审计"
+                        icon={ScrollTextIcon}
                         render={
                           <Link
                             to={buildAuditLogsLink({
@@ -245,18 +265,16 @@ export function UsersAdminPage() {
                             })}
                           />
                         }
-                      >
-                        <ScrollTextIcon className="size-3.5" />
-                        审计
-                      </Button>
+                      />
                     ) : null}
                     {canWrite ? (
-                      <Button variant="ghost" size="sm" onClick={() => setEditingUser(user)}>
-                        <PencilIcon className="size-3.5" />
-                        编辑
-                      </Button>
+                      <TenantRowAction
+                        label="编辑"
+                        icon={PencilIcon}
+                        onClick={() => setEditingUser(user)}
+                      />
                     ) : null}
-                  </div>
+                  </TenantRowActions>
                 ),
               },
             ]
@@ -282,14 +300,11 @@ export function UsersAdminPage() {
         {backLink.label}
       </Button>
 
-      <AdminPageHeader
-        eyebrow="Users"
-        title="用户"
-        description={appendAdminListTotal(
-          '跨租户用户列表；邀请新成员请前往对应租户的「成员」页生成邀请链接。',
-          { total, loaded: Boolean(usersQuery.data), unit: '个' },
-        )}
-        actions={null}
+      <UsersGuidanceStrip
+        tenantFilterId={tenantFilterId}
+        tenantLabel={tenantLabel}
+        total={total}
+        loaded={Boolean(usersQuery.data)}
       />
 
       {tenantFilterId ? (
@@ -300,6 +315,13 @@ export function UsersAdminPage() {
           onClear={() => setSearchParams({})}
         />
       ) : null}
+
+      <section className="space-y-3">
+        <h2 className="admin-display text-xs tracking-[0.18em] text-muted-foreground uppercase">
+          状态筛选
+        </h2>
+        <UsersStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
+      </section>
 
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm text-muted-foreground">租户筛选</span>
@@ -333,17 +355,6 @@ export function UsersAdminPage() {
         search={searchInput}
         onSearchChange={setSearchInput}
         searchPlaceholder="搜索邮箱、显示名或租户 slug…"
-        status={statusFilter}
-        onStatusChange={(value) => {
-          setStatusFilter(value)
-          setPage(1)
-        }}
-        statusOptions={[
-          { value: 'all', label: '全部状态' },
-          { value: 'active', label: 'active' },
-          { value: 'invited', label: 'invited' },
-          { value: 'disabled', label: 'disabled' },
-        ]}
         trailing={
           <AdminTableColumnPicker
             columns={[...USER_TABLE_COLUMNS]}
@@ -377,7 +388,7 @@ export function UsersAdminPage() {
 
       <AdminPanel className="p-0">
         {usersQuery.isLoading ? (
-          <AdminTableSkeleton columns={showActions ? 8 : 7} showPagination />
+          <AdminTableSkeleton columns={showActions ? 7 : 6} showPagination />
         ) : usersQuery.isError ? (
           <AdminEmptyState
             message="加载失败，请刷新重试"
@@ -385,14 +396,23 @@ export function UsersAdminPage() {
             isRetrying={usersQuery.isFetching}
           />
         ) : !usersQuery.data?.users.length ? (
-          <AdminEmptyState message="暂无用户" />
-        ) : !filteredUsers.length ? (
           <AdminEmptyState
-            message="无匹配用户"
+            message={hasUserFilters ? '无匹配用户' : '暂无用户'}
             action={
-              <Button type="button" variant="outline" size="sm" onClick={clearUserFilters}>
-                清除筛选
-              </Button>
+              hasUserFilters ? (
+                <Button type="button" variant="outline" size="sm" onClick={clearUserFilters}>
+                  清除筛选
+                </Button>
+              ) : tenantFilterId && canReadTenants ? (
+                <Button
+                  nativeButton={false}
+                  size="sm"
+                  render={<Link to={`/tenants/${tenantFilterId}?tab=members`} />}
+                >
+                  <UserPlusIcon className="size-3.5" />
+                  前往成员邀请
+                </Button>
+              ) : undefined
             }
           />
         ) : (

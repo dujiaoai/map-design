@@ -1,7 +1,7 @@
 import { Badge, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, toast, useConfirmDialog } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeftIcon, PencilIcon, ScrollTextIcon, UserPlusIcon } from 'lucide-react'
+import { PencilIcon, ScrollTextIcon, UserPlusIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
@@ -24,7 +24,7 @@ import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
 import { AdminTableBulkBar } from '~/shared/ui/admin-table-bulk-bar'
-import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminEmptyState, AdminPageBackButton, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
@@ -105,7 +105,7 @@ export function UsersAdminPage() {
   const backLink =
     tenantFilterId && canReadTenants
       ? { to: `/tenants/${tenantFilterId}?tab=info`, label: '返回租户' }
-      : { to: '/', label: '返回概览' }
+      : null
 
   const userSearchKeys: (keyof AdminUserSummary)[] = ['email', 'displayName', 'tenantSlug']
   const filteredUsers = useMemo(() => {
@@ -289,16 +289,7 @@ export function UsersAdminPage() {
 
   return (
     <div className="space-y-6 admin-stagger">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-2 w-fit"
-        nativeButton={false}
-        render={<Link to={backLink.to} />}
-      >
-        <ArrowLeftIcon className="size-3.5" />
-        {backLink.label}
-      </Button>
+      <AdminPageBackButton backLink={backLink} />
 
       <UsersGuidanceStrip
         tenantFilterId={tenantFilterId}

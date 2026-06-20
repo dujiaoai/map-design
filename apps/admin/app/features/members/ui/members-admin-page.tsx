@@ -1,9 +1,9 @@
 import { Badge, Button } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeftIcon, PencilIcon, UserPlusIcon } from 'lucide-react'
+import { PencilIcon, UserPlusIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 
 import { formatMemberRoleLabel } from '~/features/members/lib/member-role-labels'
 import { EditMemberSheet } from '~/features/members/ui/edit-member-sheet'
@@ -22,9 +22,10 @@ import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-
 import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
+import { resolveTenantScopedAdminBackLink } from '~/shared/lib/tenant-scoped-admin-nav'
 import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
-import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminEmptyState, AdminPageBackButton, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
@@ -112,10 +113,10 @@ export function MembersAdminPage({
     ? `${tenantQuery.data.name} (${tenantQuery.data.slug})`
     : resolvedTenantName
 
-  const backLink =
-    canReadTenants
-      ? { to: `/tenants/${tenantId}?tab=members`, label: '返回租户' }
-      : { to: '/', label: '返回概览' }
+  const backLink = resolveTenantScopedAdminBackLink(searchParams, {
+    tenantTab: 'members',
+    canReadTenants,
+  })
 
   const members = membersQuery.data?.members ?? []
 
@@ -209,18 +210,7 @@ export function MembersAdminPage({
 
   const content = (
     <>
-      {!embedded ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="-ml-2 w-fit"
-          nativeButton={false}
-          render={<Link to={backLink.to} />}
-        >
-          <ArrowLeftIcon className="size-3.5" />
-          {backLink.label}
-        </Button>
-      ) : null}
+      {!embedded ? <AdminPageBackButton backLink={backLink} /> : null}
 
       <MembersGuidanceStrip
         tenantId={tenantId}

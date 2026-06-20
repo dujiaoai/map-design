@@ -1,6 +1,6 @@
 import { Button } from '@repo/ui'
 import { useQueryClient } from '@tanstack/react-query'
-import { RefreshCwIcon, ArrowLeftIcon } from 'lucide-react'
+import { RefreshCwIcon } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
@@ -28,7 +28,7 @@ import { BillingTabNav } from '~/features/billing/ui/billing-tab-nav'
 import { BillingUsagePanel } from '~/features/billing/ui/billing-usage-panel'
 import { BillingWalletsPanel } from '~/features/billing/ui/billing-wallets-panel'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
-import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminEmptyState, AdminPageBackButton, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 
 export function BillingAdminPage() {
   const { can } = useAdminPermissions()
@@ -130,20 +130,11 @@ export function BillingAdminPage() {
   const backLink =
     filterSeed.tenantId && canReadTenants
       ? { to: `/tenants/${filterSeed.tenantId}?tab=info`, label: '返回租户' }
-      : { to: '/', label: '返回概览' }
+      : null
 
   return (
     <div className="space-y-6 admin-stagger">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-2 w-fit"
-        nativeButton={false}
-        render={<Link to={backLink.to} />}
-      >
-        <ArrowLeftIcon className="size-3.5" />
-        {backLink.label}
-      </Button>
+      <AdminPageBackButton backLink={backLink} />
 
       <AdminPageHeader
         eyebrow="Billing"

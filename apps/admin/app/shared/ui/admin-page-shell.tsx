@@ -1,7 +1,30 @@
 import { Button, cn } from '@repo/ui'
-import { AlertCircleIcon } from 'lucide-react'
+import { AlertCircleIcon, ArrowLeftIcon } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Link } from 'react-router'
+
+export type AdminPageBackLink = {
+  to: string
+  label: string
+}
+
+export function AdminPageBackButton({ backLink }: { backLink: AdminPageBackLink | null }) {
+  if (!backLink) return null
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="-ml-2 w-fit"
+      nativeButton={false}
+      render={<Link to={backLink.to} />}
+    >
+      <ArrowLeftIcon className="size-3.5" />
+      {backLink.label}
+    </Button>
+  )
+}
 
 export function AdminPageEyebrow({ children }: { children: ReactNode }) {
   return (

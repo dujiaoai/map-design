@@ -46,11 +46,8 @@ describe('resolveRbacAdminBackLink', () => {
     expect(back).toEqual({ to: '/permissions?module=admin', label: '返回权限目录' })
   })
 
-  it('falls back to overview when from is missing', () => {
-    expect(resolveRbacAdminBackLink(new URLSearchParams())).toEqual({
-      to: '/',
-      label: '返回概览',
-    })
+  it('returns null when from is missing and no fallback', () => {
+    expect(resolveRbacAdminBackLink(new URLSearchParams())).toBeNull()
   })
 
   it('uses custom fallback when provided', () => {

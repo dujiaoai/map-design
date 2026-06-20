@@ -86,8 +86,8 @@ export function buildRbacAdminCrossLink(
 
 export function resolveRbacAdminBackLink(
   searchParams: URLSearchParams,
-  fallback?: { to: string; label: string },
-): { to: string; label: string } {
+  fallback?: { to: string; label: string } | null,
+): { to: string; label: string } | null {
   const from = parseRbacAdminNavFrom(searchParams.get('from'))
   if (from) {
     const params = appendReturnContext(from, searchParams)
@@ -99,5 +99,5 @@ export function resolveRbacAdminBackLink(
     }
   }
 
-  return fallback ?? { to: '/', label: '返回概览' }
+  return fallback ?? null
 }

@@ -1,7 +1,7 @@
 import { Badge, Button, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
 import { useQuery } from '@tanstack/react-query'
-import { CreditCardIcon, DownloadIcon, ArrowLeftIcon } from 'lucide-react'
+import { CreditCardIcon, DownloadIcon } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { toast } from '@repo/ui'
@@ -38,7 +38,7 @@ import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
 import { AdminTableColumnPicker } from '~/shared/ui/admin-table-column-picker'
 import { AdminTableSortHint } from '~/shared/ui/admin-data-table'
-import { AdminEmptyState, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminEmptyState, AdminPageBackButton, AdminPageHeader, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminIdCell } from '~/shared/ui/admin-id-cell'
 import { AdminTableSkeleton } from '~/shared/ui/admin-table-skeleton'
 import { AdminTableToolbar } from '~/shared/ui/admin-table-toolbar'
@@ -330,20 +330,11 @@ export function AuditLogsAdminPage() {
   const backLink =
     tenantFilterId && canReadTenants
       ? { to: `/tenants/${tenantFilterId}?tab=info`, label: '返回租户' }
-      : { to: '/', label: '返回概览' }
+      : null
 
   return (
     <div className="space-y-6 admin-stagger">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-2 w-fit"
-        nativeButton={false}
-        render={<Link to={backLink.to} />}
-      >
-        <ArrowLeftIcon className="size-3.5" />
-        {backLink.label}
-      </Button>
+      <AdminPageBackButton backLink={backLink} />
 
       <AdminPageHeader
         eyebrow="Operations"

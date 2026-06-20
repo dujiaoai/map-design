@@ -1,14 +1,13 @@
-import { Button } from '@repo/ui'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeftIcon } from 'lucide-react'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 
 import { TenantCustomRolesPanel } from '~/features/roles/ui/tenant-custom-roles-panel'
 import { fetchAdminTenant } from '~/shared/api/admin-api'
 import { isPlatformAdmin } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
-import { resolveRbacAdminBackLink } from '~/shared/lib/rbac-admin-nav'
+import { resolveTenantScopedAdminBackLink } from '~/shared/lib/tenant-scoped-admin-nav'
+import { AdminPageBackButton } from '~/shared/ui/admin-page-shell'
 import { AdminTenantContextBanner } from '~/shared/ui/admin-tenant-context-banner'
 
 export function TenantCustomRolesPage({ tenantId }: { tenantId: string }) {
@@ -30,25 +29,14 @@ export function TenantCustomRolesPage({ tenantId }: { tenantId: string }) {
     ? `${tenantQuery.data.name} (${tenantQuery.data.slug})`
     : resolvedTenantName
 
-  const backLink = resolveRbacAdminBackLink(
-    searchParams,
-    canReadTenants
-      ? { to: `/tenants/${tenantId}?tab=custom-roles`, label: '返回租户' }
-      : { to: '/', label: '返回概览' },
-  )
+  const backLink = resolveTenantScopedAdminBackLink(searchParams, {
+    tenantTab: 'custom-roles',
+    canReadTenants,
+  })
 
   return (
     <div className="space-y-6 admin-stagger">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-2 w-fit"
-        nativeButton={false}
-        render={<Link to={backLink.to} />}
-      >
-        <ArrowLeftIcon className="size-3.5" />
-        {backLink.label}
-      </Button>
+      <AdminPageBackButton backLink={backLink} />
 
       {showTenantClear ? (
         <AdminTenantContextBanner

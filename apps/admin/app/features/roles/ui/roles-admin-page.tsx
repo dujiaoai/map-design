@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Badge, Button, cn, Input, toast, useConfirmDialog } from '@repo/ui'
-import { ArrowLeftIcon, KeyRoundIcon, SearchIcon } from 'lucide-react'
+import { KeyRoundIcon, SearchIcon } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
@@ -33,7 +33,7 @@ import {
   buildRbacAdminCrossLink,
   resolveRbacAdminBackLink,
 } from '~/shared/lib/rbac-admin-nav'
-import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
+import { AdminEmptyState, AdminPageBackButton, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminFormError } from '~/shared/ui/admin-field'
 import {
   AdminRbacEditorSkeleton,
@@ -162,16 +162,7 @@ export function RolesAdminPage() {
 
   return (
     <div className="space-y-6 admin-stagger">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-2 w-fit"
-        nativeButton={false}
-        render={<Link to={backLink.to} />}
-      >
-        <ArrowLeftIcon className="size-3.5" />
-        {backLink.label}
-      </Button>
+      <AdminPageBackButton backLink={backLink} />
 
       <SystemRolesGuidanceStrip
         total={roles.length}

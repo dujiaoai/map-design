@@ -1,48 +1,36 @@
 import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui'
 import { useQuery } from '@tanstack/react-query'
 import {
+  AlertTriangleIcon,
   ArrowLeftIcon,
   Building2Icon,
-  CreditCardIcon,
   InfoIcon,
   PencilIcon,
-  ScrollTextIcon,
+  ScaleIcon,
   ShieldPlusIcon,
   SparklesIcon,
-  ScaleIcon,
   UsersIcon,
-  UserCogIcon,
 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 
 import { AUDIT_READ_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
-import { buildAuditLogsLink } from '~/features/audit-logs/lib/audit-log-nav'
 import { StartImpersonationSheet } from '~/features/impersonation/ui/start-impersonation-sheet'
 import { MembersAdminPage } from '~/features/members/ui/members-admin-page'
 import { TenantCustomRolesPanel } from '~/features/roles/ui/tenant-custom-roles-panel'
 import { resolveTenantDetailTab } from '~/features/tenants/lib/tenant-detail-nav'
-import {
-  formatTenantTrialEndsAt,
-  tenantTrialLabel,
-} from '~/features/tenants/lib/tenant-lifecycle'
-import { fetchAdminTenant, type AdminTenantSummary } from '~/shared/api/admin-api'
+import { fetchAdminTenant } from '~/shared/api/admin-api'
 import { canAccessAdminMembers, isPlatformAdmin } from '~/shared/auth/admin-access'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
-import {
-  AdminConfigRow,
-  AdminEmptyState,
-  AdminPageHeader,
-  AdminPanel,
-  AdminPanelHeader,
-} from '~/shared/ui/admin-page-shell'
+import { AdminEmptyState, AdminPanel } from '~/shared/ui/admin-page-shell'
 import { AdminDetailSkeleton } from '~/shared/ui/admin-table-skeleton'
-import { AdminStatusBadge, formatAdminDate } from '~/shared/ui/admin-status-badge'
-import { AdminStatusPill } from '~/shared/ui/admin-status-pill'
 
 import { EditTenantSheet } from './edit-tenant-sheet'
 import { TenantCompliancePanel } from './tenant-compliance-panel'
+import { TenantDetailHero } from './tenant-detail-hero'
+import { TenantDetailMetrics } from './tenant-detail-metrics'
+import { TenantDetailQuickActions } from './tenant-detail-quick-actions'
 import { TenantFeaturesPanel } from './tenant-features-panel'
 
 const BILLING_PERMISSIONS = [
@@ -108,6 +96,7 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
         <Button
           variant="ghost"
           size="sm"
+          className="-ml-2 w-fit"
           nativeButton={false}
           render={<Link to="/tenants" />}
         >
@@ -126,6 +115,8 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
     )
   }
 
+  const suspended = tenant.status === 'suspended'
+
   return (
     <div className="space-y-6 admin-stagger">
       <Button
@@ -139,42 +130,35 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
         租户列表
       </Button>
 
-      <AdminPageHeader
-        eyebrow="Tenant"
-        title={tenant.name}
-        description={
-          <span className="inline-flex flex-wrap items-center gap-2">
-            <span className="font-mono text-xs">{tenant.slug}</span>
-            <span className="text-muted-foreground">·</span>
-            <span>{tenant.plan}</span>
-            {(() => {
-              const label = tenantTrialLabel(tenant.trialEndsAt)
-              if (!label) return null
-              return (
-                <AdminStatusPill
-                  level={label === '试用已到期' ? 'warn' : 'info'}
-                  label={label}
-                />
-              )
-            })()}
-            <AdminStatusBadge status={tenant.status} />
-          </span>
-        }
+      <TenantDetailHero
+        tenant={tenant}
         actions={
           canWrite ? (
-            <Button variant="outline" onClick={() => setEditOpen(true)}>
+            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
               <PencilIcon className="size-3.5" />
-              编辑
+              编辑租户
             </Button>
           ) : null
         }
       />
 
+      {suspended ? (
+        <div
+          className="flex gap-2 rounded-lg border border-destructive/30 bg-destructive/8 px-4 py-3 text-sm text-destructive"
+          role="alert"
+        >
+          <AlertTriangleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <p>
+            该租户已停用，成员无法登录，API 访问也会被拒绝。可在「编辑租户」中恢复为正常状态。
+          </p>
+        </div>
+      ) : null}
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="admin-stagger gap-4">
         <TabsList className="h-auto flex-wrap">
           <TabsTrigger value="info">
             <InfoIcon className="size-3.5" />
-            信息
+            概览
           </TabsTrigger>
           {canReadMembers ? (
             <TabsTrigger value="members">
@@ -198,9 +182,9 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="info" className="mt-4">
-          <TenantInfoPanel
-            tenant={tenant}
+        <TabsContent value="info" className="mt-4 space-y-6">
+          <TenantDetailMetrics tenantId={tenantId} />
+          <TenantDetailQuickActions
             tenantId={tenantId}
             canReadMembers={canReadMembers}
             canReadUsers={canReadUsers}
@@ -241,104 +225,5 @@ export function TenantDetailPage({ tenantId }: { tenantId: string }) {
         onOpenChange={setImpersonateOpen}
       />
     </div>
-  )
-}
-
-function TenantInfoPanel({
-  tenant,
-  tenantId,
-  canReadMembers,
-  canReadUsers,
-  canViewBilling,
-  canViewAudit,
-  canImpersonate,
-  onOpenMembers,
-  onImpersonate,
-}: {
-  tenant: AdminTenantSummary
-  tenantId: string
-  canReadMembers: boolean
-  canReadUsers: boolean
-  canViewBilling: boolean
-  canViewAudit: boolean
-  canImpersonate: boolean
-  onOpenMembers: () => void
-  onImpersonate: () => void
-}) {
-  const hasQuickLinks =
-    canReadMembers || canReadUsers || canViewBilling || canViewAudit || canImpersonate
-
-  return (
-    <AdminPanel>
-      <AdminPanelHeader
-        icon={Building2Icon}
-        title="基本信息"
-        description="租户标识与订阅计划"
-      />
-      <AdminConfigRow label="Slug" value={tenant.slug} mono />
-      <AdminConfigRow label="计划" value={tenant.plan} mono />
-      <AdminConfigRow
-        label="试用截止"
-        value={formatTenantTrialEndsAt(tenant.trialEndsAt)}
-      />
-      <AdminConfigRow label="状态" value={<AdminStatusBadge status={tenant.status} />} />
-      <AdminConfigRow
-        label="创建时间"
-        value={formatAdminDate(tenant.createdAt)}
-      />
-      <AdminConfigRow label="租户 ID" value={tenant.id} mono />
-
-      {hasQuickLinks ? (
-        <div className="flex flex-wrap gap-2 border-t border-border/50 px-4 py-4 md:px-5">
-          {canReadMembers ? (
-            <Button type="button" variant="outline" size="sm" onClick={onOpenMembers}>
-              <UsersIcon className="size-3.5" />
-              成员管理
-            </Button>
-          ) : null}
-          {canReadUsers ? (
-            <Button
-              nativeButton={false}
-              variant="outline"
-              size="sm"
-              render={<Link to={`/users?tenantId=${tenantId}`} />}
-            >
-              <UsersIcon className="size-3.5" />
-              用户列表
-            </Button>
-          ) : null}
-          {canViewBilling ? (
-            <Button
-              nativeButton={false}
-              variant="outline"
-              size="sm"
-              render={
-                <Link to={`/billing?tab=wallets&tenantId=${encodeURIComponent(tenantId)}`} />
-              }
-            >
-              <CreditCardIcon className="size-3.5" />
-              计费钱包
-            </Button>
-          ) : null}
-          {canViewAudit ? (
-            <Button
-              nativeButton={false}
-              variant="outline"
-              size="sm"
-              render={<Link to={buildAuditLogsLink({ tenantId })} />}
-            >
-              <ScrollTextIcon className="size-3.5" />
-              审计日志
-            </Button>
-          ) : null}
-          {canImpersonate ? (
-            <Button type="button" variant="outline" size="sm" onClick={onImpersonate}>
-              <UserCogIcon className="size-3.5" />
-              代操作
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
-    </AdminPanel>
   )
 }

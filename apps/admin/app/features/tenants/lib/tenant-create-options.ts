@@ -150,3 +150,13 @@ export function planOptionsForTenant(currentPlan: string) {
     ...TENANT_PLAN_OPTIONS,
   ]
 }
+
+export function formatTenantPlanLabel(plan: string): string {
+  const meta = planOptionsForTenant(plan).find((option) => option.value === plan)
+  return meta?.label ?? plan
+}
+
+export function describeTenantPlan(plan: string): string {
+  const meta = planOptionsForTenant(plan).find((option) => option.value === plan)
+  return meta?.description ?? '订阅计划决定默认配额与计费策略。'
+}

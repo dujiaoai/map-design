@@ -8,6 +8,7 @@ export interface AdminTenantSummary {
   status: string
   trialEndsAt?: number | null
   onboardingPhase?: TenantOnboardingPhase
+  productCode?: string
   createdAt: number
 }
 

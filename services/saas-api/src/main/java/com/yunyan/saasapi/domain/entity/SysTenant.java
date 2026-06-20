@@ -23,5 +23,7 @@ public class SysTenant {
   private String tenantKind;
   /** 试用结束时间；null 表示未设置试用截止 */
   private Instant trialEndsAt;
+  /** 主产品线，ADR-0019 */
+  private UUID primaryProductId;
   private Instant createdAt;
 }

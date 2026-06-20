@@ -1,7 +1,9 @@
 package com.yunyan.saasapi.application.admin;
 
+import com.yunyan.saasapi.domain.ProductRepository;
 import com.yunyan.saasapi.domain.TenantRepository;
 import com.yunyan.saasapi.domain.entity.SysTenant;
+import com.yunyan.saasapi.domain.product.ProductCatalog;
 import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminTenantDto;
@@ -24,12 +26,13 @@ public class TenantAdminService {
   private static final String DEFAULT_PLAN = "free";
 
   private final TenantRepository tenantRepository;
+  private final ProductRepository productRepository;
   private final AdminAuditLogService adminAuditLogService;
   private final TenantSessionRevocationService tenantSessionRevocationService;
 
   public AdminTenantListResponse listTenants(AdminListParams params) {
     var result = tenantRepository.findTenants(params);
-    var tenants = result.items().stream().map(TenantAdminService::toDto).toList();
+    var tenants = result.items().stream().map(this::toDto).toList();
     if (params.isPaginated()) {
       return AdminTenantListResponse.paged(
           tenants, result.total(), params.resolvePage(), params.resolveSize());
@@ -58,6 +61,7 @@ public class TenantAdminService {
     tenant.setSlug(slug);
     tenant.setPlan(resolvePlan(request.plan()));
     tenant.setStatus(STATUS_ACTIVE);
+    tenant.setPrimaryProductId(ProductCatalog.MAP_DESIGN_ID);
     if (request.trialEndsAt() != null) {
       tenant.setTrialEndsAt(Instant.ofEpochMilli(request.trialEndsAt()));
     }
@@ -161,9 +165,10 @@ public class TenantAdminService {
     return previousStatus == null || !STATUS_SUSPENDED.equalsIgnoreCase(previousStatus);
   }
 
-  private static AdminTenantDto toDto(SysTenant tenant) {
+  private AdminTenantDto toDto(SysTenant tenant) {
     var createdAt = tenant.getCreatedAt() == null ? 0L : tenant.getCreatedAt().toEpochMilli();
     var status = tenant.getStatus() == null ? STATUS_ACTIVE : tenant.getStatus();
+    var productCode = resolveProductCode(tenant.getPrimaryProductId());
     return new AdminTenantDto(
         tenant.getId().toString(),
         tenant.getName(),
@@ -172,6 +177,17 @@ public class TenantAdminService {
         status,
         tenant.getTrialEndsAt() == null ? null : tenant.getTrialEndsAt().toEpochMilli(),
         TenantOnboardingPhase.resolve(tenant),
+        productCode,
         createdAt);
+  }
+
+  private String resolveProductCode(UUID productId) {
+    if (productId == null) {
+      return ProductCatalog.MAP_DESIGN_CODE;
+    }
+    return productRepository
+        .findById(productId)
+        .map(p -> p.getCode())
+        .orElse(ProductCatalog.MAP_DESIGN_CODE);
   }
 }

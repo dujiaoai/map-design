@@ -2,6 +2,7 @@ package com.yunyan.saasapi.application.admin;
 
 import com.yunyan.saasapi.domain.AdminAuditLogRepository;
 import com.yunyan.saasapi.domain.entity.SysAdminAuditLog;
+import com.yunyan.saasapi.security.AuthException;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditLogDto;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditLogListResponse;
@@ -28,6 +29,13 @@ public class AdminAuditLogService {
           logs, page.total(), params.toListParams().resolvePage(), params.toListParams().resolveSize());
     }
     return new AdminAuditLogListResponse(logs);
+  }
+
+  public AdminAuditLogDto getLog(UUID id) {
+    return adminAuditLogRepository
+        .findById(id)
+        .map(this::toDto)
+        .orElseThrow(() -> AuthException.notFound("Audit log not found"));
   }
 
   @Transactional

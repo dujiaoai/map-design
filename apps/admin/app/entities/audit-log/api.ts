@@ -2,6 +2,7 @@ import { buildAdminListQuery, type AdminListQuery } from '~/shared/lib/admin-lis
 import { api } from '~/shared/api/client'
 
 import type {
+  AdminAuditLogEntry,
   AdminAuditLogListResponse,
   AdminAuditWebhookConfig,
   AdminAuditWebhookSla,
@@ -12,6 +13,10 @@ import type {
 
 export function fetchAdminAuditLogs(params?: AdminListQuery) {
   return api.get<AdminAuditLogListResponse>(`/admin/audit-logs${buildAdminListQuery(params)}`)
+}
+
+export function fetchAdminAuditLog(logId: string) {
+  return api.get<AdminAuditLogEntry>(`/admin/audit-logs/${logId}`)
 }
 
 export function fetchAdminAuditWebhookConfig() {

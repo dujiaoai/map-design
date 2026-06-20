@@ -11,6 +11,7 @@ export type {
 } from '~/entities/audit-log'
 export {
   deleteAdminAuditWebhookDeadLetter,
+  fetchAdminAuditLog,
   fetchAdminAuditLogs,
   fetchAdminAuditWebhookConfig,
   fetchAdminAuditWebhookSla,

@@ -2,6 +2,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { TableColumnsType } from 'antd'
 import { AlertTriangleIcon, RotateCcwIcon, Trash2Icon } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router'
+
+import { buildAuditLogDetailHref } from '~/features/audit-logs/lib/audit-log-nav'
 
 import {
   deleteAdminAuditWebhookDeadLetter,
@@ -56,7 +59,14 @@ export function AuditWebhookDeadLetterPanel({ canManage }: { canManage: boolean 
         title: '日志 ID',
         dataIndex: 'logId',
         key: 'logId',
-        render: (logId: string) => <span className="font-mono text-xs">{logId.slice(0, 8)}…</span>,
+        render: (logId: string) => (
+          <Link
+            to={buildAuditLogDetailHref(logId)}
+            className="font-mono text-xs text-primary underline-offset-4 hover:underline"
+          >
+            {logId.slice(0, 8)}…
+          </Link>
+        ),
       },
       {
         title: '重试',

@@ -47,6 +47,7 @@ export const adminQueryKeys = {
     ['admin', 'tenants', tenantId, 'roles', roleId, 'permissions'] as const,
   inviteLinks: (tenantId: string) => ['admin', 'invite-links', tenantId] as const,
   auditLogs: (params?: AdminListQuery) => ['admin', 'audit-logs', params ?? {}] as const,
+  auditLog: (logId: string) => ['admin', 'audit-logs', logId] as const,
   auditWebhookConfig: ['admin', 'audit-webhook-config'] as const,
   auditWebhookDeadLetters: (params?: AdminListQuery) =>
     ['admin', 'audit-webhook-dead-letters', params ?? {}] as const,

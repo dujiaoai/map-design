@@ -63,6 +63,17 @@ test.describe('审计日志（已登录 mock）', () => {
     await expect(page.getByText('HTTP delivery failed')).toBeVisible()
   })
 
+  test('详情跳转子页面并展示审计详情', async ({ page }) => {
+    await gotoAuditPage(page)
+    await page.getByRole('link', { name: '详情' }).first().click()
+    await expect(page.getByText('加载中…')).toBeHidden({ timeout: 45_000 })
+    await expect(page.getByRole('link', { name: '返回审计列表' })).toBeVisible()
+    await expect(page.getByText('Audit Event')).toBeVisible()
+    await expect(page.getByText('操作主体')).toBeVisible()
+    await expect(page.getByText('目标资源')).toBeVisible()
+    await expect(page.getByText('变更详情')).toBeVisible()
+  })
+
   test('展示 Webhook 多目标路由面板', async ({ page }) => {
     await gotoAuditPage(page)
     await expect(page.getByText('Webhook 多目标路由')).toBeVisible()

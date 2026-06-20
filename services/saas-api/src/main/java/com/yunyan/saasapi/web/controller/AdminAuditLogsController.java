@@ -11,6 +11,7 @@ import com.yunyan.saasapi.application.admin.AuditLogListParams;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
 import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditLogListResponse;
+import com.yunyan.saasapi.web.dto.admin.AdminAuditLogDto;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookConfigResponse;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookTargetDto;
 import com.yunyan.saasapi.web.dto.admin.AdminAuditWebhookTargetListResponse;
@@ -77,6 +78,13 @@ public class AdminAuditLogsController {
     return adminAuditLogService.listLogs(
         new AuditLogListParams(
             q, page, size, action, crossTenant, tenantId, from, to, actorUserId, sortBy, sortDir));
+  }
+
+  @GetMapping("/{id}")
+  @PreAuthorize(PermissionCodes.ADMIN_AUDIT_READ_AUTHORITIES)
+  @Operation(summary = "单条审计日志", description = "按 ID 查询运营审计记录")
+  public AdminAuditLogDto getAuditLog(@PathVariable UUID id) {
+    return adminAuditLogService.getLog(id);
   }
 
   @GetMapping(value = "/export", produces = "text/csv")

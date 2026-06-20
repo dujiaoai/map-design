@@ -19,6 +19,7 @@ export default [
     route('permissions', 'routes/permissions.tsx'),
     route('account', 'routes/account.tsx'),
     route('audit-logs', 'routes/audit-logs.tsx'),
+    route('audit-logs/:logId', 'routes/audit-logs.$logId.tsx'),
     route('menus', 'routes/menus.tsx'),
     route('billing', 'routes/billing.tsx'),
     route('system', 'routes/system.tsx'),

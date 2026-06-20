@@ -15,7 +15,7 @@ import {
 } from '~/features/audit-logs/lib/audit-log-date-range'
 import { AUDIT_EXPORT_PERMISSIONS } from '~/features/audit-logs/lib/audit-log-permissions'
 import { buildAuditUsersLink } from '~/features/audit-logs/lib/audit-log-users-nav'
-import { AuditLogDetailSheet } from '~/features/audit-logs/ui/audit-log-detail-sheet'
+import { buildAuditLogDetailHref } from '~/features/audit-logs/lib/audit-log-nav'
 import { AuditWebhookSlaPanel } from '~/features/audit-logs/ui/audit-webhook-sla-panel'
 import { AuditWebhookSelfHealPanel } from '~/features/audit-logs/ui/audit-webhook-self-heal-panel'
 import { AuditWebhookArchiveSummaryPanel } from '~/features/audit-logs/ui/audit-webhook-archive-summary-panel'
@@ -94,7 +94,6 @@ export function AuditLogsAdminPage() {
   const [crossTenantOnly, setCrossTenantOnly] = useState(false)
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
-  const [detailLog, setDetailLog] = useState<AdminAuditLogEntry | null>(null)
   const [exporting, setExporting] = useState(false)
   const columnPrefs = useAdminTableColumnPrefs('audit-logs', [...AUDIT_TABLE_COLUMNS])
 
@@ -314,7 +313,19 @@ export function AuditLogsAdminPage() {
         key: 'actions',
         width: 72,
         render: (_value: unknown, log: AdminAuditLogEntry) => (
-          <Button type="button" variant="ghost" size="sm" onClick={() => setDetailLog(log)}>
+          <Button
+            nativeButton={false}
+            variant="ghost"
+            size="sm"
+            render={
+              <Link
+                to={buildAuditLogDetailHref(log.id, {
+                  tenantId: tenantFilterId,
+                  actorUserId: actorFilterId,
+                })}
+              />
+            }
+          >
             详情
           </Button>
         ),
@@ -324,7 +335,7 @@ export function AuditLogsAdminPage() {
         if (key === 'actions') return true
         return columnPrefs.isColumnVisible(key)
       }),
-    [canReadTenants, canReadUsers, columnPrefs.isColumnVisible, columnPrefs.visible, sort],
+    [canReadTenants, canReadUsers, columnPrefs.isColumnVisible, columnPrefs.visible, sort, tenantFilterId, actorFilterId],
   )
 
   const backLink =
@@ -596,16 +607,6 @@ export function AuditLogsAdminPage() {
           />
         )}
       </AdminPanel>
-
-      <AuditLogDetailSheet
-        log={detailLog}
-        open={detailLog != null}
-        onOpenChange={(open) => {
-          if (!open) setDetailLog(null)
-        }}
-        canReadTenants={canReadTenants}
-        canReadUsers={canReadUsers}
-      />
     </div>
   )
 }

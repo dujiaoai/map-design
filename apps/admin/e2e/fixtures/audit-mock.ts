@@ -100,6 +100,7 @@ export async function mockAuditPageApis(page: Page) {
   await page.route(/\/v1\/admin\/audit-logs/, async (route) => {
     const method = route.request().method()
     const url = route.request().url()
+    const pathname = new URL(url).pathname
 
     if (method === 'GET' && url.includes('/export')) {
       await route.fulfill({
@@ -110,7 +111,27 @@ export async function mockAuditPageApis(page: Page) {
       return
     }
 
-    if (method === 'GET') {
+    const singleLogMatch = pathname.match(/^\/v1\/admin\/audit-logs\/([^/]+)$/)
+    if (method === 'GET' && singleLogMatch) {
+      const logId = singleLogMatch[1]
+      const log = E2E_AUDIT_LOGS.logs.find((item) => item.id === logId)
+      if (log) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(log),
+        })
+        return
+      }
+      await route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Audit log not found' }),
+      })
+      return
+    }
+
+    if (method === 'GET' && pathname === '/v1/admin/audit-logs') {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',

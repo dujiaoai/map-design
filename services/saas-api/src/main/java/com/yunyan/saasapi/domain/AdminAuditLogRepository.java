@@ -8,6 +8,7 @@ import com.yunyan.saasapi.domain.entity.SysAdminAuditLog;
 import com.yunyan.saasapi.domain.mapper.SysAdminAuditLogMapper;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -142,5 +143,9 @@ public class AdminAuditLogRepository {
       default -> wrapper.orderBy(true, ascending, SysAdminAuditLog::getCreatedAt);
     }
     wrapper.orderByDesc(SysAdminAuditLog::getId);
+  }
+
+  public Optional<SysAdminAuditLog> findById(UUID id) {
+    return Optional.ofNullable(sysAdminAuditLogMapper.selectById(id));
   }
 }

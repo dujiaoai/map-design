@@ -3,17 +3,27 @@ package com.yunyan.saasapi.web.controller;
 import com.yunyan.saasapi.application.admin.ProductAdminService;
 import com.yunyan.saasapi.application.admin.ProductFeatureCatalogService;
 import com.yunyan.saasapi.domain.permission.PermissionCodes;
+import com.yunyan.saasapi.security.SaasPrincipal;
 import com.yunyan.saasapi.web.dto.admin.AdminProductDto;
 import com.yunyan.saasapi.web.dto.admin.AdminProductListResponse;
+import com.yunyan.saasapi.web.dto.admin.CreateProductFeatureRequest;
+import com.yunyan.saasapi.web.dto.admin.CreateProductRequest;
+import com.yunyan.saasapi.web.dto.admin.FeatureCatalogEntryDto;
 import com.yunyan.saasapi.web.dto.admin.FeatureCatalogResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -45,5 +55,26 @@ public class AdminProductsController {
   @Operation(summary = "产品线能力码目录", description = "按产品返回可开通 tenantFeature 列表")
   public FeatureCatalogResponse productFeatureCatalog(@PathVariable String code) {
     return productFeatureCatalogService.getCatalogForProductCode(code);
+  }
+
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "注册 SaaS 产品线", description = "创建后可为其注册 tenantFeature 能力码")
+  public AdminProductDto createProduct(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @Valid @RequestBody CreateProductRequest request) {
+    return productAdminService.createProduct(principal, request);
+  }
+
+  @PostMapping("/{code}/features")
+  @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasAuthority('" + PermissionCodes.ADMIN_TENANTS_WRITE + "')")
+  @Operation(summary = "为产品线注册 tenantFeature 能力码")
+  public FeatureCatalogEntryDto addProductFeature(
+      @AuthenticationPrincipal SaasPrincipal principal,
+      @PathVariable String code,
+      @Valid @RequestBody CreateProductFeatureRequest request) {
+    return productAdminService.addProductFeature(principal, code, request);
   }
 }

@@ -26,4 +26,16 @@ public class ProductFeatureRepository {
   public Set<String> findCodesByProductId(UUID productId) {
     return new LinkedHashSet<>(sysProductFeatureMapper.selectCodesByProductId(productId));
   }
+
+  public boolean existsByProductIdAndCode(UUID productId, String code) {
+    return sysProductFeatureMapper.selectCount(
+            Wrappers.<SysProductFeature>lambdaQuery()
+                .eq(SysProductFeature::getProductId, productId)
+                .eq(SysProductFeature::getCode, code))
+        > 0;
+  }
+
+  public void insert(SysProductFeature feature) {
+    sysProductFeatureMapper.insert(feature);
+  }
 }

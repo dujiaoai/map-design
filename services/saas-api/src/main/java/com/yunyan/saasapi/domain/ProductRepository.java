@@ -23,6 +23,24 @@ public class ProductRepository {
             .orderByAsc(SysProduct::getName));
   }
 
+  public List<SysProduct> findAll() {
+    return sysProductMapper.selectList(
+        Wrappers.<SysProduct>lambdaQuery().orderByAsc(SysProduct::getName));
+  }
+
+  public boolean existsByCode(String code) {
+    if (!StringUtils.hasText(code)) {
+      return false;
+    }
+    return sysProductMapper.selectCount(
+            Wrappers.<SysProduct>lambdaQuery().eq(SysProduct::getCode, code.trim()))
+        > 0;
+  }
+
+  public void insert(SysProduct product) {
+    sysProductMapper.insert(product);
+  }
+
   public Optional<SysProduct> findById(UUID id) {
     return Optional.ofNullable(sysProductMapper.selectById(id));
   }

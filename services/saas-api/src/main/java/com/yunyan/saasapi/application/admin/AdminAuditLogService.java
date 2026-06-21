@@ -130,6 +130,28 @@ public class AdminAuditLogService {
   }
 
   @Transactional
+  public void recordProductAction(
+      SaasPrincipal principal, String action, UUID productId, String detail) {
+    if (principal == null) {
+      return;
+    }
+
+    var log = new SysAdminAuditLog();
+    log.setId(UUID.randomUUID());
+    log.setActorUserId(principal.userId());
+    log.setActorEmail(principal.email());
+    log.setActorTenantId(principal.tenantId());
+    log.setAction(action);
+    log.setResourceType("product");
+    log.setResourceId(productId == null ? null : productId.toString());
+    log.setTargetTenantId(null);
+    log.setCrossTenant(false);
+    log.setDetail(detail);
+    log.setCreatedAt(Instant.now());
+    adminAuditLogRepository.insert(log);
+  }
+
+  @Transactional
   public void recordPlatformUserAction(
       SaasPrincipal principal, String action, UUID resourceUserId, String detail) {
     if (principal == null) {

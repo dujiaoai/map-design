@@ -1,2 +1,8 @@
-export type { AdminProduct, AdminProductListResponse } from './model'
-export { fetchAdminProduct, fetchAdminProductFeatureCatalog, fetchAdminProducts } from './api'
+export type { AdminProduct, AdminProductListResponse, CreateAdminProductFeaturePayload, CreateAdminProductPayload } from './model'
+export {
+  createAdminProduct,
+  createAdminProductFeature,
+  fetchAdminProduct,
+  fetchAdminProductFeatureCatalog,
+  fetchAdminProducts,
+} from './api'

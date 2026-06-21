@@ -11,6 +11,7 @@ export default [
     index('routes/dashboard.tsx', { id: 'routes/dashboard' }),
     route('tenants', 'routes/tenants.tsx'),
     route('tenants/:tenantId', 'routes/tenants.$tenantId.tsx'),
+    route('products', 'routes/products.tsx'),
     route('users', 'routes/users.tsx'),
     route('members', 'routes/members.tsx'),
     route('tenant-roles/new', 'routes/tenant-roles-new.tsx'),

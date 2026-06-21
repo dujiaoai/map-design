@@ -10,3 +10,15 @@ export interface AdminProduct {
 export interface AdminProductListResponse {
   products: AdminProduct[]
 }
+
+export interface CreateAdminProductPayload {
+  code: string
+  name: string
+  description?: string
+}
+
+export interface CreateAdminProductFeaturePayload {
+  code: string
+  name: string
+  description?: string
+}

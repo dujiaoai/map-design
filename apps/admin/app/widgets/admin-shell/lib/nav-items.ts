@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import {
   Building2Icon,
+  BoxesIcon,
   CreditCardIcon,
   KeyRoundIcon,
   LayoutDashboardIcon,
@@ -35,6 +36,12 @@ export const adminNavItems: AdminNavItem[] = [
     to: '/tenants',
     label: '租户',
     icon: Building2Icon,
+    permissions: ['admin:tenants:read'],
+  },
+  {
+    to: '/products',
+    label: '产品线',
+    icon: BoxesIcon,
     permissions: ['admin:tenants:read'],
   },
   {

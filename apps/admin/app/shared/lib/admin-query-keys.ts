@@ -50,6 +50,7 @@ export const adminQueryKeys = {
   auditLog: (logId: string) => ['admin', 'audit-logs', logId] as const,
   products: ['admin', 'products'] as const,
   product: (code: string) => ['admin', 'products', code] as const,
+  productFeatures: (code: string) => ['admin', 'products', code, 'features'] as const,
   navigation: (productCode?: string) => ['admin', 'navigation', productCode ?? 'default'] as const,
   auditWebhookConfig: ['admin', 'audit-webhook-config'] as const,
   auditWebhookDeadLetters: (params?: AdminListQuery) =>

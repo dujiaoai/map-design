@@ -1,7 +1,13 @@
 export type { AdminListQuery } from '~/shared/lib/admin-list-query'
 export { buildAdminListQuery } from '~/shared/lib/admin-list-query'
-export type { AdminProduct, AdminProductListResponse } from '~/entities/product'
-export { fetchAdminProduct, fetchAdminProductFeatureCatalog, fetchAdminProducts } from '~/entities/product'
+export type { AdminProduct, AdminProductListResponse, CreateAdminProductFeaturePayload, CreateAdminProductPayload } from '~/entities/product'
+export {
+  createAdminProduct,
+  createAdminProductFeature,
+  fetchAdminProduct,
+  fetchAdminProductFeatureCatalog,
+  fetchAdminProducts,
+} from '~/entities/product'
 export type {
   AdminAuditLogEntry,
   AdminAuditLogListResponse,

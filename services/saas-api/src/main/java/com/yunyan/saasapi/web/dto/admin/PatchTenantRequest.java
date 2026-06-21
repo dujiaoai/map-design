@@ -12,4 +12,5 @@ public record PatchTenantRequest(
         @Schema(description = "启停状态", allowableValues = {"active", "suspended"})
         String status,
     @Schema(description = "试用结束时间，毫秒 epoch") Long trialEndsAt,
-    @Schema(description = "为 true 时清除 trialEndsAt") Boolean clearTrialEndsAt) {}
+    @Schema(description = "为 true 时清除 trialEndsAt") Boolean clearTrialEndsAt,
+    @Size(max = 64) @Schema(description = "所属产品线 code", example = "map-design") String productCode) {}

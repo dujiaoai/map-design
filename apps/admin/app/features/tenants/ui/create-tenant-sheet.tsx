@@ -11,7 +11,7 @@ import {
   SheetTitle,
   toast,
 } from '@repo/ui'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SparklesIcon } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { Controller, useForm } from 'react-hook-form'
@@ -26,7 +26,8 @@ import {
 } from '~/features/tenants/lib/tenant-create-options'
 import { suggestTenantSlug } from '~/features/tenants/lib/tenant-slug'
 import { CreateTenantPreview } from '~/features/tenants/ui/create-tenant-preview'
-import { createAdminTenant } from '~/shared/api/admin-api'
+import { TenantProductPicker } from '~/features/tenants/ui/tenant-product-picker'
+import { createAdminTenant, fetchAdminProducts } from '~/shared/api/admin-api'
 import { AdminAntDate } from '~/shared/ant'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
@@ -41,6 +42,7 @@ const schema = z
       .max(64)
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, '仅小写字母、数字与连字符'),
     plan: z.string().min(1, '请选择计划').max(32),
+    productCode: z.string().min(1, '请选择产品线').max(64),
     trialPreset: z.enum(['none', '14d', '30d', 'custom']),
     trialEndsAtDate: z.string(),
   })
@@ -60,6 +62,7 @@ const DEFAULT_VALUES: FormValues = {
   name: '',
   slug: '',
   plan: 'free',
+  productCode: 'map-design',
   trialPreset: 'none',
   trialEndsAtDate: '',
 }
@@ -74,6 +77,12 @@ export function CreateTenantSheet({
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const slugTouchedRef = useRef(false)
+
+  const productsQuery = useQuery({
+    queryKey: adminQueryKeys.products,
+    queryFn: fetchAdminProducts,
+  })
+  const products = productsQuery.data?.products ?? []
 
   const {
     register,
@@ -91,6 +100,7 @@ export function CreateTenantSheet({
   const nameValue = watch('name')
   const slugValue = watch('slug')
   const planValue = watch('plan')
+  const productCodeValue = watch('productCode')
   const trialPreset = watch('trialPreset')
   const trialEndsAtDate = watch('trialEndsAtDate')
 
@@ -130,6 +140,7 @@ export function CreateTenantSheet({
       name: values.name.trim(),
       slug: values.slug.trim(),
       plan: values.plan.trim(),
+      productCode: values.productCode.trim(),
       ...(trialEndsAt != null ? { trialEndsAt } : {}),
     })
   }
@@ -166,6 +177,10 @@ export function CreateTenantSheet({
               name={nameValue}
               slug={slugValue}
               plan={planValue}
+              productLabel={
+                products.find((product) => product.code === productCodeValue)?.name ??
+                productCodeValue
+              }
               trialPreset={trialPreset}
               trialEndsAtDate={trialEndsAtDate}
             />
@@ -215,6 +230,21 @@ export function CreateTenantSheet({
                   用于登录域与 API 路径，创建后不可修改。
                 </p>
               </AdminField>
+            </section>
+
+            <section className="space-y-4">
+              <h3 className="admin-display text-xs tracking-[0.18em] text-muted-foreground uppercase">
+                所属产品线
+              </h3>
+              <TenantProductPicker
+                control={control}
+                name="productCode"
+                products={products}
+                disabled={productsQuery.isLoading}
+              />
+              {errors.productCode?.message ? (
+                <p className="text-xs text-destructive">{errors.productCode.message}</p>
+              ) : null}
             </section>
 
             <section className="space-y-4">

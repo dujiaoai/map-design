@@ -73,7 +73,7 @@ public class TenantAdminService {
     tenant.setSlug(slug);
     tenant.setPlan(resolvePlan(request.plan()));
     tenant.setStatus(STATUS_ACTIVE);
-    tenant.setPrimaryProductId(ProductCatalog.MAP_DESIGN_ID);
+    tenant.setPrimaryProductId(resolvePrimaryProductId(request.productCode()));
     if (request.trialEndsAt() != null) {
       tenant.setTrialEndsAt(Instant.ofEpochMilli(request.trialEndsAt()));
     }
@@ -110,6 +110,9 @@ public class TenantAdminService {
     if (StringUtils.hasText(request.status())) {
       tenant.setStatus(request.status().trim());
     }
+    if (StringUtils.hasText(request.productCode())) {
+      tenant.setPrimaryProductId(resolvePrimaryProductId(request.productCode()));
+    }
     if (Boolean.TRUE.equals(request.clearTrialEndsAt())) {
       tenant.setTrialEndsAt(null);
     } else if (request.trialEndsAt() != null) {
@@ -143,6 +146,11 @@ public class TenantAdminService {
     } else if (request.trialEndsAt() != null) {
       changes.append("trialEndsAt=set ");
     }
+    if (StringUtils.hasText(request.productCode())) {
+      changes.append("productCode=");
+      changes.append(resolveProductCode(tenant.getPrimaryProductId()));
+      changes.append(' ');
+    }
     adminAuditLogService.recordTenantAction(
         principal,
         "tenant.update",
@@ -155,6 +163,7 @@ public class TenantAdminService {
     return StringUtils.hasText(request.name())
         || StringUtils.hasText(request.plan())
         || StringUtils.hasText(request.status())
+        || StringUtils.hasText(request.productCode())
         || request.trialEndsAt() != null
         || Boolean.TRUE.equals(request.clearTrialEndsAt());
   }
@@ -201,5 +210,16 @@ public class TenantAdminService {
         .findById(productId)
         .map(p -> p.getCode())
         .orElse(ProductCatalog.MAP_DESIGN_CODE);
+  }
+
+  private UUID resolvePrimaryProductId(String productCode) {
+    if (!StringUtils.hasText(productCode)) {
+      return ProductCatalog.MAP_DESIGN_ID;
+    }
+    return productRepository
+        .findByCode(productCode.trim())
+        .map(product -> product.getId())
+        .orElseThrow(
+            () -> AuthException.badRequest("Unknown product code: " + productCode.trim()));
   }
 }

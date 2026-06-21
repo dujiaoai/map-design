@@ -23,6 +23,7 @@ export interface CreateTenantPayload {
   name: string
   slug: string
   plan?: string
+  productCode?: string
   trialEndsAt?: number
 }
 
@@ -30,6 +31,7 @@ export interface PatchTenantPayload {
   name?: string
   plan?: string
   status?: 'active' | 'suspended'
+  productCode?: string
   trialEndsAt?: number
   clearTrialEndsAt?: boolean
 }

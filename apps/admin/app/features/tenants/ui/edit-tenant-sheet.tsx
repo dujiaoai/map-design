@@ -11,7 +11,7 @@ import {
   SheetTitle,
   toast,
 } from '@repo/ui'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangleIcon, SparklesIcon } from 'lucide-react'
 import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
@@ -25,7 +25,8 @@ import {
   TENANT_TRIAL_PRESETS,
 } from '~/features/tenants/lib/tenant-create-options'
 import { EditTenantPreview } from '~/features/tenants/ui/edit-tenant-preview'
-import { type AdminTenantSummary, patchAdminTenant } from '~/shared/api/admin-api'
+import { TenantProductPicker } from '~/features/tenants/ui/tenant-product-picker'
+import { fetchAdminProducts, patchAdminTenant, type AdminTenantSummary } from '~/shared/api/admin-api'
 import { AdminAntDate } from '~/shared/ant'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { formatAdminApiError } from '~/shared/lib/format-admin-api-error'
@@ -35,6 +36,7 @@ const schema = z
   .object({
     name: z.string().min(1, '请输入名称').max(128),
     plan: z.string().min(1, '请选择计划').max(32),
+    productCode: z.string().min(1, '请选择产品线').max(64),
     status: z.enum(['active', 'suspended']),
     trialPreset: z.enum(['none', '14d', '30d', 'custom']),
     trialEndsAtDate: z.string(),
@@ -56,6 +58,7 @@ function buildDefaultValues(tenant: AdminTenantSummary): FormValues {
   return {
     name: tenant.name,
     plan: tenant.plan,
+    productCode: tenant.productCode ?? 'map-design',
     status: tenant.status === 'suspended' ? 'suspended' : 'active',
     trialPreset: preset,
     trialEndsAtDate: customDate,
@@ -77,6 +80,11 @@ export function EditTenantSheet({
   onOpenChange: (open: boolean) => void
 }) {
   const queryClient = useQueryClient()
+  const productsQuery = useQuery({
+    queryKey: adminQueryKeys.products,
+    queryFn: fetchAdminProducts,
+  })
+  const products = productsQuery.data?.products ?? []
   const {
     register,
     control,
@@ -90,6 +98,7 @@ export function EditTenantSheet({
     defaultValues: {
       name: '',
       plan: 'free',
+      productCode: 'map-design',
       status: 'active',
       trialPreset: 'none',
       trialEndsAtDate: '',
@@ -98,6 +107,7 @@ export function EditTenantSheet({
 
   const nameValue = watch('name')
   const planValue = watch('plan')
+  const productCodeValue = watch('productCode')
   const statusValue = watch('status')
   const trialPreset = watch('trialPreset')
   const trialEndsAtDate = watch('trialEndsAtDate')
@@ -116,6 +126,7 @@ export function EditTenantSheet({
       return patchAdminTenant(tenant!.id, {
         name: values.name.trim(),
         plan: values.plan.trim(),
+        productCode: values.productCode.trim(),
         status: values.status,
         ...trialPatch,
       })
@@ -168,6 +179,10 @@ export function EditTenantSheet({
                 tenant={tenant}
                 name={nameValue}
                 plan={planValue}
+                productLabel={
+                  products.find((product) => product.code === productCodeValue)?.name ??
+                  productCodeValue
+                }
                 status={statusValue}
                 trialPreset={trialPreset}
                 trialEndsAtDate={trialEndsAtDate}
@@ -197,6 +212,21 @@ export function EditTenantSheet({
                     用于登录域与 API 路径，创建后不可修改。
                   </p>
                 </AdminField>
+              </section>
+
+              <section className="space-y-4">
+                <h3 className="admin-display text-xs tracking-[0.18em] text-muted-foreground uppercase">
+                  所属产品线
+                </h3>
+                <TenantProductPicker
+                  control={control}
+                  name="productCode"
+                  products={products}
+                  disabled={productsQuery.isLoading}
+                />
+                {errors.productCode?.message ? (
+                  <p className="text-xs text-destructive">{errors.productCode.message}</p>
+                ) : null}
               </section>
 
               <section className="space-y-4">

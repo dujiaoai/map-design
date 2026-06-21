@@ -12,12 +12,14 @@ export function CreateTenantPreview({
   name,
   slug,
   plan,
+  productLabel,
   trialPreset,
   trialEndsAtDate,
 }: {
   name: string
   slug: string
   plan: string
+  productLabel?: string
   trialPreset: TenantTrialPreset
   trialEndsAtDate: string
 }) {
@@ -46,6 +48,11 @@ export function CreateTenantPreview({
             <span className="rounded-md border border-border/60 bg-background/40 px-2 py-0.5 font-mono text-[11px]">
               {(planMeta?.label ?? plan) || 'free'}
             </span>
+            {productLabel ? (
+              <span className="rounded-md border border-primary/25 bg-primary/8 px-2 py-0.5 text-[11px] text-primary">
+                {productLabel}
+              </span>
+            ) : null}
             <AdminStatusPill
               level={trialPreset === 'none' ? 'ok' : 'info'}
               label={lifecycle}

@@ -14,4 +14,6 @@ public record CreateTenantRequest(
         @Schema(description = "唯一 slug", example = "acme")
         String slug,
     @Size(max = 32) @Schema(description = "订阅计划，默认 free", example = "free") String plan,
+    @Size(max = 64) @Schema(description = "所属产品线 code，默认 map-design", example = "map-design")
+        String productCode,
     @Schema(description = "试用结束时间，毫秒 epoch") Long trialEndsAt) {}

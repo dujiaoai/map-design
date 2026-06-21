@@ -93,7 +93,57 @@ class AdminTenantsControllerTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.slug").value(slug))
         .andExpect(jsonPath("$.plan").value("pro"))
-        .andExpect(jsonPath("$.status").value("active"));
+        .andExpect(jsonPath("$.status").value("active"))
+        .andExpect(jsonPath("$.productCode").value("map-design"));
+  }
+
+  @Test
+  void createTenant_withProductCode_returns201() throws Exception {
+    var slug = "product-tenant-" + System.currentTimeMillis();
+
+    mockMvc
+        .perform(
+            post("/v1/admin/tenants")
+                .header("Authorization", "Bearer " + loginAccessToken("platform@test.local"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "name", "Product Tenant",
+                            "slug", slug,
+                            "productCode", "map-design"))))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.productCode").value("map-design"));
+  }
+
+  @Test
+  void patchTenant_productCode_updatesPrimaryProduct() throws Exception {
+    var token = loginAccessToken("platform@test.local");
+    var slug = "patch-product-" + System.currentTimeMillis();
+
+    var createResponse =
+        mockMvc
+            .perform(
+                post("/v1/admin/tenants")
+                    .header("Authorization", "Bearer " + token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        objectMapper.writeValueAsString(
+                            Map.of("name", "Patch Product", "slug", slug))))
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    var tenantId = JsonPath.read(createResponse, "$.id");
+
+    mockMvc
+        .perform(
+            patch("/v1/admin/tenants/" + tenantId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(Map.of("productCode", "map-design"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.productCode").value("map-design"));
   }
 
   @Test

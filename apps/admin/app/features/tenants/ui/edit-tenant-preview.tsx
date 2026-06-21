@@ -26,6 +26,7 @@ export function EditTenantPreview({
   tenant,
   name,
   plan,
+  productLabel,
   status,
   trialPreset,
   trialEndsAtDate,
@@ -33,6 +34,7 @@ export function EditTenantPreview({
   tenant: AdminTenantSummary
   name: string
   plan: string
+  productLabel?: string
   status: 'active' | 'suspended'
   trialPreset: TenantTrialPreset
   trialEndsAtDate: string
@@ -66,6 +68,11 @@ export function EditTenantPreview({
             <span className="rounded-md border border-border/60 bg-background/40 px-2 py-0.5 font-mono text-[11px]">
               {(planMeta?.label ?? plan) || tenant.plan}
             </span>
+            {productLabel ? (
+              <span className="rounded-md border border-primary/25 bg-primary/8 px-2 py-0.5 text-[11px] text-primary">
+                {productLabel}
+              </span>
+            ) : null}
             <AdminStatusPill
               level={ONBOARDING_PILL_LEVEL[onboardingPhase]}
               label={TENANT_ONBOARDING_LABELS[onboardingPhase]}

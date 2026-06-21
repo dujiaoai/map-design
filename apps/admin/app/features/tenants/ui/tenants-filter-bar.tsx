@@ -14,17 +14,24 @@ export function TenantsFilterBar({
   search,
   status,
   onboarding,
+  product,
+  productLabel,
   onClearAll,
 }: {
   search: string
   status: string
   onboarding: string
+  product?: string
+  productLabel?: string
   onClearAll: () => void
 }) {
   const chips: { key: string; label: string }[] = []
 
   if (search.trim()) {
     chips.push({ key: 'search', label: `搜索「${search.trim()}」` })
+  }
+  if (product && product !== 'all') {
+    chips.push({ key: 'product', label: productLabel ?? product })
   }
   if (status !== 'all') {
     chips.push({ key: 'status', label: STATUS_LABELS[status] ?? status })

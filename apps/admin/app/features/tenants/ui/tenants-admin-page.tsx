@@ -1,6 +1,6 @@
 import { Badge, Button, toast, useConfirmDialog, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui'
 import type { TableColumnsType } from 'antd'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CreditCardIcon, EyeIcon, PencilIcon, PlusIcon, UsersIcon } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
@@ -18,14 +18,14 @@ import { TenantNameCell } from '~/features/tenants/ui/tenant-name-cell'
 import { TenantRowAction, TenantRowActions } from '~/features/tenants/ui/tenant-row-actions'
 import { TenantsFilterBar } from '~/features/tenants/ui/tenants-filter-bar'
 import { TenantsOverviewStrip } from '~/features/tenants/ui/tenants-overview-strip'
-import { fetchAdminTenants, patchAdminTenant, type AdminTenantSummary } from '~/shared/api/admin-api'
+import { fetchAdminProducts, fetchAdminTenants, patchAdminTenant, type AdminTenantSummary } from '~/shared/api/admin-api'
+import { isPlatformAdmin } from '~/shared/auth/admin-access'
 import { AdminAntTable, ADMIN_LIST_TABLE_BODY_HEIGHT, adminAntSortOrder, createAdminAntSortHandler } from '~/shared/ant'
 import { useAdminPagedListState, useAdminPagedQuery } from '~/shared/hooks/use-admin-paged-list'
 import { useAdminListSearchShortcut } from '~/shared/hooks/use-admin-list-search-shortcut'
 import { filterAdminTableRows } from '~/shared/hooks/use-admin-table-filter'
 import { useAdminTableColumnPrefs } from '~/shared/hooks/use-admin-table-column-prefs'
 import { useAdminTableSort } from '~/shared/hooks/use-admin-table-sort'
-import { useAdminProductContext } from '~/shared/hooks/use-admin-product-context'
 import { useAdminPermissions } from '~/shared/hooks/use-admin-permissions'
 import { adminQueryKeys } from '~/shared/lib/admin-query-keys'
 import { appendAdminListTotal } from '~/shared/lib/format-admin-list-description'
@@ -52,10 +52,11 @@ const TENANT_TABLE_COLUMNS = [
 ] as const
 
 const TENANT_TABLE_SCROLL_X = 1180
+const TENANT_PRODUCT_FILTER_ALL = 'all'
 
 export function TenantsAdminPage() {
   const navigate = useNavigate()
-  const { can, canAny } = useAdminPermissions()
+  const { can, canAny, session } = useAdminPermissions()
   const canWrite = can('admin:tenants:write')
   const canReadUsers = can('admin:users:read')
   const canViewBilling = canAny([
@@ -70,6 +71,7 @@ export function TenantsAdminPage() {
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [onboardingFilter, setOnboardingFilter] = useState('all')
+  const [productFilter, setProductFilter] = useState(TENANT_PRODUCT_FILTER_ALL)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
   const { confirm, confirmDialog } = useConfirmDialog()
@@ -88,15 +90,30 @@ export function TenantsAdminPage() {
     [toggleSort, setPage],
   )
 
-  const { productCode } = useAdminProductContext()
+  const productsQuery = useQuery({
+    queryKey: adminQueryKeys.products,
+    queryFn: fetchAdminProducts,
+    enabled: isPlatformAdmin(session),
+    staleTime: 300_000,
+  })
+
+  const productOptions = useMemo(
+    () => productsQuery.data?.products ?? [],
+    [productsQuery.data?.products],
+  )
+
+  const activeProductLabel = useMemo(() => {
+    if (productFilter === TENANT_PRODUCT_FILTER_ALL) return '全部产品线'
+    return productOptions.find((p) => p.code === productFilter)?.name ?? productFilter
+  }, [productFilter, productOptions])
 
   const queryParams = useMemo(
     () => ({
       ...baseQueryParams,
-      productCode,
+      ...(productFilter !== TENANT_PRODUCT_FILTER_ALL ? { productCode: productFilter } : {}),
       ...(sort ? { sortBy: sort.key, sortDir: sort.direction } : {}),
     }),
-    [baseQueryParams, productCode, sort],
+    [baseQueryParams, productFilter, sort],
   )
 
   const query = useAdminPagedQuery({
@@ -160,6 +177,7 @@ export function TenantsAdminPage() {
     setSearchInput('')
     setStatusFilter('all')
     setOnboardingFilter('all')
+    setProductFilter(TENANT_PRODUCT_FILTER_ALL)
     setPage(1)
     clearSort()
   }
@@ -347,7 +365,7 @@ export function TenantsAdminPage() {
       />
 
       <AdminPanel>
-        <AdminPanelHeader title="筛选与列表" description="支持 / 聚焦搜索、状态与生命周期筛选" />
+        <AdminPanelHeader title="筛选与列表" description="支持搜索、状态、生命周期与产品线筛选" />
         <div className="space-y-3 border-b border-border/50 px-4 py-4 md:px-5">
           <AdminTableToolbar
             searchInputRef={searchInputRef}
@@ -363,6 +381,28 @@ export function TenantsAdminPage() {
             ]}
             trailing={
               <>
+                {isPlatformAdmin(session) ? (
+                  <Select
+                    value={productFilter}
+                    onValueChange={(value) => {
+                      if (!value) return
+                      setProductFilter(value)
+                      setPage(1)
+                    }}
+                  >
+                    <SelectTrigger className="w-[160px]" aria-label="产品线筛选">
+                      <SelectValue placeholder="产品线" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={TENANT_PRODUCT_FILTER_ALL}>全部产品线</SelectItem>
+                      {productOptions.map((product) => (
+                        <SelectItem key={product.id} value={product.code}>
+                          {product.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : null}
                 <Select
                   value={onboardingFilter}
                   onValueChange={(value) => {
@@ -394,6 +434,8 @@ export function TenantsAdminPage() {
             search={searchInput}
             status={statusFilter}
             onboarding={onboardingFilter}
+            product={productFilter}
+            productLabel={activeProductLabel}
             onClearAll={clearTenantFilters}
           />
           <AdminTableSortHint sort={sort} onClearSort={clearSort} scope="server" />
